@@ -119,6 +119,16 @@ struct ShiftDetailView: View {
         } message: {
             Text("You've completed this shift. Great work!")
         }
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.error != nil },
+            set: { if !$0 { viewModel.error = nil } }
+        )) {
+            Button("OK", role: .cancel) {
+                viewModel.error = nil
+            }
+        } message: {
+            Text(viewModel.error ?? "An error occurred")
+        }
         .alert("No Forms Available", isPresented: $showNoTemplatesAlert) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -631,7 +641,14 @@ class ShiftDetailViewModel: ObservableObject {
             isLoading = false
             return true
         } catch let apiError as APIError {
-            self.error = apiError.errorDescription
+            // Check if already checked in - refresh shift to get current status
+            if case .validationError(let message) = apiError,
+               message.lowercased().contains("already") {
+                await loadShift(id: shift.id)
+                self.error = "You're already checked in for this shift."
+            } else {
+                self.error = apiError.errorDescription
+            }
             HapticType.error.trigger()
         } catch {
             self.error = "Failed to check in"
@@ -658,7 +675,14 @@ class ShiftDetailViewModel: ObservableObject {
             isLoading = false
             return true
         } catch let apiError as APIError {
-            self.error = apiError.errorDescription
+            // Check if already checked out - refresh shift to get current status
+            if case .validationError(let message) = apiError,
+               message.lowercased().contains("already") {
+                await loadShift(id: shift.id)
+                self.error = "You've already checked out of this shift."
+            } else {
+                self.error = apiError.errorDescription
+            }
             HapticType.error.trigger()
         } catch {
             self.error = "Failed to check out"
