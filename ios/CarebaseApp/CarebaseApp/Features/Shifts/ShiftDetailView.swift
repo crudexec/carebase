@@ -8,6 +8,7 @@ struct ShiftDetailView: View {
     let shiftId: String
     @StateObject private var viewModel = ShiftDetailViewModel()
     @StateObject private var templateViewModel = TemplateSelectionViewModel()
+    @StateObject private var visitNotesViewModel = ShiftVisitNotesViewModel()
     @State private var showCheckInConfirmation = false
     @State private var showCheckOutConfirmation = false
     @State private var showTemplateSelector = false
@@ -32,6 +33,12 @@ struct ShiftDetailView: View {
                     if let notes = shift.notes, !notes.isEmpty {
                         NotesSection(notes: notes)
                     }
+
+                    // Visit Notes
+                    ShiftVisitNotesSection(
+                        visitNotes: visitNotesViewModel.visitNotes,
+                        isLoading: visitNotesViewModel.isLoading
+                    )
 
                     // Actions
                     ShiftActionsSection(
@@ -58,6 +65,9 @@ struct ShiftDetailView: View {
         }
         .task {
             await templateViewModel.loadTemplates()
+        }
+        .task {
+            await visitNotesViewModel.loadVisitNotes(forShiftId: shiftId)
         }
         .confirmationDialog(
             "Check In",
@@ -113,6 +123,14 @@ struct ShiftDetailView: View {
         )) {
             if let shift = viewModel.shift, let template = selectedTemplateForNote {
                 NewVisitNoteView(shiftId: shift.id, clientId: shift.clientId, template: template)
+            }
+        }
+        .onChange(of: selectedTemplateForNote) { oldValue, newValue in
+            // Refresh visit notes when returning from adding a new note
+            if oldValue != nil && newValue == nil {
+                Task {
+                    await visitNotesViewModel.loadVisitNotes(forShiftId: shiftId)
+                }
             }
         }
     }
@@ -440,6 +458,109 @@ struct ShiftActionsSection: View {
     }
 }
 
+// MARK: - Visit Notes Section
+struct ShiftVisitNotesSection: View {
+    let visitNotes: [VisitNote]
+    let isLoading: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Text("Visit Notes")
+                    .font(.Carebase.labelMedium)
+                    .foregroundColor(Color.Carebase.textSecondary)
+
+                Spacer()
+
+                if !visitNotes.isEmpty {
+                    Text("\(visitNotes.count)")
+                        .font(.Carebase.labelSmall)
+                        .foregroundColor(Color.Carebase.accent)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xxs)
+                        .background(Color.Carebase.accentSoft)
+                        .cornerRadius(CornerRadius.sm)
+                }
+            }
+            .screenPadding()
+
+            if isLoading {
+                CarebaseCard {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Loading notes...")
+                            .font(.Carebase.bodySmall)
+                            .foregroundColor(Color.Carebase.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.md)
+                }
+                .screenPadding()
+            } else if visitNotes.isEmpty {
+                CarebaseCard {
+                    VStack(spacing: Spacing.sm) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 32, weight: .light))
+                            .foregroundColor(Color.Carebase.textTertiary)
+
+                        Text("No visit notes yet")
+                            .font(.Carebase.bodyMedium)
+                            .foregroundColor(Color.Carebase.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.lg)
+                }
+                .screenPadding()
+            } else {
+                VStack(spacing: Spacing.sm) {
+                    ForEach(visitNotes) { note in
+                        NavigationLink(destination: VisitNoteDetailView(noteId: note.id)) {
+                            VisitNoteCard(note: note)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .screenPadding()
+            }
+        }
+    }
+}
+
+// MARK: - Visit Note Card
+struct VisitNoteCard: View {
+    let note: VisitNote
+
+    var body: some View {
+        CarebaseCard {
+            HStack(spacing: Spacing.md) {
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(Color.Carebase.accent)
+                    .frame(width: 44, height: 44)
+                    .background(Color.Carebase.accentSoft)
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(note.templateName)
+                        .font(.Carebase.headlineSmall)
+                        .foregroundColor(Color.Carebase.textPrimary)
+
+                    Text(note.submittedAtFormatted)
+                        .font(.Carebase.bodySmall)
+                        .foregroundColor(Color.Carebase.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Color.Carebase.textTertiary)
+            }
+        }
+    }
+}
+
 // MARK: - View Model
 @MainActor
 class ShiftDetailViewModel: ObservableObject {
@@ -506,6 +627,41 @@ class ShiftDetailViewModel: ObservableObject {
         } catch {
             self.error = "Failed to check out"
             HapticType.error.trigger()
+        }
+
+        isLoading = false
+    }
+}
+
+// MARK: - Shift Visit Notes View Model
+@MainActor
+class ShiftVisitNotesViewModel: ObservableObject {
+    @Published var visitNotes: [VisitNote] = []
+    @Published var isLoading = false
+    @Published var error: String?
+
+    private let api = APIClient.shared
+
+    func loadVisitNotes(forShiftId shiftId: String) async {
+        isLoading = true
+        error = nil
+
+        do {
+            let response: VisitNotesResponse = try await api.request(
+                endpoint: .visitNotes,
+                queryParams: ["shiftId": shiftId]
+            )
+            self.visitNotes = response.visitNotes
+        } catch let apiError as APIError {
+            self.error = apiError.errorDescription
+            #if DEBUG
+            print("Error loading visit notes: \(apiError)")
+            #endif
+        } catch {
+            self.error = "Failed to load visit notes"
+            #if DEBUG
+            print("Error loading visit notes: \(error)")
+            #endif
         }
 
         isLoading = false

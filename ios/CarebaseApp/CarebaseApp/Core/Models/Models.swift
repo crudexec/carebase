@@ -350,7 +350,7 @@ struct FormSchemaSnapshot: Codable {
 }
 
 // MARK: - Form Template Model
-struct FormTemplate: Codable, Identifiable {
+struct FormTemplate: Codable, Identifiable, Equatable {
     let id: String
     let name: String
     let description: String?
@@ -358,6 +358,10 @@ struct FormTemplate: Codable, Identifiable {
     let isEnabled: Bool?
     let version: Int?
     let status: String?
+
+    static func == (lhs: FormTemplate, rhs: FormTemplate) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
 struct FormSection: Codable, Identifiable {
