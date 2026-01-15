@@ -1,0 +1,823 @@
+// Prisma Schema for CareBase
+// Care Agency Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  ADMIN
+  OPS_MANAGER
+  CLINICAL_DIRECTOR
+  STAFF
+  SUPERVISOR
+  CARER
+  SPONSOR
+}
+
+enum ClientStatus {
+  PROSPECT
+  ONBOARDING
+  ACTIVE
+  INACTIVE
+}
+
+enum OnboardingStage {
+  REACH_OUT
+  ASSESSMENT
+  SCHEDULE_APPOINTMENT
+  ASSESSMENT_REPORT
+  CLINICAL_AUTHORIZATION
+  ASSIGN_CAREGIVER
+  HEALTH_CHECK
+  HEALTH_ASSESSMENT
+  ONE_ON_ONE
+  CONTRACT_START
+}
+
+enum ShiftStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PayrollStatus {
+  PENDING
+  SUPERVISOR_APPROVED
+  PROCESSED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+}
+
+enum EscalationStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum FormFieldType {
+  TEXT_SHORT
+  TEXT_LONG
+  NUMBER
+  YES_NO
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  DATE
+  TIME
+  DATETIME
+  SIGNATURE
+  PHOTO
+  RATING_SCALE
+}
+
+enum FormTemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// ============================================
+// COMPANY (MULTI-TENANCY)
+// ============================================
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations - all tenant-scoped models
+  users               User[]
+  clients             Client[]
+  shifts              Shift[]
+  shiftAttendances    ShiftAttendance[]
+  dailyReports        DailyReport[]
+  incidentReports     IncidentReport[]
+  payrollRecords      PayrollRecord[]
+  invoices            Invoice[]
+  chatMessages        ChatMessage[]
+  escalations         Escalation[]
+  onboardingRecords   OnboardingRecord[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  formTemplates       FormTemplate[]
+  visitNotes          VisitNote[]
+
+  @@index([isActive])
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole
+  phone        String?
+  profileData  Json?     // Custom profile fields from profile templates
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Company relation
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id])
+
+  // Relations
+  caregiverProfile     CaregiverProfile?
+
+  // As Sponsor
+  sponsoredClients     Client[]           @relation("SponsorClients")
+
+  // As Carer
+  assignedClients      Client[]           @relation("CarerClients")
+  shifts               Shift[]
+  dailyReports         DailyReport[]
+  payrollRecords       PayrollRecord[]    @relation("CarerPayroll")
+
+  // Onboarding assignments
+  onboardingAssignments OnboardingRecord[] @relation("OnboardingAssignee")
+
+  // Incident reports
+  reportedIncidents    IncidentReport[]   @relation("IncidentReporter")
+  approvedIncidents    IncidentReport[]   @relation("IncidentApprover")
+
+  // Payroll approvals
+  supervisorApprovals  PayrollRecord[]    @relation("SupervisorApproval")
+  processedPayments    PayrollRecord[]    @relation("ProcessedBy")
+
+  // Chat
+  sentMessages         ChatMessage[]      @relation("MessageSender")
+  receivedMessages     ChatMessage[]      @relation("MessageReceiver")
+
+  // Escalations
+  submittedEscalations Escalation[]       @relation("EscalationSubmitter")
+  managedEscalations   Escalation[]       @relation("EscalationManager")
+
+  // Notifications
+  notifications        Notification[]
+
+  // Audit logs
+  auditLogs            AuditLog[]
+
+  // Form Builder
+  createdFormTemplates FormTemplate[]     @relation("FormTemplateCreator")
+  visitNotes           VisitNote[]        @relation("CarerVisitNotes")
+  submittedVisitNotes  VisitNote[]        @relation("VisitNoteSubmitter")
+
+  // Comments
+  comments             VisitNoteComment[] @relation("CommentAuthor")
+  mentions             CommentMention[]   @relation("MentionedUser")
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([companyId])
+}
+
+model CaregiverProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  certifications   String[]
+  healthStatus     String?
+  emergencyContact String?
+  availableDays    String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availabilitySlots CaregiverAvailability[]
+}
+
+model CaregiverAvailability {
+  id          String   @id @default(cuid())
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime   String   // "09:00" format
+  endTime     String   // "17:00" format
+  isRecurring Boolean  @default(true)
+  specificDate DateTime? // For non-recurring availability
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  caregiverProfileId String
+  caregiverProfile   CaregiverProfile @relation(fields: [caregiverProfileId], references: [id], onDelete: Cascade)
+
+  @@index([caregiverProfileId])
+  @@index([dayOfWeek])
+}
+
+model Client {
+  id              String       @id @default(cuid())
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime?
+  address         String?
+  latitude        Decimal?     @db.Decimal(10, 8)
+  longitude       Decimal?     @db.Decimal(11, 8)
+  phone           String?
+  medicalNotes    String?
+  profileData     Json?        // Custom profile fields from profile templates
+  status          ClientStatus @default(PROSPECT)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Company relation
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id])
+
+  // Sponsor relation (optional during early onboarding)
+  sponsorId       String?
+  sponsor         User?        @relation("SponsorClients", fields: [sponsorId], references: [id])
+
+  // Assigned carer relation
+  assignedCarerId String?
+  assignedCarer   User?        @relation("CarerClients", fields: [assignedCarerId], references: [id])
+
+  // Related records
+  onboardingRecord OnboardingRecord?
+  shifts           Shift[]
+  dailyReports     DailyReport[]
+  incidentReports  IncidentReport[]
+  invoices         Invoice[]
+  chatMessages     ChatMessage[]
+  escalations      Escalation[]
+  visitNotes       VisitNote[]
+
+  @@index([sponsorId])
+  @@index([assignedCarerId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model OnboardingRecord {
+  id               String          @id @default(cuid())
+  clientId         String          @unique
+  stage            OnboardingStage @default(REACH_OUT)
+  stageEnteredAt   DateTime        @default(now())
+  notes            String?
+  documents        String[]
+  clinicalApproval Boolean?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Company relation
+  companyId        String
+  company          Company         @relation(fields: [companyId], references: [id])
+
+  // Current assignee
+  assignedToId     String?
+  assignedTo       User?           @relation("OnboardingAssignee", fields: [assignedToId], references: [id])
+
+  // Client relation
+  client           Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Stage history
+  stageHistory     OnboardingStageHistory[]
+
+  @@index([stage])
+  @@index([assignedToId])
+  @@index([companyId])
+}
+
+model OnboardingStageHistory {
+  id                 String          @id @default(cuid())
+  onboardingRecordId String
+  fromStage          OnboardingStage
+  toStage            OnboardingStage
+  changedById        String
+  notes              String?
+  createdAt          DateTime        @default(now())
+
+  // Relations
+  onboardingRecord   OnboardingRecord @relation(fields: [onboardingRecordId], references: [id], onDelete: Cascade)
+
+  @@index([onboardingRecordId])
+}
+
+model Shift {
+  id               String      @id @default(cuid())
+  scheduledStart   DateTime
+  scheduledEnd     DateTime
+  actualStart      DateTime?   // Legacy: first check-in time
+  actualEnd        DateTime?   // Legacy: final check-out time
+  checkInLocation  Json?
+  checkOutLocation Json?
+  status           ShiftStatus @default(SCHEDULED)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Company relation
+  companyId        String
+  company          Company     @relation(fields: [companyId], references: [id])
+
+  // Relations
+  carerId          String
+  carer            User        @relation(fields: [carerId], references: [id])
+
+  clientId         String
+  client           Client      @relation(fields: [clientId], references: [id])
+
+  // Related records
+  dailyReports     DailyReport[]
+  payrollRecord    PayrollRecord?
+  attendanceRecords ShiftAttendance[]
+  visitNotes       VisitNote[]
+
+  @@index([carerId])
+  @@index([clientId])
+  @@index([status])
+  @@index([scheduledStart])
+  @@index([companyId])
+}
+
+// Track daily attendance for multi-day shifts
+model ShiftAttendance {
+  id          String    @id @default(cuid())
+  date        DateTime  @db.Date  // The specific day this attendance is for
+  checkInTime DateTime?
+  checkOutTime DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Company relation
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+
+  // Relations
+  shiftId     String
+  shift       Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@unique([shiftId, date])  // One attendance record per day per shift
+  @@index([shiftId])
+  @@index([date])
+  @@index([companyId])
+}
+
+model DailyReport {
+  id           String   @id @default(cuid())
+  reportDate   DateTime
+  activities   String
+  clientStatus String
+  medications  String?
+  notes        String?
+  images       String[]
+  concerns     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Company relation
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
+
+  // Relations
+  shiftId      String
+  shift        Shift    @relation(fields: [shiftId], references: [id])
+
+  carerId      String
+  carer        User     @relation(fields: [carerId], references: [id])
+
+  clientId     String
+  client       Client   @relation(fields: [clientId], references: [id])
+
+  @@index([carerId])
+  @@index([clientId])
+  @@index([reportDate])
+  @@index([companyId])
+}
+
+model IncidentReport {
+  id               String           @id @default(cuid())
+  incidentDate     DateTime
+  location         String
+  category         String
+  severity         IncidentSeverity
+  description      String
+  actionsTaken     String
+  attachments      String[]
+  witnesses        String?
+  status           IncidentStatus   @default(PENDING)
+  sponsorNotified  Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Company relation
+  companyId        String
+  company          Company          @relation(fields: [companyId], references: [id])
+
+  // Reporter
+  reporterId       String
+  reporter         User             @relation("IncidentReporter", fields: [reporterId], references: [id])
+
+  // Client involved
+  clientId         String
+  client           Client           @relation(fields: [clientId], references: [id])
+
+  // Carer involved (optional)
+  carerId          String?
+
+  // Approval
+  approvedById     String?
+  approvedBy       User?            @relation("IncidentApprover", fields: [approvedById], references: [id])
+  approvedAt       DateTime?
+
+  @@index([reporterId])
+  @@index([clientId])
+  @@index([status])
+  @@index([severity])
+  @@index([companyId])
+}
+
+model PayrollRecord {
+  id                    String        @id @default(cuid())
+  hoursWorked           Decimal       @db.Decimal(5, 2)
+  hourlyRate            Decimal       @db.Decimal(8, 2)
+  totalAmount           Decimal       @db.Decimal(10, 2)
+  dailyReportCompliant  Boolean       @default(false)
+  status                PayrollStatus @default(PENDING)
+  paymentCycle          String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  // Company relation
+  companyId             String
+  company               Company       @relation(fields: [companyId], references: [id])
+
+  // Shift relation
+  shiftId               String        @unique
+  shift                 Shift         @relation(fields: [shiftId], references: [id])
+
+  // Carer
+  carerId               String
+  carer                 User          @relation("CarerPayroll", fields: [carerId], references: [id])
+
+  // Supervisor approval
+  supervisorApprovedById String?
+  supervisorApprovedBy   User?        @relation("SupervisorApproval", fields: [supervisorApprovedById], references: [id])
+  supervisorApprovedAt   DateTime?
+
+  // Clinical Director processing
+  processedById         String?
+  processedBy           User?         @relation("ProcessedBy", fields: [processedById], references: [id])
+  processedAt           DateTime?
+
+  @@index([carerId])
+  @@index([status])
+  @@index([paymentCycle])
+  @@index([companyId])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  periodStart   DateTime
+  periodEnd     DateTime
+  amount        Decimal       @db.Decimal(10, 2)
+  status        InvoiceStatus @default(PENDING)
+  markedPaidAt  DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Company relation
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id])
+
+  // Relations
+  sponsorId     String
+  clientId      String
+  client        Client        @relation(fields: [clientId], references: [id])
+
+  @@index([sponsorId])
+  @@index([clientId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  content    String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  // Company relation
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id])
+
+  // Sender
+  senderId   String
+  sender     User      @relation("MessageSender", fields: [senderId], references: [id])
+
+  // Receiver
+  receiverId String
+  receiver   User      @relation("MessageReceiver", fields: [receiverId], references: [id])
+
+  // Context (which client this chat is about)
+  clientId   String
+  client     Client    @relation(fields: [clientId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([clientId])
+  @@index([createdAt])
+  @@index([companyId])
+}
+
+model Escalation {
+  id           String           @id @default(cuid())
+  title        String
+  description  String
+  status       EscalationStatus @default(OPEN)
+  resolution   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Company relation
+  companyId    String
+  company      Company          @relation(fields: [companyId], references: [id])
+
+  // Carer who submitted
+  carerId      String
+  carer        User             @relation("EscalationSubmitter", fields: [carerId], references: [id])
+
+  // Supervisor managing
+  supervisorId String
+  supervisor   User             @relation("EscalationManager", fields: [supervisorId], references: [id])
+
+  // Related client (optional)
+  clientId     String?
+  client       Client?          @relation(fields: [clientId], references: [id])
+
+  @@index([carerId])
+  @@index([supervisorId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Company relation
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  // Recipient
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@index([companyId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  changes    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  // Company relation
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id])
+
+  // User who performed action
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+  @@index([companyId])
+}
+
+// ============================================
+// FORM BUILDER / VISIT NOTES
+// ============================================
+
+enum FormTemplateType {
+  VISIT_NOTE
+  STAFF_PROFILE
+  CLIENT_PROFILE
+}
+
+model FormTemplate {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  type        FormTemplateType    @default(VISIT_NOTE)
+  status      FormTemplateStatus  @default(DRAFT)
+  version     Int                 @default(1)
+  isEnabled   Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Company relation
+  companyId   String
+  company     Company             @relation(fields: [companyId], references: [id])
+
+  // Created by
+  createdById String
+  createdBy   User                @relation("FormTemplateCreator", fields: [createdById], references: [id])
+
+  // Relations
+  sections    FormSection[]
+  visitNotes  VisitNote[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([isEnabled])
+  @@index([type])
+}
+
+model FormSection {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Parent template
+  templateId  String
+  template    FormTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // Fields in this section
+  fields      FormField[]
+
+  @@index([templateId])
+  @@index([order])
+}
+
+model FormField {
+  id          String        @id @default(cuid())
+  label       String
+  description String?
+  type        FormFieldType
+  required    Boolean       @default(false)
+  order       Int           @default(0)
+  config      Json?         // Type-specific config (options, min/max, etc.)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Parent section
+  sectionId   String
+  section     FormSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+  @@index([order])
+}
+
+model VisitNote {
+  id                 String    @id @default(cuid())
+  formSchemaSnapshot Json      // Complete form structure at submission
+  data               Json      // { [fieldId]: value }
+  submittedAt        DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Company relation
+  companyId          String
+  company            Company   @relation(fields: [companyId], references: [id])
+
+  // Template reference
+  templateId         String
+  template           FormTemplate @relation(fields: [templateId], references: [id])
+  templateVersion    Int
+
+  // Context relations
+  shiftId            String
+  shift              Shift     @relation(fields: [shiftId], references: [id])
+
+  // The carer assigned to the shift
+  carerId            String
+  carer              User      @relation("CarerVisitNotes", fields: [carerId], references: [id])
+
+  // Who actually submitted the note (could be admin on behalf of carer)
+  submittedById      String
+  submittedBy        User      @relation("VisitNoteSubmitter", fields: [submittedById], references: [id])
+
+  clientId           String
+  client             Client    @relation(fields: [clientId], references: [id])
+
+  // File attachments
+  files              VisitNoteFile[]
+
+  // Comments
+  comments           VisitNoteComment[]
+
+  @@index([companyId])
+  @@index([templateId])
+  @@index([shiftId])
+  @@index([carerId])
+  @@index([clientId])
+  @@index([submittedAt])
+  @@index([submittedById])
+}
+
+model VisitNoteFile {
+  id          String    @id @default(cuid())
+  fieldId     String    // Reference to the field this file belongs to
+  fileName    String
+  fileType    String    // MIME type
+  fileSize    Int       // Size in bytes
+  fileUrl     String    // Storage URL
+  createdAt   DateTime  @default(now())
+
+  // Parent visit note
+  visitNoteId String
+  visitNote   VisitNote @relation(fields: [visitNoteId], references: [id], onDelete: Cascade)
+
+  @@index([visitNoteId])
+  @@index([fieldId])
+}
+
+model VisitNoteComment {
+  id          String    @id @default(cuid())
+  content     String    // Comment text (may contain @mentions)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Company relation
+  companyId   String
+
+  // Parent visit note
+  visitNoteId String
+  visitNote   VisitNote @relation(fields: [visitNoteId], references: [id], onDelete: Cascade)
+
+  // Author of the comment
+  authorId    String
+  author      User      @relation("CommentAuthor", fields: [authorId], references: [id])
+
+  // Mentions in this comment
+  mentions    CommentMention[]
+
+  @@index([visitNoteId])
+  @@index([authorId])
+  @@index([companyId])
+  @@index([createdAt])
+}
+
+model CommentMention {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+
+  // The comment containing the mention
+  commentId   String
+  comment     VisitNoteComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  // The user being mentioned
+  userId      String
+  user        User      @relation("MentionedUser", fields: [userId], references: [id])
+
+  // Whether the user has seen this mention
+  seenAt      DateTime?
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+}
