@@ -11,6 +11,8 @@ struct ShiftDetailView: View {
     @StateObject private var visitNotesViewModel = ShiftVisitNotesViewModel()
     @State private var showCheckInConfirmation = false
     @State private var showCheckOutConfirmation = false
+    @State private var showCheckInSuccess = false
+    @State private var showCheckOutSuccess = false
     @State private var showTemplateSelector = false
     @State private var showNoTemplatesAlert = false
     @State private var selectedTemplateForNote: FormTemplate?
@@ -75,7 +77,12 @@ struct ShiftDetailView: View {
             titleVisibility: .visible
         ) {
             Button("Confirm Check In") {
-                Task { await viewModel.checkIn() }
+                Task {
+                    let success = await viewModel.checkIn()
+                    if success {
+                        showCheckInSuccess = true
+                    }
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -87,11 +94,30 @@ struct ShiftDetailView: View {
             titleVisibility: .visible
         ) {
             Button("Confirm Check Out") {
-                Task { await viewModel.checkOut() }
+                Task {
+                    let success = await viewModel.checkOut()
+                    if success {
+                        showCheckOutSuccess = true
+                    }
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Are you sure you want to end this shift?")
+        }
+        .alert("Checked In", isPresented: $showCheckInSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let shift = viewModel.shift {
+                Text("You've started your shift with \(shift.client?.fullName ?? "your client"). Have a great visit!")
+            } else {
+                Text("You've successfully checked in. Have a great shift!")
+            }
+        }
+        .alert("Checked Out", isPresented: $showCheckOutSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You've completed this shift. Great work!")
         }
         .alert("No Forms Available", isPresented: $showNoTemplatesAlert) {
             Button("OK", role: .cancel) {}
@@ -589,8 +615,9 @@ class ShiftDetailViewModel: ObservableObject {
         isLoading = false
     }
 
-    func checkIn() async {
-        guard let shift = shift else { return }
+    @discardableResult
+    func checkIn() async -> Bool {
+        guard let shift = shift else { return false }
         isLoading = true
         error = nil
 
@@ -601,6 +628,8 @@ class ShiftDetailViewModel: ObservableObject {
             )
             self.shift = response.shift
             HapticType.success.trigger()
+            isLoading = false
+            return true
         } catch let apiError as APIError {
             self.error = apiError.errorDescription
             HapticType.error.trigger()
@@ -610,10 +639,12 @@ class ShiftDetailViewModel: ObservableObject {
         }
 
         isLoading = false
+        return false
     }
 
-    func checkOut() async {
-        guard let shift = shift else { return }
+    @discardableResult
+    func checkOut() async -> Bool {
+        guard let shift = shift else { return false }
         isLoading = true
         error = nil
 
@@ -624,6 +655,8 @@ class ShiftDetailViewModel: ObservableObject {
             )
             self.shift = response.shift
             HapticType.success.trigger()
+            isLoading = false
+            return true
         } catch let apiError as APIError {
             self.error = apiError.errorDescription
             HapticType.error.trigger()
@@ -633,6 +666,7 @@ class ShiftDetailViewModel: ObservableObject {
         }
 
         isLoading = false
+        return false
     }
 }
 
