@@ -76,7 +76,32 @@ struct TemplateSelectionSheet: View {
     let onCancel: () -> Void
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Button("Cancel") {
+                    onCancel()
+                }
+                .foregroundColor(Color.Carebase.accent)
+
+                Spacer()
+
+                Text("Select Form")
+                    .font(.Carebase.headlineSmall)
+                    .foregroundColor(Color.Carebase.textPrimary)
+
+                Spacer()
+
+                // Placeholder for symmetry
+                Text("Cancel")
+                    .foregroundColor(.clear)
+            }
+            .padding(.horizontal, Spacing.screenHorizontal)
+            .padding(.vertical, Spacing.md)
+            .background(Color.Carebase.background)
+
+            Divider()
+
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     Text("Choose a form type for your visit note.")
@@ -148,17 +173,8 @@ struct TemplateSelectionSheet: View {
                 .padding(.horizontal, Spacing.screenHorizontal)
                 .padding(.vertical, Spacing.md)
             }
-            .background(Color.Carebase.backgroundSecondary)
-            .navigationTitle("Select Form")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        onCancel()
-                    }
-                }
-            }
         }
+        .background(Color.Carebase.backgroundSecondary)
     }
 }
 

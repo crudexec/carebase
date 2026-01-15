@@ -105,7 +105,10 @@ struct ShiftDetailView: View {
                 error: templateViewModel.error,
                 onSelect: { template in
                     showTemplateSelector = false
-                    selectedTemplateForNote = template
+                    // Delay navigation to allow sheet to dismiss first
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        selectedTemplateForNote = template
+                    }
                 },
                 onRetry: {
                     Task { await templateViewModel.loadTemplates() }
