@@ -9,6 +9,48 @@ import {
   validateFieldValue,
 } from "@/lib/visit-notes/validation";
 import { FormSchemaSnapshot } from "@/lib/visit-notes/types";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+
+// Helper to save base64 data as file
+async function saveBase64File(
+  base64Data: string,
+  fieldType: "SIGNATURE" | "PHOTO"
+): Promise<{ fileUrl: string; fileName: string; fileType: string; fileSize: number }> {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", fieldType.toLowerCase());
+  await mkdir(uploadDir, { recursive: true });
+
+  const fileName = `${uuidv4()}.png`;
+  const filePath = path.join(uploadDir, fileName);
+
+  // Handle both plain base64 and data URL format
+  let buffer: Buffer;
+  let mimeType = "image/png";
+
+  if (base64Data.startsWith("data:")) {
+    const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+    if (matches) {
+      mimeType = matches[1];
+      buffer = Buffer.from(matches[2], "base64");
+    } else {
+      throw new Error("Invalid data URL format");
+    }
+  } else {
+    buffer = Buffer.from(base64Data, "base64");
+  }
+
+  await writeFile(filePath, buffer);
+
+  const fileUrl = `/uploads/${fieldType.toLowerCase()}/${fileName}`;
+
+  return {
+    fileUrl,
+    fileName,
+    fileType: mimeType,
+    fileSize: buffer.length,
+  };
+}
 
 // GET /api/visit-notes - List visit notes
 export async function GET(request: Request) {
@@ -278,17 +320,44 @@ export async function POST(request: Request) {
       })),
     };
 
-    // Collect file fields for linking
-    const fileFields: { fieldId: string; fileUrl: string }[] = [];
+    // Process file fields - handle both base64 and file URLs
+    const fileFields: { fieldId: string; fileUrl: string; fileName: string; fileType: string; fileSize: number }[] = [];
+    const processedData = { ...data };
+
     for (const section of template.sections) {
       for (const field of section.fields) {
         if (
           (field.type === "SIGNATURE" || field.type === "PHOTO") &&
           data[field.id]
         ) {
-          const fileValue = data[field.id] as { fileUrl: string };
-          if (fileValue?.fileUrl) {
-            fileFields.push({ fieldId: field.id, fileUrl: fileValue.fileUrl });
+          const fieldValue = data[field.id];
+
+          if (typeof fieldValue === "string" && fieldValue.length > 0) {
+            // Base64 data - save to file
+            try {
+              const savedFile = await saveBase64File(
+                fieldValue,
+                field.type as "SIGNATURE" | "PHOTO"
+              );
+              fileFields.push({ fieldId: field.id, ...savedFile });
+              // Update the data with the file URL instead of base64
+              processedData[field.id] = { fileUrl: savedFile.fileUrl };
+            } catch (err) {
+              console.error(`Error saving ${field.type} file:`, err);
+              // Keep the original value if save fails
+            }
+          } else if (typeof fieldValue === "object" && fieldValue !== null) {
+            // File object with URL
+            const fileObj = fieldValue as { fileUrl?: string; fileName?: string; fileType?: string; fileSize?: number };
+            if (fileObj.fileUrl) {
+              fileFields.push({
+                fieldId: field.id,
+                fileUrl: fileObj.fileUrl,
+                fileName: fileObj.fileName || fileObj.fileUrl.split("/").pop() || "file",
+                fileType: fileObj.fileType || "image/png",
+                fileSize: fileObj.fileSize || 0,
+              });
+            }
           }
         }
       }
@@ -305,13 +374,13 @@ export async function POST(request: Request) {
         carerId: shift.carerId, // The carer assigned to the shift
         submittedById: session.user.id, // Who actually submitted the note
         formSchemaSnapshot: formSchemaSnapshot as unknown as Prisma.InputJsonValue,
-        data: data as unknown as Prisma.InputJsonValue,
+        data: processedData as unknown as Prisma.InputJsonValue,
         files: {
           create: fileFields.map((file) => ({
             fieldId: file.fieldId,
-            fileName: file.fileUrl.split("/").pop() || "file",
-            fileType: "image/png",
-            fileSize: 0, // Would need to fetch actual size
+            fileName: file.fileName,
+            fileType: file.fileType,
+            fileSize: file.fileSize,
             fileUrl: file.fileUrl,
           })),
         },

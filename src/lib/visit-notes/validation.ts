@@ -99,13 +99,16 @@ export const updateFormTemplateSchema = z.object({
 // Visit Note Submission Schemas
 // ============================================
 
-// File value for signatures and photos
+// File value for signatures and photos (uploaded files)
 export const fileValueSchema = z.object({
   fileUrl: z.string().url(),
-  fileName: z.string(),
-  fileType: z.string(),
-  fileSize: z.number().positive(),
+  fileName: z.string().optional(),
+  fileType: z.string().optional(),
+  fileSize: z.number().positive().optional(),
 });
+
+// Base64 data for inline file uploads (from mobile apps)
+export const base64FileSchema = z.string().regex(/^[A-Za-z0-9+/=]+$/, "Invalid base64 data");
 
 // Field value can be various types
 export const fieldValueSchema = z.union([
@@ -121,9 +124,9 @@ export const fieldValueSchema = z.union([
 export const visitNoteDataSchema = z.record(z.string(), fieldValueSchema);
 
 export const createVisitNoteSchema = z.object({
-  templateId: z.string().cuid(),
-  shiftId: z.string().cuid(),
-  clientId: z.string().cuid(),
+  templateId: z.string().min(1),
+  shiftId: z.string().min(1),
+  clientId: z.string().min(1),
   data: visitNoteDataSchema,
 });
 
@@ -141,10 +144,10 @@ export const templateListQuerySchema = z.object({
 });
 
 export const visitNoteListQuerySchema = z.object({
-  shiftId: z.string().cuid().optional(),
-  clientId: z.string().cuid().optional(),
-  carerId: z.string().cuid().optional(),
-  templateId: z.string().cuid().optional(),
+  shiftId: z.string().min(1).optional(),
+  clientId: z.string().min(1).optional(),
+  carerId: z.string().min(1).optional(),
+  templateId: z.string().min(1).optional(),
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -325,6 +328,20 @@ export function validateFieldValue(
 
     case "SIGNATURE":
     case "PHOTO": {
+      // Accept either file object or base64 string
+      if (typeof value === "string") {
+        // Base64 encoded data from mobile apps
+        const base64Result = base64FileSchema.safeParse(value);
+        if (base64Result.success) {
+          return { valid: true };
+        }
+        // Also accept data URLs (data:image/png;base64,...)
+        if (value.startsWith("data:")) {
+          return { valid: true };
+        }
+        return { valid: false, error: "Invalid file data" };
+      }
+      // File object with URL
       const fileResult = fileValueSchema.safeParse(value);
       if (!fileResult.success) {
         return { valid: false, error: "Invalid file" };
