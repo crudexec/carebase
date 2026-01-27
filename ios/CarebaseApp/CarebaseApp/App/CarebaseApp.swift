@@ -8,7 +8,24 @@ struct CarebaseApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authManager.isAuthenticated {
+                if authManager.isLoading {
+                    // Show splash/loading screen while checking session
+                    ZStack {
+                        Color.Carebase.background
+                            .ignoresSafeArea()
+                        VStack(spacing: 16) {
+                            Image(systemName: "heart.circle.fill")
+                                .font(.system(size: 64))
+                                .foregroundColor(Color.Carebase.accent)
+                            Text("Carebase")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color.Carebase.textPrimary)
+                            ProgressView()
+                                .tint(Color.Carebase.accent)
+                        }
+                    }
+                } else if authManager.isAuthenticated {
                     MainTabView()
                         .environmentObject(authManager)
                         .environmentObject(appState)

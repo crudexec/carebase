@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "PlanOfCare" ADD COLUMN     "cert485Goals" VARCHAR(225),
+ADD COLUMN     "cert485Orders" VARCHAR(225),
+ADD COLUMN     "isCert485" BOOLEAN NOT NULL DEFAULT false;

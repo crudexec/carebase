@@ -13,10 +13,11 @@ interface DashboardShellProps {
     email: string;
     role: UserRole;
   };
+  companyName: string;
   children: React.ReactNode;
 }
 
-export function DashboardShell({ user, children }: DashboardShellProps) {
+export function DashboardShell({ user, companyName, children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -58,7 +59,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <Sidebar user={user} onClose={() => setSidebarOpen(false)} showClose={isMobile} />
+        <Sidebar user={user} companyName={companyName} onClose={() => setSidebarOpen(false)} showClose={isMobile} />
       </div>
 
       {/* Main content */}
@@ -74,9 +75,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           </button>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-white font-semibold text-xs">C</span>
+              <span className="text-white font-semibold text-xs">{companyName[0]?.toUpperCase() || "C"}</span>
             </div>
-            <span className="text-sm font-semibold text-foreground">CareBase</span>
+            <span className="text-sm font-semibold text-foreground">{companyName}</span>
           </div>
         </header>
 

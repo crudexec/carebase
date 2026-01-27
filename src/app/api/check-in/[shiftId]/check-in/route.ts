@@ -106,16 +106,49 @@ export async function POST(
       updateData.actualStart = checkInTime;
     }
 
-    const updatedShift = await prisma.shift.update({
+    await prisma.shift.update({
       where: { id: shiftId },
       data: updateData,
+    });
+
+    // Create audit log for check-in
+    await prisma.auditLog.create({
+      data: {
+        companyId: session.user.companyId,
+        userId: session.user.id,
+        action: "SHIFT_CHECK_IN",
+        entityType: "Shift",
+        entityId: shiftId,
+        changes: {
+          shiftId: shiftId,
+          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+          checkInTime: checkInTime.toISOString(),
+        },
+      },
+    });
+
+    // Fetch the full updated shift for the response
+    const updatedShift = await prisma.shift.findUnique({
+      where: { id: shiftId },
       include: {
         client: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
+            address: true,
           },
+        },
+        carer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        attendanceRecords: {
+          orderBy: { date: "desc" },
+          take: 1,
         },
       },
     });
@@ -124,9 +157,25 @@ export async function POST(
       success: true,
       message: "Checked in successfully",
       shift: {
-        id: updatedShift.id,
-        actualStart: updatedShift.actualStart?.toISOString(),
-        status: updatedShift.status,
+        id: updatedShift!.id,
+        clientId: updatedShift!.clientId,
+        carerId: updatedShift!.carerId,
+        scheduledStart: updatedShift!.scheduledStart.toISOString(),
+        scheduledEnd: updatedShift!.scheduledEnd.toISOString(),
+        actualStart: updatedShift!.actualStart?.toISOString() || null,
+        actualEnd: updatedShift!.actualEnd?.toISOString() || null,
+        status: updatedShift!.status,
+        client: updatedShift!.client ? {
+          id: updatedShift!.client.id,
+          firstName: updatedShift!.client.firstName,
+          lastName: updatedShift!.client.lastName,
+          address: updatedShift!.client.address,
+        } : null,
+        carer: updatedShift!.carer ? {
+          id: updatedShift!.carer.id,
+          firstName: updatedShift!.carer.firstName,
+          lastName: updatedShift!.carer.lastName,
+        } : null,
       },
       attendance: {
         id: attendance.id,

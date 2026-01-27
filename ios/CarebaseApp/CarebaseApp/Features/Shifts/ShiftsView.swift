@@ -7,7 +7,7 @@ import SwiftUI
 struct ShiftsView: View {
     @StateObject private var viewModel = ShiftsViewModel()
     @StateObject private var templateViewModel = TemplateSelectionViewModel()
-    @State private var selectedFilter: ShiftFilter = .upcoming
+    @State private var selectedFilter: ShiftFilter = .today
     @State private var shiftToCheckIn: Shift?
     @State private var shiftToCheckOut: Shift?
     @State private var showNoNoteWarning = false
@@ -50,6 +50,21 @@ struct ShiftsView: View {
             .background(Color.Carebase.backgroundSecondary)
             .navigationTitle("Shifts")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        HapticType.light.trigger()
+                        Task {
+                            await viewModel.refresh()
+                        }
+                    }) {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundColor(Color.Carebase.accent)
+                    }
+                    .disabled(viewModel.isLoading)
+                    .opacity(viewModel.isLoading ? 0.5 : 1.0)
+                }
+            }
             .refreshable {
                 await viewModel.refresh()
             }
@@ -64,6 +79,14 @@ struct ShiftsView: View {
         }
         .task {
             await viewModel.loadShifts()
+        }
+        .onAppear {
+            // Refresh when returning to this view (e.g., from another tab)
+            if !viewModel.shifts.isEmpty {
+                Task {
+                    await viewModel.refresh()
+                }
+            }
         }
         .task {
             await templateViewModel.loadTemplates()
@@ -322,7 +345,7 @@ struct ShiftRowWithActions: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(Color.Carebase.textPrimary)
 
-                            Text(shift.timeRangeFormatted)
+                            Text(shift.dateAndTimeFormatted)
                                 .font(.Carebase.bodySmall)
                                 .foregroundColor(Color.Carebase.textSecondary)
 

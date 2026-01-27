@@ -3,6 +3,37 @@ import XCTest
 
 final class ModelsTests: XCTestCase {
 
+    // Helper to create a decoder with proper date handling (matching APIClient)
+    private func makeDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+
+            if container.decodeNil() {
+                throw DecodingError.valueNotFound(Date.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Null date"))
+            }
+
+            let dateString = try container.decode(String.self)
+
+            // Try ISO8601 with fractional seconds first
+            let formatterWithFractional = ISO8601DateFormatter()
+            formatterWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = formatterWithFractional.date(from: dateString) {
+                return date
+            }
+
+            // Fall back to ISO8601 without fractional seconds
+            let formatterWithoutFractional = ISO8601DateFormatter()
+            formatterWithoutFractional.formatOptions = [.withInternetDateTime]
+            if let date = formatterWithoutFractional.date(from: dateString) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateString)")
+        }
+        return decoder
+    }
+
     // MARK: - User Model Tests
 
     func testUserDecoding() throws {
@@ -22,8 +53,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let user = try decoder.decode(User.self, from: json)
 
@@ -55,8 +85,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let user = try decoder.decode(User.self, from: json)
         XCTAssertEqual(user.fullName, "John Doe")
@@ -101,8 +130,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let client = try decoder.decode(Client.self, from: json)
 
@@ -139,8 +167,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let client = try decoder.decode(Client.self, from: json)
 
@@ -177,8 +204,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let client = try decoder.decode(Client.self, from: json)
 
@@ -223,8 +249,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let shift = try decoder.decode(Shift.self, from: json)
 
@@ -261,8 +286,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let shift = try decoder.decode(Shift.self, from: json)
 
@@ -329,15 +353,14 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let note = try decoder.decode(VisitNote.self, from: json)
 
         XCTAssertEqual(note.id, "note-123")
-        XCTAssertEqual(note.templateId, "template-123")
+        XCTAssertEqual(note.template?.id, "template-123")
         XCTAssertEqual(note.templateVersion, 1)
-        XCTAssertEqual(note.shiftId, "shift-123")
+        XCTAssertEqual(note.shift?.id, "shift-123")
         XCTAssertEqual(note.templateName, "Daily Care Report")
         XCTAssertNotNil(note.client)
         XCTAssertEqual(note.client?.fullName, "Margaret Thompson")
@@ -455,8 +478,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let response = try decoder.decode(ClientsResponse.self, from: json)
 
@@ -489,8 +511,7 @@ final class ModelsTests: XCTestCase {
         }
         """.data(using: .utf8)!
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = makeDecoder()
 
         let response = try decoder.decode(ShiftsResponse.self, from: json)
 

@@ -249,7 +249,7 @@ export function NotificationsPanel() {
                         <div className="flex items-center gap-2">
                           {notification.link && (
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               onClick={() => handleAction(notification)}
                               className="h-7 text-xs px-2"

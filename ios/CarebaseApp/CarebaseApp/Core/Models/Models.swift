@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - User Model
 struct User: Codable, Identifiable {
@@ -97,6 +98,12 @@ struct Client: Codable, Identifiable {
         "\(firstName) \(lastName)"
     }
 
+    var initials: String {
+        let first = firstName.prefix(1)
+        let last = lastName.prefix(1)
+        return "\(first)\(last)".uppercased()
+    }
+
     var age: Int? {
         guard let dob = dateOfBirth else { return nil }
         let calendar = Calendar.current
@@ -173,6 +180,24 @@ struct Shift: Codable, Identifiable {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
         return "\(formatter.string(from: scheduledStart)) - \(formatter.string(from: scheduledEnd))"
+    }
+
+    var dateFormatted: String {
+        let formatter = DateFormatter()
+        if isToday {
+            return "Today"
+        } else if isTomorrow {
+            return "Tomorrow"
+        } else if Calendar.current.isDateInYesterday(scheduledStart) {
+            return "Yesterday"
+        } else {
+            formatter.dateFormat = "EEE, MMM d"
+            return formatter.string(from: scheduledStart)
+        }
+    }
+
+    var dateAndTimeFormatted: String {
+        return "\(dateFormatted) • \(timeRangeFormatted)"
     }
 
     var isToday: Bool {
@@ -272,6 +297,8 @@ struct VisitNote: Codable, Identifiable {
     private let _templateName: String?
     let templateVersion: Int?
     let submittedAt: Date
+    let createdAt: Date
+    let status: String
     let formSchemaSnapshot: FormSchemaSnapshot?
     let data: [String: AnyCodable]?
     let template: VisitNoteTemplate?
@@ -286,6 +313,8 @@ struct VisitNote: Codable, Identifiable {
         case _templateName = "templateName"
         case templateVersion
         case submittedAt
+        case createdAt
+        case status
         case formSchemaSnapshot
         case data
         case template
@@ -293,6 +322,23 @@ struct VisitNote: Codable, Identifiable {
         case carer
         case submittedBy
         case shift
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        _templateName = try container.decodeIfPresent(String.self, forKey: ._templateName)
+        templateVersion = try container.decodeIfPresent(Int.self, forKey: .templateVersion)
+        submittedAt = try container.decodeIfPresent(Date.self, forKey: .submittedAt) ?? Date()
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "SUBMITTED"
+        formSchemaSnapshot = try container.decodeIfPresent(FormSchemaSnapshot.self, forKey: .formSchemaSnapshot)
+        data = try container.decodeIfPresent([String: AnyCodable].self, forKey: .data)
+        template = try container.decodeIfPresent(VisitNoteTemplate.self, forKey: .template)
+        client = try container.decodeIfPresent(VisitNoteClient.self, forKey: .client)
+        carer = try container.decodeIfPresent(VisitNoteCarer.self, forKey: .carer)
+        submittedBy = try container.decodeIfPresent(VisitNoteSubmitter.self, forKey: .submittedBy)
+        shift = try container.decodeIfPresent(VisitNoteShift.self, forKey: .shift)
     }
 
     var templateName: String {
@@ -305,6 +351,16 @@ struct VisitNote: Codable, Identifiable {
         formatter.timeStyle = .short
         return formatter.string(from: submittedAt)
     }
+
+    var createdAtFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: createdAt)
+    }
+
+    // Alias for data to match sponsor view expectations
+    var responses: [String: AnyCodable]? { data }
 }
 
 struct VisitNoteTemplate: Codable {
@@ -340,6 +396,12 @@ struct VisitNoteShift: Codable {
     let id: String
     let scheduledStart: Date
     let scheduledEnd: Date
+
+    var timeRangeFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return "\(formatter.string(from: scheduledStart)) - \(formatter.string(from: scheduledEnd))"
+    }
 }
 
 struct FormSchemaSnapshot: Codable {
@@ -479,6 +541,146 @@ struct FormFieldConfig: Codable {
 struct FieldOption: Codable {
     let value: String
     let label: String
+}
+
+// MARK: - Incident Model
+struct Incident: Codable, Identifiable {
+    let id: String
+    let incidentDate: Date
+    let location: String
+    let category: String
+    let severity: IncidentSeverity
+    let description: String
+    let actionsTaken: String
+    let witnesses: String?
+    let attachments: [String]
+    let status: IncidentStatus
+    let sponsorNotified: Bool
+    let createdAt: Date
+    let client: IncidentClient
+    let reporter: IncidentReporter
+    let approvedBy: IncidentApprover?
+    let approvedAt: Date?
+
+    var incidentDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: incidentDate)
+    }
+
+    var dateOnly: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.string(from: incidentDate)
+    }
+
+    var timeOnly: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: incidentDate)
+    }
+}
+
+struct IncidentClient: Codable {
+    let id: String
+    let firstName: String
+    let lastName: String
+
+    var fullName: String { "\(firstName) \(lastName)" }
+}
+
+struct IncidentReporter: Codable {
+    let id: String
+    let firstName: String
+    let lastName: String
+    let role: String
+
+    var fullName: String { "\(firstName) \(lastName)" }
+}
+
+struct IncidentApprover: Codable {
+    let id: String
+    let firstName: String
+    let lastName: String
+
+    var fullName: String { "\(firstName) \(lastName)" }
+}
+
+enum IncidentSeverity: String, Codable, CaseIterable {
+    case low = "LOW"
+    case medium = "MEDIUM"
+    case high = "HIGH"
+    case critical = "CRITICAL"
+
+    var displayName: String {
+        switch self {
+        case .low: return "Low"
+        case .medium: return "Medium"
+        case .high: return "High"
+        case .critical: return "Critical"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .low: return .gray
+        case .medium: return .orange
+        case .high: return .red
+        case .critical: return .red
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .low: return "Minor incident, no injury"
+        case .medium: return "Moderate concern, possible minor injury"
+        case .high: return "Serious incident, injury sustained"
+        case .critical: return "Life-threatening, emergency services required"
+        }
+    }
+}
+
+enum IncidentStatus: String, Codable {
+    case pending = "PENDING"
+    case approved = "APPROVED"
+    case rejected = "REJECTED"
+
+    var displayName: String {
+        switch self {
+        case .pending: return "Pending"
+        case .approved: return "Approved"
+        case .rejected: return "Rejected"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .pending: return .orange
+        case .approved: return .green
+        case .rejected: return .red
+        }
+    }
+}
+
+struct CreateIncidentRequest: Codable {
+    let clientId: String
+    let incidentDate: String
+    let location: String
+    let category: String
+    let severity: String
+    let description: String
+    let actionsTaken: String
+    let witnesses: String?
+}
+
+struct IncidentsResponse: Codable {
+    let incidents: [Incident]
+    let pagination: Pagination?
+}
+
+struct IncidentResponse: Codable {
+    let incident: Incident
 }
 
 // MARK: - Notification Model

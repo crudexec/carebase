@@ -33,6 +33,8 @@ import {
   Briefcase,
 } from "lucide-react";
 import { ROLE_LABELS } from "@/lib/permissions";
+import { ProfileFieldsRenderer } from "@/components/profile-fields/profile-fields-renderer";
+import { FieldValue } from "@/lib/visit-notes/types";
 
 interface StaffDetails {
   id: string;
@@ -139,6 +141,7 @@ export default function StaffDetailPage() {
     phone: "",
     role: "CARER" as UserRole,
     isActive: true,
+    profileData: {} as Record<string, FieldValue>,
   });
 
   const fetchStaff = React.useCallback(async () => {
@@ -160,6 +163,7 @@ export default function StaffDetailPage() {
         phone: data.staff.phone || "",
         role: data.staff.role,
         isActive: data.staff.isActive,
+        profileData: (data.staff.profileData as Record<string, FieldValue>) || {},
       });
       setError(null);
     } catch (err) {
@@ -198,6 +202,7 @@ export default function StaffDetailPage() {
           phone: formData.phone || null,
           role: formData.role,
           isActive: formData.isActive,
+          profileData: Object.keys(formData.profileData).length > 0 ? formData.profileData : null,
         }),
       });
 
@@ -224,6 +229,7 @@ export default function StaffDetailPage() {
         phone: staff.phone || "",
         role: staff.role,
         isActive: staff.isActive,
+        profileData: (staff.profileData as Record<string, FieldValue>) || {},
       });
     }
     setIsEditing(false);
@@ -601,6 +607,23 @@ export default function StaffDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Custom Profile Fields */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Additional Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProfileFieldsRenderer
+                  type="STAFF_PROFILE"
+                  data={formData.profileData}
+                  onChange={(data) =>
+                    setFormData((prev) => ({ ...prev, profileData: data }))
+                  }
+                  disabled={!isEditing}
+                />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar - Assigned Clients */}
@@ -750,14 +773,14 @@ export default function StaffDetailPage() {
                       </p>
                       {activity.changes && Object.keys(activity.changes).length > 0 && (
                         <div className="mt-2 text-xs text-foreground-tertiary bg-background-secondary rounded p-2">
-                          {Object.entries(activity.changes).map(([key, value]) => (
-                            value && (
+                          {Object.entries(activity.changes)
+                            .filter(([, value]) => value != null)
+                            .map(([key, value]) => (
                               <div key={key}>
                                 <span className="font-medium">{key}:</span>{" "}
                                 {typeof value === "string" ? value : JSON.stringify(value)}
                               </div>
-                            )
-                          ))}
+                            ))}
                         </div>
                       )}
                     </div>

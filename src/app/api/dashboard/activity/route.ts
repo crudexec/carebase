@@ -221,6 +221,42 @@ export async function GET(request: Request) {
           type = "shift";
           link = "/scheduling";
           break;
+        case "SHIFT_CHECK_IN":
+          title = "Carer Checked In";
+          description = changes
+            ? `${log.user.firstName} ${log.user.lastName} checked in for ${changes.clientName || "client"}`
+            : `${log.user.firstName} ${log.user.lastName} started a shift`;
+          icon = "log-in";
+          type = "check-in";
+          link = "/scheduling";
+          break;
+        case "SHIFT_CHECK_OUT":
+          title = "Carer Checked Out";
+          description = changes
+            ? `${log.user.firstName} ${log.user.lastName} completed shift with ${changes.clientName || "client"}${changes.hoursWorked ? ` (${changes.hoursWorked}h)` : ""}`
+            : `${log.user.firstName} ${log.user.lastName} completed a shift`;
+          icon = "log-out";
+          type = "check-out";
+          link = "/scheduling";
+          break;
+        case "VISIT_NOTE_CREATED":
+          title = "Visit Note Submitted";
+          description = changes
+            ? `${log.user.firstName} ${log.user.lastName} submitted ${changes.templateName || "note"}`
+            : `${log.user.firstName} ${log.user.lastName} submitted a visit note`;
+          icon = "clipboard";
+          type = "visit-note";
+          link = `/visit-notes/${log.entityId}`;
+          break;
+        case "VISIT_NOTE_CREATED_ON_BEHALF":
+          title = "Visit Note Submitted (Admin)";
+          description = changes
+            ? `${log.user.firstName} ${log.user.lastName} submitted ${changes.templateName || "note"} for ${changes.carerName || "carer"}`
+            : `${log.user.firstName} ${log.user.lastName} submitted a visit note on behalf of a carer`;
+          icon = "clipboard";
+          type = "visit-note";
+          link = `/visit-notes/${log.entityId}`;
+          break;
         case "LOGIN":
           title = "User Login";
           description = `${log.user.firstName} ${log.user.lastName} logged in`;

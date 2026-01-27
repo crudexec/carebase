@@ -73,73 +73,127 @@ export async function POST(
 
     // Check if shift is in correct status
     if (shift.status !== "IN_PROGRESS") {
+      console.log(`Check-out failed: Shift status is ${shift.status}, expected IN_PROGRESS`);
       return NextResponse.json(
-        { error: "Cannot check out - shift is not in progress" },
+        { error: `Cannot check out - shift status is ${shift.status}, not in progress` },
         { status: 400 }
       );
     }
 
     // Get today's attendance record
     const todayAttendance = shift.attendanceRecords[0];
-    if (!todayAttendance || !todayAttendance.checkInTime) {
-      return NextResponse.json(
-        { error: "Cannot check out - not checked in for today" },
-        { status: 400 }
-      );
+    console.log(`Check-out: Today's date (UTC): ${today.toISOString()}, Attendance records found: ${shift.attendanceRecords.length}`);
+
+    let updatedAttendance = todayAttendance;
+    let hoursWorkedToday = 0;
+
+    if (todayAttendance && todayAttendance.checkInTime && !todayAttendance.checkOutTime) {
+      // Normal case: checked in today, now checking out
+      updatedAttendance = await prisma.shiftAttendance.update({
+        where: { id: todayAttendance.id },
+        data: {
+          checkOutTime: checkOutTime,
+        },
+      });
+      hoursWorkedToday = (checkOutTime.getTime() - todayAttendance.checkInTime.getTime()) / (1000 * 60 * 60);
+    } else if (todayAttendance && todayAttendance.checkOutTime) {
+      // Already checked out today - just complete the shift
+      console.log(`Check-out: Already checked out today, just completing shift`);
+    } else {
+      // No attendance for today - create one or just complete the shift
+      // This handles the case where shift spans multiple days
+      console.log(`Check-out: No attendance for today, completing shift directly`);
+
+      // Get the most recent attendance record to calculate total hours
+      const lastAttendance = await prisma.shiftAttendance.findFirst({
+        where: { shiftId: shiftId },
+        orderBy: { date: "desc" },
+      });
+
+      if (lastAttendance) {
+        updatedAttendance = lastAttendance;
+      }
     }
 
-    if (todayAttendance.checkOutTime) {
-      return NextResponse.json(
-        { error: "Already checked out for today" },
-        { status: 400 }
-      );
-    }
+    // Check if this is the last day of the shift (or past the scheduled end)
+    const isLastDay = isLastDayOfShift(shift.scheduledEnd);
 
-    // Update today's attendance with check-out time
-    const updatedAttendance = await prisma.shiftAttendance.update({
-      where: { id: todayAttendance.id },
+    // Mark shift as COMPLETED - either it's the last day or user is explicitly checking out
+    // For mobile app UX, checking out should complete the shift
+    await prisma.shift.update({
+      where: { id: shiftId },
       data: {
-        checkOutTime: checkOutTime,
+        actualEnd: checkOutTime,
+        status: "COMPLETED",
       },
     });
 
-    // Calculate hours worked today
-    const hoursWorkedToday = (checkOutTime.getTime() - todayAttendance.checkInTime.getTime()) / (1000 * 60 * 60);
-
-    // Check if this is the last day of the shift
-    const isLastDay = isLastDayOfShift(shift.scheduledEnd);
-
-    // Only mark shift as COMPLETED if it's the last day
-    let updatedShift = shift;
-    if (isLastDay) {
-      updatedShift = await prisma.shift.update({
-        where: { id: shiftId },
-        data: {
-          actualEnd: checkOutTime,
-          status: "COMPLETED",
+    // Create audit log for check-out
+    await prisma.auditLog.create({
+      data: {
+        companyId: session.user.companyId,
+        userId: session.user.id,
+        action: "SHIFT_CHECK_OUT",
+        entityType: "Shift",
+        entityId: shiftId,
+        changes: {
+          shiftId: shiftId,
+          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+          checkOutTime: checkOutTime.toISOString(),
+          hoursWorked: Math.round(hoursWorkedToday * 100) / 100,
         },
-        include: {
-          client: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
+      },
+    });
+
+    // Fetch the full updated shift for the response
+    const updatedShift = await prisma.shift.findUnique({
+      where: { id: shiftId },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            address: true,
           },
-          attendanceRecords: true,
         },
-      });
-    }
+        carer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        attendanceRecords: {
+          orderBy: { date: "desc" },
+          take: 1,
+        },
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      message: isLastDay
-        ? "Checked out successfully - shift completed"
-        : "Checked out for today - shift continues tomorrow",
+      message: "Checked out successfully - shift completed",
       shift: {
-        id: updatedShift.id,
-        status: updatedShift.status,
-        isCompleted: isLastDay,
+        id: updatedShift!.id,
+        clientId: updatedShift!.clientId,
+        carerId: updatedShift!.carerId,
+        scheduledStart: updatedShift!.scheduledStart.toISOString(),
+        scheduledEnd: updatedShift!.scheduledEnd.toISOString(),
+        actualStart: updatedShift!.actualStart?.toISOString() || null,
+        actualEnd: updatedShift!.actualEnd?.toISOString() || null,
+        status: updatedShift!.status,
+        client: updatedShift!.client ? {
+          id: updatedShift!.client.id,
+          firstName: updatedShift!.client.firstName,
+          lastName: updatedShift!.client.lastName,
+          address: updatedShift!.client.address,
+        } : null,
+        carer: updatedShift!.carer ? {
+          id: updatedShift!.carer.id,
+          firstName: updatedShift!.carer.firstName,
+          lastName: updatedShift!.carer.lastName,
+        } : null,
       },
       attendance: {
         id: updatedAttendance.id,

@@ -83,6 +83,17 @@ export async function GET(request: Request) {
     // Carers can only see their own notes
     if (session.user.role === "CARER") {
       where.carerId = session.user.id;
+    } else if (session.user.role === "SPONSOR") {
+      // Sponsors can only see notes for their associated clients
+      const sponsorClients = await prisma.client.findMany({
+        where: {
+          companyId: session.user.companyId,
+          sponsorId: session.user.id,
+        },
+        select: { id: true },
+      });
+      const clientIds = sponsorClients.map((c) => c.id);
+      where.clientId = { in: clientIds };
     } else {
       // Other roles can filter by carer
       if (carerId) {
@@ -375,6 +386,8 @@ export async function POST(request: Request) {
         submittedById: session.user.id, // Who actually submitted the note
         formSchemaSnapshot: formSchemaSnapshot as unknown as Prisma.InputJsonValue,
         data: processedData as unknown as Prisma.InputJsonValue,
+        // Automatically submit for QA review
+        qaStatus: "PENDING_REVIEW",
         files: {
           create: fileFields.map((file) => ({
             fieldId: file.fieldId,

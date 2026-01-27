@@ -7,6 +7,405 @@ import { FormFieldType, Prisma } from "@prisma/client";
 // Pre-defined starter templates
 const STARTER_TEMPLATES = [
   {
+    id: "medicaid-compliant",
+    name: "Medicaid Billing Compliant",
+    description: "Complete documentation required for Medicaid claim submission with all mandatory fields",
+    sections: [
+      {
+        title: "Service Information",
+        description: "Required service details for billing",
+        fields: [
+          {
+            label: "Service Type",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Personal Care Services (T1019)",
+                "Attendant Care (S5125)",
+                "Homemaker Services (S5130)",
+                "Companion Services (S5135)",
+                "Respite Care (T1005)",
+                "Home Health Aide (G0156)",
+                "Skilled Nursing (G0299)",
+                "Other",
+              ],
+            },
+          },
+          {
+            label: "Place of Service",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "12 - Home",
+                "13 - Assisted Living Facility",
+                "14 - Group Home",
+                "33 - Custodial Care Facility",
+                "99 - Other",
+              ],
+            },
+          },
+          {
+            label: "Service Start Time",
+            type: "TIME" as FormFieldType,
+            required: true,
+            config: null,
+          },
+          {
+            label: "Service End Time",
+            type: "TIME" as FormFieldType,
+            required: true,
+            config: null,
+          },
+        ],
+      },
+      {
+        title: "Activities of Daily Living (ADLs)",
+        description: "Check all ADL tasks performed during this visit",
+        fields: [
+          {
+            label: "Personal Hygiene Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Bathing/Showering - Full assistance",
+                "Bathing/Showering - Partial assistance",
+                "Oral Care (brushing teeth, denture care)",
+                "Hair Care (washing, combing, styling)",
+                "Shaving",
+                "Nail Care (hands/feet)",
+                "Skin Care/Lotion Application",
+              ],
+            },
+          },
+          {
+            label: "Dressing Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Dressing - Full assistance",
+                "Dressing - Partial assistance",
+                "Undressing assistance",
+                "Selecting appropriate clothing",
+                "Putting on/removing prosthetics, braces",
+              ],
+            },
+          },
+          {
+            label: "Toileting Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Toileting assistance",
+                "Incontinence care",
+                "Catheter care",
+                "Colostomy/Ostomy care",
+                "Bedpan/Urinal assistance",
+              ],
+            },
+          },
+          {
+            label: "Mobility & Transfer Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Bed to Chair transfer",
+                "Chair to Standing transfer",
+                "Walking assistance",
+                "Wheelchair assistance",
+                "Bed repositioning/Turning",
+                "Range of Motion exercises",
+              ],
+            },
+          },
+          {
+            label: "Eating/Feeding Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Feeding assistance - Full",
+                "Feeding assistance - Partial",
+                "Cutting food/Opening containers",
+                "Monitoring food/fluid intake",
+                "Tube feeding assistance",
+              ],
+            },
+          },
+        ],
+      },
+      {
+        title: "Instrumental Activities of Daily Living (IADLs)",
+        description: "Check all IADL tasks performed during this visit",
+        fields: [
+          {
+            label: "Meal Preparation",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Meal planning",
+                "Cooking/Preparing meals",
+                "Setting up meals",
+                "Cleaning up after meals",
+                "Following dietary restrictions",
+              ],
+            },
+          },
+          {
+            label: "Housekeeping Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Light housekeeping",
+                "Vacuuming/Sweeping",
+                "Mopping floors",
+                "Dusting",
+                "Making/Changing bed linens",
+                "Taking out trash",
+                "Cleaning bathroom",
+                "Cleaning kitchen",
+              ],
+            },
+          },
+          {
+            label: "Laundry Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Washing clothes",
+                "Drying clothes",
+                "Folding clothes",
+                "Putting away clothes",
+                "Ironing",
+              ],
+            },
+          },
+          {
+            label: "Medication Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Medication reminders",
+                "Medication administration",
+                "Organizing medications",
+                "Picking up prescriptions",
+              ],
+            },
+          },
+          {
+            label: "Other IADL Tasks",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Grocery shopping",
+                "Errand assistance",
+                "Appointment scheduling",
+                "Transportation assistance",
+                "Bill paying assistance",
+                "Telephone assistance",
+              ],
+            },
+          },
+        ],
+      },
+      {
+        title: "Client Condition & Observations",
+        description: "Required health and safety observations",
+        fields: [
+          {
+            label: "Client's General Condition",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Stable - No changes from baseline",
+                "Improved from previous visit",
+                "Declined from previous visit",
+                "New concerns noted",
+              ],
+            },
+          },
+          {
+            label: "Client's Mood/Mental Status",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Alert and oriented",
+                "Calm and cooperative",
+                "Anxious/Agitated",
+                "Confused/Disoriented",
+                "Depressed/Withdrawn",
+                "Other (describe in notes)",
+              ],
+            },
+          },
+          {
+            label: "Skin Condition",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Intact - No concerns",
+                "Dry skin noted",
+                "Redness observed",
+                "Bruising observed",
+                "Wound/Pressure sore present",
+                "Reported to supervisor",
+              ],
+            },
+          },
+          {
+            label: "Appetite/Nutrition",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Good - Ate/Drank well",
+                "Fair - Ate/Drank some",
+                "Poor - Minimal intake",
+                "Refused food/fluids",
+                "Not applicable this visit",
+              ],
+            },
+          },
+          {
+            label: "Mobility Status",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Independent",
+                "Minimal assistance needed",
+                "Moderate assistance needed",
+                "Maximum assistance needed",
+                "Total dependence",
+                "Bedbound",
+              ],
+            },
+          },
+          {
+            label: "Safety Concerns",
+            type: "MULTIPLE_CHOICE" as FormFieldType,
+            required: false,
+            config: {
+              options: [
+                "Fall risk observed",
+                "Wandering risk",
+                "Medication non-compliance",
+                "Signs of self-neglect",
+                "Environmental hazards noted",
+                "Suspected abuse/neglect",
+                "None observed",
+              ],
+            },
+          },
+        ],
+      },
+      {
+        title: "Progress Notes",
+        description: "Narrative documentation of the visit",
+        fields: [
+          {
+            label: "Visit Summary",
+            type: "TEXT_LONG" as FormFieldType,
+            required: true,
+            config: {
+              maxLength: 2000,
+              placeholder: "Describe the services provided, client's response, and any notable events during the visit...",
+            },
+          },
+          {
+            label: "Goals Addressed",
+            type: "TEXT_LONG" as FormFieldType,
+            required: false,
+            config: {
+              maxLength: 1000,
+              placeholder: "Document progress toward care plan goals addressed during this visit...",
+            },
+          },
+          {
+            label: "Changes or Incidents",
+            type: "TEXT_LONG" as FormFieldType,
+            required: false,
+            config: {
+              maxLength: 1000,
+              placeholder: "Document any changes in condition, incidents, or events requiring follow-up...",
+            },
+          },
+          {
+            label: "Was supervisor/nurse notified of any concerns?",
+            type: "YES_NO" as FormFieldType,
+            required: true,
+            config: null,
+          },
+        ],
+      },
+      {
+        title: "Verification & Signatures",
+        description: "Required signatures for Medicaid compliance",
+        fields: [
+          {
+            label: "Photo Documentation (optional)",
+            type: "PHOTO" as FormFieldType,
+            required: false,
+            config: null,
+          },
+          {
+            label: "I certify that I provided the services documented above",
+            type: "YES_NO" as FormFieldType,
+            required: true,
+            config: null,
+          },
+          {
+            label: "Caregiver Signature",
+            type: "SIGNATURE" as FormFieldType,
+            required: true,
+            config: null,
+          },
+          {
+            label: "Client/Representative Acknowledgment",
+            type: "SINGLE_CHOICE" as FormFieldType,
+            required: true,
+            config: {
+              options: [
+                "Client signed below",
+                "Authorized representative signed below",
+                "Client unable to sign - documented reason",
+                "Client refused to sign - documented reason",
+              ],
+            },
+          },
+          {
+            label: "Client/Representative Signature",
+            type: "SIGNATURE" as FormFieldType,
+            required: true,
+            config: null,
+          },
+          {
+            label: "Reason if client unable/refused to sign",
+            type: "TEXT_SHORT" as FormFieldType,
+            required: false,
+            config: {
+              maxLength: 200,
+              placeholder: "Explain why client could not sign...",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "basic-visit-notes",
     name: "Basic Visit Notes",
     description: "A simple form for documenting daily visit activities",

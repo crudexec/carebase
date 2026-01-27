@@ -362,7 +362,7 @@ export default function VisitNoteFieldReportsPage() {
               {templates.map((template) => (
                 <Button
                   key={template.id}
-                  variant={selectedTemplate === template.id ? "default" : "outline"}
+                  variant={selectedTemplate === template.id ? "default" : "secondary"}
                   size="sm"
                   onClick={() => setSelectedTemplate(template.id)}
                 >
@@ -390,7 +390,7 @@ export default function VisitNoteFieldReportsPage() {
                   {QUICK_DATE_RANGES.map((range) => (
                     <Button
                       key={range.label}
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => handleDateRangeSelect(range.getValue())}
                     >
@@ -447,7 +447,7 @@ export default function VisitNoteFieldReportsPage() {
                         {reportData.totalResponses} visit notes in selected range
                       </p>
                     </div>
-                    <Badge variant="outline">
+                    <Badge>
                       {reportData.fields.length} aggregatable fields
                     </Badge>
                   </div>

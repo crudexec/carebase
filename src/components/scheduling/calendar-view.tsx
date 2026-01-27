@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Calendar, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, List, X, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ShiftCard, ShiftData } from "./shift-card";
@@ -13,6 +13,8 @@ import {
   DAY_NAMES,
   MONTH_NAMES,
 } from "@/lib/scheduling";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "week" | "month";
 
@@ -31,6 +33,8 @@ export function CalendarView({
 }: CalendarViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [dayDetailDate, setDayDetailDate] = useState<Date | null>(null);
+  const [dayDetailShifts, setDayDetailShifts] = useState<ShiftData[]>([]);
 
   const dates = useMemo(() => {
     return viewMode === "week" ? getWeekDates(currentDate) : getMonthDates(currentDate);
@@ -152,8 +156,27 @@ export function CalendarView({
           onShiftClick={onShiftClick}
           onDateClick={onDateClick}
           selectedDate={selectedDate}
+          onShowDayDetail={(date, shifts) => {
+            setDayDetailDate(date);
+            setDayDetailShifts(shifts);
+          }}
         />
       )}
+
+      {/* Day Detail Modal */}
+      <DayDetailModal
+        date={dayDetailDate}
+        shifts={dayDetailShifts}
+        onClose={() => {
+          setDayDetailDate(null);
+          setDayDetailShifts([]);
+        }}
+        onShiftClick={(shift) => {
+          setDayDetailDate(null);
+          setDayDetailShifts([]);
+          onShiftClick?.(shift);
+        }}
+      />
     </div>
   );
 }
@@ -237,6 +260,7 @@ interface MonthViewProps {
   onShiftClick?: (shift: ShiftData) => void;
   onDateClick?: (date: Date) => void;
   selectedDate?: Date;
+  onShowDayDetail?: (date: Date, shifts: ShiftData[]) => void;
 }
 
 function MonthView({
@@ -246,6 +270,7 @@ function MonthView({
   onShiftClick,
   onDateClick,
   selectedDate,
+  onShowDayDetail,
 }: MonthViewProps) {
   return (
     <div className="flex flex-col flex-1">
@@ -300,15 +325,155 @@ function MonthView({
                   </div>
                 ))}
                 {dayShifts.length > 2 && (
-                  <div className="text-[10px] text-foreground-tertiary">
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowDayDetail?.(date, dayShifts);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                        onShowDayDetail?.(date, dayShifts);
+                      }
+                    }}
+                    className="text-[10px] text-primary font-medium hover:text-primary/80 hover:underline transition-colors w-full text-left cursor-pointer block"
+                  >
                     +{dayShifts.length - 2} more
-                  </div>
+                  </span>
                 )}
               </div>
             </button>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// Day Detail Modal - shows all shifts for a specific day
+interface DayDetailModalProps {
+  date: Date | null;
+  shifts: ShiftData[];
+  onClose: () => void;
+  onShiftClick?: (shift: ShiftData) => void;
+}
+
+function DayDetailModal({ date, shifts, onClose, onShiftClick }: DayDetailModalProps) {
+  if (!date) return null;
+
+  const formatTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatDateHeader = (d: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    };
+    return d.toLocaleDateString("en-US", options);
+  };
+
+  const sortedShifts = [...shifts].sort(
+    (a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()
+  );
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "SCHEDULED":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "IN_PROGRESS":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "COMPLETED":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "CANCELLED":
+        return "bg-red-100 text-red-700 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            {formatDateHeader(date)}
+          </CardTitle>
+          <button
+            onClick={onClose}
+            className="text-foreground-secondary hover:text-foreground"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-foreground-secondary">
+              {shifts.length} shift{shifts.length !== 1 ? "s" : ""} scheduled
+            </span>
+            {isToday(date) && (
+              <Badge variant="outline" className="text-primary border-primary">
+                Today
+              </Badge>
+            )}
+          </div>
+
+          <div className="max-h-[400px] overflow-y-auto pr-2">
+            <div className="space-y-3">
+              {sortedShifts.map((shift) => (
+                <button
+                  key={shift.id}
+                  onClick={() => onShiftClick?.(shift)}
+                  className="w-full p-4 rounded-lg border bg-background hover:bg-background-secondary/50 hover:border-primary/30 transition-all text-left group"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <User className="w-4 h-4 text-foreground-secondary" />
+                        <span className="font-medium text-foreground truncate">
+                          {shift.client.firstName} {shift.client.lastName}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-foreground-secondary">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>
+                          {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
+                        </span>
+                      </div>
+
+                      {shift.carer && (
+                        <div className="mt-2 text-xs text-foreground-tertiary">
+                          Carer: {shift.carer.firstName} {shift.carer.lastName}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn("text-xs", getStatusColor(shift.status))}
+                      >
+                        {shift.status.replace("_", " ")}
+                      </Badge>
+                      <ChevronRight className="w-4 h-4 text-foreground-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import Security
 class AuthenticationManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: User?
-    @Published var isLoading = false
+    @Published var isLoading = true  // Start true to show loading on launch
     @Published var error: String?
 
     private let keychain = KeychainManager.shared

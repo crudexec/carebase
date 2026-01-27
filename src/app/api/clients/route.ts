@@ -38,10 +38,12 @@ export async function GET(request: Request) {
     }
 
     // Check permissions - most roles can view clients
+    // Sponsors can also view their associated clients
     const canView =
       hasPermission(session.user.role, PERMISSIONS.USER_VIEW) ||
       hasPermission(session.user.role, PERMISSIONS.SCHEDULING_VIEW) ||
-      hasPermission(session.user.role, PERMISSIONS.ONBOARDING_VIEW);
+      hasPermission(session.user.role, PERMISSIONS.ONBOARDING_VIEW) ||
+      session.user.role === "SPONSOR";
 
     if (!canView) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -66,6 +68,12 @@ export async function GET(request: Request) {
     const where: Prisma.ClientWhereInput = {
       companyId: session.user.companyId,
     };
+
+    // For sponsors, only show their associated clients
+    if (session.user.role === "SPONSOR") {
+      console.log(`[Clients API] Entering SPONSOR branch`);
+      where.sponsorId = session.user.id;
+    }
 
     // For carers, only show clients they have been scheduled with
     if (session.user.role === "CARER") {

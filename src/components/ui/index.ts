@@ -18,3 +18,4 @@ export { RadioGroup } from "./radio-group";
 export { FileUpload } from "./file-upload";
 export { SignaturePad } from "./signature-pad";
 export { Rating } from "./rating";
+export { CollapsibleSection } from "./collapsible-section";

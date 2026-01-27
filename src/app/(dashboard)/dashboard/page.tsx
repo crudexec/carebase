@@ -7,6 +7,7 @@ import { UpcomingShiftsWidget } from "@/components/dashboard/upcoming-shifts-wid
 import { NotificationsPanel } from "@/components/dashboard/notifications-panel";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
 import {
   Users,
   Calendar,
@@ -66,6 +67,11 @@ export default async function DashboardPage() {
     | "supervisor"
     | "carer"
     | "sponsor";
+
+  // Render dedicated sponsor dashboard for sponsors
+  if (user.role === "SPONSOR") {
+    return <SponsorDashboard user={user} />;
+  }
 
   return (
     <div className="space-y-8">

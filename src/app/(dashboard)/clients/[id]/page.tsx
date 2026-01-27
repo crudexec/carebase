@@ -30,6 +30,7 @@ import {
   Save,
   X,
   UserCheck,
+  HeartPulse,
 } from "lucide-react";
 
 interface ClientDetails {
@@ -90,6 +91,25 @@ interface VisitNote {
   };
 }
 
+interface Assessment {
+  id: string;
+  assessmentType: string;
+  status: string;
+  totalScore: number | null;
+  startedAt: string;
+  completedAt: string | null;
+  template: {
+    id: string;
+    name: string;
+    maxScore: number | null;
+  };
+  assessor: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
 interface CarerOption {
   id: string;
   firstName: string;
@@ -110,7 +130,7 @@ const STATUS_COLORS: Record<ClientStatus, "primary" | "success" | "warning" | "e
   INACTIVE: "error",
 };
 
-type TabType = "details" | "activity" | "notes";
+type TabType = "details" | "activity" | "notes" | "assessments" | "care-plans";
 
 export default function ClientDetailPage() {
   const params = useParams();
@@ -120,6 +140,7 @@ export default function ClientDetailPage() {
   const [client, setClient] = React.useState<ClientDetails | null>(null);
   const [activities, setActivities] = React.useState<ActivityLog[]>([]);
   const [visitNotes, setVisitNotes] = React.useState<VisitNote[]>([]);
+  const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [carers, setCarers] = React.useState<CarerOption[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -193,6 +214,18 @@ export default function ClientDetailPage() {
     }
   }, [clientId]);
 
+  const fetchAssessments = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/assessments?clientId=${clientId}&limit=50`);
+      if (response.ok) {
+        const data = await response.json();
+        setAssessments(data.assessments || []);
+      }
+    } catch {
+      // Ignore errors for assessments
+    }
+  }, [clientId]);
+
   const fetchCarers = React.useCallback(async () => {
     try {
       const response = await fetch("/api/staff?role=CARER&limit=100");
@@ -209,8 +242,9 @@ export default function ClientDetailPage() {
     fetchClient();
     fetchActivities();
     fetchVisitNotes();
+    fetchAssessments();
     fetchCarers();
-  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchCarers]);
+  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchCarers]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -438,6 +472,29 @@ export default function ClientDetailPage() {
                 {visitNotes.length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab("assessments")}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "assessments"
+                ? "border-primary text-primary"
+                : "border-transparent text-foreground-secondary hover:text-foreground"
+            }`}
+          >
+            <FileText className="w-4 h-4 inline mr-2" />
+            Assessments
+            {assessments.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
+                {assessments.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => router.push(`/clients/${clientId}/care-plans`)}
+            className="pb-3 text-sm font-medium border-b-2 transition-colors border-transparent text-foreground-secondary hover:text-foreground"
+          >
+            <HeartPulse className="w-4 h-4 inline mr-2" />
+            Plans of Care
           </button>
         </nav>
       </div>
@@ -790,6 +847,83 @@ export default function ClientDetailPage() {
                     </div>
                     <div className="text-sm text-foreground-tertiary whitespace-nowrap">
                       {formatDateTime(note.submittedAt)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {activeTab === "assessments" && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Clinical Assessments</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/assessments/new?clientId=${clientId}`)}
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              New Assessment
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {assessments.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
+                <p className="text-foreground-secondary">
+                  No assessments completed yet.
+                </p>
+                <Button
+                  variant="secondary"
+                  className="mt-4"
+                  onClick={() => router.push(`/assessments/new?clientId=${clientId}`)}
+                >
+                  Start First Assessment
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {assessments.map((assessment) => (
+                  <div
+                    key={assessment.id}
+                    className="flex items-start gap-4 pb-4 border-b border-border last:border-0 cursor-pointer hover:bg-background-secondary/50 -mx-4 px-4 py-2 rounded transition-colors"
+                    onClick={() => router.push(`/assessments/${assessment.id}`)}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-success" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{assessment.template.name}</p>
+                        <Badge
+                          variant={
+                            assessment.status === "COMPLETED"
+                              ? "success"
+                              : assessment.status === "IN_PROGRESS"
+                              ? "warning"
+                              : "default"
+                          }
+                        >
+                          {assessment.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-foreground-secondary">
+                        {assessment.assessmentType.replace("_", " ")} •{" "}
+                        Conducted by {assessment.assessor.firstName} {assessment.assessor.lastName}
+                      </p>
+                      {assessment.totalScore !== null && assessment.template.maxScore && (
+                        <p className="text-xs text-foreground-tertiary mt-1">
+                          Score: {assessment.totalScore} / {assessment.template.maxScore}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-sm text-foreground-tertiary whitespace-nowrap">
+                      {assessment.completedAt
+                        ? formatDateTime(assessment.completedAt)
+                        : formatDateTime(assessment.startedAt)}
                     </div>
                   </div>
                 ))}

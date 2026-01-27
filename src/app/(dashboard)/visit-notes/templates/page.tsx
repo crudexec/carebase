@@ -4,18 +4,31 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Badge, Card, CardContent, Input } from "@/components/ui";
-import { Plus, Search, FileText, MoreVertical, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import { Plus, Search, FileText, MoreVertical, Edit, Trash2, Power, PowerOff, Download, RefreshCw, CheckCircle } from "lucide-react";
 import { FormTemplateListItem } from "@/lib/visit-notes/types";
+
+interface StarterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  sectionsCount: number;
+  fieldsCount: number;
+}
 
 export default function TemplatesPage() {
   const router = useRouter();
   const [templates, setTemplates] = React.useState<FormTemplateListItem[]>([]);
+  const [starterTemplates, setStarterTemplates] = React.useState<StarterTemplate[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [actionMenuOpen, setActionMenuOpen] = React.useState<string | null>(null);
+  const [showStarters, setShowStarters] = React.useState(false);
+  const [cloningId, setCloningId] = React.useState<string | null>(null);
+  const [cloneSuccess, setCloneSuccess] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     fetchTemplates();
+    fetchStarterTemplates();
   }, []);
 
   const fetchTemplates = async () => {
@@ -29,6 +42,46 @@ export default function TemplatesPage() {
       console.error("Failed to fetch templates:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchStarterTemplates = async () => {
+    try {
+      const response = await fetch("/api/visit-notes/templates/starters");
+      const data = await response.json();
+      if (response.ok) {
+        setStarterTemplates(data.starters);
+      }
+    } catch (error) {
+      console.error("Failed to fetch starter templates:", error);
+    }
+  };
+
+  const cloneStarterTemplate = async (starterId: string) => {
+    setCloningId(starterId);
+    setCloneSuccess(null);
+
+    try {
+      const response = await fetch("/api/visit-notes/templates/starters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ starterId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setCloneSuccess(starterId);
+        fetchTemplates();
+        // Navigate to edit the new template
+        setTimeout(() => {
+          router.push(`/visit-notes/templates/${data.template.id}/edit`);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Failed to clone template:", error);
+    } finally {
+      setCloningId(null);
     }
   };
 
@@ -93,13 +146,82 @@ export default function TemplatesPage() {
             Create and manage visit note form templates
           </p>
         </div>
-        <Link href="/visit-notes/templates/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Template
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setShowStarters(!showStarters)}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {showStarters ? "Hide Starters" : "Starter Templates"}
           </Button>
-        </Link>
+          <Link href="/visit-notes/templates/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Template
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Starter Templates Section */}
+      {showStarters && starterTemplates.length > 0 && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Starter Templates</h2>
+                <p className="text-sm text-foreground-secondary">
+                  Pre-built templates to help you get started quickly
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {starterTemplates.map((starter) => (
+                <div
+                  key={starter.id}
+                  className="relative rounded-lg border border-border bg-background p-4"
+                >
+                  <h3 className="font-medium">{starter.name}</h3>
+                  <p className="mt-1 text-sm text-foreground-secondary line-clamp-2">
+                    {starter.description}
+                  </p>
+                  <p className="mt-2 text-xs text-foreground-tertiary">
+                    {starter.sectionsCount} sections · {starter.fieldsCount} fields
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-3 w-full"
+                    onClick={() => cloneStarterTemplate(starter.id)}
+                    disabled={cloningId === starter.id || cloneSuccess === starter.id}
+                  >
+                    {cloningId === starter.id ? (
+                      <>
+                        <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                        Creating...
+                      </>
+                    ) : cloneSuccess === starter.id ? (
+                      <>
+                        <CheckCircle className="mr-2 h-3 w-3" />
+                        Created!
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-3 w-3" />
+                        Use Template
+                      </>
+                    )}
+                  </Button>
+                  {starter.id === "medicaid-compliant" && (
+                    <Badge variant="success" className="absolute -top-2 -right-2">
+                      Recommended
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <div className="relative max-w-md">

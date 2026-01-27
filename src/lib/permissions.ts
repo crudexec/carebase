@@ -73,6 +73,12 @@ export const PERMISSIONS = {
 
   // Audit Logs
   AUDIT_LOG_VIEW: "audit_log:view",
+
+  // Billing / Claims
+  BILLING_VIEW: "billing:view",
+  BILLING_MANAGE: "billing:manage",
+  BILLING_SUBMIT: "billing:submit",
+  BILLING_FULL: "billing:full",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -97,6 +103,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.AUDIT_LOG_VIEW,
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.USER_MANAGE,
+    PERMISSIONS.BILLING_MANAGE,
+    PERMISSIONS.BILLING_SUBMIT,
   ],
 
   CLINICAL_DIRECTOR: [
@@ -110,6 +118,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.VISIT_NOTE_VIEW_ALL,
     PERMISSIONS.FORM_TEMPLATE_VIEW,
     PERMISSIONS.MONTHLY_REPORT_VIEW,
+    PERMISSIONS.BILLING_VIEW,
   ],
 
   STAFF: [
@@ -122,6 +131,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.FORM_TEMPLATE_VIEW,
     PERMISSIONS.MONTHLY_REPORT_VIEW,
     PERMISSIONS.INVOICE_MANAGE,
+    PERMISSIONS.BILLING_VIEW,
   ],
 
   SUPERVISOR: [

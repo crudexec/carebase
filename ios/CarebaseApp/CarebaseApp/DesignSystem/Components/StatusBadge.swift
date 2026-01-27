@@ -67,12 +67,15 @@ struct StatusBadge: View {
             Text(text)
                 .font(size.fontSize)
                 .fontWeight(.semibold)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
         .foregroundColor(color)
         .padding(.vertical, size.verticalPadding)
         .padding(.horizontal, size.horizontalPadding)
         .background(color.opacity(0.12))
         .cornerRadius(CornerRadius.full)
+        .fixedSize()
     }
 }
 

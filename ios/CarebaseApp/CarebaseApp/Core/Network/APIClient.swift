@@ -413,6 +413,10 @@ enum APIEndpoint {
     // Dashboard
     case dashboardActivity
 
+    // Incidents
+    case incidents
+    case incident(id: String)
+
     var path: String {
         switch self {
         // Shifts
@@ -450,6 +454,10 @@ enum APIEndpoint {
 
         // Dashboard
         case .dashboardActivity: return "/api/dashboard/activity"
+
+        // Incidents
+        case .incidents: return "/api/incidents"
+        case .incident(let id): return "/api/incidents/\(id)"
         }
     }
 }

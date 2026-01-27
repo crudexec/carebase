@@ -32,6 +32,12 @@
 		1A0000000000000000000023 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000023 /* ProfileView.swift */; };
 		1A0000000000000000000024 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000024 /* Assets.xcassets */; };
 		1A0000000000000000000025 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000025 /* AppConfiguration.swift */; };
+		1A0000000000000000000026 /* IncidentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000026 /* IncidentsListView.swift */; };
+		1A0000000000000000000027 /* NewIncidentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000027 /* NewIncidentView.swift */; };
+		1A0000000000000000000028 /* IncidentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000028 /* IncidentDetailView.swift */; };
+		1A0000000000000000000029 /* SponsorDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000029 /* SponsorDashboardView.swift */; };
+		1A0000000000000000000030 /* SponsorClientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000030 /* SponsorClientsView.swift */; };
+		1A0000000000000000000031 /* SponsorVisitNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0000000000000000000031 /* SponsorVisitNotesView.swift */; };
 		1ATEST000000000000000001 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ATEST000000000000000001 /* ModelsTests.swift */; };
 		1ATEST000000000000000002 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ATEST000000000000000002 /* APIClientTests.swift */; };
 		1ATEST000000000000000003 /* ViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ATEST000000000000000003 /* ViewModelTests.swift */; };
@@ -74,6 +80,12 @@
 		2A0000000000000000000023 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		2A0000000000000000000024 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2A0000000000000000000025 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		2A0000000000000000000026 /* IncidentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncidentsListView.swift; sourceTree = "<group>"; };
+		2A0000000000000000000027 /* NewIncidentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewIncidentView.swift; sourceTree = "<group>"; };
+		2A0000000000000000000028 /* IncidentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncidentDetailView.swift; sourceTree = "<group>"; };
+		2A0000000000000000000029 /* SponsorDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorDashboardView.swift; sourceTree = "<group>"; };
+		2A0000000000000000000030 /* SponsorClientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorClientsView.swift; sourceTree = "<group>"; };
+		2A0000000000000000000031 /* SponsorVisitNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorVisitNotesView.swift; sourceTree = "<group>"; };
 		2ATEST000000000000000000 /* CarebaseAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarebaseAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2ATEST000000000000000001 /* ModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsTests.swift; sourceTree = "<group>"; };
 		2ATEST000000000000000002 /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
@@ -146,14 +158,6 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
-		4A0000000000000000000021 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				2A0000000000000000000025 /* AppConfiguration.swift */,
-			);
-			path = Configuration;
-			sourceTree = "<group>";
-		};
 		4A0000000000000000000006 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
@@ -172,6 +176,8 @@
 				4A0000000000000000000016 /* Shifts */,
 				4A0000000000000000000017 /* VisitNotes */,
 				4A0000000000000000000018 /* Clients */,
+				4A0000000000000000000022 /* Incidents */,
+				4A0000000000000000000023 /* Sponsor */,
 				4A0000000000000000000019 /* Notifications */,
 				4A0000000000000000000020 /* Profile */,
 			);
@@ -290,6 +296,34 @@
 				2A0000000000000000000023 /* ProfileView.swift */,
 			);
 			path = Profile;
+			sourceTree = "<group>";
+		};
+		4A0000000000000000000021 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				2A0000000000000000000025 /* AppConfiguration.swift */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+		4A0000000000000000000022 /* Incidents */ = {
+			isa = PBXGroup;
+			children = (
+				2A0000000000000000000026 /* IncidentsListView.swift */,
+				2A0000000000000000000027 /* NewIncidentView.swift */,
+				2A0000000000000000000028 /* IncidentDetailView.swift */,
+			);
+			path = Incidents;
+			sourceTree = "<group>";
+		};
+		4A0000000000000000000023 /* Sponsor */ = {
+			isa = PBXGroup;
+			children = (
+				2A0000000000000000000029 /* SponsorDashboardView.swift */,
+				2A0000000000000000000030 /* SponsorClientsView.swift */,
+				2A0000000000000000000031 /* SponsorVisitNotesView.swift */,
+			);
+			path = Sponsor;
 			sourceTree = "<group>";
 		};
 		4ATEST000000000000000001 /* CarebaseAppTests */ = {
@@ -417,6 +451,12 @@
 				1A0000000000000000000022 /* NotificationsView.swift in Sources */,
 				1A0000000000000000000023 /* ProfileView.swift in Sources */,
 				1A0000000000000000000025 /* AppConfiguration.swift in Sources */,
+				1A0000000000000000000026 /* IncidentsListView.swift in Sources */,
+				1A0000000000000000000027 /* NewIncidentView.swift in Sources */,
+				1A0000000000000000000028 /* IncidentDetailView.swift in Sources */,
+				1A0000000000000000000029 /* SponsorDashboardView.swift in Sources */,
+				1A0000000000000000000030 /* SponsorClientsView.swift in Sources */,
+				1A0000000000000000000031 /* SponsorVisitNotesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -567,7 +607,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = G93SECR5P8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -595,7 +635,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = G93SECR5P8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

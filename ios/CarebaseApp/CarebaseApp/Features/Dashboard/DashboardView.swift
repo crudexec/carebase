@@ -32,6 +32,23 @@ struct DashboardView: View {
                     // Today's Overview
                     TodayOverviewSection(viewModel: viewModel)
 
+                    // Today's Shifts Section
+                    if !viewModel.todayShifts.isEmpty {
+                        TodayShiftsSection(
+                            shifts: viewModel.todayShifts,
+                            onCheckIn: { shift in
+                                if shift.id == viewModel.nextShift?.id {
+                                    showCheckInConfirmation = true
+                                }
+                            },
+                            onCheckOut: { shift in
+                                if shift.id == viewModel.activeShift?.id {
+                                    showCheckOutConfirmation = true
+                                }
+                            }
+                        )
+                    }
+
                     // Next Shift with Check-In
                     if let nextShift = viewModel.nextShift, viewModel.activeShift == nil {
                         NextShiftSection(
@@ -59,7 +76,21 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NotificationButton()
+                    HStack(spacing: Spacing.md) {
+                        Button(action: {
+                            HapticType.light.trigger()
+                            Task {
+                                await viewModel.refresh()
+                            }
+                        }) {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(Color.Carebase.accent)
+                        }
+                        .disabled(viewModel.isLoading)
+                        .opacity(viewModel.isLoading ? 0.5 : 1.0)
+
+                        NotificationButton()
+                    }
                 }
             }
             .refreshable {
@@ -68,6 +99,12 @@ struct DashboardView: View {
         }
         .task {
             await viewModel.loadData()
+        }
+        .onAppear {
+            // Refresh shifts when returning to dashboard (e.g., after checkout from detail view)
+            Task {
+                await viewModel.loadShifts()
+            }
         }
         .confirmationDialog(
             "Check In",
@@ -320,6 +357,118 @@ struct TodayOverviewSection: View {
     }
 }
 
+// MARK: - Today's Shifts Section
+struct TodayShiftsSection: View {
+    let shifts: [Shift]
+    var onCheckIn: ((Shift) -> Void)? = nil
+    var onCheckOut: ((Shift) -> Void)? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Text("Today's Shifts")
+                    .font(.Carebase.headlineMedium)
+                    .foregroundColor(Color.Carebase.textPrimary)
+
+                Spacer()
+
+                NavigationLink(destination: ShiftsView()) {
+                    Text("View All")
+                        .font(.Carebase.labelMedium)
+                        .foregroundColor(Color.Carebase.accent)
+                }
+            }
+            .screenPadding()
+
+            VStack(spacing: Spacing.sm) {
+                ForEach(shifts.sorted { $0.scheduledStart < $1.scheduledStart }) { shift in
+                    TodayShiftCard(
+                        shift: shift,
+                        onCheckIn: { onCheckIn?(shift) },
+                        onCheckOut: { onCheckOut?(shift) }
+                    )
+                }
+            }
+            .screenPadding()
+        }
+    }
+}
+
+struct TodayShiftCard: View {
+    let shift: Shift
+    var onCheckIn: (() -> Void)? = nil
+    var onCheckOut: (() -> Void)? = nil
+
+    var body: some View {
+        CarebaseCard {
+            VStack(spacing: Spacing.md) {
+                NavigationLink(destination: ShiftDetailView(shiftId: shift.id)) {
+                    HStack(spacing: Spacing.md) {
+                        Avatar(name: shift.client?.fullName ?? "Client", size: 48)
+
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(shift.client?.fullName ?? "Client")
+                                .font(.Carebase.bodyLarge)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color.Carebase.textPrimary)
+
+                            Text(shift.dateAndTimeFormatted)
+                                .font(.Carebase.bodySmall)
+                                .foregroundColor(Color.Carebase.textSecondary)
+                        }
+
+                        Spacer()
+
+                        VStack(alignment: .trailing, spacing: Spacing.xs) {
+                            StatusBadge.shiftStatus(shift.status.badgeStatus)
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(Color.Carebase.textTertiary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+
+                // Action buttons based on status
+                if shift.status == .scheduled {
+                    Button(action: {
+                        HapticType.medium.trigger()
+                        onCheckIn?()
+                    }) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Check In")
+                        }
+                        .font(.Carebase.labelMedium)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(Color.Carebase.success)
+                        .cornerRadius(CornerRadius.md)
+                    }
+                } else if shift.status == .inProgress {
+                    Button(action: {
+                        HapticType.medium.trigger()
+                        onCheckOut?()
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.right.square.fill")
+                            Text("Check Out")
+                        }
+                        .font(.Carebase.labelMedium)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(Color.Carebase.warning)
+                        .cornerRadius(CornerRadius.md)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Next Shift Section
 struct NextShiftSection: View {
     let shift: Shift
@@ -355,7 +504,7 @@ struct NextShiftSection: View {
                                     .font(.Carebase.headlineSmall)
                                     .foregroundColor(Color.Carebase.textPrimary)
 
-                                Text(shift.timeRangeFormatted)
+                                Text(shift.dateAndTimeFormatted)
                                     .font(.Carebase.bodySmall)
                                     .foregroundColor(Color.Carebase.textSecondary)
 
@@ -644,7 +793,7 @@ class DashboardViewModel: ObservableObject {
         isLoading = false
     }
 
-    private func loadShifts() async {
+    func loadShifts() async {
         do {
             let response: ShiftsResponse = try await api.request(endpoint: .shifts)
             let allShifts = response.shifts
@@ -779,7 +928,15 @@ class DashboardViewModel: ObservableObject {
             print("Dashboard: Checked out of shift \(shift.id)")
             #endif
         } catch let apiError as APIError {
-            self.error = apiError.errorDescription
+            // Check if already checked out - clear activeShift and refresh
+            if case .validationError(let message) = apiError,
+               message.lowercased().contains("already") {
+                self.activeShift = nil
+                await loadShifts()
+                self.error = "You've already checked out of this shift."
+            } else {
+                self.error = apiError.errorDescription
+            }
             HapticType.error.trigger()
             #if DEBUG
             print("Dashboard check-out error: \(apiError)")

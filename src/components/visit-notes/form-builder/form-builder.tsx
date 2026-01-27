@@ -284,27 +284,6 @@ export function FormBuilder({ template, onChange }: FormBuilderProps) {
                         onUpdateField={updateField}
                         onDeleteField={deleteField}
                       />
-
-                      {/* Field type selector modal */}
-                      {showFieldSelector === section.id && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                          <div className="max-h-[80vh] w-[500px] overflow-y-auto rounded-lg bg-background p-6 shadow-xl">
-                            <div className="mb-4 flex items-center justify-between">
-                              <h3 className="text-lg font-semibold">Add Field</h3>
-                              <button
-                                type="button"
-                                onClick={() => setShowFieldSelector(null)}
-                                className="rounded p-1 hover:bg-background-secondary"
-                              >
-                                <X className="h-5 w-5" />
-                              </button>
-                            </div>
-                            <FieldTypeSelector
-                              onSelect={(type) => addField(section.id, type)}
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -338,6 +317,33 @@ export function FormBuilder({ template, onChange }: FormBuilderProps) {
           </DndContext>
         </div>
       </div>
+
+      {/* Field type selector modal - rendered outside the section loop */}
+      {showFieldSelector && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowFieldSelector(null)}
+        >
+          <div
+            className="max-h-[80vh] w-[500px] overflow-y-auto rounded-lg bg-background p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Add Field</h3>
+              <button
+                type="button"
+                onClick={() => setShowFieldSelector(null)}
+                className="rounded p-1 hover:bg-background-secondary"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <FieldTypeSelector
+              onSelect={(type) => addField(showFieldSelector, type)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Field editor panel */}
       {selectedField && (

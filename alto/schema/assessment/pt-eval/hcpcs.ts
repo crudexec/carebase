@@ -1,0 +1,113 @@
+import { z } from "zod";
+
+import { InferSchema } from "@/types";
+
+export const hcpcsSchema = z
+  .object({
+    serviceProvided: z.string().optional(),
+    qCode: z.string().optional(),
+    visitEvaluation: z.array(z.string()).optional(),
+    visitBillable: z.array(z.string()).optional(),
+    visitDate: z.date().optional(),
+    therapySIgnature: z.string().optional(),
+    arrivalTime: z.string().optional(),
+    departureTime: z.string().optional(),
+    milesTravelled: z.string().optional(),
+    patientName: z.string().optional(),
+    patientPhone: z.string().optional(),
+    patientAddress: z.string().optional(),
+    patientPhysician: z.string().optional(),
+    patientCity: z.string().optional(),
+    physicianSign: z.string().optional(),
+    patientState: z.string().optional(),
+    patientZip: z.string().optional(),
+    patientOnset: z.string().optional(),
+    patientDiagnosis: z.string().optional(),
+    vitalSignsResp: z.string().optional(),
+    bloodPressure: z.string().optional(),
+    apicalPulse: z.string().optional(),
+    lying: z.string().optional(),
+    sitting: z.string().optional(),
+    standing: z.string().optional(),
+    radialPulse: z.string().optional(),
+    weight: z.string().optional(),
+    temperature: z.string().optional(),
+    rehabPotential: z.string().optional(),
+    mentalStatus: z.array(z.string()).optional(),
+    siteOneLocation: z.string().optional(),
+    siteOneIntensity: z.string().optional(),
+    siteOneDuration: z.string().optional(),
+    siteOneMedication: z.string().optional(),
+    siteOneRelievingFactors: z.string().optional(),
+    siteTwoLocation: z.string().optional(),
+    siteTwoIntensity: z.string().optional(),
+    siteTwoDuration: z.string().optional(),
+    siteTwoMedication: z.string().optional(),
+    siteTwoRelievingFactors: z.string().optional(),
+    muscleTone: z.string().optional(),
+    fuctionalImpairments: z.string().optional(),
+    isDysneaOnExertion: z.boolean().optional(),
+    qaComments: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.arrivalTime && data.departureTime) {
+        const arrivalTime = new Date(`01/01/2024 ${data.arrivalTime}`);
+        const departureTime = new Date(`01/01/2024 ${data.departureTime}`);
+        return arrivalTime < departureTime;
+      } else return true;
+    },
+    {
+      message: "Arrival time must be less than departure time",
+      path: ["departureTime"],
+    },
+  );
+
+export type HcpcsForm = InferSchema<typeof hcpcsSchema>;
+
+export const hcpcsDefaultValue: HcpcsForm = {
+  serviceProvided: "",
+  qCode: "",
+  visitEvaluation: [],
+  visitBillable: [],
+  visitDate: undefined,
+  therapySIgnature: "",
+  arrivalTime: "",
+  departureTime: "",
+  milesTravelled: "",
+  patientName: "",
+  patientPhone: "",
+  patientAddress: "",
+  patientPhysician: "",
+  patientCity: "",
+  physicianSign: "",
+  patientState: "",
+  patientZip: "",
+  patientOnset: "",
+  patientDiagnosis: "",
+  vitalSignsResp: "",
+  bloodPressure: "",
+  apicalPulse: "",
+  lying: "",
+  sitting: "",
+  standing: "",
+  radialPulse: "",
+  weight: "",
+  temperature: "",
+  rehabPotential: "",
+  mentalStatus: [],
+  siteOneLocation: "",
+  siteOneIntensity: "",
+  siteOneDuration: "",
+  siteOneMedication: "",
+  siteOneRelievingFactors: "",
+  siteTwoLocation: "",
+  siteTwoIntensity: "",
+  siteTwoDuration: "",
+  siteTwoMedication: "",
+  siteTwoRelievingFactors: "",
+  muscleTone: "",
+  fuctionalImpairments: "",
+  isDysneaOnExertion: false,
+  qaComments: "",
+};

@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  database:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: homecare_admin
+      POSTGRES_DB: homecare
+      POSTGRES_PASSWORD: password
+    volumes:
+      - .dbdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+volumes:
+  .dbdata:

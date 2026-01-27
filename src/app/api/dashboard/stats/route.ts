@@ -70,13 +70,13 @@ async function getAdminStats(
   ] = await Promise.all([
     // Active clients
     prisma.client.count({
-      where: { companyId, isActive: true },
+      where: { companyId, status: "ACTIVE" },
     }),
     // Active clients last month (for trend calculation)
     prisma.client.count({
       where: {
         companyId,
-        isActive: true,
+        status: "ACTIVE",
         createdAt: { lt: monthStart },
       },
     }),
@@ -124,7 +124,7 @@ async function getClinicalDirectorStats(companyId: string) {
       prisma.onboardingRecord.count({
         where: {
           companyId,
-          stage: "CLINICAL_REVIEW",
+          stage: "CLINICAL_AUTHORIZATION",
         },
       }),
       // Pending payments (using PayrollRecord model)
@@ -371,7 +371,7 @@ async function getStaffStats(companyId: string, weekStart: Date, weekEnd: Date) 
       prisma.client.count({
         where: {
           companyId,
-          isActive: true,
+          status: "ACTIVE",
         },
       }),
     ]);

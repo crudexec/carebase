@@ -290,7 +290,7 @@ export default function ReportsPage() {
           </p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => router.push("/reports/visit-notes")}
         >
           <ClipboardList className="w-4 h-4 mr-2" />
@@ -356,7 +356,7 @@ export default function ReportsPage() {
                   {QUICK_DATE_RANGES.map((range) => (
                     <Button
                       key={range.label}
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => handleDateRangeSelect(range.getValue())}
                     >
@@ -432,7 +432,7 @@ export default function ReportsPage() {
                               outerRadius={90}
                               paddingAngle={2}
                               dataKey="value"
-                              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                              label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
                               labelLine={false}
                             >
                               {getStatusChartData().map((entry, index) => (
@@ -585,7 +585,7 @@ export default function ReportsPage() {
                             >
                               <td className="p-3 font-medium">{c.name}</td>
                               <td className="p-3">
-                                <Badge variant="outline">{c.status}</Badge>
+                                <Badge>{c.status}</Badge>
                               </td>
                               <td className="p-3 text-foreground-secondary">
                                 {format(new Date(c.createdAt), "MMM d, yyyy")}
@@ -615,7 +615,7 @@ export default function ReportsPage() {
                             >
                               <td className="p-3 font-medium">{s.name}</td>
                               <td className="p-3">
-                                <Badge variant="outline">{s.role}</Badge>
+                                <Badge>{s.role}</Badge>
                               </td>
                               <td className="p-3">
                                 <Badge variant={s.isActive ? "success" : "error"}>
@@ -684,7 +684,7 @@ export default function ReportsPage() {
                               onClick={() => router.push(`/visit-notes/${v.id}`)}
                             >
                               <td className="p-3">
-                                <Badge variant="outline">{v.template}</Badge>
+                                <Badge>{v.template}</Badge>
                               </td>
                               <td className="p-3 font-medium">{v.client}</td>
                               <td className="p-3">{v.carer}</td>

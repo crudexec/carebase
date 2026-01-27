@@ -1,14 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldType } from "@prisma/client";
-import { FormFieldData, FieldValue, FieldConfig } from "@/lib/visit-notes/types";
+import { FormFieldData, FieldValue } from "@/lib/visit-notes/types";
 import {
   Input,
   Textarea,
   Label,
-  Checkbox,
-  RadioGroup,
   FileUpload,
   SignaturePad,
   Rating,
@@ -106,7 +103,6 @@ function renderFieldInput(
     case "YES_NO":
       return (
         <YesNoField
-          id={field.id}
           value={value as boolean | null}
           onChange={onChange}
           disabled={disabled}
@@ -116,14 +112,10 @@ function renderFieldInput(
 
     case "SINGLE_CHOICE":
       return (
-        <RadioGroup
-          name={field.id}
+        <SingleChoiceChips
+          options={(config?.options as OptionItem[]) || []}
           value={(value as string) || ""}
-          onChange={(v) => onChange(v)}
-          options={((config?.options as string[]) || []).map((opt) => ({
-            value: opt,
-            label: opt,
-          }))}
+          onChange={onChange}
           disabled={disabled}
           error={!!error}
         />
@@ -131,9 +123,8 @@ function renderFieldInput(
 
     case "MULTIPLE_CHOICE":
       return (
-        <MultipleChoiceField
-          id={field.id}
-          options={(config?.options as string[]) || []}
+        <MultipleChoiceChips
+          options={(config?.options as OptionItem[]) || []}
           value={(value as string[]) || []}
           onChange={onChange}
           disabled={disabled}
@@ -190,7 +181,6 @@ function renderFieldInput(
     case "PHOTO":
       return (
         <PhotoUploadField
-          id={field.id}
           value={value as { fileUrl: string } | null}
           onChange={onChange}
           disabled={disabled}
@@ -218,13 +208,11 @@ function renderFieldInput(
 
 // Yes/No toggle component
 function YesNoField({
-  id,
   value,
   onChange,
   disabled,
   error,
 }: {
-  id: string;
   value: boolean | null;
   onChange: (value: boolean) => void;
   disabled?: boolean;
@@ -269,66 +257,152 @@ function YesNoField({
   );
 }
 
-// Multiple choice (checkboxes) component
-function MultipleChoiceField({
-  id,
+// Option type that supports both simple strings and value/label objects
+type OptionItem = string | { value: string; label: string };
+
+// Helper to normalize options to value/label format
+function normalizeOption(option: OptionItem): { value: string; label: string } {
+  if (typeof option === "string") {
+    return { value: option, label: option };
+  }
+  return option;
+}
+
+// Single choice chips component
+function SingleChoiceChips({
   options,
   value,
   onChange,
   disabled,
   error,
 }: {
-  id: string;
-  options: string[];
+  options: OptionItem[];
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  error?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap gap-2",
+        error && "rounded-md ring-1 ring-error ring-offset-2 p-1"
+      )}
+    >
+      {options.map((option) => {
+        const { value: optionValue, label } = normalizeOption(option);
+        const isSelected = value === optionValue;
+        return (
+          <button
+            key={optionValue}
+            type="button"
+            onClick={() => onChange(optionValue)}
+            disabled={disabled}
+            className={cn(
+              "inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+              "border focus:outline-none focus:ring-2 focus:ring-primary/50",
+              isSelected
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-background border-border text-foreground hover:border-primary/50 hover:bg-primary/5",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {isSelected && (
+              <svg
+                className="w-3.5 h-3.5 mr-1.5 -ml-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Multiple choice chips component
+function MultipleChoiceChips({
+  options,
+  value,
+  onChange,
+  disabled,
+  error,
+}: {
+  options: OptionItem[];
   value: string[];
   onChange: (value: string[]) => void;
   disabled?: boolean;
   error?: boolean;
 }) {
-  const handleToggle = (option: string) => {
-    if (value.includes(option)) {
-      onChange(value.filter((v) => v !== option));
+  const handleToggle = (optionValue: string) => {
+    if (value.includes(optionValue)) {
+      onChange(value.filter((v) => v !== optionValue));
     } else {
-      onChange([...value, option]);
+      onChange([...value, optionValue]);
     }
   };
 
   return (
     <div
       className={cn(
-        "space-y-2",
-        error && "rounded-md ring-1 ring-error ring-offset-2 p-2"
+        "flex flex-wrap gap-2",
+        error && "rounded-md ring-1 ring-error ring-offset-2 p-1"
       )}
     >
-      {options.map((option) => (
-        <div key={option} className="flex items-center gap-2">
-          <Checkbox
-            id={`${id}-${option}`}
-            checked={value.includes(option)}
-            onChange={() => handleToggle(option)}
+      {options.map((option) => {
+        const { value: optionValue, label } = normalizeOption(option);
+        const isSelected = value.includes(optionValue);
+        return (
+          <button
+            key={optionValue}
+            type="button"
+            onClick={() => handleToggle(optionValue)}
             disabled={disabled}
-          />
-          <label
-            htmlFor={`${id}-${option}`}
-            className="text-sm cursor-pointer select-none"
+            className={cn(
+              "inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+              "border focus:outline-none focus:ring-2 focus:ring-primary/50",
+              isSelected
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-background border-border text-foreground hover:border-primary/50 hover:bg-primary/5",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
           >
-            {option}
-          </label>
-        </div>
-      ))}
+            {isSelected && (
+              <svg
+                className="w-3.5 h-3.5 mr-1.5 -ml-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 // Photo upload field component with upload handling
 function PhotoUploadField({
-  id,
   value,
   onChange,
   disabled,
   error,
 }: {
-  id: string;
   value: { fileUrl: string } | null;
   onChange: (value: FieldValue) => void;
   disabled?: boolean;

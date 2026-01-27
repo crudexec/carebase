@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { DashboardShell } from "@/components/layouts/dashboard-shell";
 import { SessionProvider } from "@/components/providers/session-provider";
 
@@ -14,9 +15,17 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  // Fetch company name for sidebar
+  const company = await prisma.company.findUnique({
+    where: { id: session.user.companyId },
+    select: { name: true },
+  });
+
   return (
     <SessionProvider>
-      <DashboardShell user={session.user}>{children}</DashboardShell>
+      <DashboardShell user={session.user} companyName={company?.name || "CareBase"}>
+        {children}
+      </DashboardShell>
     </SessionProvider>
   );
 }

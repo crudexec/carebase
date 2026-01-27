@@ -103,6 +103,61 @@ enum FormTemplateStatus {
 }
 
 // ============================================
+// BILLING ENUMS
+// ============================================
+
+enum BillingFrequency {
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
+}
+
+enum UnitType {
+  HOURLY // 1 unit = 1 hour
+  QUARTER_HOURLY // 1 unit = 15 minutes
+  DAILY // 1 unit = 1 day
+}
+
+enum BillingPeriodStatus {
+  OPEN
+  CLOSED
+  SUBMITTED
+  RECONCILED
+}
+
+enum ClaimStatus {
+  DRAFT
+  READY
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  DENIED
+  PAID
+  PARTIALLY_PAID
+}
+
+enum SubmissionType {
+  ORIGINAL
+  CORRECTED
+  VOID
+}
+
+enum SubmissionStatus {
+  PENDING
+  TRANSMITTED
+  ACKNOWLEDGED
+  ACCEPTED
+  REJECTED
+  ERROR
+}
+
+enum ClearinghouseType {
+  GENERIC
+  AVAILITY
+  OFFICE_ALLY
+}
+
+// ============================================
 // COMPANY (MULTI-TENANCY)
 // ============================================
 
@@ -115,22 +170,55 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Provider Billing Information
+  npi              String? // National Provider Identifier (10 digits)
+  taxId            String? // EIN/Tax ID (9 digits)
+  taxonomyCode     String? // Provider Taxonomy Code (e.g., 251G00000X)
+  billingName      String? // Billing name (may differ from company name)
+  billingAddress   String?
+  billingCity      String?
+  billingState     String? // 2-letter state code
+  billingZip       String? // 5 or 9 digit ZIP
+  billingPhone     String?
+  billingFrequency BillingFrequency? @default(WEEKLY)
+
   // Relations - all tenant-scoped models
-  users               User[]
-  clients             Client[]
-  shifts              Shift[]
-  shiftAttendances    ShiftAttendance[]
-  dailyReports        DailyReport[]
-  incidentReports     IncidentReport[]
-  payrollRecords      PayrollRecord[]
-  invoices            Invoice[]
-  chatMessages        ChatMessage[]
-  escalations         Escalation[]
-  onboardingRecords   OnboardingRecord[]
-  notifications       Notification[]
-  auditLogs           AuditLog[]
-  formTemplates       FormTemplate[]
-  visitNotes          VisitNote[]
+  users             User[]
+  clients           Client[]
+  shifts            Shift[]
+  shiftAttendances  ShiftAttendance[]
+  dailyReports      DailyReport[]
+  incidentReports   IncidentReport[]
+  payrollRecords    PayrollRecord[]
+  invoices          Invoice[]
+  chatMessages      ChatMessage[]
+  escalations       Escalation[]
+  onboardingRecords OnboardingRecord[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  formTemplates     FormTemplate[]
+  visitNotes        VisitNote[]
+
+  // Billing relations
+  serviceTypes     ServiceType[]
+  billingRates     BillingRate[]
+  billingPeriods   BillingPeriod[]
+  claims           Claim[]
+  claimSubmissions ClaimSubmission[]
+
+  // Patient Intake relations
+  stateConfigs         CompanyStateConfig[]
+  assessmentTemplates  AssessmentTemplate[]
+  assessments          Assessment[]
+  referralSources      ReferralSourceRecord[]
+  referrals            Referral[]
+  intakes              Intake[]
+  consentFormTemplates ConsentFormTemplate[]
+  consentSignatures    ConsentSignature[]
+  carePlans            CarePlan[]
+  authorizations       Authorization[]
+  authorizationAlerts  AuthorizationAlert[]
+  physicians           Physician[]
 
   @@index([isActive])
 }
@@ -147,61 +235,75 @@ model User {
   lastName     String
   role         UserRole
   phone        String?
-  profileData  Json?     // Custom profile fields from profile templates
+  profileData  Json? // Custom profile fields from profile templates
   isActive     Boolean   @default(true)
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   // Company relation
-  companyId    String
-  company      Company   @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Relations
-  caregiverProfile     CaregiverProfile?
+  caregiverProfile CaregiverProfile?
 
   // As Sponsor
-  sponsoredClients     Client[]           @relation("SponsorClients")
+  sponsoredClients Client[] @relation("SponsorClients")
 
   // As Carer
-  assignedClients      Client[]           @relation("CarerClients")
-  shifts               Shift[]
-  dailyReports         DailyReport[]
-  payrollRecords       PayrollRecord[]    @relation("CarerPayroll")
+  assignedClients Client[]        @relation("CarerClients")
+  shifts          Shift[]
+  dailyReports    DailyReport[]
+  payrollRecords  PayrollRecord[] @relation("CarerPayroll")
 
   // Onboarding assignments
   onboardingAssignments OnboardingRecord[] @relation("OnboardingAssignee")
 
   // Incident reports
-  reportedIncidents    IncidentReport[]   @relation("IncidentReporter")
-  approvedIncidents    IncidentReport[]   @relation("IncidentApprover")
+  reportedIncidents IncidentReport[] @relation("IncidentReporter")
+  approvedIncidents IncidentReport[] @relation("IncidentApprover")
 
   // Payroll approvals
-  supervisorApprovals  PayrollRecord[]    @relation("SupervisorApproval")
-  processedPayments    PayrollRecord[]    @relation("ProcessedBy")
+  supervisorApprovals PayrollRecord[] @relation("SupervisorApproval")
+  processedPayments   PayrollRecord[] @relation("ProcessedBy")
 
   // Chat
-  sentMessages         ChatMessage[]      @relation("MessageSender")
-  receivedMessages     ChatMessage[]      @relation("MessageReceiver")
+  sentMessages     ChatMessage[] @relation("MessageSender")
+  receivedMessages ChatMessage[] @relation("MessageReceiver")
 
   // Escalations
-  submittedEscalations Escalation[]       @relation("EscalationSubmitter")
-  managedEscalations   Escalation[]       @relation("EscalationManager")
+  submittedEscalations Escalation[] @relation("EscalationSubmitter")
+  managedEscalations   Escalation[] @relation("EscalationManager")
 
   // Notifications
-  notifications        Notification[]
+  notifications Notification[]
 
   // Audit logs
-  auditLogs            AuditLog[]
+  auditLogs AuditLog[]
 
   // Form Builder
-  createdFormTemplates FormTemplate[]     @relation("FormTemplateCreator")
-  visitNotes           VisitNote[]        @relation("CarerVisitNotes")
-  submittedVisitNotes  VisitNote[]        @relation("VisitNoteSubmitter")
+  createdFormTemplates FormTemplate[] @relation("FormTemplateCreator")
+  visitNotes           VisitNote[]    @relation("CarerVisitNotes")
+  submittedVisitNotes  VisitNote[]    @relation("VisitNoteSubmitter")
 
   // Comments
-  comments             VisitNoteComment[] @relation("CommentAuthor")
-  mentions             CommentMention[]   @relation("MentionedUser")
+  comments VisitNoteComment[] @relation("CommentAuthor")
+  mentions CommentMention[]   @relation("MentionedUser")
+
+  // Patient Intake relations
+  assessmentsPerformed       Assessment[]       @relation("AssessmentAssessor")
+  referralAssignments        Referral[]         @relation("ReferralAssignee")
+  intakeCoordinations        Intake[]           @relation("IntakeCoordinator")
+  consentSignaturesCollected ConsentSignature[] @relation("ConsentCollector")
+  carePlansCreated           CarePlan[]         @relation("CarePlanCreator")
+  carePlansReviewed          CarePlan[]         @relation("CarePlanClinicalReviewer")
+  carePlansCaseManager       CarePlan[]         @relation("CarePlanCaseManager")
+  carePlansNurseSigner       CarePlan[]         @relation("CarePlanNurseSigner")
+
+  // QA Reviewer relations
+  assessmentsQAReviewed Assessment[] @relation("AssessmentQAReviewer")
+  visitNotesQAReviewed  VisitNote[]  @relation("VisitNoteQAReviewer")
 
   @@index([email])
   @@index([role])
@@ -220,19 +322,19 @@ model CaregiverProfile {
   updatedAt        DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   availabilitySlots CaregiverAvailability[]
 }
 
 model CaregiverAvailability {
-  id          String   @id @default(cuid())
-  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
-  startTime   String   // "09:00" format
-  endTime     String   // "17:00" format
-  isRecurring Boolean  @default(true)
+  id           String    @id @default(cuid())
+  dayOfWeek    Int // 0 = Sunday, 1 = Monday, etc.
+  startTime    String // "09:00" format
+  endTime      String // "17:00" format
+  isRecurring  Boolean   @default(true)
   specificDate DateTime? // For non-recurring availability
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
   caregiverProfileId String
@@ -243,31 +345,50 @@ model CaregiverAvailability {
 }
 
 model Client {
-  id              String       @id @default(cuid())
-  firstName       String
-  lastName        String
-  dateOfBirth     DateTime?
-  address         String?
-  latitude        Decimal?     @db.Decimal(10, 8)
-  longitude       Decimal?     @db.Decimal(11, 8)
-  phone           String?
-  medicalNotes    String?
-  profileData     Json?        // Custom profile fields from profile templates
-  status          ClientStatus @default(PROSPECT)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id           String       @id @default(cuid())
+  firstName    String
+  lastName     String
+  dateOfBirth  DateTime?
+  address      String?
+  city         String?
+  state        String? // 2-letter state code
+  zipCode      String?
+  latitude     Decimal?     @db.Decimal(10, 8)
+  longitude    Decimal?     @db.Decimal(11, 8)
+  phone        String?
+  medicalNotes String?
+  profileData  Json? // Custom profile fields from profile templates
+  status       ClientStatus @default(PROSPECT)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Medicaid/Insurance Information
+  medicaidId           String? // Medicaid Member ID
+  medicaidPayerId      String? // Payer ID for claim submission
+  secondaryInsuranceId String? // Secondary insurance member ID
+  secondaryPayerId     String? // Secondary payer ID
+  diagnosisCodes       String[] // ICD-10 codes (e.g., ["F41.1", "Z74.1"])
+  primaryDiagnosis     String? // Primary ICD-10 code
+  authorizationNumber  String? // Prior authorization number
+  authorizationStart   DateTime?
+  authorizationEnd     DateTime?
+  authorizationUnits   Int? // Authorized units
 
   // Company relation
-  companyId       String
-  company         Company      @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Sponsor relation (optional during early onboarding)
-  sponsorId       String?
-  sponsor         User?        @relation("SponsorClients", fields: [sponsorId], references: [id])
+  sponsorId String?
+  sponsor   User?   @relation("SponsorClients", fields: [sponsorId], references: [id])
 
   // Assigned carer relation
   assignedCarerId String?
-  assignedCarer   User?        @relation("CarerClients", fields: [assignedCarerId], references: [id])
+  assignedCarer   User?   @relation("CarerClients", fields: [assignedCarerId], references: [id])
+
+  // Billing rate relation
+  billingRateId String?
+  billingRate   BillingRate? @relation(fields: [billingRateId], references: [id])
 
   // Related records
   onboardingRecord OnboardingRecord?
@@ -278,11 +399,22 @@ model Client {
   chatMessages     ChatMessage[]
   escalations      Escalation[]
   visitNotes       VisitNote[]
+  claims           Claim[]
+
+  // Patient Intake relations
+  assessments       Assessment[]
+  referral          Referral?
+  intake            Intake?
+  consentSignatures ConsentSignature[]
+  carePlans         CarePlan[]
+  authorizations    Authorization[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])
   @@index([status])
   @@index([companyId])
+  @@index([billingRateId])
+  @@index([medicaidId])
 }
 
 model OnboardingRecord {
@@ -297,18 +429,18 @@ model OnboardingRecord {
   updatedAt        DateTime        @updatedAt
 
   // Company relation
-  companyId        String
-  company          Company         @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Current assignee
-  assignedToId     String?
-  assignedTo       User?           @relation("OnboardingAssignee", fields: [assignedToId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("OnboardingAssignee", fields: [assignedToId], references: [id])
 
   // Client relation
-  client           Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   // Stage history
-  stageHistory     OnboardingStageHistory[]
+  stageHistory OnboardingStageHistory[]
 
   @@index([stage])
   @@index([assignedToId])
@@ -325,7 +457,7 @@ model OnboardingStageHistory {
   createdAt          DateTime        @default(now())
 
   // Relations
-  onboardingRecord   OnboardingRecord @relation(fields: [onboardingRecordId], references: [id], onDelete: Cascade)
+  onboardingRecord OnboardingRecord @relation(fields: [onboardingRecordId], references: [id], onDelete: Cascade)
 
   @@index([onboardingRecordId])
 }
@@ -334,8 +466,8 @@ model Shift {
   id               String      @id @default(cuid())
   scheduledStart   DateTime
   scheduledEnd     DateTime
-  actualStart      DateTime?   // Legacy: first check-in time
-  actualEnd        DateTime?   // Legacy: final check-out time
+  actualStart      DateTime? // Legacy: first check-in time
+  actualEnd        DateTime? // Legacy: final check-out time
   checkInLocation  Json?
   checkOutLocation Json?
   status           ShiftStatus @default(SCHEDULED)
@@ -343,21 +475,21 @@ model Shift {
   updatedAt        DateTime    @updatedAt
 
   // Company relation
-  companyId        String
-  company          Company     @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Relations
-  carerId          String
-  carer            User        @relation(fields: [carerId], references: [id])
+  carerId String
+  carer   User   @relation(fields: [carerId], references: [id])
 
-  clientId         String
-  client           Client      @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 
   // Related records
-  dailyReports     DailyReport[]
-  payrollRecord    PayrollRecord?
+  dailyReports      DailyReport[]
+  payrollRecord     PayrollRecord?
   attendanceRecords ShiftAttendance[]
-  visitNotes       VisitNote[]
+  visitNotes        VisitNote[]
 
   @@index([carerId])
   @@index([clientId])
@@ -368,23 +500,23 @@ model Shift {
 
 // Track daily attendance for multi-day shifts
 model ShiftAttendance {
-  id          String    @id @default(cuid())
-  date        DateTime  @db.Date  // The specific day this attendance is for
-  checkInTime DateTime?
+  id           String    @id @default(cuid())
+  date         DateTime  @db.Date // The specific day this attendance is for
+  checkInTime  DateTime?
   checkOutTime DateTime?
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Company relation
-  companyId   String
-  company     Company   @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Relations
-  shiftId     String
-  shift       Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
-  @@unique([shiftId, date])  // One attendance record per day per shift
+  @@unique([shiftId, date]) // One attendance record per day per shift
   @@index([shiftId])
   @@index([date])
   @@index([companyId])
@@ -403,18 +535,18 @@ model DailyReport {
   updatedAt    DateTime @updatedAt
 
   // Company relation
-  companyId    String
-  company      Company  @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Relations
-  shiftId      String
-  shift        Shift    @relation(fields: [shiftId], references: [id])
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id])
 
-  carerId      String
-  carer        User     @relation(fields: [carerId], references: [id])
+  carerId String
+  carer   User   @relation(fields: [carerId], references: [id])
 
-  clientId     String
-  client       Client   @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 
   @@index([carerId])
   @@index([clientId])
@@ -423,39 +555,39 @@ model DailyReport {
 }
 
 model IncidentReport {
-  id               String           @id @default(cuid())
-  incidentDate     DateTime
-  location         String
-  category         String
-  severity         IncidentSeverity
-  description      String
-  actionsTaken     String
-  attachments      String[]
-  witnesses        String?
-  status           IncidentStatus   @default(PENDING)
-  sponsorNotified  Boolean          @default(false)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id              String           @id @default(cuid())
+  incidentDate    DateTime
+  location        String
+  category        String
+  severity        IncidentSeverity
+  description     String
+  actionsTaken    String
+  attachments     String[]
+  witnesses       String?
+  status          IncidentStatus   @default(PENDING)
+  sponsorNotified Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   // Company relation
-  companyId        String
-  company          Company          @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Reporter
-  reporterId       String
-  reporter         User             @relation("IncidentReporter", fields: [reporterId], references: [id])
+  reporterId String
+  reporter   User   @relation("IncidentReporter", fields: [reporterId], references: [id])
 
   // Client involved
-  clientId         String
-  client           Client           @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 
   // Carer involved (optional)
-  carerId          String?
+  carerId String?
 
   // Approval
-  approvedById     String?
-  approvedBy       User?            @relation("IncidentApprover", fields: [approvedById], references: [id])
-  approvedAt       DateTime?
+  approvedById String?
+  approvedBy   User?     @relation("IncidentApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
 
   @@index([reporterId])
   @@index([clientId])
@@ -465,37 +597,37 @@ model IncidentReport {
 }
 
 model PayrollRecord {
-  id                    String        @id @default(cuid())
-  hoursWorked           Decimal       @db.Decimal(5, 2)
-  hourlyRate            Decimal       @db.Decimal(8, 2)
-  totalAmount           Decimal       @db.Decimal(10, 2)
-  dailyReportCompliant  Boolean       @default(false)
-  status                PayrollStatus @default(PENDING)
-  paymentCycle          String?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  hoursWorked          Decimal       @db.Decimal(5, 2)
+  hourlyRate           Decimal       @db.Decimal(8, 2)
+  totalAmount          Decimal       @db.Decimal(10, 2)
+  dailyReportCompliant Boolean       @default(false)
+  status               PayrollStatus @default(PENDING)
+  paymentCycle         String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   // Company relation
-  companyId             String
-  company               Company       @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Shift relation
-  shiftId               String        @unique
-  shift                 Shift         @relation(fields: [shiftId], references: [id])
+  shiftId String @unique
+  shift   Shift  @relation(fields: [shiftId], references: [id])
 
   // Carer
-  carerId               String
-  carer                 User          @relation("CarerPayroll", fields: [carerId], references: [id])
+  carerId String
+  carer   User   @relation("CarerPayroll", fields: [carerId], references: [id])
 
   // Supervisor approval
   supervisorApprovedById String?
-  supervisorApprovedBy   User?        @relation("SupervisorApproval", fields: [supervisorApprovedById], references: [id])
+  supervisorApprovedBy   User?     @relation("SupervisorApproval", fields: [supervisorApprovedById], references: [id])
   supervisorApprovedAt   DateTime?
 
   // Clinical Director processing
-  processedById         String?
-  processedBy           User?         @relation("ProcessedBy", fields: [processedById], references: [id])
-  processedAt           DateTime?
+  processedById String?
+  processedBy   User?     @relation("ProcessedBy", fields: [processedById], references: [id])
+  processedAt   DateTime?
 
   @@index([carerId])
   @@index([status])
@@ -515,13 +647,13 @@ model Invoice {
   updatedAt     DateTime      @updatedAt
 
   // Company relation
-  companyId     String
-  company       Company       @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Relations
-  sponsorId     String
-  clientId      String
-  client        Client        @relation(fields: [clientId], references: [id])
+  sponsorId String
+  clientId  String
+  client    Client @relation(fields: [clientId], references: [id])
 
   @@index([sponsorId])
   @@index([clientId])
@@ -530,26 +662,26 @@ model Invoice {
 }
 
 model ChatMessage {
-  id         String    @id @default(cuid())
-  content    String
-  readAt     DateTime?
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(cuid())
+  content   String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
 
   // Company relation
-  companyId  String
-  company    Company   @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Sender
-  senderId   String
-  sender     User      @relation("MessageSender", fields: [senderId], references: [id])
+  senderId String
+  sender   User   @relation("MessageSender", fields: [senderId], references: [id])
 
   // Receiver
   receiverId String
-  receiver   User      @relation("MessageReceiver", fields: [receiverId], references: [id])
+  receiver   User   @relation("MessageReceiver", fields: [receiverId], references: [id])
 
   // Context (which client this chat is about)
-  clientId   String
-  client     Client    @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
 
   @@index([senderId])
   @@index([receiverId])
@@ -559,30 +691,30 @@ model ChatMessage {
 }
 
 model Escalation {
-  id           String           @id @default(cuid())
-  title        String
-  description  String
-  status       EscalationStatus @default(OPEN)
-  resolution   String?
-  resolvedAt   DateTime?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  status      EscalationStatus @default(OPEN)
+  resolution  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   // Company relation
-  companyId    String
-  company      Company          @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Carer who submitted
-  carerId      String
-  carer        User             @relation("EscalationSubmitter", fields: [carerId], references: [id])
+  carerId String
+  carer   User   @relation("EscalationSubmitter", fields: [carerId], references: [id])
 
   // Supervisor managing
   supervisorId String
-  supervisor   User             @relation("EscalationManager", fields: [supervisorId], references: [id])
+  supervisor   User   @relation("EscalationManager", fields: [supervisorId], references: [id])
 
   // Related client (optional)
-  clientId     String?
-  client       Client?          @relation(fields: [clientId], references: [id])
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
 
   @@index([carerId])
   @@index([supervisorId])
@@ -601,11 +733,11 @@ model Notification {
 
   // Company relation
   companyId String
-  company   Company  @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Recipient
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([read])
@@ -623,12 +755,12 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   // Company relation
-  companyId  String
-  company    Company  @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // User who performed action
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([entityType])
@@ -647,27 +779,27 @@ enum FormTemplateType {
 }
 
 model FormTemplate {
-  id          String              @id @default(cuid())
+  id          String             @id @default(cuid())
   name        String
   description String?
-  type        FormTemplateType    @default(VISIT_NOTE)
-  status      FormTemplateStatus  @default(DRAFT)
-  version     Int                 @default(1)
-  isEnabled   Boolean             @default(false)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  type        FormTemplateType   @default(VISIT_NOTE)
+  status      FormTemplateStatus @default(DRAFT)
+  version     Int                @default(1)
+  isEnabled   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   // Company relation
-  companyId   String
-  company     Company             @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Created by
   createdById String
-  createdBy   User                @relation("FormTemplateCreator", fields: [createdById], references: [id])
+  createdBy   User   @relation("FormTemplateCreator", fields: [createdById], references: [id])
 
   // Relations
-  sections    FormSection[]
-  visitNotes  VisitNote[]
+  sections   FormSection[]
+  visitNotes VisitNote[]
 
   @@index([companyId])
   @@index([status])
@@ -676,19 +808,19 @@ model FormTemplate {
 }
 
 model FormSection {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  order       Int           @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Parent template
-  templateId  String
-  template    FormTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+  template   FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   // Fields in this section
-  fields      FormField[]
+  fields FormField[]
 
   @@index([templateId])
   @@index([order])
@@ -701,54 +833,61 @@ model FormField {
   type        FormFieldType
   required    Boolean       @default(false)
   order       Int           @default(0)
-  config      Json?         // Type-specific config (options, min/max, etc.)
+  config      Json? // Type-specific config (options, min/max, etc.)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // Parent section
-  sectionId   String
-  section     FormSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId String
+  section   FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@index([sectionId])
   @@index([order])
 }
 
 model VisitNote {
-  id                 String    @id @default(cuid())
-  formSchemaSnapshot Json      // Complete form structure at submission
-  data               Json      // { [fieldId]: value }
-  submittedAt        DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id                 String   @id @default(cuid())
+  formSchemaSnapshot Json // Complete form structure at submission
+  data               Json // { [fieldId]: value }
+  submittedAt        DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Company relation
-  companyId          String
-  company            Company   @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Template reference
-  templateId         String
-  template           FormTemplate @relation(fields: [templateId], references: [id])
-  templateVersion    Int
+  templateId      String
+  template        FormTemplate @relation(fields: [templateId], references: [id])
+  templateVersion Int
 
   // Context relations
-  shiftId            String
-  shift              Shift     @relation(fields: [shiftId], references: [id])
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id])
 
   // The carer assigned to the shift
-  carerId            String
-  carer              User      @relation("CarerVisitNotes", fields: [carerId], references: [id])
+  carerId String
+  carer   User   @relation("CarerVisitNotes", fields: [carerId], references: [id])
 
   // Who actually submitted the note (could be admin on behalf of carer)
-  submittedById      String
-  submittedBy        User      @relation("VisitNoteSubmitter", fields: [submittedById], references: [id])
+  submittedById String
+  submittedBy   User   @relation("VisitNoteSubmitter", fields: [submittedById], references: [id])
 
-  clientId           String
-  client             Client    @relation(fields: [clientId], references: [id])
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // QA Workflow
+  qaStatus       QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
+  qaComment      String?   @db.Text // QA reviewer comments
+  qaReviewedAt   DateTime? // When QA review was completed
+  qaReviewedById String?   // Who performed the QA review
+  qaReviewedBy   User?     @relation("VisitNoteQAReviewer", fields: [qaReviewedById], references: [id])
 
   // File attachments
-  files              VisitNoteFile[]
+  files VisitNoteFile[]
 
   // Comments
-  comments           VisitNoteComment[]
+  comments VisitNoteComment[]
 
   @@index([companyId])
   @@index([templateId])
@@ -757,16 +896,18 @@ model VisitNote {
   @@index([clientId])
   @@index([submittedAt])
   @@index([submittedById])
+  @@index([qaStatus])
+  @@index([qaReviewedById])
 }
 
 model VisitNoteFile {
-  id          String    @id @default(cuid())
-  fieldId     String    // Reference to the field this file belongs to
-  fileName    String
-  fileType    String    // MIME type
-  fileSize    Int       // Size in bytes
-  fileUrl     String    // Storage URL
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  fieldId   String // Reference to the field this file belongs to
+  fileName  String
+  fileType  String // MIME type
+  fileSize  Int // Size in bytes
+  fileUrl   String // Storage URL
+  createdAt DateTime @default(now())
 
   // Parent visit note
   visitNoteId String
@@ -777,24 +918,24 @@ model VisitNoteFile {
 }
 
 model VisitNoteComment {
-  id          String    @id @default(cuid())
-  content     String    // Comment text (may contain @mentions)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  content   String // Comment text (may contain @mentions)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Company relation
-  companyId   String
+  companyId String
 
   // Parent visit note
   visitNoteId String
   visitNote   VisitNote @relation(fields: [visitNoteId], references: [id], onDelete: Cascade)
 
   // Author of the comment
-  authorId    String
-  author      User      @relation("CommentAuthor", fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation("CommentAuthor", fields: [authorId], references: [id])
 
   // Mentions in this comment
-  mentions    CommentMention[]
+  mentions CommentMention[]
 
   @@index([visitNoteId])
   @@index([authorId])
@@ -803,21 +944,1331 @@ model VisitNoteComment {
 }
 
 model CommentMention {
-  id          String    @id @default(cuid())
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
   // The comment containing the mention
-  commentId   String
-  comment     VisitNoteComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   VisitNoteComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   // The user being mentioned
-  userId      String
-  user        User      @relation("MentionedUser", fields: [userId], references: [id])
+  userId String
+  user   User   @relation("MentionedUser", fields: [userId], references: [id])
 
   // Whether the user has seen this mention
-  seenAt      DateTime?
+  seenAt DateTime?
 
   @@unique([commentId, userId])
   @@index([commentId])
   @@index([userId])
+}
+
+// ============================================
+// BILLING / MEDICAID CLAIMS
+// ============================================
+
+model ServiceType {
+  id          String   @id @default(cuid())
+  code        String // HCPCS code (T1019, S5125, etc.)
+  name        String // Service name (e.g., "Personal Care Services")
+  description String?
+  unitType    UnitType @default(HOURLY)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  billingRates BillingRate[]
+  claimLines   ClaimLine[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([isActive])
+}
+
+model BillingRate {
+  id            String    @id @default(cuid())
+  name          String // Rate name (e.g., "Standard Medicaid Rate")
+  rate          Decimal   @db.Decimal(10, 2) // Hourly rate in dollars
+  effectiveDate DateTime
+  endDate       DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Service type relation
+  serviceTypeId String
+  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
+
+  // Relations
+  clients    Client[]
+  claimLines ClaimLine[]
+
+  @@index([companyId])
+  @@index([serviceTypeId])
+  @@index([isActive])
+  @@index([effectiveDate])
+}
+
+model BillingPeriod {
+  id         String              @id @default(cuid())
+  name       String // Auto-generated: "Week of Jan 1-7, 2026"
+  startDate  DateTime
+  endDate    DateTime
+  status     BillingPeriodStatus @default(OPEN)
+  closedAt   DateTime?
+  closedById String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  claims Claim[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model Claim {
+  id          String      @id @default(cuid())
+  claimNumber String      @unique // Generated: CB-YYYYMMDD-XXXXX
+  status      ClaimStatus @default(DRAFT)
+
+  // Service dates
+  serviceStartDate DateTime
+  serviceEndDate   DateTime
+
+  // Patient info (snapshot at claim time)
+  patientMedicaidId String
+  patientFirstName  String
+  patientLastName   String
+  patientDob        DateTime
+  patientAddress    String
+  patientCity       String
+  patientState      String
+  patientZip        String
+  patientPhone      String?
+
+  // Provider info (snapshot at claim time)
+  providerNpi      String
+  providerTaxId    String
+  providerTaxonomy String
+  providerName     String
+  providerAddress  String
+  providerCity     String
+  providerState    String
+  providerZip      String
+
+  // Payer info
+  payerId   String
+  payerName String?
+
+  // Diagnosis codes (up to 12)
+  diagnosisCodes String[]
+
+  // Totals
+  totalUnits  Decimal @db.Decimal(10, 2)
+  totalAmount Decimal @db.Decimal(10, 2)
+
+  // Place of Service
+  placeOfService String @default("12") // 12 = Home
+
+  // Submission tracking
+  submittedAt  DateTime?
+  paidAt       DateTime?
+  paidAmount   Decimal?  @db.Decimal(10, 2)
+  denialReason String?
+
+  // Notes
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Billing period relation
+  billingPeriodId String
+  billingPeriod   BillingPeriod @relation(fields: [billingPeriodId], references: [id])
+
+  // Relations
+  claimLines  ClaimLine[]
+  submissions ClaimSubmission[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([billingPeriodId])
+  @@index([status])
+  @@index([claimNumber])
+  @@index([serviceStartDate])
+}
+
+model ClaimLine {
+  id         String @id @default(cuid())
+  lineNumber Int // Line sequence number (1-50)
+
+  // Service info
+  serviceDate DateTime // Date of service
+  hcpcsCode   String // HCPCS/CPT code
+  modifiers   String[] // Up to 4 modifiers
+
+  // Shift reference (for traceability)
+  shiftId           String?
+  shiftAttendanceId String?
+
+  // Units and amounts
+  units      Decimal @db.Decimal(10, 2)
+  unitRate   Decimal @db.Decimal(10, 2)
+  lineAmount Decimal @db.Decimal(10, 2)
+
+  // Diagnosis pointer (1-12, references claim diagnosisCodes array)
+  diagnosisPointer String[] // e.g., ["1", "2"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Claim relation
+  claimId String
+  claim   Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  // Service type relation
+  serviceTypeId String?
+  serviceType   ServiceType? @relation(fields: [serviceTypeId], references: [id])
+
+  // Billing rate used
+  billingRateId String?
+  billingRate   BillingRate? @relation(fields: [billingRateId], references: [id])
+
+  @@index([claimId])
+  @@index([serviceDate])
+  @@index([shiftId])
+}
+
+model ClaimSubmission {
+  id             String           @id @default(cuid())
+  submissionType SubmissionType
+  status         SubmissionStatus @default(PENDING)
+
+  // Clearinghouse info
+  clearinghouse ClearinghouseType
+
+  // EDI file info
+  ediFileName String?
+  ediFileUrl  String?
+  ediContent  String? @db.Text // Store 837P content
+
+  // Transmission info
+  submittedAt   DateTime @default(now())
+  submittedById String
+
+  // Response tracking
+  responseReceivedAt DateTime?
+  responseContent    String?   @db.Text
+  acknowledgementId  String? // TA1/999 acknowledgement ID
+
+  // Error tracking
+  errors Json? // Array of error objects
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Claim relation
+  claimId String
+  claim   Claim  @relation(fields: [claimId], references: [id])
+
+  @@index([companyId])
+  @@index([claimId])
+  @@index([status])
+  @@index([submittedAt])
+}
+
+// ============================================
+// PATIENT INTAKE / STATE CONFIGURATION ENUMS
+// ============================================
+
+enum ReferralSource {
+  PHYSICIAN
+  HOSPITAL
+  SKILLED_NURSING
+  FAMILY
+  SELF
+  CASE_MANAGER
+  SOCIAL_WORKER
+  INSURANCE
+  MARKETING
+  OTHER
+}
+
+enum ReferralStatus {
+  PENDING
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  DECLINED
+  LOST
+}
+
+enum IntakeStatus {
+  REFERRAL
+  ASSESSMENT_SCHEDULED
+  ASSESSMENT_IN_PROGRESS
+  ASSESSMENT_COMPLETE
+  CARE_PLAN_PENDING
+  CARE_PLAN_APPROVED
+  CONSENTS_PENDING
+  ENROLLMENT_COMPLETE
+  CANCELLED
+}
+
+enum AssessmentSectionType {
+  KATZ_ADL // Activities of Daily Living
+  LAWTON_IADL // Instrumental ADLs
+  PHQ9 // Depression screening
+  MINI_COG // Dementia screening
+  FALL_RISK // Fall risk assessment
+  SKIN_INTEGRITY // Skin assessment
+  NUTRITION // Nutritional assessment
+  MEDICATION // Medication review
+  PAIN // Pain assessment
+  CUSTOM // Custom questions
+  // PT Evaluation sections
+  PT_HISTORY
+  PT_FUNCTIONAL_STATUS
+  PT_MOBILITY
+  PT_BALANCE
+  PT_TREATMENT_PLAN
+  // OT Evaluation sections
+  OT_HISTORY
+  OT_ADL_STATUS
+  OT_IADL_STATUS
+  OT_HOME_SAFETY
+  OT_TREATMENT_PLAN
+  // ST Evaluation sections
+  ST_HISTORY
+  ST_COGNITION
+  ST_SPEECH
+  ST_SWALLOWING
+  ST_LANGUAGE
+  ST_TREATMENT_PLAN
+  // Nursing Assessment sections
+  NURSING_VITALS
+  NURSING_CARDIOPULMONARY
+  NURSING_NEUROLOGICAL
+  NURSING_SKIN
+  NURSING_ELIMINATION
+  NURSING_TREATMENT_PLAN
+}
+
+enum AssessmentResponseType {
+  SCALE // Numeric scale (0-3, 1-5, etc.)
+  YES_NO // Boolean
+  SINGLE_CHOICE // Single selection
+  MULTIPLE_CHOICE // Multiple selections
+  TEXT // Free text
+  DATE // Date value
+  NUMBER // Numeric value
+}
+
+enum ScoringMethod {
+  SUM // Sum all values
+  AVERAGE // Average of values
+  WEIGHTED_SUM // Weighted sum
+  THRESHOLD // Pass/fail threshold
+  CUSTOM // Custom scoring logic
+}
+
+enum CarePlanStatus {
+  DRAFT
+  PENDING_CLINICAL_REVIEW
+  CLINICAL_APPROVED
+  PENDING_CLIENT_SIGNATURE
+  ACTIVE
+  REVISED
+  COMPLETED
+  CANCELLED
+}
+
+enum CarePlanQAStatus {
+  IN_USE
+  COMPLETED
+}
+
+// QA Status for Assessments and Visit Notes
+enum QAStatus {
+  PENDING_REVIEW // Submitted for QA review
+  APPROVED       // Approved by QA manager
+  REJECTED       // Rejected/requires changes
+}
+
+enum DiagnosisType {
+  PRIMARY
+  SECONDARY
+  ADMITTING
+  PRINCIPAL
+}
+
+enum CarePlanOrderStatus {
+  ACTIVE
+  GOALS_MET
+  ONGOING
+  DISCONTINUED
+}
+
+enum AuthorizationStatus {
+  PENDING
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  DENIED
+  CANCELLED
+}
+
+enum ConsentFormType {
+  GENERAL_CONSENT
+  HIPAA_AUTHORIZATION
+  MEDICAID_ASSIGNMENT
+  BILLING_AUTHORIZATION
+  EMERGENCY_TREATMENT
+  PHOTO_VIDEO_CONSENT
+  DNR_POLST
+  FALL_RISK_ACKNOWLEDGEMENT
+  INFECTION_CONTROL
+  ABUSE_NEGLECT_REPORTING
+  GRIEVANCE_PROCEDURE
+  CLIENT_RIGHTS
+  PRIVACY_PRACTICES
+  ADVANCE_DIRECTIVE
+  POWER_OF_ATTORNEY
+  TELEHEALTH_CONSENT
+  MEDICATION_ADMINISTRATION
+  CUSTOM
+}
+
+enum SignatureType {
+  ELECTRONIC
+  HANDWRITTEN
+  VERBAL_CONSENT
+}
+
+// ============================================
+// STATE CONFIGURATION
+// ============================================
+
+model StateConfiguration {
+  id        String  @id @default(cuid())
+  stateCode String  @unique // 2-letter state code (e.g., "MD")
+  stateName String // Full state name (e.g., "Maryland")
+  isActive  Boolean @default(true)
+
+  // Medicaid-specific configuration
+  medicaidProgramName  String? // e.g., "CFC", "HCBS Waiver"
+  medicaidPayerId      String? // Default Payer ID for Medicaid
+  medicaidRequirements Json? // State-specific requirements
+
+  // EVV requirements
+  evvRequired Boolean @default(true)
+  evvVendor   String? // Approved EVV vendor
+
+  // Assessment requirements
+  assessmentFrequency Int? // Days between reassessments
+  requiredAssessments String[] // Required assessment types
+
+  // Authorization requirements
+  authorizationRequired   Boolean @default(true)
+  maxAuthorizationDays    Int? // Max days per authorization
+  reauthorizationLeadDays Int? // Days before expiry to start reauth
+
+  // Service restrictions
+  maxHoursPerDay  Decimal? @db.Decimal(5, 2)
+  maxHoursPerWeek Decimal? @db.Decimal(5, 2)
+
+  // Required consent forms for this state
+  requiredConsentForms ConsentFormType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assessmentTemplates  AssessmentTemplate[]
+  consentFormTemplates ConsentFormTemplate[]
+  companies            CompanyStateConfig[]
+
+  @@index([stateCode])
+  @@index([isActive])
+}
+
+// Company-specific state configuration overrides
+model CompanyStateConfig {
+  id             String  @id @default(cuid())
+  isActive       Boolean @default(true)
+  isPrimaryState Boolean @default(false) // Primary operating state
+
+  // Custom overrides (null = use state defaults)
+  customPayerId   String?
+  customEvvVendor String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  companyId     String
+  company       Company            @relation(fields: [companyId], references: [id])
+  stateConfigId String
+  stateConfig   StateConfiguration @relation(fields: [stateConfigId], references: [id])
+
+  @@unique([companyId, stateConfigId])
+  @@index([companyId])
+  @@index([stateConfigId])
+}
+
+// ============================================
+// ASSESSMENT TEMPLATES
+// ============================================
+
+model AssessmentTemplate {
+  id           String  @id @default(cuid())
+  name         String // e.g., "Maryland CFC Initial Assessment"
+  description  String?
+  version      Int     @default(1)
+  isActive     Boolean @default(true)
+  isRequired   Boolean @default(false) // Required for intake
+  displayOrder Int     @default(0)
+
+  // Scoring configuration
+  scoringMethod ScoringMethod @default(SUM)
+  maxScore      Decimal?      @db.Decimal(10, 2)
+  passingScore  Decimal?      @db.Decimal(10, 2) // For threshold scoring
+
+  // Care level thresholds (for care plan generation)
+  scoringThresholds Json? // { "low": 0, "medium": 10, "high": 20 }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // State relation (null = company-specific)
+  stateConfigId String?
+  stateConfig   StateConfiguration? @relation(fields: [stateConfigId], references: [id])
+
+  // Company relation (null = state-level template)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Relations
+  sections    AssessmentTemplateSection[]
+  assessments Assessment[]
+
+  @@index([stateConfigId])
+  @@index([companyId])
+  @@index([isActive])
+}
+
+model AssessmentTemplateSection {
+  id           String                @id @default(cuid())
+  sectionType  AssessmentSectionType
+  title        String
+  description  String?
+  instructions String? // Instructions for assessor
+  displayOrder Int                   @default(0)
+
+  // Section-level scoring
+  scoringMethod ScoringMethod? // Override template scoring
+  maxScore      Decimal?       @db.Decimal(10, 2)
+  weight        Decimal?       @db.Decimal(5, 2) // For weighted scoring
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Template relation
+  templateId String
+  template   AssessmentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // Relations
+  items AssessmentTemplateItem[]
+
+  @@index([templateId])
+  @@index([displayOrder])
+}
+
+model AssessmentTemplateItem {
+  id           String                 @id @default(cuid())
+  code         String // Short code (e.g., "BATHING", "PHQ9_Q1")
+  question     String // Full question text
+  description  String? // Additional context/help text
+  responseType AssessmentResponseType
+  displayOrder Int                    @default(0)
+  isRequired   Boolean                @default(true)
+
+  // Response configuration
+  responseOptions Json? // For choice fields: [{ value: 0, label: "Independent" }, ...]
+  minValue        Int? // For scale/number
+  maxValue        Int? // For scale/number
+  scoreMapping    Json? // Map responses to scores: { "0": 0, "1": 1, "2": 2, "3": 3 }
+
+  // Conditional logic
+  showIf Json? // Condition to show this item: { itemCode: "X", value: "Y" }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Section relation
+  sectionId String
+  section   AssessmentTemplateSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  // Relations
+  responses AssessmentResponse[]
+
+  @@unique([sectionId, code])
+  @@index([sectionId])
+  @@index([displayOrder])
+}
+
+// ============================================
+// ASSESSMENTS (COMPLETED)
+// ============================================
+
+model Assessment {
+  id     String @id @default(cuid())
+  status String @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, CANCELLED
+
+  // Scores
+  totalScore    Decimal? @db.Decimal(10, 2)
+  sectionScores Json? // { "sectionId": score }
+  careLevel     String? // Calculated: LOW, MEDIUM, HIGH, SKILLED
+
+  // Assessment timing
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  expiresAt   DateTime? // For periodic reassessments
+
+  // Assessment context
+  assessmentType String  @default("INITIAL") // INITIAL, REASSESSMENT, DISCHARGE
+  notes          String? // Assessor notes
+
+  // QA Workflow
+  qaStatus      QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
+  qaComment     String?   @db.Text // QA reviewer comments
+  qaReviewedAt  DateTime? // When QA review was completed
+  qaReviewedById String?  // Who performed the QA review
+  qaReviewedBy  User?     @relation("AssessmentQAReviewer", fields: [qaReviewedById], references: [id])
+  submittedForQAAt DateTime? // When submitted for QA
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  templateId String
+  template   AssessmentTemplate @relation(fields: [templateId], references: [id])
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  assessorId String
+  assessor   User   @relation("AssessmentAssessor", fields: [assessorId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Optional intake reference
+  intakeId String?
+  intake   Intake? @relation(fields: [intakeId], references: [id])
+
+  // Relations
+  responses AssessmentResponse[]
+  carePlans CarePlan[]
+
+  @@index([templateId])
+  @@index([clientId])
+  @@index([assessorId])
+  @@index([companyId])
+  @@index([intakeId])
+  @@index([status])
+  @@index([qaStatus])
+  @@index([qaReviewedById])
+}
+
+model AssessmentResponse {
+  id String @id @default(cuid())
+
+  // Response value (polymorphic)
+  valueText    String? // For text responses
+  valueNumber  Decimal?  @db.Decimal(10, 2) // For numeric/scale
+  valueBoolean Boolean? // For yes/no
+  valueDate    DateTime? // For date
+  valueJson    Json? // For multi-select
+
+  // Calculated score for this item
+  score Decimal? @db.Decimal(10, 2)
+
+  // Response metadata
+  notes String? // Optional notes for this response
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  itemId String
+  item   AssessmentTemplateItem @relation(fields: [itemId], references: [id])
+
+  @@unique([assessmentId, itemId])
+  @@index([assessmentId])
+  @@index([itemId])
+}
+
+// ============================================
+// REFERRALS
+// ============================================
+
+model ReferralSourceRecord {
+  id            String         @id @default(cuid())
+  name          String // Source name (hospital name, physician name, etc.)
+  type          ReferralSource
+  contactPerson String?
+  phone         String?
+  email         String?
+  fax           String?
+  address       String?
+  notes         String?
+  isActive      Boolean        @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  referrals Referral[]
+
+  @@index([companyId])
+  @@index([type])
+  @@index([isActive])
+}
+
+model Referral {
+  id             String         @id @default(cuid())
+  referralNumber String         @unique // REF-YYYYMMDD-XXXXX
+  status         ReferralStatus @default(PENDING)
+
+  // Referral info
+  receivedDate DateTime @default(now())
+  urgency      String? // ROUTINE, URGENT, STAT
+  reason       String? // Reason for referral
+
+  // Prospect info (before client record is created)
+  prospectFirstName String
+  prospectLastName  String
+  prospectDob       DateTime?
+  prospectPhone     String?
+  prospectAddress   String?
+  prospectCity      String?
+  prospectState     String?
+  prospectZip       String?
+
+  // Clinical info from referral
+  primaryDiagnosis String?
+  diagnosisCodes   String[]
+  medicaidId       String?
+  insuranceInfo    String?
+
+  // Care needs from referral
+  requestedServices String[] // Types of services requested
+  hoursRequested    Decimal? @db.Decimal(5, 2)
+  specialNeeds      String?
+
+  // Contact info
+  emergencyContact  String?
+  emergencyPhone    String?
+  emergencyRelation String?
+
+  // Source tracking
+  referralSourceId    String?
+  referralSource      ReferralSourceRecord? @relation(fields: [referralSourceId], references: [id])
+  referralSourceOther String? // If source type is OTHER
+
+  // Follow-up tracking
+  lastContactDate   DateTime?
+  lastContactMethod String? // PHONE, EMAIL, FAX, IN_PERSON
+  nextFollowUpDate  DateTime?
+  followUpNotes     String?
+
+  // Conversion tracking
+  convertedAt   DateTime?
+  declinedAt    DateTime?
+  declineReason String?
+  lostReason    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Assigned to (for follow-up)
+  assignedToId String?
+  assignedTo   User?   @relation("ReferralAssignee", fields: [assignedToId], references: [id])
+
+  // Linked client (after conversion)
+  clientId String? @unique
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  // Linked intake (when intake starts)
+  intake Intake?
+
+  @@index([companyId])
+  @@index([status])
+  @@index([receivedDate])
+  @@index([assignedToId])
+}
+
+// ============================================
+// INTAKE
+// ============================================
+
+model Intake {
+  id           String       @id @default(cuid())
+  intakeNumber String       @unique // INT-YYYYMMDD-XXXXX
+  status       IntakeStatus @default(REFERRAL)
+
+  // Intake timing
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  targetStartDate DateTime? // Target date to begin services
+
+  // Assignment
+  intakeCoordinatorId String?
+  intakeCoordinator   User?   @relation("IntakeCoordinator", fields: [intakeCoordinatorId], references: [id])
+
+  // Progress tracking
+  currentStep    String? // Current step in wizard
+  completedSteps String[] // Completed wizard steps
+
+  // Notes and documents
+  notes     String?
+  documents Json? // Array of document references
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String @unique
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Referral relation (optional - may be direct intake)
+  referralId String?   @unique
+  referral   Referral? @relation(fields: [referralId], references: [id])
+
+  // Relations
+  assessments Assessment[]
+  consents    ConsentSignature[]
+  carePlans   CarePlan[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([intakeCoordinatorId])
+}
+
+// ============================================
+// CONSENT FORMS
+// ============================================
+
+model ConsentFormTemplate {
+  id          String          @id @default(cuid())
+  name        String
+  formType    ConsentFormType
+  description String?
+  version     Int             @default(1)
+  isActive    Boolean         @default(true)
+  isRequired  Boolean         @default(false) // Required for intake
+
+  // Form content
+  content String @db.Text // Rich text/HTML content
+
+  // Legal requirements
+  requiresWitness  Boolean @default(false)
+  requiresDate     Boolean @default(true)
+  expiresAfterDays Int? // Null = never expires
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // State relation (null = company-specific)
+  stateConfigId String?
+  stateConfig   StateConfiguration? @relation(fields: [stateConfigId], references: [id])
+
+  // Company relation (null = state-level template)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Relations
+  signatures ConsentSignature[]
+
+  @@index([stateConfigId])
+  @@index([companyId])
+  @@index([formType])
+  @@index([isActive])
+}
+
+model ConsentSignature {
+  id String @id @default(cuid())
+
+  // Signature data
+  signatureType SignatureType
+  signatureData String?       @db.Text // Base64 image or text description for verbal
+  signedAt      DateTime      @default(now())
+
+  // Signer info
+  signerName     String
+  signerRelation String? // SELF, SPOUSE, CHILD, POA, GUARDIAN, etc.
+  signerPhone    String?
+  signerEmail    String?
+
+  // Witness info (if required)
+  witnessName      String?
+  witnessSignature String?   @db.Text
+  witnessDate      DateTime?
+
+  // Verbal consent info
+  verbalConsentDate  DateTime?
+  verbalConsentBy    String? // Staff who obtained verbal consent
+  verbalConsentNotes String?
+
+  // Form version snapshot
+  formContentSnapshot String? @db.Text // Content at time of signing
+  formVersion         Int
+
+  // Expiration
+  expiresAt    DateTime?
+  isVoided     Boolean   @default(false)
+  voidedAt     DateTime?
+  voidedReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Template relation
+  templateId String
+  template   ConsentFormTemplate @relation(fields: [templateId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Intake relation (optional - may be standalone consent)
+  intakeId String?
+  intake   Intake? @relation(fields: [intakeId], references: [id])
+
+  // Staff who collected the signature
+  collectedById String
+  collectedBy   User   @relation("ConsentCollector", fields: [collectedById], references: [id])
+
+  @@index([companyId])
+  @@index([templateId])
+  @@index([clientId])
+  @@index([intakeId])
+  @@index([signedAt])
+}
+
+// ============================================
+// CARE PLANS
+// ============================================
+
+model CarePlan {
+  id         String         @id @default(cuid())
+  planNumber String         @unique // CP-YYYYMMDD-XXXXX
+  status     CarePlanStatus @default(DRAFT)
+  version    Int            @default(1)
+
+  // Plan dates
+  effectiveDate DateTime?
+  endDate       DateTime?
+
+  // Certification Period (from alto POC)
+  certStartDate DateTime?
+  certEndDate   DateTime?
+
+  // Physician Signature Tracking
+  signatureSentDate     DateTime? // Date sent to physician
+  signatureReceivedDate DateTime? // Date received from physician
+  verbalSOCDate         DateTime? // Verbal SOC date if applicable
+
+  // Plan content
+  summary       String? // Executive summary / Clinical Summary
+  goals         Json? // Array of care goals
+  interventions Json? // Array of interventions
+  frequency     Json? // Service frequency
+  internalNotes String? @db.Text // Internal notes (not printed on POC)
+
+  // Clinical Information (from alto POC)
+  medications             String? @db.Text // Medications information
+  dmeSupplies             String? @db.Text // DME supplies description
+  safetyMeasures          String? @db.Text // Safety measures
+  nutritionalRequirements String? @db.Text // Nutritional requirements
+  allergies               String? @db.Text // Patient allergies
+
+  // Functional Status
+  functionalLimitations String[] // Array of functional limitations
+  otherFunctionalLimit  String? // Custom functional limitation text
+  activitiesPermitted   String[] // Array of activities permitted
+  otherActivitiesPermit String? // Custom activities text
+  mentalStatus          String[] // Array of mental status options
+  otherMentalStatus     String? // Custom mental status text
+  prognosis             String? // Poor, Guarded, Fair, Good, Excellent
+
+  // Clinical Narratives
+  cognitiveStatus    String? @db.Text // Psychosocial and cognitive status
+  rehabPotential     String? @db.Text // Rehabilitation potential
+  dischargePlan      String? @db.Text // Discharge plans
+  riskIntervention   String? @db.Text // ER/Hospital re-admission risk factors
+  advancedDirectives String? @db.Text // Advanced directives information
+  caregiverNeeds     String? @db.Text // Caregiver needs
+  homeboundStatus    String? @db.Text // Homebound status determination
+  carePreferences    String? @db.Text // Patient stated goals/care preferences
+
+  // Generated from assessment
+  careLevel        String? // LOW, MEDIUM, HIGH, SKILLED
+  recommendedHours Decimal? @db.Decimal(5, 2) // Per week
+
+  // Physician / Case Manager
+  physicianId            String?
+  physician              Physician? @relation(fields: [physicianId], references: [id])
+  caseManagerId          String?
+  caseManager            User?      @relation("CarePlanCaseManager", fields: [caseManagerId], references: [id])
+  physicianCertStatement String?    @db.Text // Custom physician certification statement
+
+  // 485 Certification Fields
+  isCert485      Boolean @default(false) // Indicates this is a CMS-485 form
+  cert485Orders  String? @db.Text // Specific 485 orders (discipline, treatment, supplies)
+  cert485Goals   String? @db.Text // 485 goals and rehabilitation potential
+
+  // QA Workflow
+  qaStatus CarePlanQAStatus?
+  qaNotes  String?           @db.Text // Accumulated QA notes with timestamps
+
+  // Nurse Signature
+  nurseSignature  String?   @db.Text // Base64 signature image
+  nurseSignedAt   DateTime?
+  nurseSignedById String?
+  nurseSignedBy   User?     @relation("CarePlanNurseSigner", fields: [nurseSignedById], references: [id])
+
+  // Approval tracking
+  clinicalReviewedAt   DateTime?
+  clinicalReviewedById String?
+  clinicalReviewedBy   User?     @relation("CarePlanClinicalReviewer", fields: [clinicalReviewedById], references: [id])
+  clinicalNotes        String?
+
+  // Client/Family signature
+  clientSignedAt       DateTime?
+  clientSignature      String?   @db.Text
+  clientSignerName     String?
+  clientSignerRelation String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Assessment that generated this plan
+  assessmentId String?
+  assessment   Assessment? @relation(fields: [assessmentId], references: [id])
+
+  // Intake relation
+  intakeId String?
+  intake   Intake? @relation(fields: [intakeId], references: [id])
+
+  // Creator
+  createdById String
+  createdBy   User   @relation("CarePlanCreator", fields: [createdById], references: [id])
+
+  // Authorizations linked to this plan
+  authorizations Authorization[]
+
+  // Task templates based on care plan
+  taskTemplates CarePlanTask[]
+
+  // Diagnoses linked to this plan (ICD-10)
+  diagnoses CarePlanDiagnosis[]
+
+  // Orders and Goals
+  orders CarePlanOrder[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([assessmentId])
+  @@index([intakeId])
+  @@index([physicianId])
+  @@index([caseManagerId])
+}
+
+model CarePlanTask {
+  id              String  @id @default(cuid())
+  taskName        String
+  taskDescription String?
+  category        String // ADL, IADL, SKILLED, etc.
+  frequency       String? // DAILY, WEEKLY, AS_NEEDED, etc.
+  duration        Int? // Minutes
+  isRequired      Boolean @default(false)
+  displayOrder    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Care plan relation
+  carePlanId String
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@index([carePlanId])
+  @@index([category])
+}
+
+// ============================================
+// PHYSICIANS
+// ============================================
+
+model Physician {
+  id        String  @id @default(cuid())
+  firstName String
+  lastName  String
+  npi       String? // National Provider Identifier
+  specialty String?
+  phone     String?
+  fax       String?
+  email     String?
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Care plans this physician is associated with
+  carePlans CarePlan[]
+
+  @@index([companyId])
+  @@index([npi])
+  @@index([isActive])
+}
+
+// ============================================
+// CARE PLAN DIAGNOSES (ICD-10)
+// ============================================
+
+model CarePlanDiagnosis {
+  id String @id @default(cuid())
+
+  // ICD-10 Code (from NIH API)
+  icdCode        String // e.g., "E11.9"
+  icdDescription String // e.g., "Type 2 diabetes mellitus without complications"
+
+  // Diagnosis metadata
+  diagnosisType DiagnosisType @default(SECONDARY)
+  onsetDate     DateTime?
+  resolvedDate  DateTime?
+  isActive      Boolean       @default(true)
+  displayOrder  Int           @default(0)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Care plan relation
+  carePlanId String
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@index([carePlanId])
+  @@index([icdCode])
+  @@index([diagnosisType])
+  @@index([isActive])
+}
+
+// ============================================
+// CARE PLAN ORDERS & GOALS
+// ============================================
+
+model CarePlanOrder {
+  id String @id @default(cuid())
+
+  // Order details
+  disciplineType   String // SN, PT, OT, ST, HHA, MSW, etc.
+  bodySystem       String? // Body system/section
+  orderText        String  @db.Text // The order instructions
+  orderExplanation String? @db.Text // Explanation for patient
+
+  // Goals
+  goals            String? @db.Text // Associated goals
+  goalsExplanation String? @db.Text // Goal explanation for patient
+
+  // Goal tracking
+  orderStatus      CarePlanOrderStatus @default(ACTIVE)
+  isFrequencyOrder Boolean             @default(false)
+  effectiveDate    DateTime?
+  goalsMetDate     DateTime?
+
+  // Display
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Care plan relation
+  carePlanId String
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@index([carePlanId])
+  @@index([disciplineType])
+  @@index([orderStatus])
+  @@index([isActive])
+}
+
+// ============================================
+// AUTHORIZATION TRACKING
+// ============================================
+
+model Authorization {
+  id         String              @id @default(cuid())
+  authNumber String // Prior auth number
+  status     AuthorizationStatus @default(PENDING)
+
+  // Authorization details
+  serviceType String // Type of service authorized
+  startDate   DateTime
+  endDate     DateTime
+
+  // Units tracking
+  authorizedUnits Decimal  @db.Decimal(10, 2)
+  usedUnits       Decimal  @default(0) @db.Decimal(10, 2)
+  remainingUnits  Decimal  @db.Decimal(10, 2)
+  unitType        UnitType @default(HOURLY)
+
+  // Rate
+  authorizedRate Decimal? @db.Decimal(10, 2)
+
+  // Payer info
+  payerId   String?
+  payerName String?
+
+  // Request tracking
+  requestedAt   DateTime?
+  requestedById String?
+  approvedAt    DateTime?
+  deniedAt      DateTime?
+  denialReason  String?
+
+  // Reauthorization
+  isReauthorization          Boolean   @default(false)
+  previousAuthId             String?
+  reauthorizationRequestedAt DateTime?
+
+  // Notifications
+  expirationAlertSent Boolean  @default(false)
+  unitsAlertSent      Boolean  @default(false)
+  unitsAlertThreshold Decimal? @default(20) @db.Decimal(5, 2) // Percentage
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Care plan relation
+  carePlanId String?
+  carePlan   CarePlan? @relation(fields: [carePlanId], references: [id])
+
+  // Relations
+  alerts AuthorizationAlert[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([carePlanId])
+  @@index([status])
+  @@index([endDate])
+}
+
+model AuthorizationAlert {
+  id        String @id @default(cuid())
+  alertType String // EXPIRING, LOW_UNITS, EXPIRED, REAUTH_NEEDED
+  message   String
+  severity  String // INFO, WARNING, CRITICAL
+
+  // Alert status
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  isDismissed Boolean   @default(false)
+  dismissedAt DateTime?
+
+  // Action taken
+  actionTaken     String?
+  actionTakenAt   DateTime?
+  actionTakenById String?
+
+  createdAt DateTime @default(now())
+
+  // Authorization relation
+  authorizationId String
+  authorization   Authorization @relation(fields: [authorizationId], references: [id], onDelete: Cascade)
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([authorizationId])
+  @@index([companyId])
+  @@index([alertType])
+  @@index([isRead])
 }

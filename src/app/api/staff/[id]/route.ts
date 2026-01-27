@@ -53,7 +53,7 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         // Assigned clients (for carers)
-        carerClients: {
+        assignedClients: {
           where: { status: "ACTIVE" },
           select: {
             id: true,
@@ -82,7 +82,7 @@ export async function GET(
           },
         },
         // Recent visit notes
-        carerVisitNotes: {
+        visitNotes: {
           orderBy: { submittedAt: "desc" },
           take: 10,
           select: {
@@ -129,9 +129,14 @@ export async function GET(
       }),
     ]);
 
+    // Destructure to rename fields for frontend compatibility
+    const { assignedClients, visitNotes, ...rest } = user;
+
     return NextResponse.json({
       staff: {
-        ...user,
+        ...rest,
+        carerClients: assignedClients,
+        carerVisitNotes: visitNotes,
         profileData: user.profileData || null,
         lastLogin: user.lastLogin?.toISOString() || null,
         createdAt: user.createdAt.toISOString(),

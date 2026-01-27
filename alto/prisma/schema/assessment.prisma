@@ -1,0 +1,43 @@
+model Assessment {
+  id                  String           @id @default(uuid())
+  providerId          String
+  provider            Provider         @relation(fields: [providerId], references: [id])
+  caregiver           User             @relation(fields: [caregiverId], references: [id])
+  caregiverId         String
+  patientSchedule     PatientSchedule? @relation(fields: [patientScheduleId], references: [id])
+  patientScheduleId   String?          @unique
+  source              String?
+  reasons             String[]
+  qaStatus            QAStatus?
+  qaComment           String?
+  exportStatus        String?          @db.VarChar(255)
+  dateCompleted       DateTime?
+  patient             Patient?         @relation(fields: [patientId], references: [id])
+  patientId           String?
+  patientTracking     Json?
+  historyAndDiagnosis Json?
+  livingFinancial     Json?
+  oasisAssessment     Json?
+  nursingAssessment   Json?
+  ptEval              Json?
+  walkTest            Json?
+  snVisit             Json?
+  otEval              Json?
+  otVisit             Json?
+  ptVisit             Json?
+  hhaVisit            Json?
+  socAccess           Json?
+  stEval              Json?
+  stVisit             Json?
+  oasisFollowUp       Json?
+  consent             Json?
+  qaed                Boolean?         @default(false)
+  submittedAt         DateTime?
+  visitDate           DateTime?
+  timeIn              String?
+  timeOut             String?
+  active              Boolean          @default(true)
+  archivedOn          DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+}
