@@ -21,6 +21,7 @@ import {
   Clock,
   CheckCircle,
   Printer,
+  Trash2,
 } from "lucide-react";
 
 interface Assessment {
@@ -97,6 +98,9 @@ export default function AssessmentDetailPage() {
   const [isSaving, setIsSaving] = React.useState(false);
   const [isCompleting, setIsCompleting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
   // Local responses state for optimistic updates
   const [localResponses, setLocalResponses] = React.useState<
@@ -147,13 +151,16 @@ export default function AssessmentDetailPage() {
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      const responses = localResponses.map((r) => ({
-        itemId: r.itemId,
-        value: r.numericValue ?? r.textValue ?? "",
-        notes: r.notes,
-      }));
+      const responses = localResponses
+        .filter((r) => r.numericValue !== null || r.textValue !== null)
+        .map((r) => ({
+          itemId: r.itemId,
+          value: r.numericValue ?? r.textValue ?? "",
+          ...(r.notes ? { notes: r.notes } : {}),
+        }));
 
       const response = await fetch(`/api/assessments/${assessmentId}`, {
         method: "PATCH",
@@ -168,6 +175,10 @@ export default function AssessmentDetailPage() {
       }
 
       setAssessment(data.assessment);
+      setSuccess("Progress saved successfully");
+
+      // Auto-dismiss success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save assessment");
     } finally {
@@ -199,6 +210,29 @@ export default function AssessmentDetailPage() {
       setError(err instanceof Error ? err.message : "Failed to complete assessment");
     } finally {
       setIsCompleting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/assessments/${assessmentId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete assessment");
+      }
+
+      router.push("/assessments");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete assessment");
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -271,13 +305,67 @@ export default function AssessmentDetailPage() {
             </div>
           </div>
         </div>
-        {isCompleted && (
-          <Button variant="secondary" onClick={() => window.print()}>
-            <Printer className="mr-2 h-4 w-4" />
-            Print
+        <div className="flex items-center gap-2">
+          {isCompleted && (
+            <Button variant="secondary" onClick={() => window.print()}>
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-error hover:bg-error/10"
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
-        )}
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Delete Assessment</h3>
+            <p className="text-foreground-secondary mb-4">
+              Are you sure you want to delete this assessment? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="error"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {success && (
+        <div className="p-4 rounded-md bg-success/10 text-success text-sm">
+          {success}
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

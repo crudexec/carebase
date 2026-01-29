@@ -39,6 +39,7 @@ import {
   UserCog,
   Cog,
   FolderOpen,
+  Send,
 } from "lucide-react";
 
 interface NavItem {
@@ -146,12 +147,6 @@ const navigation: NavEntry[] = [
         label: "Visit Notes",
         href: "/visit-notes",
         icon: ClipboardList,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
-      },
-      {
-        label: "Daily Reports",
-        href: "/reports/daily",
-        icon: FileText,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
       },
       {
@@ -274,6 +269,12 @@ const navigation: NavEntry[] = [
         label: "Profile Forms",
         href: "/settings/profile-templates",
         icon: FileEdit,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "Fax History",
+        href: "/settings/fax",
+        icon: Send,
         roles: ["ADMIN", "OPS_MANAGER"],
       },
     ],

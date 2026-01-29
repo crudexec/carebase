@@ -17,7 +17,10 @@ import {
   Plus,
   Trash2,
   FileCheck,
+  FileDown,
+  Send,
 } from "lucide-react";
+import generatePDF, { Options } from "react-to-pdf";
 import {
   Button,
   Input,
@@ -31,6 +34,7 @@ import {
 } from "@/components/ui";
 import { ICD10Search, DiagnosisItem } from "./icd10-search";
 import { PhysicianSearch } from "./physician-search";
+import { CarePlanPrint } from "./care-plan-print";
 
 // Types
 interface Physician {
@@ -113,6 +117,11 @@ interface CarePlanData {
   physicianId?: string | null;
   caseManagerId?: string | null;
   physicianCertStatement?: string | null;
+  // Manual physician entry fields
+  physicianName?: string | null;
+  physicianNpi?: string | null;
+  physicianPhone?: string | null;
+  physicianFax?: string | null;
   isCert485?: boolean;
   cert485Orders?: string | null;
   cert485Goals?: string | null;
@@ -223,6 +232,149 @@ export function CarePlanForm({
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [caseManagers, setCaseManagers] = React.useState<CaseManager[]>([]);
+  const [isExporting, setIsExporting] = React.useState(false);
+  const [isSendingFax, setIsSendingFax] = React.useState(false);
+  const [faxSuccess, setFaxSuccess] = React.useState<string | null>(null);
+  const printRef = React.useRef<HTMLDivElement>(null);
+
+  // PDF export options
+  const pdfOptions: Options = {
+    overrides: {
+      canvas: {
+        onclone: (document: Document) => {
+          const div = document.getElementById("print-box") as HTMLDivElement;
+          if (div) {
+            div.style.display = "block";
+          }
+        },
+      },
+    },
+    filename: `Care Plan - ${clientName}.pdf`,
+  };
+
+  // Export PDF handler
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generatePDF(printRef, pdfOptions);
+    } catch (err) {
+      console.error("Failed to export PDF:", err);
+      setError("Failed to export PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Send Fax handler
+  const handleSendFax = async () => {
+    if (!carePlanId) {
+      setError("Please save the care plan before sending a fax.");
+      return;
+    }
+
+    if (!formData.physicianFax) {
+      setError("Please enter a physician fax number before sending.");
+      return;
+    }
+
+    setIsSendingFax(true);
+    setError(null);
+    setFaxSuccess(null);
+
+    try {
+      // Generate PDF as base64
+      const printElement = printRef.current;
+      if (!printElement) {
+        throw new Error("Print element not found");
+      }
+
+      // Show the print box temporarily
+      const printBox = document.getElementById("print-box") as HTMLDivElement;
+      if (printBox) {
+        printBox.style.display = "block";
+      }
+
+      // Use html2canvas to generate the PDF
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(printElement, {
+        scale: 1, // Reduced scale for smaller file size
+        useCORS: true,
+        logging: false,
+      });
+
+      // Hide the print box again
+      if (printBox) {
+        printBox.style.display = "none";
+      }
+
+      // Use JPEG with compression for smaller file size
+      const imgData = canvas.toDataURL("image/jpeg", 0.7);
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "letter",
+        compress: true,
+      });
+
+      const imgWidth = 215.9; // Letter width in mm
+      const pageHeight = 279.4; // Letter height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+        heightLeft -= pageHeight;
+      }
+
+      // Convert to base64
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Convert PDF to blob
+      const pdfBlob = pdf.output("blob");
+      const pdfSizeMB = pdfBlob.size / (1024 * 1024);
+      console.log(`PDF size: ${pdfSizeMB.toFixed(2)} MB`);
+
+      if (pdfSizeMB > 20) {
+        throw new Error(`PDF is too large (${pdfSizeMB.toFixed(1)} MB). Maximum size is 20 MB.`);
+      }
+
+      // Send fax via API using FormData (handles large files better)
+      const formDataPayload = new FormData();
+      formDataPayload.append("carePlanId", carePlanId);
+      formDataPayload.append("toNumber", formData.physicianFax!);
+      if (formData.physicianName) {
+        formDataPayload.append("recipientName", formData.physicianName);
+      }
+      formDataPayload.append("pdf", pdfBlob, `care-plan-${carePlanId}.pdf`);
+
+      const response = await fetch("/api/fax/send", {
+        method: "POST",
+        body: formDataPayload,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send fax");
+      }
+
+      setFaxSuccess("Fax queued successfully! You will be notified when it is delivered.");
+      setTimeout(() => setFaxSuccess(null), 5000);
+    } catch (err) {
+      console.error("Failed to send fax:", err);
+      setError(err instanceof Error ? err.message : "Failed to send fax. Please try again.");
+    } finally {
+      setIsSendingFax(false);
+    }
+  };
 
   // Form state
   const [formData, setFormData] = React.useState<CarePlanData>({
@@ -240,6 +392,46 @@ export function CarePlanForm({
   const [selectedPhysician, setSelectedPhysician] = React.useState<Physician | null>(
     initialData?.physician || null
   );
+  const [faxError, setFaxError] = React.useState<string | null>(null);
+
+  // E.164 format validation and formatting
+  const formatToE164 = (value: string): string => {
+    // Remove all non-digit characters except leading +
+    let digits = value.replace(/[^\d+]/g, "");
+
+    // Ensure it starts with +
+    if (!digits.startsWith("+")) {
+      // If it starts with 1 and has 10+ digits, assume US number
+      if (digits.startsWith("1") && digits.length >= 11) {
+        digits = "+" + digits;
+      } else if (digits.length === 10) {
+        // Assume US number without country code
+        digits = "+1" + digits;
+      } else if (digits.length > 0) {
+        digits = "+" + digits;
+      }
+    }
+
+    return digits;
+  };
+
+  const validateE164 = (value: string): boolean => {
+    if (!value) return true; // Empty is valid (field is optional)
+    // E.164: + followed by 1-15 digits
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    return e164Regex.test(value);
+  };
+
+  const handleFaxChange = (value: string) => {
+    const formatted = formatToE164(value);
+    updateField("physicianFax", formatted || null);
+
+    if (formatted && !validateE164(formatted)) {
+      setFaxError("Invalid format. Use E.164 format: +[country code][number]");
+    } else {
+      setFaxError(null);
+    }
+  };
 
   // Fetch case managers
   React.useEffect(() => {
@@ -388,6 +580,10 @@ export function CarePlanForm({
         physicianId: selectedPhysician?.id || null,
         caseManagerId: formData.caseManagerId,
         physicianCertStatement: formData.physicianCertStatement,
+        physicianName: formData.physicianName,
+        physicianNpi: formData.physicianNpi,
+        physicianPhone: formData.physicianPhone,
+        physicianFax: formData.physicianFax,
         isCert485: formData.isCert485 || false,
         cert485Orders: formData.cert485Orders,
         cert485Goals: formData.cert485Goals,
@@ -502,12 +698,41 @@ export function CarePlanForm({
           <Button
             variant="ghost"
             onClick={() => router.back()}
-            disabled={isSaving}
+            disabled={isSaving || isExporting}
           >
             <X className="w-4 h-4 mr-1" />
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          {carePlanId && (
+            <>
+              <Button
+                variant="secondary"
+                onClick={handleExportPDF}
+                disabled={isSaving || isExporting || isSendingFax}
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <FileDown className="w-4 h-4 mr-1" />
+                )}
+                {isExporting ? "Exporting..." : "Export PDF"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleSendFax}
+                disabled={isSaving || isExporting || isSendingFax || !formData.physicianFax}
+                title={!formData.physicianFax ? "Enter physician fax number first" : "Send fax to physician"}
+              >
+                {isSendingFax ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-1" />
+                )}
+                {isSendingFax ? "Sending..." : "Send Fax"}
+              </Button>
+            </>
+          )}
+          <Button onClick={handleSave} disabled={isSaving || isExporting || isSendingFax}>
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
             ) : (
@@ -517,6 +742,13 @@ export function CarePlanForm({
           </Button>
         </div>
       </div>
+
+      {/* Success Message */}
+      {faxSuccess && (
+        <div className="p-3 rounded-md bg-success/20 text-body-sm text-success">
+          {faxSuccess}
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -660,16 +892,6 @@ export function CarePlanForm({
             </div>
           </div>
 
-          {/* Physician */}
-          <div className="space-y-2">
-            <Label>Attending Physician</Label>
-            <PhysicianSearch
-              selectedPhysician={selectedPhysician}
-              onSelect={setSelectedPhysician}
-              onClear={() => setSelectedPhysician(null)}
-            />
-          </div>
-
           {/* Case Manager */}
           <div className="space-y-2">
             <Label htmlFor="caseManagerId">Case Manager</Label>
@@ -728,7 +950,67 @@ export function CarePlanForm({
         </div>
       </CollapsibleSection>
 
-      {/* Section 2: Diagnoses */}
+      {/* Section 2: Physician Information */}
+      <CollapsibleSection
+        title="Physician Information"
+        description="Attending physician details"
+        icon={User}
+        defaultOpen={true}
+      >
+        <div className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="physicianName">Physician Name</Label>
+              <Input
+                id="physicianName"
+                value={formData.physicianName || ""}
+                onChange={(e) => updateField("physicianName", e.target.value || null)}
+                placeholder="Enter physician name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="physicianNpi">NPI Number</Label>
+              <Input
+                id="physicianNpi"
+                value={formData.physicianNpi || ""}
+                onChange={(e) => updateField("physicianNpi", e.target.value || null)}
+                placeholder="Enter NPI number"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="physicianPhone">Phone Number</Label>
+              <Input
+                id="physicianPhone"
+                type="tel"
+                value={formData.physicianPhone || ""}
+                onChange={(e) => updateField("physicianPhone", e.target.value || null)}
+                placeholder="Enter phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="physicianFax">Fax Number</Label>
+              <Input
+                id="physicianFax"
+                type="tel"
+                value={formData.physicianFax || ""}
+                onChange={(e) => handleFaxChange(e.target.value)}
+                placeholder="+1234567890"
+                className={faxError ? "border-error" : ""}
+              />
+              <p className="text-xs text-foreground-tertiary">
+                E.164 format: +[country code][number] (e.g., +14155551234)
+              </p>
+              {faxError && (
+                <p className="text-xs text-error">{faxError}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Section 3: Diagnoses */}
       <CollapsibleSection
         title="Diagnoses (ICD-10)"
         description="Primary and secondary diagnoses"
@@ -1194,115 +1476,82 @@ export function CarePlanForm({
         </div>
       </CollapsibleSection>
 
-      {/* Section 9: QA & Signatures */}
+      {/* Section 9: Signatures */}
       <CollapsibleSection
-        title="QA & Signatures"
-        description="Quality assurance and signature collection"
+        title="Signatures"
+        description="Signature collection"
         icon={User}
       >
         <div className="space-y-6 pt-4">
-          {/* QA Status */}
+          {/* Signatures Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="qaStatus">QA Status</Label>
-              <Select
-                id="qaStatus"
-                value={formData.qaStatus || ""}
-                onChange={(e) =>
-                  updateField("qaStatus", e.target.value || null)
-                }
-              >
-                <option value="">Select status</option>
-                <option value="IN_USE">In Use</option>
-                <option value="COMPLETED">Completed</option>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="qaNotes">QA Notes</Label>
-            <Textarea
-              id="qaNotes"
-              value={formData.qaNotes || ""}
-              onChange={(e) => updateField("qaNotes", e.target.value)}
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="clinicalNotes">Clinical Review Notes</Label>
-            <Textarea
-              id="clinicalNotes"
-              value={formData.clinicalNotes || ""}
-              onChange={(e) => updateField("clinicalNotes", e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {/* Nurse Signature */}
-          <div className="space-y-4 p-4 border border-border rounded-lg">
-            <h4 className="font-medium text-foreground">Nurse Signature</h4>
-            <SignaturePad
-              value={formData.nurseSignature || ""}
-              onChange={(signature) => {
-                updateField("nurseSignature", signature);
-                if (signature) {
-                  updateField("nurseSignedAt", new Date().toISOString());
-                } else {
-                  updateField("nurseSignedAt", null);
-                }
-              }}
-            />
-            {formData.nurseSignedAt && (
-              <p className="text-sm text-foreground-secondary">
-                Signed on:{" "}
-                {new Date(formData.nurseSignedAt).toLocaleString()}
-              </p>
-            )}
-          </div>
-
-          {/* Client Signature */}
-          <div className="space-y-4 p-4 border border-border rounded-lg">
-            <h4 className="font-medium text-foreground">Client Signature</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientSignerName">Signer Name</Label>
-                <Input
-                  id="clientSignerName"
-                  value={formData.clientSignerName || ""}
-                  onChange={(e) =>
-                    updateField("clientSignerName", e.target.value)
+            {/* Nurse Signature */}
+            <div className="space-y-3 p-4 border border-border rounded-lg">
+              <h4 className="font-medium text-foreground">Nurse Signature</h4>
+              <SignaturePad
+                value={formData.nurseSignature || ""}
+                onChange={(signature) => {
+                  updateField("nurseSignature", signature);
+                  if (signature) {
+                    updateField("nurseSignedAt", new Date().toISOString());
+                  } else {
+                    updateField("nurseSignedAt", null);
                   }
-                  placeholder="Name of person signing"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientSignerRelation">Relation to Client</Label>
-                <Input
-                  id="clientSignerRelation"
-                  value={formData.clientSignerRelation || ""}
-                  onChange={(e) =>
-                    updateField("clientSignerRelation", e.target.value)
-                  }
-                  placeholder="e.g., Self, Spouse, Child"
-                />
-              </div>
+                }}
+              />
+              {formData.nurseSignedAt && (
+                <p className="text-xs text-foreground-secondary">
+                  Signed: {new Date(formData.nurseSignedAt).toLocaleString()}
+                </p>
+              )}
             </div>
-            <SignaturePad
-              value={formData.clientSignature || ""}
-              onChange={(signature) => {
-                updateField("clientSignature", signature);
-                if (signature) {
-                  updateField("clientSignedAt", new Date().toISOString());
-                } else {
-                  updateField("clientSignedAt", null);
-                }
-              }}
-            />
-            {formData.clientSignedAt && (
-              <p className="text-sm text-foreground-secondary">
-                Signed on:{" "}
-                {new Date(formData.clientSignedAt).toLocaleString()}
-              </p>
-            )}
+
+            {/* Client Signature */}
+            <div className="space-y-3 p-4 border border-border rounded-lg">
+              <h4 className="font-medium text-foreground">Client Signature</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="clientSignerName" className="text-xs">Signer Name</Label>
+                  <Input
+                    id="clientSignerName"
+                    value={formData.clientSignerName || ""}
+                    onChange={(e) =>
+                      updateField("clientSignerName", e.target.value)
+                    }
+                    placeholder="Name"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="clientSignerRelation" className="text-xs">Relation</Label>
+                  <Input
+                    id="clientSignerRelation"
+                    value={formData.clientSignerRelation || ""}
+                    onChange={(e) =>
+                      updateField("clientSignerRelation", e.target.value)
+                    }
+                    placeholder="e.g., Self, Spouse"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              <SignaturePad
+                value={formData.clientSignature || ""}
+                onChange={(signature) => {
+                  updateField("clientSignature", signature);
+                  if (signature) {
+                    updateField("clientSignedAt", new Date().toISOString());
+                  } else {
+                    updateField("clientSignedAt", null);
+                  }
+                }}
+              />
+              {formData.clientSignedAt && (
+                <p className="text-xs text-foreground-secondary">
+                  Signed: {new Date(formData.clientSignedAt).toLocaleString()}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </CollapsibleSection>
@@ -1312,11 +1561,40 @@ export function CarePlanForm({
         <Button
           variant="ghost"
           onClick={() => router.back()}
-          disabled={isSaving}
+          disabled={isSaving || isExporting || isSendingFax}
         >
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={isSaving}>
+        {carePlanId && (
+          <>
+            <Button
+              variant="secondary"
+              onClick={handleExportPDF}
+              disabled={isSaving || isExporting || isSendingFax}
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <FileDown className="w-4 h-4 mr-1" />
+              )}
+              {isExporting ? "Exporting..." : "Export PDF"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleSendFax}
+              disabled={isSaving || isExporting || isSendingFax || !formData.physicianFax}
+              title={!formData.physicianFax ? "Enter physician fax number first" : "Send fax to physician"}
+            >
+              {isSendingFax ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-1" />
+              )}
+              {isSendingFax ? "Sending..." : "Send Fax"}
+            </Button>
+          </>
+        )}
+        <Button onClick={handleSave} disabled={isSaving || isExporting || isSendingFax}>
           {isSaving ? (
             <Loader2 className="w-4 h-4 mr-1 animate-spin" />
           ) : (
@@ -1325,6 +1603,19 @@ export function CarePlanForm({
           {isSaving ? "Saving..." : "Save Care Plan"}
         </Button>
       </div>
+
+      {/* Hidden print component for PDF export */}
+      <CarePlanPrint
+        ref={printRef}
+        clientName={clientName}
+        data={{
+          ...formData,
+          diagnoses,
+          orders,
+          physician: selectedPhysician,
+          caseManager: caseManagers.find((cm) => cm.id === formData.caseManagerId),
+        }}
+      />
     </div>
   );
 }

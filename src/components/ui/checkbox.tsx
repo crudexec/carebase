@@ -14,8 +14,11 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const inputId = id || generatedId;
 
     return (
-      <div className="flex items-center gap-2">
-        <div className="relative">
+      <label
+        htmlFor={inputId}
+        className="inline-flex items-start gap-2 cursor-pointer select-none"
+      >
+        <div className="relative flex-shrink-0">
           <input
             type="checkbox"
             id={inputId}
@@ -30,17 +33,14 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             ref={ref}
             {...props}
           />
-          <Check className="pointer-events-none absolute left-0 top-0 h-4 w-4 text-white opacity-0 peer-checked:opacity-100" />
+          <Check className="pointer-events-none absolute inset-0 h-4 w-4 text-white opacity-0 peer-checked:opacity-100" />
         </div>
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-sm text-foreground cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
-          >
+          <span className="text-sm text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
             {label}
-          </label>
+          </span>
         )}
-      </div>
+      </label>
     );
   }
 );

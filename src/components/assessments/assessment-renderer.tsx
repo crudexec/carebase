@@ -78,6 +78,9 @@ export function AssessmentRenderer({
 }: AssessmentRendererProps) {
   const [currentSection, setCurrentSection] = React.useState(0);
 
+  // Safely get sections array (handle undefined/null)
+  const sections = template.sections || [];
+
   // Get response value for an item
   const getResponseValue = (itemId: string): string | number => {
     const response = responses.find((r) => r.itemId === itemId);
@@ -87,7 +90,8 @@ export function AssessmentRenderer({
 
   // Check if section has all required responses
   const isSectionComplete = (section: AssessmentSection): boolean => {
-    const requiredItems = section.items.filter((i) => i.isRequired);
+    const items = section.items || [];
+    const requiredItems = items.filter((i) => i.isRequired);
     return requiredItems.every((item) => {
       const value = getResponseValue(item.id);
       return value !== "" && value !== null && value !== undefined;
@@ -95,11 +99,11 @@ export function AssessmentRenderer({
   };
 
   // Calculate overall progress
-  const totalRequired = template.sections.flatMap((s) =>
-    s.items.filter((i) => i.isRequired)
+  const totalRequired = sections.flatMap((s) =>
+    (s.items || []).filter((i) => i.isRequired)
   ).length;
-  const completedRequired = template.sections.flatMap((s) =>
-    s.items.filter((i) => i.isRequired && getResponseValue(i.id) !== "")
+  const completedRequired = sections.flatMap((s) =>
+    (s.items || []).filter((i) => i.isRequired && getResponseValue(i.id) !== "")
   ).length;
   const progressPercent = totalRequired > 0 ? (completedRequired / totalRequired) * 100 : 0;
 
@@ -268,7 +272,7 @@ export function AssessmentRenderer({
     }
   };
 
-  const currentSectionData = template.sections[currentSection];
+  const currentSectionData = sections[currentSection];
 
   return (
     <div className="space-y-6">
@@ -290,7 +294,7 @@ export function AssessmentRenderer({
 
       {/* Section Navigation */}
       <div className="flex gap-2 flex-wrap">
-        {template.sections.map((section, index) => (
+        {sections.map((section, index) => (
           <button
             key={section.id}
             type="button"
@@ -311,6 +315,17 @@ export function AssessmentRenderer({
         ))}
       </div>
 
+      {/* No sections message */}
+      {sections.length === 0 && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-foreground-secondary">
+              This assessment template has no sections configured.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Current Section */}
       {currentSectionData && (
         <Card>
@@ -321,7 +336,7 @@ export function AssessmentRenderer({
             )}
           </CardHeader>
           <CardContent className="space-y-6">
-            {currentSectionData.items.map((item) => (
+            {(currentSectionData.items || []).map((item) => (
               <div key={item.id} className="space-y-3 pb-6 border-b last:border-b-0 last:pb-0">
                 <div className="flex items-start gap-2">
                   <Label className="text-base font-medium">
@@ -351,8 +366,8 @@ export function AssessmentRenderer({
           </Button>
           <Button
             variant="secondary"
-            onClick={() => setCurrentSection((prev) => Math.min(template.sections.length - 1, prev + 1))}
-            disabled={currentSection === template.sections.length - 1}
+            onClick={() => setCurrentSection((prev) => Math.min(sections.length - 1, prev + 1))}
+            disabled={currentSection === sections.length - 1}
           >
             Next
           </Button>

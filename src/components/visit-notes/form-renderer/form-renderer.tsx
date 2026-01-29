@@ -44,7 +44,7 @@ export function FormRenderer({
     }
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = (): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
     for (const section of template.sections) {
@@ -63,15 +63,18 @@ export function FormRenderer({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    const validationErrors = validateForm();
+    const errorKeys = Object.keys(validationErrors);
+
+    if (errorKeys.length > 0) {
       // Scroll to first error
-      const firstErrorFieldId = Object.keys(errors)[0];
+      const firstErrorFieldId = errorKeys[0];
       if (firstErrorFieldId) {
         const element = document.getElementById(firstErrorFieldId);
         element?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -90,7 +93,7 @@ export function FormRenderer({
   const sortedSections = [...template.sections].sort((a, b) => a.order - b.order);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {sortedSections.map((section) => (
         <SectionRenderer
           key={section.id}

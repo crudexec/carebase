@@ -238,3 +238,13 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-foreground-tertiary);
 }
+
+/* Print box - hidden on screen, visible during PDF generation */
+@media screen {
+  #print-box {
+    display: none;
+    overflow: visible !important;
+    width: 100%;
+    height: 100%;
+  }
+}

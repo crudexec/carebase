@@ -162,6 +162,12 @@ const createCarePlanSchema = z.object({
   caseManagerId: z.string().optional().nullable(),
   physicianCertStatement: z.string().optional().nullable(),
 
+  // Manual physician entry fields
+  physicianName: z.string().optional().nullable(),
+  physicianNpi: z.string().optional().nullable(),
+  physicianPhone: z.string().optional().nullable(),
+  physicianFax: z.string().optional().nullable(),
+
   // 485 Certification
   isCert485: z.boolean().optional(),
   cert485Orders: z.string().optional().nullable(),

@@ -189,6 +189,12 @@ const updateCarePlanSchema = z.object({
   caseManagerId: z.string().nullable().optional(),
   physicianCertStatement: z.string().nullable().optional(),
 
+  // Manual physician entry fields
+  physicianName: z.string().nullable().optional(),
+  physicianNpi: z.string().nullable().optional(),
+  physicianPhone: z.string().nullable().optional(),
+  physicianFax: z.string().nullable().optional(),
+
   // 485 Certification
   isCert485: z.boolean().optional(),
   cert485Orders: z.string().nullable().optional(),
@@ -317,6 +323,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (data.physicianId !== undefined) updateData.physicianId = data.physicianId;
     if (data.caseManagerId !== undefined) updateData.caseManagerId = data.caseManagerId;
     if (data.physicianCertStatement !== undefined) updateData.physicianCertStatement = data.physicianCertStatement;
+
+    // Manual physician entry fields
+    if (data.physicianName !== undefined) updateData.physicianName = data.physicianName;
+    if (data.physicianNpi !== undefined) updateData.physicianNpi = data.physicianNpi;
+    if (data.physicianPhone !== undefined) updateData.physicianPhone = data.physicianPhone;
+    if (data.physicianFax !== undefined) updateData.physicianFax = data.physicianFax;
 
     // 485 Certification
     if (data.isCert485 !== undefined) updateData.isCert485 = data.isCert485;

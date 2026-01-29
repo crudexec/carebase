@@ -22,8 +22,8 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
     {
       value,
       onChange,
-      width = 400,
-      height = 200,
+      width = 300,
+      height = 80,
       penColor = "#000000",
       backgroundColor = "#ffffff",
       disabled,
@@ -33,33 +33,47 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
     ref
   ) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
     const [isDrawing, setIsDrawing] = React.useState(false);
     const [hasSignature, setHasSignature] = React.useState(false);
 
     // Merge refs
     React.useImperativeHandle(ref, () => canvasRef.current!);
 
-    // Initialize canvas
+    // Initialize canvas and handle resizing
     React.useEffect(() => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Set canvas size
-      canvas.width = width;
-      canvas.height = height;
+      // Get the actual display width from container
+      const displayWidth = container.clientWidth || width;
+      const displayHeight = Math.round(displayWidth * (height / width));
+
+      // Set canvas internal resolution (for crisp drawing)
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
+
+      // Scale context to match device pixel ratio
+      ctx.scale(dpr, dpr);
+
+      // Set canvas display size
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
 
       // Fill background
       ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
 
       // Load existing value
       if (value) {
         const img = new Image();
         img.onload = () => {
-          ctx.drawImage(img, 0, 0);
+          ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
           setHasSignature(true);
         };
         img.src = value;
@@ -73,20 +87,19 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
       if (!canvas) return null;
 
       const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
 
+      // Get coordinates relative to the canvas display size (not internal resolution)
       if ("touches" in e) {
         const touch = e.touches[0];
         return {
-          x: (touch.clientX - rect.left) * scaleX,
-          y: (touch.clientY - rect.top) * scaleY,
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top,
         };
       }
 
       return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       };
     };
 
@@ -135,13 +148,17 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
 
     const clear = () => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
+      const displayWidth = container.clientWidth || width;
+      const displayHeight = Math.round(displayWidth * (height / width));
+
       ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
       setHasSignature(false);
       onChange?.(null);
     };
@@ -149,8 +166,9 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
     return (
       <div className={cn("space-y-2", className)}>
         <div
+          ref={containerRef}
           className={cn(
-            "relative overflow-hidden rounded-md border-2",
+            "relative overflow-hidden rounded-md border-2 w-full",
             error ? "border-error" : "border-border",
             disabled && "opacity-50"
           )}
@@ -165,14 +183,13 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
             onTouchMove={draw}
             onTouchEnd={stopDrawing}
             className={cn(
-              "w-full touch-none",
+              "block touch-none",
               disabled ? "cursor-not-allowed" : "cursor-crosshair"
             )}
-            style={{ maxWidth: width, aspectRatio: `${width}/${height}` }}
           />
           {!hasSignature && !disabled && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <p className="text-sm text-foreground-tertiary">
+              <p className="text-xs text-foreground-tertiary">
                 Sign here
               </p>
             </div>

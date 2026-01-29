@@ -116,7 +116,7 @@ export function AssessmentScoreDisplay({
                 </span>
               )}
             </div>
-            {percentageScore !== null && (
+            {typeof percentageScore === "number" && (
               <p className="text-sm text-foreground-secondary">
                 {percentageScore.toFixed(0)}% of maximum score
               </p>

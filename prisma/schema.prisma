@@ -157,6 +157,13 @@ enum ClearinghouseType {
   OFFICE_ALLY
 }
 
+enum FaxStatus {
+  QUEUED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
 // ============================================
 // COMPANY (MULTI-TENANCY)
 // ============================================
@@ -219,6 +226,7 @@ model Company {
   authorizations       Authorization[]
   authorizationAlerts  AuthorizationAlert[]
   physicians           Physician[]
+  faxRecords           FaxRecord[]
 
   @@index([isActive])
 }
@@ -304,6 +312,9 @@ model User {
   // QA Reviewer relations
   assessmentsQAReviewed Assessment[] @relation("AssessmentQAReviewer")
   visitNotesQAReviewed  VisitNote[]  @relation("VisitNoteQAReviewer")
+
+  // Fax records
+  faxRecordsSent FaxRecord[]
 
   @@index([email])
   @@index([role])
@@ -1971,6 +1982,12 @@ model CarePlan {
   caseManager            User?      @relation("CarePlanCaseManager", fields: [caseManagerId], references: [id])
   physicianCertStatement String?    @db.Text // Custom physician certification statement
 
+  // Manual physician entry fields (for faxing to doctor)
+  physicianName  String?
+  physicianNpi   String?
+  physicianPhone String?
+  physicianFax   String?
+
   // 485 Certification Fields
   isCert485      Boolean @default(false) // Indicates this is a CMS-485 form
   cert485Orders  String? @db.Text // Specific 485 orders (discipline, treatment, supplies)
@@ -2032,6 +2049,9 @@ model CarePlan {
 
   // Orders and Goals
   orders CarePlanOrder[]
+
+  // Fax records
+  faxRecords FaxRecord[]
 
   @@index([companyId])
   @@index([clientId])
@@ -2271,4 +2291,53 @@ model AuthorizationAlert {
   @@index([companyId])
   @@index([alertType])
   @@index([isRead])
+}
+
+// ============================================
+// FAX RECORDS
+// ============================================
+
+model FaxRecord {
+  id        String    @id @default(cuid())
+  sinchFaxId String?  @unique // Fax ID from Sinch API
+
+  // Fax details
+  toNumber    String   // Recipient fax number (E.164 format)
+  fromNumber  String   // Sender fax number (E.164 format)
+  status      FaxStatus @default(QUEUED)
+
+  // Document info
+  documentType  String   // e.g., "CARE_PLAN"
+  documentId    String?  // ID of the related document (e.g., carePlanId)
+  documentName  String?  // Human-readable document name
+  numberOfPages Int?
+
+  // Recipient info
+  recipientName  String?  // e.g., Physician name
+  recipientType  String?  // e.g., "PHYSICIAN"
+
+  // Status details
+  errorCode     Int?
+  errorMessage  String?
+  completedAt   DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  sentById  String
+  sentBy    User @relation(fields: [sentById], references: [id])
+
+  // Optional relation to care plan
+  carePlanId String?
+  carePlan   CarePlan? @relation(fields: [carePlanId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([carePlanId])
 }

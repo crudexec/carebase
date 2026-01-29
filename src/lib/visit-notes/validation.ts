@@ -276,9 +276,15 @@ export function validateFieldValue(
       if (typeof value !== "string") {
         return { valid: false, error: "Must select an option" };
       }
-      const choiceConfig = config as { options: string[] } | null;
-      if (choiceConfig?.options && !choiceConfig.options.includes(value)) {
-        return { valid: false, error: "Invalid option selected" };
+      const choiceConfig = config as { options: (string | { value: string; label: string })[] } | null;
+      if (choiceConfig?.options) {
+        // Handle both string options and {value, label} object options
+        const validValues = choiceConfig.options.map((opt) =>
+          typeof opt === "string" ? opt : opt.value
+        );
+        if (!validValues.includes(value)) {
+          return { valid: false, error: "Invalid option selected" };
+        }
       }
       return { valid: true };
     }
@@ -287,9 +293,13 @@ export function validateFieldValue(
       if (!Array.isArray(value) || !value.every((v) => typeof v === "string")) {
         return { valid: false, error: "Must be an array of selections" };
       }
-      const multiConfig = config as { options: string[] } | null;
+      const multiConfig = config as { options: (string | { value: string; label: string })[] } | null;
       if (multiConfig?.options) {
-        const invalidOptions = value.filter((v) => !multiConfig.options.includes(v));
+        // Handle both string options and {value, label} object options
+        const validValues = multiConfig.options.map((opt) =>
+          typeof opt === "string" ? opt : opt.value
+        );
+        const invalidOptions = value.filter((v) => !validValues.includes(v));
         if (invalidOptions.length > 0) {
           return { valid: false, error: "Invalid options selected" };
         }
@@ -297,8 +307,28 @@ export function validateFieldValue(
       return { valid: true };
     }
 
-    case "DATE":
-    case "TIME":
+    case "DATE": {
+      if (typeof value !== "string") {
+        return { valid: false, error: "Must be a valid date" };
+      }
+      // Validate date format (YYYY-MM-DD)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) && isNaN(Date.parse(value))) {
+        return { valid: false, error: "Invalid date format" };
+      }
+      return { valid: true };
+    }
+
+    case "TIME": {
+      if (typeof value !== "string") {
+        return { valid: false, error: "Must be a valid time" };
+      }
+      // Validate time format (HH:MM or HH:MM:SS)
+      if (!/^\d{2}:\d{2}(:\d{2})?$/.test(value)) {
+        return { valid: false, error: "Invalid time format" };
+      }
+      return { valid: true };
+    }
+
     case "DATETIME": {
       if (typeof value !== "string") {
         return { valid: false, error: "Must be a valid date/time" };

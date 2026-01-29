@@ -83,14 +83,21 @@ export async function GET(request: Request, { params }: RouteParams) {
 
 const responseSchema = z.object({
   itemId: z.string(),
-  value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
-  notes: z.string().optional(),
-});
+  value: z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.array(z.string()),
+    z.null(),
+  ]).optional(),
+  notes: z.string().nullable().optional(),
+}).passthrough();
 
 const updateAssessmentSchema = z.object({
   responses: z.array(responseSchema).optional(),
-  notes: z.string().optional(),
-});
+  notes: z.string().nullable().optional(),
+  status: z.string().optional(),
+}).passthrough();
 
 // PATCH /api/assessments/[id] - Update assessment responses
 export async function PATCH(request: Request, { params }: RouteParams) {
@@ -139,44 +146,54 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Update responses
     if (responses && responses.length > 0) {
       for (const response of responses) {
+        // Skip responses without itemId
+        if (!response.itemId) continue;
+
         // Convert value to appropriate format
         let valueNumber: number | null = null;
         let valueText: string | null = null;
 
-        if (typeof response.value === "number") {
-          valueNumber = response.value;
-        } else if (typeof response.value === "boolean") {
-          valueNumber = response.value ? 1 : 0;
-        } else if (typeof response.value === "string") {
-          const parsed = parseFloat(response.value);
-          if (!isNaN(parsed)) {
-            valueNumber = parsed;
+        const value = response.value;
+
+        if (value !== null && value !== undefined) {
+          if (typeof value === "number") {
+            valueNumber = value;
+          } else if (typeof value === "boolean") {
+            valueNumber = value ? 1 : 0;
+          } else if (typeof value === "string") {
+            const parsed = parseFloat(value);
+            if (!isNaN(parsed) && value.trim() !== "") {
+              valueNumber = parsed;
+            }
+            valueText = value;
+          } else if (Array.isArray(value)) {
+            valueText = JSON.stringify(value);
           }
-          valueText = response.value;
-        } else if (Array.isArray(response.value)) {
-          valueText = JSON.stringify(response.value);
         }
 
-        await prisma.assessmentResponse.upsert({
-          where: {
-            assessmentId_itemId: {
+        // Only upsert if we have a value to save
+        if (valueNumber !== null || valueText !== null) {
+          await prisma.assessmentResponse.upsert({
+            where: {
+              assessmentId_itemId: {
+                assessmentId: id,
+                itemId: response.itemId,
+              },
+            },
+            create: {
               assessmentId: id,
               itemId: response.itemId,
+              valueNumber,
+              valueText,
+              notes: response.notes ?? null,
             },
-          },
-          create: {
-            assessmentId: id,
-            itemId: response.itemId,
-            valueNumber,
-            valueText,
-            notes: response.notes,
-          },
-          update: {
-            valueNumber,
-            valueText,
-            notes: response.notes,
-          },
-        });
+            update: {
+              valueNumber,
+              valueText,
+              notes: response.notes ?? null,
+            },
+          });
+        }
       }
     }
 

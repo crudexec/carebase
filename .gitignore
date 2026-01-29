@@ -49,3 +49,8 @@ next-env.d.ts
 
 # Husky
 .husky/_
+
+# Excluded projects
+/carebase-mobile
+/ios
+/alto

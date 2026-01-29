@@ -51,6 +51,11 @@ interface CarePlanData {
   physicianId: string | null;
   caseManagerId: string | null;
   physicianCertStatement: string | null;
+  // Manual physician entry fields
+  physicianName: string | null;
+  physicianNpi: string | null;
+  physicianPhone: string | null;
+  physicianFax: string | null;
   qaStatus: string | null;
   qaNotes: string | null;
   nurseSignature: string | null;
