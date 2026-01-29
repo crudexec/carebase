@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     // Parse FormData
-    const formData = await request.formData();
+    const formData = await request.formData() as unknown as globalThis.FormData;
     const carePlanId = formData.get("carePlanId") as string;
     const toNumber = formData.get("toNumber") as string;
     const recipientName = formData.get("recipientName") as string | null;

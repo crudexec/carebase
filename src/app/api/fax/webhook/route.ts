@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         action: fax.status === "COMPLETED" ? "FAX_DELIVERED" : "FAX_FAILED",
         entityType: "FaxRecord",
         entityId: faxRecord.id,
-        metadata: {
+        changes: {
           sinchFaxId: fax.id,
           status: fax.status,
           errorCode: fax.errorCode,

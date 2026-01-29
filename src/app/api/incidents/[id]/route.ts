@@ -88,7 +88,7 @@ export async function GET(
     }
 
     // Sponsors can only see approved incidents for their clients
-    if (session.user.role === "SPONSOR") {
+    if ((session.user.role as string) === "SPONSOR") {
       if (incident.status !== "APPROVED" || incident.client.sponsor?.id !== session.user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }

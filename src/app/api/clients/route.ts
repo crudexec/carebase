@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       hasPermission(session.user.role, PERMISSIONS.USER_VIEW) ||
       hasPermission(session.user.role, PERMISSIONS.SCHEDULING_VIEW) ||
       hasPermission(session.user.role, PERMISSIONS.ONBOARDING_VIEW) ||
-      session.user.role === "SPONSOR";
+      (session.user.role as string) === "SPONSOR";
 
     if (!canView) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     };
 
     // For sponsors, only show their associated clients
-    if (session.user.role === "SPONSOR") {
+    if ((session.user.role as string) === "SPONSOR") {
       console.log(`[Clients API] Entering SPONSOR branch`);
       where.sponsorId = session.user.id;
     }

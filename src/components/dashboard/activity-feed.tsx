@@ -287,7 +287,7 @@ export function ActivityFeed() {
                   </option>
                 ))}
               </Select>
-              <Button variant="outline" size="sm" onClick={exportToCSV}>
+              <Button variant="secondary" size="sm" onClick={exportToCSV}>
                 <Download className="w-4 h-4 mr-1" />
                 Export CSV
               </Button>
@@ -330,7 +330,7 @@ export function ActivityFeed() {
                                 {activity.title}
                               </p>
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="default" className="text-xs">
                                   {activity.type.replace("-", " ")}
                                 </Badge>
                                 <span className="text-xs text-foreground-tertiary whitespace-nowrap">

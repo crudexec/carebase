@@ -72,7 +72,8 @@ export async function sendFax(options: SendFaxOptions): Promise<SinchFaxResponse
     formData.append("from", fromNumber);
 
     // Create a Blob from the Buffer for the file
-    const blob = new Blob([options.file], { type: "application/pdf" });
+    const uint8Array = new Uint8Array(options.file);
+    const blob = new Blob([uint8Array], { type: "application/pdf" });
     formData.append("file", blob, options.fileName || "document.pdf");
 
     if (options.headerText) {

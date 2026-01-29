@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     if (session.user.role === "CARER" && !canViewAllSchedules(session.user.role)) {
       where.carerId = session.user.id;
       console.log(`[Scheduling API] Filtering for carer: ${session.user.id}`);
-    } else if (session.user.role === "SPONSOR") {
+    } else if ((session.user.role as string) === "SPONSOR") {
       // Sponsors can only see shifts for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {

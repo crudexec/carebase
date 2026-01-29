@@ -421,7 +421,7 @@ function DayDetailModal({ date, shifts, onClose, onShiftClick }: DayDetailModalP
               {shifts.length} shift{shifts.length !== 1 ? "s" : ""} scheduled
             </span>
             {isToday(date) && (
-              <Badge variant="outline" className="text-primary border-primary">
+              <Badge variant="primary" className="text-primary border-primary">
                 Today
               </Badge>
             )}
@@ -460,7 +460,7 @@ function DayDetailModal({ date, shifts, onClose, onShiftClick }: DayDetailModalP
 
                     <div className="flex flex-col items-end gap-2">
                       <Badge
-                        variant="outline"
+                        variant="default"
                         className={cn("text-xs", getStatusColor(shift.status))}
                       >
                         {shift.status.replace("_", " ")}

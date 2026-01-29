@@ -83,7 +83,7 @@ export async function GET(request: Request) {
     // Carers can only see their own notes
     if (session.user.role === "CARER") {
       where.carerId = session.user.id;
-    } else if (session.user.role === "SPONSOR") {
+    } else if ((session.user.role as string) === "SPONSOR") {
       // Sponsors can only see notes for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {

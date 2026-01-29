@@ -78,7 +78,7 @@ export async function GET(request: Request) {
     };
 
     // Sponsors can only see approved incidents for their clients
-    if (session.user.role === "SPONSOR") {
+    if ((session.user.role as string) === "SPONSOR") {
       where.status = "APPROVED";
       where.client = {
         sponsorId: session.user.id,

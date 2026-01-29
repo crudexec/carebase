@@ -56,6 +56,7 @@ export default async function DashboardPage() {
   }
 
   const { user } = session;
+  const userRole = user.role as string;
   const roleLabel = ROLE_LABELS[user.role];
 
   // Role-specific badge variant
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
     | "sponsor";
 
   // Render dedicated sponsor dashboard for sponsors
-  if (user.role === "SPONSOR") {
+  if (userRole === "SPONSOR") {
     return <SponsorDashboard user={user} />;
   }
 
@@ -191,7 +192,7 @@ export default async function DashboardPage() {
             </>
           )}
 
-          {user.role === "SPONSOR" && (
+          {userRole === "SPONSOR" && (
             <>
               <QuickAction
                 title="View Care Reports"
