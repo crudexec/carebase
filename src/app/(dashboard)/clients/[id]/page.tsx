@@ -31,6 +31,11 @@ import {
   X,
   UserCheck,
   HeartPulse,
+  ShieldCheck,
+  Plus,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 
 interface ClientDetails {
@@ -110,6 +115,24 @@ interface Assessment {
   };
 }
 
+interface Authorization {
+  id: string;
+  authNumber: string;
+  serviceType: string;
+  startDate: string;
+  endDate: string;
+  authorizedUnits: number;
+  usedUnits: number;
+  remainingUnits: number;
+  usagePercentage: number;
+  daysRemaining: number;
+  unitType: string;
+  status: string;
+  isExpiringSoon: boolean;
+  isExpired: boolean;
+  isNearingLimit: boolean;
+}
+
 interface CarerOption {
   id: string;
   firstName: string;
@@ -130,7 +153,15 @@ const STATUS_COLORS: Record<ClientStatus, "primary" | "success" | "warning" | "e
   INACTIVE: "error",
 };
 
-type TabType = "details" | "activity" | "notes" | "assessments" | "care-plans";
+type TabType = "details" | "activity" | "notes" | "assessments" | "authorizations" | "care-plans";
+
+const AUTH_STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  PENDING: { label: "Pending", color: "bg-warning/10 text-warning", icon: Clock },
+  ACTIVE: { label: "Active", color: "bg-success/10 text-success", icon: CheckCircle },
+  EXHAUSTED: { label: "Exhausted", color: "bg-error/10 text-error", icon: XCircle },
+  EXPIRED: { label: "Expired", color: "bg-foreground/10 text-foreground-secondary", icon: XCircle },
+  TERMINATED: { label: "Terminated", color: "bg-foreground/10 text-foreground-secondary", icon: XCircle },
+};
 
 export default function ClientDetailPage() {
   const params = useParams();
@@ -141,6 +172,7 @@ export default function ClientDetailPage() {
   const [activities, setActivities] = React.useState<ActivityLog[]>([]);
   const [visitNotes, setVisitNotes] = React.useState<VisitNote[]>([]);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
+  const [authorizations, setAuthorizations] = React.useState<Authorization[]>([]);
   const [carers, setCarers] = React.useState<CarerOption[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -226,6 +258,18 @@ export default function ClientDetailPage() {
     }
   }, [clientId]);
 
+  const fetchAuthorizations = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/authorizations?clientId=${clientId}&limit=50`);
+      if (response.ok) {
+        const data = await response.json();
+        setAuthorizations(data.authorizations || []);
+      }
+    } catch {
+      // Ignore errors for authorizations
+    }
+  }, [clientId]);
+
   const fetchCarers = React.useCallback(async () => {
     try {
       const response = await fetch("/api/staff?role=CARER&limit=100");
@@ -243,8 +287,9 @@ export default function ClientDetailPage() {
     fetchActivities();
     fetchVisitNotes();
     fetchAssessments();
+    fetchAuthorizations();
     fetchCarers();
-  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchCarers]);
+  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchAuthorizations, fetchCarers]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -486,6 +531,22 @@ export default function ClientDetailPage() {
             {assessments.length > 0 && (
               <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
                 {assessments.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("authorizations")}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "authorizations"
+                ? "border-primary text-primary"
+                : "border-transparent text-foreground-secondary hover:text-foreground"
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 inline mr-2" />
+            Authorizations
+            {authorizations.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
+                {authorizations.length}
               </span>
             )}
           </button>
@@ -927,6 +988,130 @@ export default function ClientDetailPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {activeTab === "authorizations" && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Medicaid Authorizations</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/authorizations/new?clientId=${clientId}`)}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              New Authorization
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {authorizations.length === 0 ? (
+              <div className="text-center py-8">
+                <ShieldCheck className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
+                <p className="text-foreground-secondary">
+                  No authorizations recorded yet.
+                </p>
+                <Button
+                  variant="secondary"
+                  className="mt-4"
+                  onClick={() => router.push(`/authorizations/new?clientId=${clientId}`)}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add First Authorization
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {authorizations.map((auth) => {
+                  const statusConfig = AUTH_STATUS_CONFIG[auth.status] || AUTH_STATUS_CONFIG.ACTIVE;
+                  const StatusIcon = statusConfig.icon;
+
+                  return (
+                    <div
+                      key={auth.id}
+                      className={`p-4 rounded-lg border cursor-pointer hover:border-primary/50 transition-colors ${
+                        auth.isExpired || auth.status === "EXHAUSTED"
+                          ? "bg-error/5 border-error/30"
+                          : auth.isExpiringSoon || auth.isNearingLimit
+                          ? "bg-warning/5 border-warning/30"
+                          : ""
+                      }`}
+                      onClick={() => router.push(`/authorizations/${auth.id}`)}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${statusConfig.color}`}>
+                            <StatusIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">Auth #: {auth.authNumber}</h3>
+                            <p className="text-sm text-foreground-secondary">
+                              Service: {auth.serviceType}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={statusConfig.color}>
+                            {statusConfig.label}
+                          </Badge>
+                          {(auth.isExpiringSoon || auth.isExpired) && (
+                            <Badge className="bg-error/10 text-error">
+                              {auth.isExpired
+                                ? "Expired"
+                                : `${auth.daysRemaining} days left`}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Usage Bar */}
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-foreground-secondary">
+                            Units: {auth.usedUnits} / {auth.authorizedUnits} {auth.unitType.toLowerCase()}
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              auth.usagePercentage >= 90
+                                ? "text-error"
+                                : auth.usagePercentage >= 80
+                                ? "text-warning"
+                                : ""
+                            }`}
+                          >
+                            {auth.usagePercentage.toFixed(0)}% used
+                          </span>
+                        </div>
+                        <div className="h-2 bg-background-secondary rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 ${
+                              auth.usagePercentage >= 90
+                                ? "bg-error"
+                                : auth.usagePercentage >= 80
+                                ? "bg-warning"
+                                : "bg-primary"
+                            }`}
+                            style={{ width: `${Math.min(auth.usagePercentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Date Range */}
+                      <div className="flex items-center gap-4 mt-3 text-xs text-foreground-secondary">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(auth.startDate).toLocaleDateString()} - {new Date(auth.endDate).toLocaleDateString()}
+                        </span>
+                        <span>
+                          {auth.remainingUnits} {auth.unitType.toLowerCase()} remaining
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

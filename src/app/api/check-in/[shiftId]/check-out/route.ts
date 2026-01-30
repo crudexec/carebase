@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
@@ -120,13 +121,37 @@ export async function POST(
 
     // Mark shift as COMPLETED - either it's the last day or user is explicitly checking out
     // For mobile app UX, checking out should complete the shift
-    await prisma.shift.update({
+    const completedShift = await prisma.shift.update({
       where: { id: shiftId },
       data: {
         actualEnd: checkOutTime,
         status: "COMPLETED",
       },
     });
+
+    // Calculate total hours worked for the shift and deduct from authorization
+    const totalHoursWorked = calculateShiftHours({
+      actualStart: shift.actualStart,
+      actualEnd: checkOutTime,
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+    });
+
+    // Deduct units from the client's active authorization
+    const authResult = await deductAuthorizationUnits({
+      companyId: session.user.companyId,
+      clientId: shift.clientId,
+      hoursWorked: totalHoursWorked,
+      shiftId: shiftId,
+      userId: session.user.id,
+    });
+
+    if (authResult.success && authResult.authorizationId) {
+      console.log(
+        `Authorization units deducted: ${authResult.unitsDeducted} units, ` +
+        `${authResult.remainingUnits} remaining`
+      );
+    }
 
     // Create audit log for check-out
     await prisma.auditLog.create({

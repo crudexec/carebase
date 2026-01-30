@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { canManageSchedule, canViewAllSchedules } from "@/lib/scheduling";
+import { canManageSchedule } from "@/lib/scheduling";
 import { ShiftStatus } from "@prisma/client";
 import { z } from "zod";
+import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
 
 const updateShiftSchema = z.object({
   carerId: z.string().optional(),
@@ -197,6 +198,34 @@ export async function PATCH(
         },
       },
     });
+
+    // If status changed to COMPLETED, deduct authorization units
+    if (
+      validation.data.status === "COMPLETED" &&
+      existingShift.status !== "COMPLETED"
+    ) {
+      const totalHoursWorked = calculateShiftHours({
+        actualStart: shift.actualStart,
+        actualEnd: shift.actualEnd,
+        scheduledStart: shift.scheduledStart,
+        scheduledEnd: shift.scheduledEnd,
+      });
+
+      const authResult = await deductAuthorizationUnits({
+        companyId: session.user.companyId,
+        clientId: shift.clientId,
+        hoursWorked: totalHoursWorked,
+        shiftId: id,
+        userId: session.user.id,
+      });
+
+      if (authResult.success && authResult.authorizationId) {
+        console.log(
+          `Authorization units deducted via status change: ${authResult.unitsDeducted} units, ` +
+          `${authResult.remainingUnits} remaining`
+        );
+      }
+    }
 
     // Create audit log
     await prisma.auditLog.create({

@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 // Routes that don't require authentication
-const publicRoutes = ["/", "/login", "/forgot-password", "/reset-password"];
+const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {

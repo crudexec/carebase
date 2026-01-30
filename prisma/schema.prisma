@@ -1353,6 +1353,7 @@ enum AuthorizationStatus {
   ACTIVE
   EXPIRING_SOON
   EXPIRED
+  EXHAUSTED
   DENIED
   CANCELLED
 }
