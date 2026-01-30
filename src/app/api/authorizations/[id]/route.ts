@@ -84,7 +84,7 @@ const updateAuthorizationSchema = z.object({
   endDate: z.string().optional(),
   unitsAuthorized: z.number().optional(),
   unitsUsed: z.number().optional(),
-  status: z.enum(["PENDING", "ACTIVE", "EXHAUSTED", "EXPIRED", "TERMINATED"]).optional(),
+  status: z.enum(["PENDING", "ACTIVE", "EXPIRING_SOON", "EXPIRED", "EXHAUSTED", "DENIED", "CANCELLED"]).optional(),
   notes: z.string().optional(),
 });
 
@@ -124,11 +124,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const updateData: Record<string, unknown> = {};
 
+    // Map frontend field names to Prisma field names
     if (validation.data.authorizationNumber) {
-      updateData.authorizationNumber = validation.data.authorizationNumber;
+      updateData.authNumber = validation.data.authorizationNumber;
     }
     if (validation.data.serviceCode) {
-      updateData.serviceCode = validation.data.serviceCode;
+      updateData.serviceType = validation.data.serviceCode;
     }
     if (validation.data.startDate) {
       updateData.startDate = new Date(validation.data.startDate);
@@ -137,10 +138,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       updateData.endDate = new Date(validation.data.endDate);
     }
     if (validation.data.unitsAuthorized !== undefined) {
-      updateData.unitsAuthorized = validation.data.unitsAuthorized;
+      updateData.authorizedUnits = validation.data.unitsAuthorized;
+      // Also update remaining units if authorized units change
+      const currentUsed = Number(authorization.usedUnits) || 0;
+      updateData.remainingUnits = Math.max(validation.data.unitsAuthorized - currentUsed, 0);
     }
     if (validation.data.unitsUsed !== undefined) {
-      updateData.unitsUsed = validation.data.unitsUsed;
+      updateData.usedUnits = validation.data.unitsUsed;
+      // Also update remaining units
+      const authorizedUnits = Number(authorization.authorizedUnits) || 0;
+      updateData.remainingUnits = Math.max(authorizedUnits - validation.data.unitsUsed, 0);
     }
     if (validation.data.status) {
       updateData.status = validation.data.status;

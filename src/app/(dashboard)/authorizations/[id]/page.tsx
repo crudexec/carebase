@@ -120,11 +120,7 @@ export default function AuthorizationDetailPage() {
     notes: "",
   });
 
-  React.useEffect(() => {
-    fetchAuthorization();
-  }, [id]);
-
-  const fetchAuthorization = async () => {
+  const fetchAuthorization = React.useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -151,7 +147,11 @@ export default function AuthorizationDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
+
+  React.useEffect(() => {
+    fetchAuthorization();
+  }, [fetchAuthorization]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -252,8 +252,6 @@ export default function AuthorizationDetailPage() {
   if (!authorization) return null;
 
   const statusConfig = STATUS_CONFIG[authorization.status] || STATUS_CONFIG.ACTIVE;
-  const StatusIcon = statusConfig.icon;
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -411,19 +409,46 @@ export default function AuthorizationDetailPage() {
                     <p className="text-2xl font-bold text-primary">
                       {authorization.authorizedUnits}
                     </p>
-                    <p className="text-xs text-foreground-secondary">Authorized</p>
+                    <p className="text-xs text-foreground-secondary">
+                      {authorization.unitType === "QUARTER_HOURLY"
+                        ? "15-Min Units Authorized"
+                        : authorization.unitType === "DAILY"
+                        ? "Days Authorized"
+                        : "Hours Authorized"}
+                    </p>
+                    <p className="text-[10px] text-foreground-tertiary mt-1">
+                      Total approved by Medicaid
+                    </p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-background-secondary">
                     <p className="text-2xl font-bold text-warning">
                       {authorization.usedUnits}
                     </p>
-                    <p className="text-xs text-foreground-secondary">Used</p>
+                    <p className="text-xs text-foreground-secondary">
+                      {authorization.unitType === "QUARTER_HOURLY"
+                        ? "15-Min Units Used"
+                        : authorization.unitType === "DAILY"
+                        ? "Days Used"
+                        : "Hours Used"}
+                    </p>
+                    <p className="text-[10px] text-foreground-tertiary mt-1">
+                      Consumed from shifts
+                    </p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-background-secondary">
                     <p className="text-2xl font-bold text-success">
                       {authorization.remainingUnits}
                     </p>
-                    <p className="text-xs text-foreground-secondary">Remaining</p>
+                    <p className="text-xs text-foreground-secondary">
+                      {authorization.unitType === "QUARTER_HOURLY"
+                        ? "15-Min Units Left"
+                        : authorization.unitType === "DAILY"
+                        ? "Days Left"
+                        : "Hours Left"}
+                    </p>
+                    <p className="text-[10px] text-foreground-tertiary mt-1">
+                      Available for scheduling
+                    </p>
                   </div>
                 </div>
               </div>

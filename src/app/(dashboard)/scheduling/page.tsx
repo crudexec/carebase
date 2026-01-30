@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, RefreshCw, Filter } from "lucide-react";
+import { Plus, RefreshCw, Filter, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/components/scheduling/calendar-view";
 import { ShiftCard, ShiftData } from "@/components/scheduling/shift-card";
 import { ShiftFormModal, ShiftFormData } from "@/components/scheduling/shift-form-modal";
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
+import { BulkShiftModal } from "@/components/scheduling/bulk-shift-modal";
 import { canManageSchedule } from "@/lib/scheduling";
 
 interface CaregiverOption {
@@ -33,6 +34,7 @@ export default function SchedulingPage() {
   // Modal states
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [selectedShift, setSelectedShift] = useState<ShiftData | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -219,10 +221,16 @@ export default function SchedulingPage() {
             Refresh
           </Button>
           {canManage && (
-            <Button onClick={handleAddClick}>
-              <Plus className="w-4 h-4 mr-1" />
-              Create Shift
-            </Button>
+            <>
+              <Button variant="secondary" onClick={() => setShowBulkModal(true)}>
+                <CalendarPlus className="w-4 h-4 mr-1" />
+                Bulk Schedule
+              </Button>
+              <Button onClick={handleAddClick}>
+                <Plus className="w-4 h-4 mr-1" />
+                Create Shift
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -361,6 +369,18 @@ export default function SchedulingPage() {
         onCancel={handleCancelShift}
         canManage={canManage}
         isCancelling={isCancelling}
+      />
+
+      {/* Bulk Shift Modal */}
+      <BulkShiftModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        onSuccess={() => {
+          setShowBulkModal(false);
+          fetchShifts();
+        }}
+        caregivers={caregivers}
+        clients={clients}
       />
     </div>
   );

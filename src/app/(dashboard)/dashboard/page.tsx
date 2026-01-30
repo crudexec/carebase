@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { CheckInWidget } from "@/components/dashboard/check-in-widget";
-import { UpcomingShiftsWidget } from "@/components/dashboard/upcoming-shifts-widget";
-import { NotificationsPanel } from "@/components/dashboard/notifications-panel";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
@@ -89,12 +87,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Activity Feed for Admin/Ops Manager, Stats for others */}
-      {(user.role === "ADMIN" || user.role === "OPS_MANAGER") ? (
-        <ActivityFeed />
-      ) : (
-        <DashboardStats role={user.role} />
-      )}
+      {/* Dashboard Stats */}
+      <DashboardStats role={user.role} />
 
       {/* Quick Actions */}
       <div>
@@ -241,18 +235,16 @@ export default async function DashboardPage() {
       </div>
 
       {/* Widgets Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Check-in Widget for Carers */}
-        {user.role === "CARER" && <CheckInWidget />}
+      {user.role === "CARER" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CheckInWidget />
+        </div>
+      )}
 
-        {/* Upcoming Shifts Widget for managers/admins */}
-        {["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR"].includes(user.role) && (
-          <UpcomingShiftsWidget />
-        )}
-
-        {/* Notifications Panel - shown for all roles */}
-        <NotificationsPanel />
-      </div>
+      {/* Activity Feed at bottom for Admin/Ops Manager */}
+      {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
+        <ActivityFeed />
+      )}
     </div>
   );
 }
