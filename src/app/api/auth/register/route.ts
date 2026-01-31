@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword, validatePassword } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
+import { sendNotification } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -114,6 +115,21 @@ export async function POST(request: Request) {
       });
 
       return { user, company };
+    });
+
+    // Send welcome email
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    sendNotification({
+      eventType: "USER_ACCOUNT_CREATED",
+      recipientIds: [result.user.id],
+      data: {
+        firstName,
+        email: email.toLowerCase(),
+        tempPassword: "", // Empty - user set their own password
+        loginUrl: `${appUrl}/login`,
+      },
+    }).catch((err) => {
+      console.error("Failed to send welcome email:", err);
     });
 
     return NextResponse.json(

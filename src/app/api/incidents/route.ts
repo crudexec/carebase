@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
+import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
 import { Prisma, IncidentSeverity } from "@prisma/client";
 import { z } from "zod";
+import { format } from "date-fns";
 
 // Validation schemas
 const createIncidentSchema = z.object({
@@ -284,28 +286,43 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create notification for admins/ops managers
-    const admins = await prisma.user.findMany({
-      where: {
-        companyId: session.user.companyId,
-        role: { in: ["ADMIN", "OPS_MANAGER"] },
-        isActive: true,
-      },
-      select: { id: true },
+    // Send notifications for the incident
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+    const notificationData = {
+      clientName: `${client.firstName} ${client.lastName}`,
+      incidentType: category,
+      severity: severity.toLowerCase(),
+      reportedBy: `${incident.reporter.firstName} ${incident.reporter.lastName}`,
+      incidentDate: format(incidentDate, "MMMM d, yyyy 'at' h:mm a"),
+      incidentUrl: `${appUrl}/incidents/${incident.id}`,
+    };
+
+    // Send to admins, supervisors, and ops managers
+    sendNotificationToRole(
+      "INCIDENT_REPORTED",
+      ["ADMIN", "OPS_MANAGER", "SUPERVISOR"],
+      session.user.companyId,
+      notificationData,
+      {
+        relatedEntityType: "IncidentReport",
+        relatedEntityId: incident.id,
+      }
+    ).catch((err) => {
+      console.error("Failed to send incident notification to staff:", err);
     });
 
-    if (admins.length > 0) {
-      await prisma.notification.createMany({
-        data: admins.map((admin) => ({
-          companyId: session.user.companyId,
-          userId: admin.id,
-          type: "INCIDENT_REPORTED",
-          title: "New Incident Report",
-          message: `A ${severity.toLowerCase()} severity incident has been reported for ${client.firstName} ${client.lastName}`,
-          link: `/incidents/${incident.id}`,
-        })),
-      });
-    }
+    // Also notify the sponsor if the client has one
+    sendNotificationToSponsor(
+      "INCIDENT_REPORTED",
+      clientId,
+      notificationData,
+      {
+        relatedEntityType: "IncidentReport",
+        relatedEntityId: incident.id,
+      }
+    ).catch((err) => {
+      console.error("Failed to send incident notification to sponsor:", err);
+    });
 
     return NextResponse.json({
       incident: {

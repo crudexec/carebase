@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, RefreshCw, Filter, CalendarPlus } from "lucide-react";
+import { Plus, RefreshCw, Filter, CalendarPlus, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/components/scheduling/calendar-view";
 import { ShiftCard, ShiftData } from "@/components/scheduling/shift-card";
 import { ShiftFormModal, ShiftFormData } from "@/components/scheduling/shift-form-modal";
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
 import { BulkShiftModal } from "@/components/scheduling/bulk-shift-modal";
+import { ShiftsListModal } from "@/components/scheduling/shifts-list-modal";
 import { canManageSchedule } from "@/lib/scheduling";
 
 interface CaregiverOption {
@@ -35,6 +36,7 @@ export default function SchedulingPage() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showListModal, setShowListModal] = useState(false);
   const [selectedShift, setSelectedShift] = useState<ShiftData | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -216,6 +218,10 @@ export default function SchedulingPage() {
             <Filter className="w-4 h-4 mr-1" />
             Filters
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowListModal(true)}>
+            <List className="w-4 h-4 mr-1" />
+            View All
+          </Button>
           <Button variant="ghost" size="sm" onClick={fetchShifts}>
             <RefreshCw className="w-4 h-4 mr-1" />
             Refresh
@@ -381,6 +387,17 @@ export default function SchedulingPage() {
         }}
         caregivers={caregivers}
         clients={clients}
+      />
+
+      {/* Shifts List Modal */}
+      <ShiftsListModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        shifts={shifts}
+        onShiftClick={(shift) => {
+          setSelectedShift(shift);
+          setShowDetailModal(true);
+        }}
       />
     </div>
   );

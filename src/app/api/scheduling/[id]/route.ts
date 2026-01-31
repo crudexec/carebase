@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canManageSchedule } from "@/lib/scheduling";
+import { sendNotification, sendNotificationToRole } from "@/lib/notifications";
 import { ShiftStatus } from "@prisma/client";
 import { z } from "zod";
+import { format } from "date-fns";
 import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
 
 const updateShiftSchema = z.object({
@@ -248,6 +250,66 @@ export async function PATCH(
       },
     });
 
+    // Send notification if shift was rescheduled (time changed)
+    const wasRescheduled = updateData.scheduledStart || updateData.scheduledEnd;
+    if (wasRescheduled) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+      sendNotification({
+        eventType: "SHIFT_RESCHEDULED",
+        recipientIds: [shift.carerId],
+        data: {
+          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+          originalDate: format(existingShift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          originalTime: format(existingShift.scheduledStart, "h:mm a"),
+          newDate: format(shift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          newTime: format(shift.scheduledStart, "h:mm a"),
+          shiftUrl: `${appUrl}/scheduling?shift=${shift.id}`,
+        },
+        relatedEntityType: "Shift",
+        relatedEntityId: shift.id,
+      }).catch((err) => {
+        console.error("Failed to send shift reschedule notification:", err);
+      });
+    }
+
+    // If carer was changed, notify both old and new carer
+    if (updateData.carerId && updateData.carerId !== existingShift.carerId) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+      // Notify new carer of assignment
+      sendNotification({
+        eventType: "SHIFT_ASSIGNED",
+        recipientIds: [updateData.carerId],
+        data: {
+          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+          shiftDate: format(shift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          shiftTime: format(shift.scheduledStart, "h:mm a"),
+          shiftEndTime: format(shift.scheduledEnd, "h:mm a"),
+          address: shift.client.address || "Address not provided",
+          shiftUrl: `${appUrl}/scheduling?shift=${shift.id}`,
+        },
+        relatedEntityType: "Shift",
+        relatedEntityId: shift.id,
+      }).catch((err) => {
+        console.error("Failed to send shift assignment notification:", err);
+      });
+
+      // Notify old carer of cancellation
+      sendNotification({
+        eventType: "SHIFT_CANCELLED",
+        recipientIds: [existingShift.carerId],
+        data: {
+          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+          shiftDate: format(shift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          shiftTime: format(shift.scheduledStart, "h:mm a"),
+          cancellationReason: "Shift reassigned to another caregiver",
+        },
+        relatedEntityType: "Shift",
+        relatedEntityId: shift.id,
+      }).catch((err) => {
+        console.error("Failed to send shift removal notification:", err);
+      });
+    }
+
     return NextResponse.json({ shift });
   } catch (error) {
     console.error("Error updating shift:", error);
@@ -288,6 +350,15 @@ export async function DELETE(
       );
     }
 
+    // Fetch shift with relations before updating
+    const shiftWithRelations = await prisma.shift.findFirst({
+      where: { id },
+      include: {
+        carer: { select: { id: true, firstName: true, lastName: true } },
+        client: { select: { firstName: true, lastName: true } },
+      },
+    });
+
     // Update status to cancelled instead of deleting
     const shift = await prisma.shift.update({
       where: { id },
@@ -308,6 +379,43 @@ export async function DELETE(
         },
       },
     });
+
+    // Send notification to the carer
+    if (shiftWithRelations) {
+      sendNotification({
+        eventType: "SHIFT_CANCELLED",
+        recipientIds: [shiftWithRelations.carerId],
+        data: {
+          clientName: `${shiftWithRelations.client.firstName} ${shiftWithRelations.client.lastName}`,
+          shiftDate: format(existingShift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          shiftTime: format(existingShift.scheduledStart, "h:mm a"),
+          cancellationReason: "Cancelled by administrator",
+        },
+        relatedEntityType: "Shift",
+        relatedEntityId: shift.id,
+      }).catch((err) => {
+        console.error("Failed to send shift cancellation notification:", err);
+      });
+
+      // Send COVERAGE_NEEDED notification to all carers
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+      sendNotificationToRole(
+        "COVERAGE_NEEDED",
+        ["CARER"],
+        session.user.companyId,
+        {
+          clientName: `${shiftWithRelations.client.firstName} ${shiftWithRelations.client.lastName}`,
+          shiftDate: format(existingShift.scheduledStart, "EEEE, MMMM d, yyyy"),
+          shiftTime: format(existingShift.scheduledStart, "h:mm a"),
+          shiftEndTime: format(existingShift.scheduledEnd, "h:mm a"),
+          address: "", // Would need client address
+          shiftUrl: `${appUrl}/scheduling?shift=${shift.id}`,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shift.id }
+      ).catch((err) => {
+        console.error("Failed to send coverage needed notification:", err);
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

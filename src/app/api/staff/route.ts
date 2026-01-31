@@ -5,6 +5,7 @@ import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { Prisma, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { sendNotification } from "@/lib/notifications";
 
 const createStaffSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -205,6 +206,21 @@ export async function POST(request: Request) {
           role,
         },
       },
+    });
+
+    // Send welcome email with login credentials
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    sendNotification({
+      eventType: "USER_ACCOUNT_CREATED",
+      recipientIds: [user.id],
+      data: {
+        firstName,
+        email,
+        tempPassword: password, // Send the original password before hashing
+        loginUrl: `${appUrl}/login`,
+      },
+    }).catch((err) => {
+      console.error("Failed to send welcome email:", err);
     });
 
     return NextResponse.json(

@@ -165,6 +165,66 @@ enum FaxStatus {
 }
 
 // ============================================
+// NOTIFICATION SYSTEM ENUMS
+// ============================================
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+enum NotificationEventType {
+  // Shift-related
+  SHIFT_ASSIGNED
+  SHIFT_REMINDER_24H
+  SHIFT_REMINDER_1H
+  SHIFT_CANCELLED
+  SHIFT_RESCHEDULED
+  CHECK_IN_CONFIRMATION
+  CHECK_OUT_CONFIRMATION
+  MISSED_CHECK_IN
+  LATE_CHECK_IN
+  EARLY_CHECK_OUT
+  OVERTIME_ALERT
+  NO_SHOW_ALERT
+  SHIFT_COMPLETED
+  COVERAGE_NEEDED
+  WEEKLY_SCHEDULE_PUBLISHED
+
+  // Authorization alerts
+  AUTH_UNITS_80_PERCENT
+  AUTH_UNITS_90_PERCENT
+  AUTH_UNITS_EXHAUSTED
+  AUTH_EXPIRING_30_DAYS
+  AUTH_EXPIRING_7_DAYS
+  AUTH_EXPIRED
+
+  // Care events
+  INCIDENT_REPORTED
+  INCIDENT_RESOLVED
+  CARE_PLAN_UPDATED
+  CARE_PLAN_APPROVED
+  ASSESSMENT_DUE
+  ASSESSMENT_COMPLETED
+  VISIT_NOTE_SUBMITTED
+
+  // Administrative
+  USER_ACCOUNT_CREATED
+  PASSWORD_RESET
+  WEEKLY_SUMMARY
+}
+
+// ============================================
 // COMPANY (MULTI-TENANCY)
 // ============================================
 
@@ -227,6 +287,11 @@ model Company {
   authorizationAlerts  AuthorizationAlert[]
   physicians           Physician[]
   faxRecords           FaxRecord[]
+
+  // Notification system
+  notificationPreferences NotificationPreference[]
+  notificationLogs        NotificationLog[]
+  notificationTemplates   NotificationTemplate[]
 
   @@index([isActive])
 }
@@ -315,6 +380,10 @@ model User {
 
   // Fax records
   faxRecordsSent FaxRecord[]
+
+  // Notification system
+  notificationPreferences NotificationPreference[]
+  notificationLogs        NotificationLog[]
 
   @@index([email])
   @@index([role])
@@ -2341,4 +2410,110 @@ model FaxRecord {
   @@index([status])
   @@index([createdAt])
   @@index([carePlanId])
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+
+  // Which event and channel
+  eventType NotificationEventType
+  channel   NotificationChannel
+  enabled   Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User relation
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([userId, eventType, channel])
+  @@index([userId])
+  @@index([companyId])
+  @@index([eventType])
+  @@index([channel])
+}
+
+model NotificationLog {
+  id String @id @default(cuid())
+
+  // What notification
+  eventType NotificationEventType
+  channel   NotificationChannel
+  status    NotificationStatus   @default(PENDING)
+
+  // Content
+  subject  String? // For email
+  body     String  @db.Text
+  metadata Json?   // Additional data (messageId, error, etc.)
+
+  // Timing
+  scheduledFor DateTime? // For scheduled notifications
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  failedAt     DateTime?
+
+  // Retry tracking
+  retryCount   Int     @default(0)
+  maxRetries   Int     @default(3)
+  lastError    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Recipient
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Related entity (optional - for linking to shifts, incidents, etc.)
+  relatedEntityType String? // e.g., "Shift", "IncidentReport"
+  relatedEntityId   String?
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([eventType])
+  @@index([channel])
+  @@index([status])
+  @@index([createdAt])
+  @@index([scheduledFor])
+}
+
+model NotificationTemplate {
+  id String @id @default(cuid())
+
+  // Template identification
+  eventType NotificationEventType
+  channel   NotificationChannel
+
+  // Template content
+  name        String  // Friendly name
+  subject     String? // For email (supports {{variables}})
+  body        String  @db.Text // Template body (supports {{variables}})
+  isActive    Boolean @default(true)
+  isDefault   Boolean @default(false) // System default template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation (null = system default)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, eventType, channel])
+  @@index([companyId])
+  @@index([eventType])
+  @@index([channel])
+  @@index([isActive])
 }

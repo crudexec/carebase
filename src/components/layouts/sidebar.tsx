@@ -13,7 +13,6 @@ import {
   Calendar,
   DollarSign,
   AlertTriangle,
-  FileText,
   MessageSquare,
   Receipt,
   TrendingUp,
@@ -40,6 +39,7 @@ import {
   Cog,
   FolderOpen,
   Send,
+  Bell,
 } from "lucide-react";
 
 interface NavItem {
@@ -245,7 +245,7 @@ const navigation: NavEntry[] = [
   {
     label: "Settings",
     icon: Cog,
-    roles: ["ADMIN", "OPS_MANAGER"],
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
     items: [
       {
         label: "General",
@@ -276,6 +276,12 @@ const navigation: NavEntry[] = [
         href: "/settings/fax",
         icon: Send,
         roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "Notifications",
+        href: "/settings/notifications",
+        icon: Bell,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
       },
     ],
   },

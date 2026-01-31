@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
@@ -126,6 +127,66 @@ export async function POST(
         },
       },
     });
+
+    // Get carer info for notifications
+    const carer = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { firstName: true, lastName: true },
+    });
+
+    const carerName = carer ? `${carer.firstName} ${carer.lastName}` : "Unknown Carer";
+    const clientName = `${shift.client.firstName} ${shift.client.lastName}`;
+    const shiftUrl = `/scheduling?shiftId=${shiftId}`;
+
+    // Calculate if check-in is late (15+ minutes after scheduled start)
+    const scheduledStartTime = new Date(shift.scheduledStart);
+    const minutesLate = Math.floor((checkInTime.getTime() - scheduledStartTime.getTime()) / (1000 * 60));
+
+    if (minutesLate >= 15) {
+      // Send LATE_CHECK_IN notification to supervisors/admins
+      sendNotificationToRole(
+        "LATE_CHECK_IN",
+        ["SUPERVISOR", "ADMIN"],
+        session.user.companyId,
+        {
+          carerName,
+          clientName,
+          scheduledTime: scheduledStartTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          actualCheckInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          minutesLate: String(minutesLate),
+          shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+          shiftUrl,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
+
+    // Send CHECK_IN_CONFIRMATION to sponsor
+    sendNotificationToSponsor(
+      "CHECK_IN_CONFIRMATION",
+      shift.clientId,
+      {
+        carerName,
+        clientName,
+        checkInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+      },
+      { relatedEntityType: "Shift", relatedEntityId: shiftId }
+    ).catch(console.error);
+
+    // Send CHECK_IN_CONFIRMATION to supervisors
+    sendNotificationToRole(
+      "CHECK_IN_CONFIRMATION",
+      ["SUPERVISOR"],
+      session.user.companyId,
+      {
+        carerName,
+        clientName,
+        checkInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+      },
+      { relatedEntityType: "Shift", relatedEntityId: shiftId }
+    ).catch(console.error);
 
     // Fetch the full updated shift for the response
     const updatedShift = await prisma.shift.findUnique({

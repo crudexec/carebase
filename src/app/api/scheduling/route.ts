@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canManageSchedule, canViewAllSchedules } from "@/lib/scheduling";
+import { sendNotification } from "@/lib/notifications";
 import { Prisma, ShiftStatus } from "@prisma/client";
 import { z } from "zod";
+import { format } from "date-fns";
 
 const createShiftSchema = z.object({
   carerId: z.string().min(1, "Caregiver is required"),
@@ -220,6 +222,26 @@ export async function POST(request: Request) {
           scheduledEnd: end.toISOString(),
         },
       },
+    });
+
+    // Send notification to the assigned carer
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+    sendNotification({
+      eventType: "SHIFT_ASSIGNED",
+      recipientIds: [carerId],
+      data: {
+        clientName: `${shift.client.firstName} ${shift.client.lastName}`,
+        shiftDate: format(start, "EEEE, MMMM d, yyyy"),
+        shiftTime: format(start, "h:mm a"),
+        shiftEndTime: format(end, "h:mm a"),
+        address: shift.client.address || "Address not provided",
+        shiftUrl: `${appUrl}/scheduling?shift=${shift.id}`,
+      },
+      relatedEntityType: "Shift",
+      relatedEntityId: shift.id,
+    }).catch((err) => {
+      // Don't fail the request if notification fails
+      console.error("Failed to send shift assignment notification:", err);
     });
 
     return NextResponse.json({ shift }, { status: 201 });

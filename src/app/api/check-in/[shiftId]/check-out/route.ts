@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
+import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
@@ -117,11 +118,11 @@ export async function POST(
     }
 
     // Check if this is the last day of the shift (or past the scheduled end)
-    const isLastDay = isLastDayOfShift(shift.scheduledEnd);
+    const _isLastDay = isLastDayOfShift(shift.scheduledEnd);
 
     // Mark shift as COMPLETED - either it's the last day or user is explicitly checking out
     // For mobile app UX, checking out should complete the shift
-    const completedShift = await prisma.shift.update({
+    await prisma.shift.update({
       where: { id: shiftId },
       data: {
         actualEnd: checkOutTime,
@@ -169,6 +170,105 @@ export async function POST(
         },
       },
     });
+
+    // Get carer info for notifications
+    const carer = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { firstName: true, lastName: true },
+    });
+
+    const carerName = carer ? `${carer.firstName} ${carer.lastName}` : "Unknown Carer";
+    const clientName = `${shift.client.firstName} ${shift.client.lastName}`;
+    const shiftUrl = `/scheduling?shiftId=${shiftId}`;
+    const shiftDate = shift.scheduledStart.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+    // Calculate scheduled hours vs actual hours
+    const scheduledHours = (shift.scheduledEnd.getTime() - shift.scheduledStart.getTime()) / (1000 * 60 * 60);
+    const actualHours = totalHoursWorked;
+
+    // Check for EARLY_CHECK_OUT (30+ minutes before scheduled end)
+    const minutesEarly = Math.floor((shift.scheduledEnd.getTime() - checkOutTime.getTime()) / (1000 * 60));
+    if (minutesEarly >= 30) {
+      sendNotificationToRole(
+        "EARLY_CHECK_OUT",
+        ["SUPERVISOR", "ADMIN"],
+        session.user.companyId,
+        {
+          carerName,
+          clientName,
+          scheduledEndTime: shift.scheduledEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          actualCheckOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          minutesEarly: String(minutesEarly),
+          shiftDate,
+          shiftUrl,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
+
+    // Check for OVERTIME_ALERT (15+ minutes over scheduled hours)
+    const overtimeMinutes = Math.floor((actualHours - scheduledHours) * 60);
+    if (overtimeMinutes >= 15) {
+      sendNotificationToRole(
+        "OVERTIME_ALERT",
+        ["SUPERVISOR", "ADMIN"],
+        session.user.companyId,
+        {
+          carerName,
+          clientName,
+          scheduledHours: scheduledHours.toFixed(1),
+          actualHours: actualHours.toFixed(1),
+          overtimeMinutes: String(overtimeMinutes),
+          shiftDate,
+          shiftUrl,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
+
+    // Send SHIFT_COMPLETED notification to sponsor
+    sendNotificationToSponsor(
+      "SHIFT_COMPLETED",
+      shift.clientId,
+      {
+        carerName,
+        clientName,
+        shiftDate,
+        totalHours: actualHours.toFixed(1),
+        checkInTime: shift.actualStart?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) || "N/A",
+        checkOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      },
+      { relatedEntityType: "Shift", relatedEntityId: shiftId }
+    ).catch(console.error);
+
+    // Send CHECK_OUT_CONFIRMATION to sponsor
+    sendNotificationToSponsor(
+      "CHECK_OUT_CONFIRMATION",
+      shift.clientId,
+      {
+        carerName,
+        clientName,
+        checkOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        shiftDate,
+        totalHours: actualHours.toFixed(1),
+      },
+      { relatedEntityType: "Shift", relatedEntityId: shiftId }
+    ).catch(console.error);
+
+    // Send CHECK_OUT_CONFIRMATION to supervisors
+    sendNotificationToRole(
+      "CHECK_OUT_CONFIRMATION",
+      ["SUPERVISOR"],
+      session.user.companyId,
+      {
+        carerName,
+        clientName,
+        checkOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        shiftDate,
+        totalHours: actualHours.toFixed(1),
+      },
+      { relatedEntityType: "Shift", relatedEntityId: shiftId }
+    ).catch(console.error);
 
     // Fetch the full updated shift for the response
     const updatedShift = await prisma.shift.findUnique({
