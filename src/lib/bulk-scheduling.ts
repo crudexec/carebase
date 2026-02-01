@@ -12,15 +12,22 @@ export type UnitType = "HOURLY" | "QUARTER_HOURLY" | "DAILY";
  * @returns Array of dates that match the pattern
  */
 export function generateBulkDates(
-  startDate: Date,
+  startDate: Date | string,
   numberOfWeeks: number,
   selectedDays: number[]
 ): Date[] {
   const dates: Date[] = [];
-  const start = new Date(startDate);
 
-  // Normalize to start of day
-  start.setHours(0, 0, 0, 0);
+  // Parse the date properly to avoid timezone issues
+  // If it's a string like "2024-02-01", parse it as local date
+  let start: Date;
+  if (typeof startDate === "string") {
+    const [year, month, day] = startDate.split("-").map(Number);
+    start = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid DST issues
+  } else {
+    start = new Date(startDate);
+    start.setHours(12, 0, 0, 0); // Use noon to avoid DST issues
+  }
 
   // Calculate end date (start + numberOfWeeks * 7 days)
   const endDate = new Date(start);
@@ -30,7 +37,9 @@ export function generateBulkDates(
   const current = new Date(start);
   while (current < endDate) {
     if (selectedDays.includes(current.getDay())) {
-      dates.push(new Date(current));
+      // Create a clean date at noon for the result
+      const resultDate = new Date(current);
+      dates.push(resultDate);
     }
     current.setDate(current.getDate() + 1);
   }
@@ -40,14 +49,22 @@ export function generateBulkDates(
 
 /**
  * Combine a date with a time string to create a full DateTime
- * @param date - The date
+ * @param date - The date (time component will be replaced)
  * @param time - Time in HH:mm format
- * @returns Combined DateTime
+ * @returns Combined DateTime with the specified time
  */
 export function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
-  const result = new Date(date);
-  result.setHours(hours, minutes, 0, 0);
+  // Create a new date preserving year, month, day but setting the time
+  const result = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes,
+    0,
+    0
+  );
   return result;
 }
 

@@ -66,7 +66,8 @@ export async function POST(request: Request) {
     }
 
     // Validate start date is not in the past
-    const startDateObj = new Date(startDate);
+    const [year, month, day] = startDate.split("-").map(Number);
+    const startDateObj = new Date(year, month - 1, day, 12, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (startDateObj < today) {
@@ -76,8 +77,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate all dates for the bulk schedule
-    const dates = generateBulkDates(startDateObj, numberOfWeeks, selectedDays);
+    // Generate all dates for the bulk schedule (pass string to avoid timezone issues)
+    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays);
 
     if (dates.length === 0) {
       return NextResponse.json(
@@ -294,8 +295,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Generate dates
-    const dates = generateBulkDates(new Date(startDate), numberOfWeeks, selectedDays);
+    // Generate dates (pass string directly to avoid timezone issues)
+    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays);
 
     // Check for conflicts
     const conflicts: {
