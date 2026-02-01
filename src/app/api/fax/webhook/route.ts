@@ -40,27 +40,65 @@ function mapSinchStatus(status: string): "QUEUED" | "IN_PROGRESS" | "COMPLETED" 
 }
 
 export async function POST(request: Request) {
-  try {
-    const payload: SinchFaxWebhookPayload = await request.json();
+  const requestTime = new Date().toISOString();
 
-    console.log("Received Sinch webhook:", JSON.stringify(payload, null, 2));
+  try {
+    // Log raw request details for debugging
+    const headers: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+
+    console.log("=== SINCH FAX WEBHOOK RECEIVED ===");
+    console.log("Time:", requestTime);
+    console.log("Headers:", JSON.stringify(headers, null, 2));
+
+    const rawBody = await request.text();
+    console.log("Raw body:", rawBody);
+
+    let payload: SinchFaxWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error("Failed to parse webhook payload:", parseError);
+      return NextResponse.json({
+        received: true,
+        error: "Invalid JSON payload",
+        rawBody: rawBody.substring(0, 500)
+      });
+    }
+
+    console.log("Parsed Sinch webhook payload:", JSON.stringify(payload, null, 2));
 
     // Only handle FAX_COMPLETED events for outbound faxes
     if (payload.event !== "FAX_COMPLETED" || payload.fax.direction !== "OUTBOUND") {
-      return NextResponse.json({ received: true });
+      console.log(`Ignoring webhook - event: ${payload.event}, direction: ${payload.fax?.direction}`);
+      return NextResponse.json({ received: true, ignored: true, reason: "Not FAX_COMPLETED or not OUTBOUND" });
     }
 
     const { fax } = payload;
 
     // Find the fax record by Sinch fax ID
+    console.log(`Looking up fax record with sinchFaxId: ${fax.id}`);
     const faxRecord = await prisma.faxRecord.findUnique({
       where: { sinchFaxId: fax.id },
     });
 
     if (!faxRecord) {
       console.warn(`Fax record not found for Sinch fax ID: ${fax.id}`);
-      return NextResponse.json({ received: true, warning: "Fax record not found" });
+      // Also try to find by looking at all records to help debug
+      const recentFaxes = await prisma.faxRecord.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, sinchFaxId: true, toNumber: true, status: true, createdAt: true }
+      });
+      console.log("Recent fax records in database:", JSON.stringify(recentFaxes, null, 2));
+      return NextResponse.json({ received: true, warning: "Fax record not found", sinchFaxId: fax.id });
     }
+
+    console.log(`Found fax record: ${faxRecord.id}, current status: ${faxRecord.status}`);
+    console.log(`Updating to status: ${mapSinchStatus(fax.status)}`);
+
 
     // Update the fax record with the new status
     const updatedFaxRecord = await prisma.faxRecord.update({
@@ -101,15 +139,26 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`Fax record ${faxRecord.id} updated to status: ${fax.status}`);
+    console.log(`=== FAX WEBHOOK SUCCESS ===`);
+    console.log(`Fax record ${faxRecord.id} updated from ${faxRecord.status} to ${updatedFaxRecord.status}`);
+    console.log(`Sinch fax ID: ${fax.id}`);
+    console.log(`Completed at: ${fax.completedTime}`);
+    console.log(`Pages: ${fax.numberOfPages}`);
+    if (fax.errorCode) {
+      console.log(`Error code: ${fax.errorCode}, message: ${fax.errorMessage}`);
+    }
 
     return NextResponse.json({
       received: true,
+      success: true,
       faxRecordId: updatedFaxRecord.id,
-      status: updatedFaxRecord.status,
+      previousStatus: faxRecord.status,
+      newStatus: updatedFaxRecord.status,
     });
   } catch (error) {
+    console.error("=== FAX WEBHOOK ERROR ===");
     console.error("Error processing fax webhook:", error);
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack");
     // Return 200 to acknowledge receipt even on error
     // This prevents Sinch from retrying
     return NextResponse.json({

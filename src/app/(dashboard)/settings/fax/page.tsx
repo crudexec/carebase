@@ -81,6 +81,7 @@ export default function FaxHistoryPage() {
   const [faxRecords, setFaxRecords] = React.useState<FaxRecord[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [refreshingFaxId, setRefreshingFaxId] = React.useState<string | null>(null);
   const [pagination, setPagination] = React.useState({
     page: 1,
     limit: 20,
@@ -114,6 +115,41 @@ export default function FaxHistoryPage() {
   React.useEffect(() => {
     fetchFaxRecords();
   }, [fetchFaxRecords]);
+
+  // Refresh a single fax status from Sinch API
+  const refreshFaxStatus = async (faxId: string) => {
+    setRefreshingFaxId(faxId);
+    try {
+      const response = await fetch(`/api/fax/${faxId}/refresh`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (response.ok && data.faxRecord) {
+        // Update the fax record in the local state
+        setFaxRecords((prev) =>
+          prev.map((fax) =>
+            fax.id === faxId
+              ? {
+                  ...fax,
+                  status: data.faxRecord.status,
+                  numberOfPages: data.faxRecord.numberOfPages,
+                  completedAt: data.faxRecord.completedAt,
+                  errorCode: data.faxRecord.errorCode,
+                  errorMessage: data.faxRecord.errorMessage,
+                }
+              : fax
+          )
+        );
+      } else {
+        console.error("Failed to refresh fax status:", data.error);
+      }
+    } catch (error) {
+      console.error("Error refreshing fax status:", error);
+    } finally {
+      setRefreshingFaxId(null);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
@@ -270,12 +306,29 @@ export default function FaxHistoryPage() {
                       </div>
                     </div>
 
-                    <div className="text-right text-sm text-foreground-tertiary whitespace-nowrap">
+                    <div className="text-right text-sm text-foreground-tertiary whitespace-nowrap flex flex-col items-end gap-2">
                       <div>{formatDate(fax.createdAt)}</div>
                       {fax.completedAt && (
                         <div className="text-success">
                           Delivered: {formatDate(fax.completedAt)}
                         </div>
+                      )}
+                      {/* Refresh button for pending faxes */}
+                      {(fax.status === "QUEUED" || fax.status === "IN_PROGRESS") && fax.sinchFaxId && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => refreshFaxStatus(fax.id)}
+                          disabled={refreshingFaxId === fax.id}
+                          className="mt-1"
+                        >
+                          {refreshingFaxId === fax.id ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                          )}
+                          Check Status
+                        </Button>
                       )}
                     </div>
                   </div>

@@ -55,11 +55,34 @@ export async function POST(request: Request) {
     const arrayBuffer = await pdfFile.arrayBuffer();
     const pdfBuffer = Buffer.from(arrayBuffer);
 
-    // Get the app URL for webhook callback (only use if not localhost)
-    const appUrl = process.env.NEXTAUTH_URL || "";
-    const callbackUrl = appUrl && !appUrl.includes("localhost")
-      ? `${appUrl}/api/fax/webhook`
+    // Get the app URL for webhook callback
+    // Priority: SINCH_WEBHOOK_URL > NEXT_PUBLIC_APP_URL > NEXTAUTH_URL
+    const webhookBaseUrl =
+      process.env.SINCH_WEBHOOK_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "";
+
+    // Only set callback URL if we have a valid production URL (not localhost)
+    const isProductionUrl = webhookBaseUrl &&
+      !webhookBaseUrl.includes("localhost") &&
+      !webhookBaseUrl.includes("127.0.0.1");
+
+    const callbackUrl = isProductionUrl
+      ? `${webhookBaseUrl.replace(/\/$/, "")}/api/fax/webhook`
       : undefined;
+
+    console.log("=== FAX SEND - WEBHOOK CONFIGURATION ===");
+    console.log("SINCH_WEBHOOK_URL env:", process.env.SINCH_WEBHOOK_URL || "(not set)");
+    console.log("NEXT_PUBLIC_APP_URL env:", process.env.NEXT_PUBLIC_APP_URL || "(not set)");
+    console.log("NEXTAUTH_URL env:", process.env.NEXTAUTH_URL || "(not set)");
+    console.log("Resolved webhookBaseUrl:", webhookBaseUrl || "(empty)");
+    console.log("isProductionUrl:", isProductionUrl);
+    console.log("Final callbackUrl:", callbackUrl || "(not configured - localhost or empty)");
+    if (!callbackUrl) {
+      console.warn("WARNING: No callback URL configured! Sinch will not send webhooks for this fax.");
+      console.warn("Set SINCH_WEBHOOK_URL to your production URL to enable webhooks.");
+    }
 
     // Create fax record first
     const faxRecord = await prisma.faxRecord.create({
