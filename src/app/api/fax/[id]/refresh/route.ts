@@ -106,7 +106,7 @@ export async function POST(
           previousStatus: faxRecord.status,
           newStatus,
           sinchFaxId: faxRecord.sinchFaxId,
-          sinchResponse: sinchStatus,
+          sinchResponse: JSON.parse(JSON.stringify(sinchStatus)),
         },
       },
     });
