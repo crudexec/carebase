@@ -15,6 +15,7 @@ import {
   Label,
   Textarea,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -225,14 +226,12 @@ export default function AuthorizationDetailPage() {
   if (error && !authorization) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/authorizations">
-            <button type="button" className="rounded p-1 hover:bg-background-secondary">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-2xl font-bold">Authorization Not Found</h1>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Authorizations", href: "/authorizations" },
+            { label: "Not Found" },
+          ]}
+        />
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
@@ -254,27 +253,29 @@ export default function AuthorizationDetailPage() {
   const statusConfig = STATUS_CONFIG[authorization.status] || STATUS_CONFIG.ACTIVE;
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Authorizations", href: "/authorizations" },
+          { label: `${authorization.client.firstName} ${authorization.client.lastName}`, href: `/clients/${authorization.client.id}` },
+          { label: `#${authorization.authNumber}` },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/authorizations">
-            <button type="button" className="rounded p-1 hover:bg-background-secondary">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">
-                Authorization #{authorization.authNumber}
-              </h1>
-              <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
-            </div>
-            <p className="text-foreground-secondary">
-              {authorization.client.firstName} {authorization.client.lastName}
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">
+              Authorization #{authorization.authNumber}
+            </h1>
+            <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
+          </div>
+          <p className="text-foreground-secondary">
+            {authorization.client.firstName} {authorization.client.lastName}
               {authorization.client.medicaidId && ` • ${authorization.client.medicaidId}`}
             </p>
           </div>
-        </div>
         <div className="flex items-center gap-2">
           {!isEditing ? (
             <>

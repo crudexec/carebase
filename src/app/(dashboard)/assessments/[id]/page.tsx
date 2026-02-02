@@ -10,6 +10,7 @@ import {
   CardTitle,
   Button,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import { AssessmentRenderer } from "@/components/assessments/assessment-renderer";
 import { AssessmentScoreDisplay } from "@/components/assessments/assessment-score-display";
@@ -247,17 +248,12 @@ export default function AssessmentDetailPage() {
   if (error && !assessment) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="flex items-center gap-4">
-          <Link href="/assessments">
-            <button
-              type="button"
-              className="rounded p-1 hover:bg-background-secondary"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-2xl font-bold">Assessment</h1>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Assessments", href: "/assessments" },
+            { label: "Error" },
+          ]}
+        />
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8 text-error">
@@ -283,26 +279,25 @@ export default function AssessmentDetailPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Assessments", href: "/assessments" },
+          { label: `${assessment.client.firstName} ${assessment.client.lastName}`, href: `/clients/${assessment.client.id}` },
+          { label: assessment.template.name },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/assessments">
-            <button
-              type="button"
-              className="rounded p-1 hover:bg-background-secondary"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{assessment.template.name}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
-              <span className="text-foreground-secondary">•</span>
-              <span className="text-sm text-foreground-secondary">
-                {assessment.assessmentType.replace("_", " ")}
-              </span>
-            </div>
+        <div>
+          <h1 className="text-2xl font-bold">{assessment.template.name}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
+            <span className="text-foreground-secondary">•</span>
+            <span className="text-sm text-foreground-secondary">
+              {assessment.assessmentType.replace("_", " ")}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-2">

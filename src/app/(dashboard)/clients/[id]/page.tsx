@@ -14,6 +14,7 @@ import {
   Label,
   Select,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -36,6 +37,9 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  CalendarPlus,
+  Stethoscope,
+  FileCheck,
 } from "lucide-react";
 
 interface ClientDetails {
@@ -392,14 +396,20 @@ export default function ClientDetailPage() {
   if (error || !client) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" onClick={() => router.push("/clients")}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Clients
-        </Button>
+        <Breadcrumb
+          items={[
+            { label: "Clients", href: "/clients" },
+            { label: "Not Found" },
+          ]}
+        />
         <Card>
           <CardContent className="p-12 text-center">
             <User className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
             <p className="text-foreground-secondary">{error || "Client not found"}</p>
+            <Button variant="secondary" className="mt-4" onClick={() => router.push("/clients")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Clients
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -408,12 +418,17 @@ export default function ClientDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Clients", href: "/clients" },
+          { label: `${client.firstName} ${client.lastName}` },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push("/clients")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center">
               <span className="text-xl font-semibold text-success">
@@ -458,6 +473,65 @@ export default function ClientDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Quick Actions */}
+      <Card className="bg-gradient-to-r from-primary/5 to-success/5 border-primary/20">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-foreground-secondary">
+              <Plus className="w-4 h-4" />
+              <span className="font-medium">Quick Actions</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/visit-notes/new?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <ClipboardList className="w-4 h-4 mr-2" />
+                Visit Note
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/assessments/new?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <Stethoscope className="w-4 h-4 mr-2" />
+                Assessment
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/authorizations/new?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <FileCheck className="w-4 h-4 mr-2" />
+                Authorization
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/clients/${clientId}/care-plans/new`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <HeartPulse className="w-4 h-4 mr-2" />
+                Care Plan
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/scheduling?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <CalendarPlus className="w-4 h-4 mr-2" />
+                Schedule Shift
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Error Message */}
       {error && (

@@ -9,15 +9,14 @@ import {
   CardTitle,
   Button,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
-  ArrowLeft,
   AlertTriangle,
   AlertCircle,
   Clock,
   BarChart3,
   CheckCircle,
-  User,
 } from "lucide-react";
 
 interface Alert {
@@ -113,22 +112,19 @@ export default function AuthorizationAlertsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Authorizations", href: "/authorizations" },
+          { label: "Alerts" },
+        ]}
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/authorizations">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">Authorization Alerts</h1>
-          <p className="text-foreground-secondary">
-            Monitor expiring authorizations and unit limits
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Authorization Alerts</h1>
+        <p className="text-foreground-secondary">
+          Monitor expiring authorizations and unit limits
+        </p>
       </div>
 
       {/* Summary Cards */}

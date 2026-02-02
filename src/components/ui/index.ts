@@ -19,3 +19,4 @@ export { FileUpload } from "./file-upload";
 export { SignaturePad } from "./signature-pad";
 export { Rating } from "./rating";
 export { CollapsibleSection } from "./collapsible-section";
+export { Breadcrumb, type BreadcrumbItem } from "./breadcrumb";

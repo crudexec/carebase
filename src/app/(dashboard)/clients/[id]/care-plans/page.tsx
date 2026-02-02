@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -131,10 +132,13 @@ export default function ClientCarePlansPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" onClick={() => router.push(`/clients/${clientId}`)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Client
-        </Button>
+        <Breadcrumb
+          items={[
+            { label: "Clients", href: "/clients" },
+            { label: "Client", href: `/clients/${clientId}` },
+            { label: "Plans of Care" },
+          ]}
+        />
         <Card>
           <CardContent className="p-12 text-center">
             <FileText className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
@@ -147,20 +151,24 @@ export default function ClientCarePlansPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Clients", href: "/clients" },
+          { label: client ? `${client.firstName} ${client.lastName}` : "Client", href: `/clients/${clientId}` },
+          { label: "Plans of Care" },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push(`/clients/${clientId}`)}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-heading-2 text-foreground">Plans of Care</h1>
-            {client && (
-              <p className="text-body-sm text-foreground-secondary mt-1">
-                {client.firstName} {client.lastName}
-              </p>
-            )}
-          </div>
+        <div>
+          <h1 className="text-heading-2 text-foreground">Plans of Care</h1>
+          {client && (
+            <p className="text-body-sm text-foreground-secondary mt-1">
+              {client.firstName} {client.lastName}
+            </p>
+          )}
         </div>
         <Button onClick={() => router.push(`/clients/${clientId}/care-plans/new`)}>
           <Plus className="w-4 h-4 mr-2" />

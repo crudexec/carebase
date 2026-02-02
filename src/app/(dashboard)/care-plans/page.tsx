@@ -9,6 +9,7 @@ import {
   Badge,
   Input,
   Select,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   Plus,
@@ -181,14 +182,19 @@ export default function CarePlansPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6">
+        <Breadcrumb items={[{ label: "Care Plans" }]} />
+        <div className="flex items-center justify-center h-64">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Care Plans" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

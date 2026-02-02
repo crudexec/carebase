@@ -11,9 +11,9 @@ import {
   CardDescription,
   Button,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
-  ArrowLeft,
   ArrowRight,
   Loader2,
   User,
@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Plus,
   ExternalLink,
+  ArrowLeft,
 } from "lucide-react";
 
 interface IntakeData {
@@ -279,8 +280,16 @@ export default function IntakeWizardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <Breadcrumb
+          items={[
+            { label: "Intake", href: "/intake" },
+            { label: "Loading..." },
+          ]}
+        />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
@@ -288,14 +297,12 @@ export default function IntakeWizardPage() {
   if (error || !intake) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="flex items-center gap-4">
-          <Link href="/intake">
-            <button type="button" className="rounded p-1 hover:bg-background-secondary">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-2xl font-bold">Intake</h1>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Intake", href: "/intake" },
+            { label: "Not Found" },
+          ]}
+        />
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8 text-error">
@@ -759,20 +766,20 @@ export default function IntakeWizardPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <Breadcrumb
+        items={[
+          { label: "Intake", href: "/intake" },
+          { label: `${intake.client.firstName} ${intake.client.lastName}` },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/intake">
-            <button type="button" className="rounded p-1 hover:bg-background-secondary">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">
-              Intake: {intake.client.firstName} {intake.client.lastName}
-            </h1>
-            <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">
+            Intake: {intake.client.firstName} {intake.client.lastName}
+          </h1>
+          <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
         </div>
       </div>
 

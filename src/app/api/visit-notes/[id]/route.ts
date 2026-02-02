@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { FormSchemaSnapshot, VisitNoteData } from "@/lib/visit-notes/types";
@@ -10,8 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function GET(
     const visitNote = await prisma.visitNote.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       include: {
         shift: {
@@ -51,6 +51,13 @@ export async function GET(
             lastName: true,
           },
         },
+        qaReviewedBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         files: {
           select: {
             id: true,
@@ -73,8 +80,8 @@ export async function GET(
 
     // Check permissions - carers can only see their own notes
     if (
-      session.user.role === "CARER" &&
-      visitNote.carerId !== session.user.id
+      user.role === "CARER" &&
+      visitNote.carerId !== user.id
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -88,6 +95,9 @@ export async function GET(
       updatedAt: visitNote.updatedAt.toISOString(),
       templateId: visitNote.templateId,
       templateVersion: visitNote.templateVersion,
+      qaStatus: visitNote.qaStatus,
+      qaReviewedAt: visitNote.qaReviewedAt?.toISOString() || null,
+      qaReviewedBy: visitNote.qaReviewedBy,
       shift: {
         id: visitNote.shift.id,
         scheduledStart: visitNote.shift.scheduledStart.toISOString(),

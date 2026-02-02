@@ -5,6 +5,21 @@ import { Clock, User, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getShiftStatusConfig, formatTime, getShiftDuration } from "@/lib/scheduling";
 
+export interface VisitNoteData {
+  id: string;
+  formSchemaSnapshot: {
+    templateName: string;
+    version: number;
+  };
+  submittedAt: string;
+  qaStatus: string;
+  carer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
 export interface ShiftData {
   id: string;
   scheduledStart: string;
@@ -23,6 +38,7 @@ export interface ShiftData {
     lastName: string;
     address?: string | null;
   };
+  visitNotes?: VisitNoteData[];
 }
 
 interface ShiftCardProps {

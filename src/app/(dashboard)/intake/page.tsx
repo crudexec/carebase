@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   Plus,
@@ -19,7 +20,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  User,
   Calendar,
   AlertCircle,
   FileText,
@@ -129,6 +129,8 @@ export default function IntakePage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Intake" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

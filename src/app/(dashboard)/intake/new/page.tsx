@@ -14,8 +14,9 @@ import {
   Label,
   Input,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
-import { ArrowLeft, Loader2, ClipboardCheck, UserPlus } from "lucide-react";
+import { Loader2, ClipboardCheck, UserPlus } from "lucide-react";
 
 interface Client {
   id: string;
@@ -89,30 +90,35 @@ export default function NewIntakePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <Breadcrumb
+          items={[
+            { label: "Intake", href: "/intake" },
+            { label: "New Intake" },
+          ]}
+        />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      <Breadcrumb
+        items={[
+          { label: "Intake", href: "/intake" },
+          { label: "New Intake" },
+        ]}
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/intake">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">New Intake</h1>
-          <p className="text-foreground-secondary">
-            Start the intake process for a client
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">New Intake</h1>
+        <p className="text-foreground-secondary">
+          Start the intake process for a client
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

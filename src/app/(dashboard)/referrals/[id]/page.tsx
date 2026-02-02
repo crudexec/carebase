@@ -14,12 +14,11 @@ import {
   Label,
   Textarea,
   Input,
+  Breadcrumb,
 } from "@/components/ui";
 import {
-  ArrowLeft,
   Loader2,
   Phone,
-  Mail,
   MapPin,
   Calendar,
   Clock,
@@ -29,9 +28,8 @@ import {
   X,
   AlertTriangle,
   ArrowRight,
-  FileText,
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 
 interface Referral {
   id: string;
@@ -244,21 +242,37 @@ export default function ReferralDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-foreground-tertiary" />
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Referrals", href: "/referrals" },
+            { label: "Loading..." },
+          ]}
+        />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-foreground-tertiary" />
+        </div>
       </div>
     );
   }
 
   if (!referral) {
     return (
-      <div className="text-center py-12">
-        <AlertTriangle className="h-12 w-12 text-warning mx-auto mb-4" />
-        <h2 className="text-xl font-semibold">Referral not found</h2>
-        <p className="text-foreground-secondary mt-1">{error}</p>
-        <Link href="/referrals" className="mt-4 inline-block">
-          <Button variant="secondary">Back to Referrals</Button>
-        </Link>
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Referrals", href: "/referrals" },
+            { label: "Not Found" },
+          ]}
+        />
+        <div className="text-center py-12">
+          <AlertTriangle className="h-12 w-12 text-warning mx-auto mb-4" />
+          <h2 className="text-xl font-semibold">Referral not found</h2>
+          <p className="text-foreground-secondary mt-1">{error}</p>
+          <Link href="/referrals" className="mt-4 inline-block">
+            <Button variant="secondary">Back to Referrals</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -269,78 +283,74 @@ export default function ReferralDetailPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Referrals", href: "/referrals" },
+          { label: `${referral.prospectFirstName} ${referral.prospectLastName}` },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/referrals">
-            <button
-              type="button"
-              className="rounded p-1 hover:bg-background-secondary"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">
-                {referral.prospectFirstName} {referral.prospectLastName}
-              </h1>
-              {editingStatus ? (
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-36"
-                  >
-                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </Select>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">
+              {referral.prospectFirstName} {referral.prospectLastName}
+            </h1>
+            {editingStatus ? (
+              <div className="flex items-center gap-2">
+                <Select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  className="w-36"
+                >
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  onClick={handleStatusUpdate}
+                  disabled={isUpdating}
+                  className="p-1 text-success hover:bg-success/10 rounded"
+                >
+                  <Check className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingStatus(false);
+                    setNewStatus(referral.status);
+                  }}
+                  className="p-1 text-error hover:bg-error/10 rounded"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Badge className={STATUS_COLORS[referral.status]}>
+                  {STATUS_LABELS[referral.status]}
+                </Badge>
+                {referral.status !== "CONVERTED" && (
                   <button
-                    onClick={handleStatusUpdate}
-                    disabled={isUpdating}
-                    className="p-1 text-success hover:bg-success/10 rounded"
+                    onClick={() => setEditingStatus(true)}
+                    className="p-1 text-foreground-tertiary hover:text-foreground"
                   >
-                    <Check className="h-4 w-4" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </button>
-                  <button
-                    onClick={() => {
-                      setEditingStatus(false);
-                      setNewStatus(referral.status);
-                    }}
-                    className="p-1 text-error hover:bg-error/10 rounded"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Badge className={STATUS_COLORS[referral.status]}>
-                    {STATUS_LABELS[referral.status]}
-                  </Badge>
-                  {referral.status !== "CONVERTED" && (
-                    <button
-                      onClick={() => setEditingStatus(true)}
-                      className="p-1 text-foreground-tertiary hover:text-foreground"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-              {referral.urgency && referral.urgency !== "ROUTINE" && (
-                <Badge variant="error">{referral.urgency}</Badge>
-              )}
-            </div>
-            <p className="text-foreground-secondary text-sm">
-              {referral.referralNumber} • Received{" "}
-              {format(new Date(referral.receivedDate), "MMM d, yyyy")}
-            </p>
+                )}
+              </div>
+            )}
+            {referral.urgency && referral.urgency !== "ROUTINE" && (
+              <Badge variant="error">{referral.urgency}</Badge>
+            )}
           </div>
+          <p className="text-foreground-secondary text-sm">
+            {referral.referralNumber} • Received{" "}
+            {format(new Date(referral.receivedDate), "MMM d, yyyy")}
+          </p>
         </div>
-
         <div className="flex items-center gap-2">
           {canConvert && (
             <Button onClick={handleConvert} disabled={isConverting}>

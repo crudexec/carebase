@@ -14,6 +14,7 @@ import {
   Badge,
   Label,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   VisitNoteDetail,
@@ -34,6 +35,9 @@ import {
   Trash2,
   X,
   Check,
+  CheckCircle2,
+  AlertCircle,
+  Clock3,
 } from "lucide-react";
 import { Rating } from "@/components/ui";
 
@@ -337,11 +341,19 @@ export default function ViewVisitNotePage() {
 
   if (error || !visitNote) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-error">{error || "Visit note not found"}</p>
-        <Link href="/visit-notes" className="mt-4">
-          <Button variant="ghost">Back to Visit Notes</Button>
-        </Link>
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Visit Notes", href: "/visit-notes" },
+            { label: "Not Found" },
+          ]}
+        />
+        <div className="flex flex-col items-center justify-center py-12">
+          <p className="text-error">{error || "Visit note not found"}</p>
+          <Link href="/visit-notes" className="mt-4">
+            <Button variant="ghost">Back to Visit Notes</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -350,26 +362,25 @@ export default function ViewVisitNotePage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Visit Notes", href: "/visit-notes" },
+          { label: `${visitNote.client.firstName} ${visitNote.client.lastName}`, href: `/clients/${visitNote.client.id}` },
+          { label: schema.templateName },
+        ]}
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/visit-notes">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">{schema.templateName}</h1>
-            <Badge variant="default">v{schema.version}</Badge>
-          </div>
-          <p className="text-foreground-secondary">
-            Submitted {formatDate(visitNote.submittedAt)} at{" "}
-            {formatTime(visitNote.submittedAt)}
-          </p>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">{schema.templateName}</h1>
+          <Badge variant="default">v{schema.version}</Badge>
         </div>
+        <p className="text-foreground-secondary">
+          Submitted {formatDate(visitNote.submittedAt)} at{" "}
+          {formatTime(visitNote.submittedAt)}
+        </p>
       </div>
 
       {/* Metadata */}
@@ -461,6 +472,66 @@ export default function ViewVisitNotePage() {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* QA Status Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>QA Review Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            {visitNote.qaStatus === "APPROVED" ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-success" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-success">Approved</span>
+                  </div>
+                  {visitNote.qaReviewedAt && visitNote.qaReviewedBy && (
+                    <p className="text-sm text-foreground-secondary">
+                      Approved by {visitNote.qaReviewedBy.firstName} {visitNote.qaReviewedBy.lastName} on{" "}
+                      {formatDate(visitNote.qaReviewedAt)} at {formatTime(visitNote.qaReviewedAt)}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : visitNote.qaStatus === "NEEDS_REVISION" ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                  <AlertCircle className="h-6 w-6 text-warning" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-warning">Needs Revision</span>
+                  </div>
+                  {visitNote.qaReviewedAt && visitNote.qaReviewedBy && (
+                    <p className="text-sm text-foreground-secondary">
+                      Reviewed by {visitNote.qaReviewedBy.firstName} {visitNote.qaReviewedBy.lastName} on{" "}
+                      {formatDate(visitNote.qaReviewedAt)} at {formatTime(visitNote.qaReviewedAt)}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Clock3 className="h-6 w-6 text-foreground-tertiary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground-secondary">Pending Review</span>
+                  </div>
+                  <p className="text-sm text-foreground-tertiary">
+                    This note is awaiting QA review
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
 

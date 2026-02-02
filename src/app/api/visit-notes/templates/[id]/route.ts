@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { Prisma } from "@prisma/client";
@@ -25,23 +25,25 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check permissions
-    if (
-      !hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_VIEW) &&
-      !hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)
-    ) {
+    // Check permissions - allow carers to view enabled templates
+    const canView =
+      hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE) ||
+      user.role === "CARER";
+
+    if (!canView) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { id } = await params;
 
     const template = await prisma.formTemplate.findFirst({
-      where: { id, companyId: session.user.companyId },
+      where: { id, companyId: user.companyId },
       include: {
         createdBy: {
           select: {
@@ -81,13 +83,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
+    if (!hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -103,7 +105,7 @@ export async function PATCH(
     }
 
     const existingTemplate = await prisma.formTemplate.findFirst({
-      where: { id, companyId: session.user.companyId },
+      where: { id, companyId: user.companyId },
       include: {
         sections: {
           include: {
@@ -208,8 +210,8 @@ export async function PATCH(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "FORM_TEMPLATE_UPDATED",
         entityType: "FormTemplate",
         entityId: template.id,
@@ -247,20 +249,20 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
+    if (!hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { id } = await params;
 
     const existingTemplate = await prisma.formTemplate.findFirst({
-      where: { id, companyId: session.user.companyId },
+      where: { id, companyId: user.companyId },
     });
 
     if (!existingTemplate) {
@@ -281,8 +283,8 @@ export async function DELETE(
 
       await prisma.auditLog.create({
         data: {
-          companyId: session.user.companyId,
-          userId: session.user.id,
+          companyId: user.companyId,
+          userId: user.id,
           action: "FORM_TEMPLATE_ARCHIVED",
           entityType: "FormTemplate",
           entityId: id,
@@ -308,8 +310,8 @@ export async function DELETE(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "FORM_TEMPLATE_DELETED",
         entityType: "FormTemplate",
         entityId: id,

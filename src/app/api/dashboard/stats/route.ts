@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { startOfWeek, endOfWeek, startOfMonth, subMonths } from "date-fns";
 
 // GET /api/dashboard/stats - Get dashboard statistics based on user role
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { role, companyId, id: userId } = session.user;
+    const { role, companyId, id: userId } = user;
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
@@ -223,7 +223,7 @@ async function getCarerStats(
   todayEnd.setHours(23, 59, 59, 999);
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
-  const [todaysShifts, reportsThisMonth, pendingPayment, hoursThisWeek] =
+  const [todaysShifts, activeClients, pendingNotes, pendingPayment, hoursThisWeek] =
     await Promise.all([
       // Today's shifts for this carer
       prisma.shift.count({
@@ -233,12 +233,22 @@ async function getCarerStats(
           scheduledStart: { gte: todayStart, lte: todayEnd },
         },
       }),
-      // Reports submitted this month
-      prisma.visitNote.count({
+      // Active clients assigned to this carer (distinct clients from recent shifts)
+      prisma.shift.groupBy({
+        by: ['clientId'],
         where: {
           companyId,
           carerId,
-          submittedAt: { gte: monthStart },
+          status: { in: ["SCHEDULED", "IN_PROGRESS"] },
+        },
+      }),
+      // Pending notes (shifts completed without visit notes)
+      prisma.shift.count({
+        where: {
+          companyId,
+          carerId,
+          status: "COMPLETED",
+          visitNotes: { none: {} },
         },
       }),
       // Pending payment amount (using PayrollRecord model with totalAmount field)
@@ -275,10 +285,15 @@ async function getCarerStats(
   }, 0);
 
   return {
-    todaysShifts,
-    reportsThisMonth,
-    pendingPayment: Number(pendingPayment._sum.totalAmount || 0),
+    // Mobile app expected fields
+    shiftsToday: todaysShifts,
+    activeClients: activeClients.length,
+    pendingNotes,
     hoursThisWeek: Math.round(totalHours),
+    // Legacy web fields
+    todaysShifts,
+    reportsThisMonth: 0, // Deprecated, use pendingNotes instead
+    pendingPayment: Number(pendingPayment._sum.totalAmount || 0),
   };
 }
 

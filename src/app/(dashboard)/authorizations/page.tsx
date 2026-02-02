@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   Plus,
@@ -119,6 +120,9 @@ export default function AuthorizationsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={[{ label: "Authorizations" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

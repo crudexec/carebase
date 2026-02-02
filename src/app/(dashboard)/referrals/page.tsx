@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Badge,
   Input,
   Select,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   UserPlus,
@@ -115,6 +114,8 @@ export default function ReferralsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Referrals" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

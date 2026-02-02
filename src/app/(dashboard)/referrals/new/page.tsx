@@ -13,8 +13,9 @@ import {
   Select,
   Label,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
-import { ArrowLeft, Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 
 interface ReferralSource {
   id: string;
@@ -181,22 +182,19 @@ export default function NewReferralPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <Breadcrumb
+        items={[
+          { label: "Referrals", href: "/referrals" },
+          { label: "New Referral" },
+        ]}
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/referrals">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">New Referral</h1>
-          <p className="text-foreground-secondary">
-            Enter prospect information from the referral
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">New Referral</h1>
+        <p className="text-foreground-secondary">
+          Enter prospect information from the referral
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle, Select, Label, Badge } from "@/components/ui";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button, Card, CardContent, CardHeader, CardTitle, Select, Label, Badge, Breadcrumb } from "@/components/ui";
 import { FormRenderer } from "@/components/visit-notes/form-renderer";
 import { FormTemplateData, VisitNoteData } from "@/lib/visit-notes/types";
 import { ArrowLeft, Loader2, AlertTriangle, Info, Stethoscope } from "lucide-react";
@@ -34,10 +34,20 @@ interface EnabledTemplate {
   sections: FormTemplateData["sections"];
 }
 
+interface Client {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function NewVisitNotePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedClientId = searchParams.get("clientId");
+
   const [shifts, setShifts] = React.useState<Shift[]>([]);
   const [templates, setTemplates] = React.useState<EnabledTemplate[]>([]);
+  const [preselectedClient, setPreselectedClient] = React.useState<Client | null>(null);
   const [selectedShiftId, setSelectedShiftId] = React.useState<string>("");
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>("");
   const [isLoadingShifts, setIsLoadingShifts] = React.useState(true);
@@ -55,7 +65,23 @@ export default function NewVisitNotePage() {
   React.useEffect(() => {
     fetchShifts();
     fetchTemplates();
-  }, []);
+    if (preselectedClientId) {
+      fetchClient();
+    }
+  }, [preselectedClientId]);
+
+  const fetchClient = async () => {
+    if (!preselectedClientId) return;
+    try {
+      const response = await fetch(`/api/clients/${preselectedClientId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setPreselectedClient(data.client);
+      }
+    } catch (error) {
+      console.error("Failed to fetch client:", error);
+    }
+  };
 
   const fetchShifts = async () => {
     try {
@@ -188,22 +214,28 @@ export default function NewVisitNotePage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb - different path if coming from client */}
+      <Breadcrumb
+        items={
+          preselectedClient
+            ? [
+                { label: "Clients", href: "/clients" },
+                { label: `${preselectedClient.firstName} ${preselectedClient.lastName}`, href: `/clients/${preselectedClient.id}` },
+                { label: "New Visit Note" },
+              ]
+            : [
+                { label: "Visit Notes", href: "/visit-notes" },
+                { label: "New Note" },
+              ]
+        }
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/visit-notes">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">New Visit Note</h1>
-          <p className="text-foreground-secondary">
-            Select a shift and form to submit your visit note
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">New Visit Note</h1>
+        <p className="text-foreground-secondary">
+          Select a shift and form to submit your visit note
+        </p>
       </div>
 
       {/* Selection cards */}

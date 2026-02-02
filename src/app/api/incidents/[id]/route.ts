@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { IncidentSeverity, IncidentStatus } from "@prisma/client";
@@ -24,18 +25,26 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    // Try mobile auth first (Bearer token), then fall back to session auth
+    let user = await getAuthUser(request);
+    if (!user) {
+      const session = await auth();
+      if (session?.user) {
+        user = session.user;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
 
     // Check permissions
-    const canViewAll = hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL) ||
-      hasPermission(session.user.role, PERMISSIONS.INCIDENT_VIEW);
-    const canViewApproved = hasPermission(session.user.role, PERMISSIONS.INCIDENT_VIEW_APPROVED);
-    const canCreate = hasPermission(session.user.role, PERMISSIONS.INCIDENT_CREATE);
+    const canViewAll = hasPermission(user.role, PERMISSIONS.INCIDENT_FULL) ||
+      hasPermission(user.role, PERMISSIONS.INCIDENT_VIEW);
+    const canViewApproved = hasPermission(user.role, PERMISSIONS.INCIDENT_VIEW_APPROVED);
+    const canCreate = hasPermission(user.role, PERMISSIONS.INCIDENT_CREATE);
 
     if (!canViewAll && !canViewApproved && !canCreate) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -44,7 +53,7 @@ export async function GET(
     const incident = await prisma.incidentReport.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       include: {
         client: {
@@ -88,14 +97,14 @@ export async function GET(
     }
 
     // Sponsors can only see approved incidents for their clients
-    if ((session.user.role as string) === "SPONSOR") {
-      if (incident.status !== "APPROVED" || incident.client.sponsor?.id !== session.user.id) {
+    if ((user.role as string) === "SPONSOR") {
+      if (incident.status !== "APPROVED" || incident.client.sponsor?.id !== user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
 
     // Carers can only see their own incidents
-    if (session.user.role === "CARER" && incident.reporterId !== session.user.id) {
+    if (user.role === "CARER" && incident.reporterId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -123,8 +132,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    // Try mobile auth first (Bearer token), then fall back to session auth
+    let user = await getAuthUser(request);
+    if (!user) {
+      const session = await auth();
+      if (session?.user) {
+        user = session.user;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -144,7 +161,7 @@ export async function PATCH(
     const existingIncident = await prisma.incidentReport.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     });
 
@@ -152,9 +169,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Incident not found" }, { status: 404 });
     }
 
-    const canManage = hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL);
-    const canApprove = hasPermission(session.user.role, PERMISSIONS.INCIDENT_APPROVE);
-    const isReporter = existingIncident.reporterId === session.user.id;
+    const canManage = hasPermission(user.role, PERMISSIONS.INCIDENT_FULL);
+    const canApprove = hasPermission(user.role, PERMISSIONS.INCIDENT_APPROVE);
+    const isReporter = existingIncident.reporterId === user.id;
 
     // Check update permissions
     const { status, ...otherUpdates } = validation.data;
@@ -193,10 +210,10 @@ export async function PATCH(
     if (status) {
       updateData.status = status as IncidentStatus;
       if (status === "APPROVED") {
-        updateData.approvedById = session.user.id;
+        updateData.approvedById = user.id;
         updateData.approvedAt = new Date();
       } else if (status === "REJECTED") {
-        updateData.approvedById = session.user.id;
+        updateData.approvedById = user.id;
         updateData.approvedAt = new Date();
       }
     }
@@ -241,8 +258,8 @@ export async function PATCH(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: status ? `INCIDENT_${status}` : "INCIDENT_UPDATED",
         entityType: "IncidentReport",
         entityId: incident.id,
@@ -254,7 +271,7 @@ export async function PATCH(
     if (status === "APPROVED" && incident.client.sponsor) {
       await prisma.notification.create({
         data: {
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           userId: incident.client.sponsor.id,
           type: "INCIDENT_APPROVED",
           title: "Incident Report Available",
@@ -294,22 +311,30 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    // Try mobile auth first (Bearer token), then fall back to session auth
+    let user = await getAuthUser(request);
+    if (!user) {
+      const session = await auth();
+      if (session?.user) {
+        user = session.user;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
 
     // Only admins can delete incidents
-    if (!hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL)) {
+    if (!hasPermission(user.role, PERMISSIONS.INCIDENT_FULL)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const incident = await prisma.incidentReport.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     });
 
@@ -324,8 +349,8 @@ export async function DELETE(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "INCIDENT_DELETED",
         entityType: "IncidentReport",
         entityId: id,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
@@ -47,16 +48,24 @@ export const INCIDENT_CATEGORIES = [
 // GET /api/incidents - List incidents
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    // Try mobile auth first (Bearer token), then fall back to session auth
+    let user = await getAuthUser(request);
+    if (!user) {
+      const session = await auth();
+      if (session?.user) {
+        user = session.user;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    const canViewAll = hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL) ||
-      hasPermission(session.user.role, PERMISSIONS.INCIDENT_VIEW);
-    const canViewApproved = hasPermission(session.user.role, PERMISSIONS.INCIDENT_VIEW_APPROVED);
-    const canCreate = hasPermission(session.user.role, PERMISSIONS.INCIDENT_CREATE);
+    const canViewAll = hasPermission(user.role, PERMISSIONS.INCIDENT_FULL) ||
+      hasPermission(user.role, PERMISSIONS.INCIDENT_VIEW);
+    const canViewApproved = hasPermission(user.role, PERMISSIONS.INCIDENT_VIEW_APPROVED);
+    const canCreate = hasPermission(user.role, PERMISSIONS.INCIDENT_CREATE);
 
     if (!canViewAll && !canViewApproved && !canCreate) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -76,18 +85,18 @@ export async function GET(request: Request) {
 
     // Build query filters
     const where: Prisma.IncidentReportWhereInput = {
-      companyId: session.user.companyId,
+      companyId: user.companyId,
     };
 
     // Sponsors can only see approved incidents for their clients
-    if ((session.user.role as string) === "SPONSOR") {
+    if ((user.role as string) === "SPONSOR") {
       where.status = "APPROVED";
       where.client = {
-        sponsorId: session.user.id,
+        sponsorId: user.id,
       };
-    } else if (session.user.role === "CARER") {
+    } else if (user.role === "CARER") {
       // Carers can see incidents they reported
-      where.reporterId = session.user.id;
+      where.reporterId = user.id;
     }
 
     // Apply filters
@@ -95,7 +104,7 @@ export async function GET(request: Request) {
       where.clientId = clientId;
     }
 
-    if (status && session.user.role !== "SPONSOR") {
+    if (status && user.role !== "SPONSOR") {
       where.status = status;
     }
 
@@ -184,14 +193,22 @@ export async function GET(request: Request) {
 // POST /api/incidents - Create incident
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    // Try mobile auth first (Bearer token), then fall back to session auth
+    let user = await getAuthUser(request);
+    if (!user) {
+      const session = await auth();
+      if (session?.user) {
+        user = session.user;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    const canCreate = hasPermission(session.user.role, PERMISSIONS.INCIDENT_CREATE) ||
-      hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL);
+    const canCreate = hasPermission(user.role, PERMISSIONS.INCIDENT_CREATE) ||
+      hasPermission(user.role, PERMISSIONS.INCIDENT_FULL);
 
     if (!canCreate) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -223,7 +240,7 @@ export async function POST(request: Request) {
     const client = await prisma.client.findFirst({
       where: {
         id: clientId,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     });
 
@@ -237,9 +254,9 @@ export async function POST(request: Request) {
     // Create incident
     const incident = await prisma.incidentReport.create({
       data: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         clientId,
-        reporterId: session.user.id,
+        reporterId: user.id,
         incidentDate,
         location,
         category,
@@ -272,8 +289,8 @@ export async function POST(request: Request) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "INCIDENT_CREATED",
         entityType: "IncidentReport",
         entityId: incident.id,
@@ -301,7 +318,7 @@ export async function POST(request: Request) {
     sendNotificationToRole(
       "INCIDENT_REPORTED",
       ["ADMIN", "OPS_MANAGER", "SUPERVISOR"],
-      session.user.companyId,
+      user.companyId,
       notificationData,
       {
         relatedEntityType: "IncidentReport",

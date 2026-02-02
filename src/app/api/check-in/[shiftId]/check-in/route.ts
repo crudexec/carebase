@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
 
@@ -14,13 +14,13 @@ export async function POST(
   { params }: { params: Promise<{ shiftId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.role !== "CARER") {
+    if (user.role !== "CARER") {
       return NextResponse.json(
         { error: "Only carers can check in" },
         { status: 403 }
@@ -33,7 +33,7 @@ export async function POST(
 
     // Get the shift with today's attendance record
     const shift = await prisma.shift.findFirst({
-      where: { id: shiftId, companyId: session.user.companyId },
+      where: { id: shiftId, companyId: user.companyId },
       include: {
         client: {
           select: {
@@ -54,7 +54,7 @@ export async function POST(
     }
 
     // Verify this shift belongs to the carer
-    if (shift.carerId !== session.user.id) {
+    if (shift.carerId !== user.id) {
       return NextResponse.json(
         { error: "This shift is not assigned to you" },
         { status: 403 }
@@ -87,7 +87,7 @@ export async function POST(
         },
       },
       create: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         shiftId: shiftId,
         date: today,
         checkInTime: checkInTime,
@@ -115,8 +115,8 @@ export async function POST(
     // Create audit log for check-in
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "SHIFT_CHECK_IN",
         entityType: "Shift",
         entityId: shiftId,
@@ -130,7 +130,7 @@ export async function POST(
 
     // Get carer info for notifications
     const carer = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       select: { firstName: true, lastName: true },
     });
 
@@ -147,7 +147,7 @@ export async function POST(
       sendNotificationToRole(
         "LATE_CHECK_IN",
         ["SUPERVISOR", "ADMIN"],
-        session.user.companyId,
+        user.companyId,
         {
           carerName,
           clientName,
@@ -178,7 +178,7 @@ export async function POST(
     sendNotificationToRole(
       "CHECK_IN_CONFIRMATION",
       ["SUPERVISOR"],
-      session.user.companyId,
+      user.companyId,
       {
         carerName,
         clientName,

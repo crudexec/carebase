@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Breadcrumb } from "@/components/ui";
 import { X, Plus, RefreshCw, CheckCircle, XCircle } from "lucide-react";
 
 export default function OnboardingPage() {
@@ -187,14 +188,19 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6">
+        <Breadcrumb items={[{ label: "Onboarding" }]} />
+        <div className="flex items-center justify-center h-64">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Onboarding" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

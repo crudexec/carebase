@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { Prisma } from "@prisma/client";
@@ -55,8 +55,8 @@ async function saveBase64File(
 // GET /api/visit-notes - List visit notes
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -77,18 +77,18 @@ export async function GET(request: Request) {
 
     // Build query filters - scope to company
     const where: Prisma.VisitNoteWhereInput = {
-      companyId: session.user.companyId,
+      companyId: user.companyId,
     };
 
     // Carers can only see their own notes
-    if (session.user.role === "CARER") {
-      where.carerId = session.user.id;
-    } else if ((session.user.role as string) === "SPONSOR") {
+    if (user.role === "CARER") {
+      where.carerId = user.id;
+    } else if ((user.role as string) === "SPONSOR") {
       // Sponsors can only see notes for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {
-          companyId: session.user.companyId,
-          sponsorId: session.user.id,
+          companyId: user.companyId,
+          sponsorId: user.id,
         },
         select: { id: true },
       });
@@ -196,14 +196,14 @@ export async function GET(request: Request) {
 // POST /api/visit-notes - Submit a visit note
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions - either can create notes or can view all notes (admin/manager)
-    const canCreateOwn = hasPermission(session.user.role, PERMISSIONS.VISIT_NOTE_CREATE);
-    const canManageAll = hasPermission(session.user.role, PERMISSIONS.VISIT_NOTE_VIEW_ALL);
+    const canCreateOwn = hasPermission(user.role, PERMISSIONS.VISIT_NOTE_CREATE);
+    const canManageAll = hasPermission(user.role, PERMISSIONS.VISIT_NOTE_VIEW_ALL);
 
     if (!canCreateOwn && !canManageAll) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -225,9 +225,9 @@ export async function POST(request: Request) {
     const shift = await prisma.shift.findFirst({
       where: {
         id: shiftId,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         // If user can manage all, don't restrict by carer
-        ...(canManageAll ? {} : { carerId: session.user.id }),
+        ...(canManageAll ? {} : { carerId: user.id }),
       },
       include: {
         carer: {
@@ -256,13 +256,13 @@ export async function POST(request: Request) {
     }
 
     // Determine if this is being submitted on behalf of someone else
-    const isSubmittedOnBehalf = shift.carerId !== session.user.id;
+    const isSubmittedOnBehalf = shift.carerId !== user.id;
 
     // Get the template with its full structure
     const template = await prisma.formTemplate.findFirst({
       where: {
         id: templateId,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         isEnabled: true,
         status: "ACTIVE",
       },
@@ -285,15 +285,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate all field values
+    // Validate field values (skip required validation - allow partial submissions)
     const validationErrors: Record<string, string> = {};
     for (const section of template.sections) {
       for (const field of section.fields) {
         const value = data[field.id];
+        // Skip validation for empty values (allow partial submissions)
+        if (value === undefined || value === null || value === "") {
+          continue;
+        }
         const fieldValidation = validateFieldValue(
           field.type,
           value,
-          field.required,
+          false, // Never enforce required - allow partial submissions
           field.config
         );
         if (!fieldValidation.valid && fieldValidation.error) {
@@ -377,13 +381,13 @@ export async function POST(request: Request) {
     // Create the visit note
     const visitNote = await prisma.visitNote.create({
       data: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         templateId,
         templateVersion: template.version,
         shiftId,
         clientId,
         carerId: shift.carerId, // The carer assigned to the shift
-        submittedById: session.user.id, // Who actually submitted the note
+        submittedById: user.id, // Who actually submitted the note
         formSchemaSnapshot: formSchemaSnapshot as unknown as Prisma.InputJsonValue,
         data: processedData as unknown as Prisma.InputJsonValue,
         // Automatically submit for QA review
@@ -434,8 +438,8 @@ export async function POST(request: Request) {
     // Create audit log with detailed tracking
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: isSubmittedOnBehalf ? "VISIT_NOTE_CREATED_ON_BEHALF" : "VISIT_NOTE_CREATED",
         entityType: "VisitNote",
         entityId: visitNote.id,
@@ -446,7 +450,7 @@ export async function POST(request: Request) {
           clientId,
           carerId: shift.carerId,
           carerName: `${shift.carer.firstName} ${shift.carer.lastName}`,
-          submittedById: session.user.id,
+          submittedById: user.id,
           submittedOnBehalf: isSubmittedOnBehalf,
         },
       },

@@ -14,6 +14,7 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
+  UserCircle,
 } from "lucide-react";
 
 // Quick action card
@@ -93,7 +94,7 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <div>
         <h2 className="text-heading-2 text-foreground mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
             <>
               <QuickAction
@@ -111,8 +112,14 @@ export default async function DashboardPage() {
               <QuickAction
                 title="Manage Users"
                 description="Add or modify system users"
-                href="/admin/users"
+                href="/staff"
                 icon={Users}
+              />
+              <QuickAction
+                title="Manage Clients"
+                description="View and manage client profiles"
+                href="/clients"
+                icon={UserCircle}
               />
             </>
           )}

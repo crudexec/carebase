@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Button, Card, CardContent, Badge, Input, Select } from "@/components/ui";
+import { Button, Card, CardContent, Badge, Input, Select, Breadcrumb } from "@/components/ui";
 import {
   Plus,
   FileText,
@@ -235,6 +235,9 @@ export default function VisitNotesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={[{ label: "Visit Notes" }]} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

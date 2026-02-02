@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 
 // GET /api/visit-notes/templates/enabled - Get enabled templates for carers
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Any authenticated user can see enabled templates
     const templates = await prisma.formTemplate.findMany({
       where: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         isEnabled: true,
         status: "ACTIVE",
       },

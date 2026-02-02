@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { Prisma, ClientStatus } from "@prisma/client";
@@ -25,25 +25,20 @@ const querySchema = z.object({
 
 // GET /api/clients - List clients
 export async function GET(request: Request) {
-  console.log(`[Clients API] Request received`);
-  console.log(`[Clients API] Cookies:`, request.headers.get("cookie")?.substring(0, 100));
-
   try {
-    const session = await auth();
-    console.log(`[Clients API] Session:`, session ? `user=${session.user?.id}` : "null");
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
-      console.log(`[Clients API] No session user, returning 401`);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions - most roles can view clients
     // Sponsors can also view their associated clients
     const canView =
-      hasPermission(session.user.role, PERMISSIONS.USER_VIEW) ||
-      hasPermission(session.user.role, PERMISSIONS.SCHEDULING_VIEW) ||
-      hasPermission(session.user.role, PERMISSIONS.ONBOARDING_VIEW) ||
-      (session.user.role as string) === "SPONSOR";
+      hasPermission(user.role, PERMISSIONS.USER_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.SCHEDULING_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.ONBOARDING_VIEW) ||
+      (user.role as string) === "SPONSOR";
 
     if (!canView) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -61,28 +56,28 @@ export async function GET(request: Request) {
 
     const { search, status, page, limit } = queryValidation.data;
 
-    console.log(`[Clients API] User: id=${session.user.id}, role=${session.user.role}, companyId=${session.user.companyId}`);
-    console.log(`[Clients API] Role check: "${session.user.role}" === "CARER" is ${session.user.role === "CARER"}`);
+    console.log(`[Clients API] User: id=${user.id}, role=${user.role}, companyId=${user.companyId}`);
+    console.log(`[Clients API] Role check: "${user.role}" === "CARER" is ${user.role === "CARER"}`);
 
     // Build query - scope to company
     const where: Prisma.ClientWhereInput = {
-      companyId: session.user.companyId,
+      companyId: user.companyId,
     };
 
     // For sponsors, only show their associated clients
-    if ((session.user.role as string) === "SPONSOR") {
+    if ((user.role as string) === "SPONSOR") {
       console.log(`[Clients API] Entering SPONSOR branch`);
-      where.sponsorId = session.user.id;
+      where.sponsorId = user.id;
     }
 
     // For carers, only show clients they have been scheduled with
-    if (session.user.role === "CARER") {
+    if (user.role === "CARER") {
       console.log(`[Clients API] Entering CARER branch`);
       // Get all unique client IDs from the carer's shifts
       const carerShifts = await prisma.shift.findMany({
         where: {
-          carerId: session.user.id,
-          companyId: session.user.companyId,
+          carerId: user.id,
+          companyId: user.companyId,
         },
         select: {
           clientId: true,
@@ -94,7 +89,7 @@ export async function GET(request: Request) {
       // Also check all shifts for this carer regardless of company (for debugging)
       const allCarerShifts = await prisma.shift.findMany({
         where: {
-          carerId: session.user.id,
+          carerId: user.id,
         },
         select: {
           clientId: true,
@@ -102,9 +97,9 @@ export async function GET(request: Request) {
         },
       });
 
-      console.log(`[Clients API] Carer ${session.user.id} - shifts with company filter: ${carerShifts.length}`);
-      console.log(`[Clients API] Carer ${session.user.id} - ALL shifts (no company filter): ${allCarerShifts.length}`);
-      console.log(`[Clients API] Session companyId: ${session.user.companyId}`);
+      console.log(`[Clients API] Carer ${user.id} - shifts with company filter: ${carerShifts.length}`);
+      console.log(`[Clients API] Carer ${user.id} - ALL shifts (no company filter): ${allCarerShifts.length}`);
+      console.log(`[Clients API] User companyId: ${user.companyId}`);
       console.log(`[Clients API] Shifts companyIds:`, allCarerShifts.map(s => s.companyId));
       console.log(`[Clients API] Client IDs from shifts:`, carerShifts.map(s => s.clientId));
 
@@ -202,13 +197,13 @@ export async function GET(request: Request) {
 // POST /api/clients - Create a new client
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.USER_MANAGE)) {
+    if (!hasPermission(user.role, PERMISSIONS.USER_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -238,7 +233,7 @@ export async function POST(request: Request) {
       const carer = await prisma.user.findFirst({
         where: {
           id: assignedCarerId,
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           role: "CARER",
           isActive: true,
         },
@@ -255,7 +250,7 @@ export async function POST(request: Request) {
     // Create client
     const client = await prisma.client.create({
       data: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         firstName,
         lastName,
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
@@ -295,8 +290,8 @@ export async function POST(request: Request) {
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "CLIENT_CREATED",
         entityType: "Client",
         entityId: client.id,

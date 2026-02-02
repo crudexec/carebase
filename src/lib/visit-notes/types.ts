@@ -175,6 +175,13 @@ export interface VisitNoteDetail {
   updatedAt: string;
   templateId: string;
   templateVersion: number;
+  qaStatus: string;
+  qaReviewedAt?: string | null;
+  qaReviewedBy?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
   shift: {
     id: string;
     scheduledStart: string;

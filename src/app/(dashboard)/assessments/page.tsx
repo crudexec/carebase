@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   Badge,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   Plus,
@@ -105,6 +106,9 @@ export default function AssessmentsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={[{ label: "Assessments" }]} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

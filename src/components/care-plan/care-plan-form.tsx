@@ -31,6 +31,7 @@ import {
   CollapsibleSection,
   Badge,
   SignaturePad,
+  Breadcrumb,
 } from "@/components/ui";
 import { ICD10Search, DiagnosisItem } from "./icd10-search";
 import { PhysicianSearch } from "./physician-search";
@@ -684,6 +685,16 @@ export function CarePlanForm({
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Clients", href: "/clients" },
+          { label: clientName, href: `/clients/${clientId}` },
+          { label: "Plans of Care", href: `/clients/${clientId}/care-plans` },
+          { label: carePlanId ? "Edit" : "New" },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

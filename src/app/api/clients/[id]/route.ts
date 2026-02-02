@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { ClientStatus } from "@prisma/client";
@@ -23,16 +23,17 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check permissions
+    // Check permissions - allow carers to view their assigned clients
     const canView =
-      hasPermission(session.user.role, PERMISSIONS.USER_VIEW) ||
-      hasPermission(session.user.role, PERMISSIONS.SCHEDULING_VIEW) ||
-      hasPermission(session.user.role, PERMISSIONS.ONBOARDING_VIEW);
+      hasPermission(user.role, PERMISSIONS.USER_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.SCHEDULING_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.ONBOARDING_VIEW) ||
+      user.role === "CARER";
 
     if (!canView) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -43,7 +44,7 @@ export async function GET(
     const client = await prisma.client.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       select: {
         id: true,
@@ -108,13 +109,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.USER_MANAGE)) {
+    if (!hasPermission(user.role, PERMISSIONS.USER_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -133,7 +134,7 @@ export async function PATCH(
     const existingClient = await prisma.client.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     });
 
@@ -158,7 +159,7 @@ export async function PATCH(
       const carer = await prisma.user.findFirst({
         where: {
           id: assignedCarerId,
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           role: "CARER",
           isActive: true,
         },
@@ -177,7 +178,7 @@ export async function PATCH(
       const sponsor = await prisma.user.findFirst({
         where: {
           id: sponsorId,
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           role: "SPONSOR",
           isActive: true,
         },
@@ -250,8 +251,8 @@ export async function PATCH(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "CLIENT_UPDATED",
         entityType: "Client",
         entityId: client.id,
@@ -282,13 +283,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.USER_MANAGE)) {
+    if (!hasPermission(user.role, PERMISSIONS.USER_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -298,7 +299,7 @@ export async function DELETE(
     const existingClient = await prisma.client.findFirst({
       where: {
         id,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     });
 
@@ -315,8 +316,8 @@ export async function DELETE(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "CLIENT_DEACTIVATED",
         entityType: "Client",
         entityId: id,

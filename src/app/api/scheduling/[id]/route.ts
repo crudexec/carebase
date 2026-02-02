@@ -54,6 +54,22 @@ export async function GET(
           orderBy: { reportDate: "desc" },
           take: 1,
         },
+        visitNotes: {
+          select: {
+            id: true,
+            formSchemaSnapshot: true,
+            submittedAt: true,
+            qaStatus: true,
+            carer: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+          orderBy: { submittedAt: "desc" },
+        },
       },
     });
 

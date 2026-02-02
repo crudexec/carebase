@@ -14,6 +14,7 @@ import {
   Select,
   Label,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
 import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 
@@ -112,6 +113,11 @@ export default function NewAuthorizationPage() {
     }
   };
 
+  // Find preselected client for breadcrumb
+  const preselectedClient = preselectedClientId
+    ? clients.find((c) => c.id === preselectedClientId)
+    : null;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -122,22 +128,28 @@ export default function NewAuthorizationPage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Breadcrumb - different path if coming from client */}
+      <Breadcrumb
+        items={
+          preselectedClient
+            ? [
+                { label: "Clients", href: "/clients" },
+                { label: `${preselectedClient.firstName} ${preselectedClient.lastName}`, href: `/clients/${preselectedClient.id}` },
+                { label: "New Authorization" },
+              ]
+            : [
+                { label: "Authorizations", href: "/authorizations" },
+                { label: "New Authorization" },
+              ]
+        }
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/authorizations">
-          <button
-            type="button"
-            className="rounded p-1 hover:bg-background-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">New Authorization</h1>
-          <p className="text-foreground-secondary">
-            Add a Medicaid authorization for a client
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">New Authorization</h1>
+        <p className="text-foreground-secondary">
+          Add a Medicaid authorization for a client
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

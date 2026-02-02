@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
 import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
@@ -26,13 +26,13 @@ export async function POST(
   { params }: { params: Promise<{ shiftId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.role !== "CARER") {
+    if (user.role !== "CARER") {
       return NextResponse.json(
         { error: "Only carers can check out" },
         { status: 403 }
@@ -45,7 +45,7 @@ export async function POST(
 
     // Get the shift with today's attendance
     const shift = await prisma.shift.findFirst({
-      where: { id: shiftId, companyId: session.user.companyId },
+      where: { id: shiftId, companyId: user.companyId },
       include: {
         client: {
           select: {
@@ -66,7 +66,7 @@ export async function POST(
     }
 
     // Verify this shift belongs to the carer
-    if (shift.carerId !== session.user.id) {
+    if (shift.carerId !== user.id) {
       return NextResponse.json(
         { error: "This shift is not assigned to you" },
         { status: 403 }
@@ -140,11 +140,11 @@ export async function POST(
 
     // Deduct units from the client's active authorization
     const authResult = await deductAuthorizationUnits({
-      companyId: session.user.companyId,
+      companyId: user.companyId,
       clientId: shift.clientId,
       hoursWorked: totalHoursWorked,
       shiftId: shiftId,
-      userId: session.user.id,
+      userId: user.id,
     });
 
     if (authResult.success && authResult.authorizationId) {
@@ -157,8 +157,8 @@ export async function POST(
     // Create audit log for check-out
     await prisma.auditLog.create({
       data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
+        companyId: user.companyId,
+        userId: user.id,
         action: "SHIFT_CHECK_OUT",
         entityType: "Shift",
         entityId: shiftId,
@@ -173,7 +173,7 @@ export async function POST(
 
     // Get carer info for notifications
     const carer = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       select: { firstName: true, lastName: true },
     });
 
@@ -192,7 +192,7 @@ export async function POST(
       sendNotificationToRole(
         "EARLY_CHECK_OUT",
         ["SUPERVISOR", "ADMIN"],
-        session.user.companyId,
+        user.companyId,
         {
           carerName,
           clientName,
@@ -212,7 +212,7 @@ export async function POST(
       sendNotificationToRole(
         "OVERTIME_ALERT",
         ["SUPERVISOR", "ADMIN"],
-        session.user.companyId,
+        user.companyId,
         {
           carerName,
           clientName,
@@ -259,7 +259,7 @@ export async function POST(
     sendNotificationToRole(
       "CHECK_OUT_CONFIRMATION",
       ["SUPERVISOR"],
-      session.user.companyId,
+      user.companyId,
       {
         carerName,
         clientName,
