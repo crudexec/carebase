@@ -110,18 +110,21 @@ export const fileValueSchema = z.object({
 // Base64 data for inline file uploads (from mobile apps)
 export const base64FileSchema = z.string().regex(/^[A-Za-z0-9+/=]+$/, "Invalid base64 data");
 
-// Field value can be various types
+// Field value can be various types - use z.any() to be flexible with mobile app data
 export const fieldValueSchema = z.union([
   z.string(),
   z.number(),
   z.boolean(),
   z.array(z.string()),
+  z.array(z.any()), // Allow any array type
   fileValueSchema,
+  z.object({}).passthrough(), // Allow any object
   z.null(),
+  z.undefined(),
 ]);
 
-// Visit note data is a record of field IDs to values
-export const visitNoteDataSchema = z.record(z.string(), fieldValueSchema);
+// Visit note data is a record of field IDs to values - allow any value type for flexibility
+export const visitNoteDataSchema = z.record(z.string(), z.any());
 
 export const createVisitNoteSchema = z.object({
   templateId: z.string().min(1),

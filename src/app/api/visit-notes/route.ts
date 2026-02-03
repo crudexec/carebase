@@ -83,7 +83,7 @@ export async function GET(request: Request) {
     // Carers can only see their own notes
     if (user.role === "CARER") {
       where.carerId = user.id;
-    } else if ((user.role as string) === "SPONSOR") {
+    } else if ((user.role as string) === "GUARDIAN") {
       // Sponsors can only see notes for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {
@@ -285,33 +285,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate field values (skip required validation - allow partial submissions)
-    const validationErrors: Record<string, string> = {};
-    for (const section of template.sections) {
-      for (const field of section.fields) {
-        const value = data[field.id];
-        // Skip validation for empty values (allow partial submissions)
-        if (value === undefined || value === null || value === "") {
-          continue;
-        }
-        const fieldValidation = validateFieldValue(
-          field.type,
-          value,
-          false, // Never enforce required - allow partial submissions
-          field.config
-        );
-        if (!fieldValidation.valid && fieldValidation.error) {
-          validationErrors[field.id] = fieldValidation.error;
-        }
-      }
-    }
-
-    if (Object.keys(validationErrors).length > 0) {
-      return NextResponse.json(
-        { error: "Validation failed", details: validationErrors },
-        { status: 400 }
-      );
-    }
+    // Skip field validation for mobile submissions - just accept the data as-is
+    // The form schema snapshot will preserve the expected types for reference
+    // This allows partial and flexible submissions from mobile apps
+    console.log("[Visit Notes API] Skipping field validation for flexible mobile submission");
+    console.log("[Visit Notes API] Submitted data fields:", Object.keys(data));
 
     // Create form schema snapshot
     const formSchemaSnapshot: FormSchemaSnapshot = {
