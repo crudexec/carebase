@@ -354,6 +354,24 @@ export const EVENT_CONFIGS: Record<NotificationEventType, EventConfig> = {
     defaultChannels: ["EMAIL", "IN_APP"],
     variables: ["clientName", "carerName", "visitDate", "visitNoteUrl"],
   },
+  THRESHOLD_BREACH: {
+    eventType: "THRESHOLD_BREACH",
+    description: "Alert when a visit note field value exceeds configured thresholds",
+    defaultRecipientRoles: ["SUPERVISOR", "CLINICAL_DIRECTOR", "OPS_MANAGER", "ADMIN"],
+    priority: "HIGH",
+    defaultChannels: ["EMAIL", "IN_APP"],
+    variables: [
+      "clientName",
+      "carerName",
+      "visitDate",
+      "fieldLabel",
+      "enteredValue",
+      "thresholdType",
+      "thresholdValue",
+      "customMessage",
+      "visitNoteUrl",
+    ],
+  },
 
   // -------------------- Administrative --------------------
   USER_ACCOUNT_CREATED: {

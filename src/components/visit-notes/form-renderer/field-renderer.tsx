@@ -83,6 +83,8 @@ function renderFieldInput(
       );
 
     case "NUMBER":
+      // Note: min/max are now thresholds for alerts, not input blockers
+      // Users can enter any numeric value
       return (
         <Input
           id={field.id}
@@ -91,8 +93,6 @@ function renderFieldInput(
           onChange={(e) =>
             onChange(e.target.value ? parseFloat(e.target.value) : null)
           }
-          min={config?.min as number}
-          max={config?.max as number}
           step={config?.step as number}
           placeholder={config?.placeholder as string}
           disabled={disabled}

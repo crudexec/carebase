@@ -217,6 +217,7 @@ enum NotificationEventType {
   ASSESSMENT_DUE
   ASSESSMENT_COMPLETED
   VISIT_NOTE_SUBMITTED
+  THRESHOLD_BREACH
 
   // Administrative
   USER_ACCOUNT_CREATED
@@ -292,6 +293,9 @@ model Company {
   notificationPreferences NotificationPreference[]
   notificationLogs        NotificationLog[]
   notificationTemplates   NotificationTemplate[]
+
+  // Threshold breaches
+  thresholdBreaches ThresholdBreach[]
 
   @@index([isActive])
 }
@@ -384,6 +388,9 @@ model User {
   // Notification system
   notificationPreferences NotificationPreference[]
   notificationLogs        NotificationLog[]
+
+  // Threshold breaches
+  thresholdBreaches ThresholdBreach[] @relation("CarerThresholdBreaches")
 
   @@index([email])
   @@index([role])
@@ -488,6 +495,9 @@ model Client {
   consentSignatures ConsentSignature[]
   carePlans         CarePlan[]
   authorizations    Authorization[]
+
+  // Threshold breaches
+  thresholdBreaches ThresholdBreach[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])
@@ -969,6 +979,9 @@ model VisitNote {
   // Comments
   comments VisitNoteComment[]
 
+  // Threshold breaches
+  thresholdBreaches ThresholdBreach[]
+
   @@index([companyId])
   @@index([templateId])
   @@index([shiftId])
@@ -978,6 +991,37 @@ model VisitNote {
   @@index([submittedById])
   @@index([qaStatus])
   @@index([qaReviewedById])
+}
+
+model ThresholdBreach {
+  id            String   @id @default(cuid())
+  visitNoteId   String
+  visitNote     VisitNote @relation(fields: [visitNoteId], references: [id], onDelete: Cascade)
+  fieldId       String   // The form field ID that breached
+  fieldLabel    String   // Snapshot of field label at time of breach
+  value         Float    // The value that was entered
+  minThreshold  Float?   // The min threshold that was breached (if applicable)
+  maxThreshold  Float?   // The max threshold that was breached (if applicable)
+  breachType    String   // "BELOW_MIN" or "ABOVE_MAX"
+  customMessage String?  // Custom message configured on the field
+  createdAt     DateTime @default(now())
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // For quick lookups
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  carerId String
+  carer   User @relation("CarerThresholdBreaches", fields: [carerId], references: [id])
+
+  @@index([visitNoteId])
+  @@index([companyId])
+  @@index([clientId])
+  @@index([carerId])
+  @@index([createdAt])
 }
 
 model VisitNoteFile {

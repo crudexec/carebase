@@ -68,6 +68,20 @@ export async function GET(
             fileUrl: true,
           },
         },
+        thresholdBreaches: {
+          select: {
+            id: true,
+            fieldId: true,
+            fieldLabel: true,
+            value: true,
+            minThreshold: true,
+            maxThreshold: true,
+            breachType: true,
+            customMessage: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
 
@@ -108,6 +122,17 @@ export async function GET(
       submittedBy: visitNote.submittedBy,
       submittedOnBehalf: visitNote.carerId !== visitNote.submittedById,
       files: visitNote.files,
+      thresholdBreaches: visitNote.thresholdBreaches.map((breach) => ({
+        id: breach.id,
+        fieldId: breach.fieldId,
+        fieldLabel: breach.fieldLabel,
+        value: breach.value,
+        minThreshold: breach.minThreshold,
+        maxThreshold: breach.maxThreshold,
+        breachType: breach.breachType,
+        customMessage: breach.customMessage,
+        createdAt: breach.createdAt.toISOString(),
+      })),
     };
 
     return NextResponse.json({ visitNote: response });

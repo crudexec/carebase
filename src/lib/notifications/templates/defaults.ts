@@ -1211,6 +1211,61 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
     },
   },
 
+  THRESHOLD_BREACH: {
+    EMAIL: {
+      subject: "ALERT: Threshold Breach - {{fieldLabel}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<div class="alert-box alert-warning">
+  <strong>Threshold Alert:</strong> A visit note field value exceeded the configured threshold.
+</div>
+
+<table class="info-table">
+  <tr>
+    <td>Client</td>
+    <td><strong>{{clientName}}</strong></td>
+  </tr>
+  <tr>
+    <td>Carer</td>
+    <td>{{carerName}}</td>
+  </tr>
+  <tr>
+    <td>Visit Date</td>
+    <td>{{visitDate}}</td>
+  </tr>
+  <tr>
+    <td>Field</td>
+    <td>{{fieldLabel}}</td>
+  </tr>
+  <tr>
+    <td>Value Entered</td>
+    <td><strong>{{enteredValue}}</strong></td>
+  </tr>
+  <tr>
+    <td>Threshold Exceeded</td>
+    <td>{{thresholdType}} threshold: {{thresholdValue}}</td>
+  </tr>
+</table>
+
+{{#customMessage}}
+<div class="alert-box alert-info">
+  <strong>Note:</strong> {{customMessage}}
+</div>
+{{/customMessage}}
+
+<p>
+  <a href="{{visitNoteUrl}}" class="button">View Visit Note</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Threshold alert for {{clientName}}: {{fieldLabel}} value ({{enteredValue}}) exceeds {{thresholdType}} threshold ({{thresholdValue}}).",
+    },
+  },
+
   // -------------------- Administrative --------------------
   USER_ACCOUNT_CREATED: {
     EMAIL: {

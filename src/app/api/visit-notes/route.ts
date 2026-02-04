@@ -9,6 +9,7 @@ import {
   validateFieldValue,
 } from "@/lib/visit-notes/validation";
 import { FormSchemaSnapshot } from "@/lib/visit-notes/types";
+import { processThresholdBreaches } from "@/lib/notifications/threshold-breach";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -433,6 +434,24 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Process threshold breaches - detect and send notifications
+    try {
+      await processThresholdBreaches({
+        visitNoteId: visitNote.id,
+        companyId: user.companyId,
+        clientId,
+        carerId: shift.carerId,
+        clientName: `${visitNote.client.firstName} ${visitNote.client.lastName}`,
+        carerName: `${visitNote.carer.firstName} ${visitNote.carer.lastName}`,
+        visitDate: visitNote.shift.scheduledStart.toISOString(),
+        formSchemaSnapshot,
+        data: processedData,
+      });
+    } catch (thresholdError) {
+      // Log error but don't fail the visit note creation
+      console.error("[Threshold Breach] Error processing threshold breaches:", thresholdError);
+    }
 
     return NextResponse.json({ visitNote }, { status: 201 });
   } catch (error) {

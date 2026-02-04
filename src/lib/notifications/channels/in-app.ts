@@ -46,6 +46,7 @@ const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
   ASSESSMENT_DUE: "assessment_due",
   ASSESSMENT_COMPLETED: "assessment_completed",
   VISIT_NOTE_SUBMITTED: "visit_note_submitted",
+  THRESHOLD_BREACH: "threshold_breach",
   // Administrative
   USER_ACCOUNT_CREATED: "account_created",
   PASSWORD_RESET: "password_reset",

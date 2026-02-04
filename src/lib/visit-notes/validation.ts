@@ -11,10 +11,12 @@ export const textFieldConfigSchema = z.object({
 });
 
 export const numberFieldConfigSchema = z.object({
-  min: z.number().optional(),
-  max: z.number().optional(),
+  min: z.number().optional(), // Min threshold for alerts
+  max: z.number().optional(), // Max threshold for alerts
   step: z.number().positive().optional(),
   placeholder: z.string().optional(),
+  thresholdEnabled: z.boolean().optional(), // Enable threshold alerts
+  customMessage: z.string().max(500).optional(), // Custom alert message
 });
 
 export const choiceFieldConfigSchema = z.object({
@@ -258,13 +260,8 @@ export function validateFieldValue(
       if (typeof value !== "number") {
         return { valid: false, error: "Must be a number" };
       }
-      const numConfig = config as { min?: number; max?: number } | null;
-      if (numConfig?.min !== undefined && value < numConfig.min) {
-        return { valid: false, error: `Minimum value is ${numConfig.min}` };
-      }
-      if (numConfig?.max !== undefined && value > numConfig.max) {
-        return { valid: false, error: `Maximum value is ${numConfig.max}` };
-      }
+      // Note: min/max are now thresholds for alerts, not validation blockers
+      // Users can enter any numeric value - threshold breaches trigger notifications
       return { valid: true };
     }
 

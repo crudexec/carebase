@@ -21,7 +21,10 @@ import {
   FormSchemaSnapshot,
   FieldValue,
   FIELD_TYPE_LABELS,
+  ThresholdBreachData,
+  VisitNoteDetailWithBreaches,
 } from "@/lib/visit-notes/types";
+import { ThresholdAlertBanner } from "@/components/visit-notes/threshold-alert-banner";
 import { FormFieldType, UserRole } from "@prisma/client";
 import {
   ArrowLeft,
@@ -75,7 +78,7 @@ export default function ViewVisitNotePage() {
   const { data: session } = useSession();
   const noteId = params.id as string;
 
-  const [visitNote, setVisitNote] = React.useState<VisitNoteDetail | null>(null);
+  const [visitNote, setVisitNote] = React.useState<VisitNoteDetailWithBreaches | null>(null);
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [staffMembers, setStaffMembers] = React.useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -382,6 +385,11 @@ export default function ViewVisitNotePage() {
           {formatTime(visitNote.submittedAt)}
         </p>
       </div>
+
+      {/* Threshold Breach Alerts */}
+      {visitNote.thresholdBreaches && visitNote.thresholdBreaches.length > 0 && (
+        <ThresholdAlertBanner breaches={visitNote.thresholdBreaches} />
+      )}
 
       {/* Metadata */}
       <Card>

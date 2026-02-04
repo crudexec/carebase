@@ -10,10 +10,12 @@ export interface TextFieldConfig {
 }
 
 export interface NumberFieldConfig {
-  min?: number;
-  max?: number;
+  min?: number; // Min threshold - alerts if value is below this
+  max?: number; // Max threshold - alerts if value is above this
   step?: number;
   placeholder?: string;
+  thresholdEnabled?: boolean; // Enable threshold alerts (defaults to true if min or max is set)
+  customMessage?: string; // Custom alert message for threshold breaches
 }
 
 export interface ChoiceFieldConfig {
@@ -214,6 +216,28 @@ export interface VisitNoteDetail {
 }
 
 // ============================================
+// Threshold Breach Types
+// ============================================
+
+export type ThresholdBreachType = "BELOW_MIN" | "ABOVE_MAX";
+
+export interface ThresholdBreachData {
+  id: string;
+  fieldId: string;
+  fieldLabel: string;
+  value: number;
+  minThreshold?: number;
+  maxThreshold?: number;
+  breachType: ThresholdBreachType;
+  customMessage?: string;
+  createdAt: string;
+}
+
+export interface VisitNoteDetailWithBreaches extends VisitNoteDetail {
+  thresholdBreaches: ThresholdBreachData[];
+}
+
+// ============================================
 // Field Type Metadata
 // ============================================
 
@@ -235,7 +259,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   TEXT_SHORT: "Single line text input",
   TEXT_LONG: "Multi-line text area",
-  NUMBER: "Numeric input with optional min/max",
+  NUMBER: "Numeric input with optional threshold alerts",
   YES_NO: "Simple yes or no toggle",
   SINGLE_CHOICE: "Select one option from a list",
   MULTIPLE_CHOICE: "Select multiple options from a list",
@@ -265,7 +289,7 @@ export function getDefaultFieldConfig(type: FormFieldType): FieldConfig {
     case "TEXT_LONG":
       return { maxLength: 2000 };
     case "NUMBER":
-      return { min: 0, max: 100 };
+      return { min: 0, max: 100, thresholdEnabled: true };
     default:
       return null;
   }

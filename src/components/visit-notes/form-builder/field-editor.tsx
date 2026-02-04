@@ -171,55 +171,7 @@ function renderConfigEditor(
       );
 
     case "NUMBER":
-      return (
-        <div className="space-y-4 pt-4 border-t border-border">
-          <h4 className="text-sm font-medium">Number Options</h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="min">Minimum</Label>
-              <Input
-                id="min"
-                type="number"
-                value={(field.config as { min?: number })?.min ?? ""}
-                onChange={(e) =>
-                  updateConfig({
-                    min: e.target.value ? parseFloat(e.target.value) : undefined,
-                  })
-                }
-                placeholder="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="max">Maximum</Label>
-              <Input
-                id="max"
-                type="number"
-                value={(field.config as { max?: number })?.max ?? ""}
-                onChange={(e) =>
-                  updateConfig({
-                    max: e.target.value ? parseFloat(e.target.value) : undefined,
-                  })
-                }
-                placeholder="100"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="step">Step</Label>
-            <Input
-              id="step"
-              type="number"
-              value={(field.config as { step?: number })?.step ?? ""}
-              onChange={(e) =>
-                updateConfig({
-                  step: e.target.value ? parseFloat(e.target.value) : undefined,
-                })
-              }
-              placeholder="1"
-            />
-          </div>
-        </div>
-      );
+      return <NumberConfigEditor field={field} updateConfig={updateConfig} />;
 
     case "SINGLE_CHOICE":
     case "MULTIPLE_CHOICE":
@@ -263,6 +215,135 @@ function renderConfigEditor(
     default:
       return null;
   }
+}
+
+interface NumberConfig {
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  thresholdEnabled?: boolean;
+  customMessage?: string;
+}
+
+function NumberConfigEditor({
+  field,
+  updateConfig,
+}: {
+  field: FormFieldData;
+  updateConfig: (config: Record<string, unknown>) => void;
+}) {
+  const config = (field.config as NumberConfig) || {};
+  // Default thresholdEnabled to true if min or max is set
+  const thresholdEnabled = config.thresholdEnabled ?? (config.min !== undefined || config.max !== undefined);
+
+  const handleThresholdToggle = (enabled: boolean) => {
+    if (enabled) {
+      // When enabling, set default values if not already set
+      updateConfig({
+        thresholdEnabled: true,
+        min: config.min ?? 0,
+        max: config.max ?? 100,
+      });
+    } else {
+      updateConfig({
+        thresholdEnabled: false,
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-border">
+      <h4 className="text-sm font-medium">Number Options</h4>
+
+      {/* Step */}
+      <div className="space-y-2">
+        <Label htmlFor="step">Step increment</Label>
+        <Input
+          id="step"
+          type="number"
+          value={config.step ?? ""}
+          onChange={(e) =>
+            updateConfig({
+              step: e.target.value ? parseFloat(e.target.value) : undefined,
+            })
+          }
+          placeholder="1"
+        />
+      </div>
+
+      {/* Threshold Alerts Section */}
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="threshold-enabled"
+            checked={thresholdEnabled}
+            onChange={(e) => handleThresholdToggle(e.target.checked)}
+          />
+          <Label htmlFor="threshold-enabled" className="cursor-pointer">
+            Enable threshold alerts
+          </Label>
+        </div>
+
+        {thresholdEnabled && (
+          <>
+            <p className="text-sm text-foreground-secondary">
+              When the entered value is outside these thresholds, notifications will be sent to administrators.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="min-threshold">Min threshold *</Label>
+                <Input
+                  id="min-threshold"
+                  type="number"
+                  value={config.min ?? ""}
+                  onChange={(e) =>
+                    updateConfig({
+                      min: e.target.value ? parseFloat(e.target.value) : undefined,
+                    })
+                  }
+                  placeholder="0"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="max-threshold">Max threshold *</Label>
+                <Input
+                  id="max-threshold"
+                  type="number"
+                  value={config.max ?? ""}
+                  onChange={(e) =>
+                    updateConfig({
+                      max: e.target.value ? parseFloat(e.target.value) : undefined,
+                    })
+                  }
+                  placeholder="100"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="custom-message">Custom alert message (optional)</Label>
+              <Textarea
+                id="custom-message"
+                value={config.customMessage || ""}
+                onChange={(e) =>
+                  updateConfig({ customMessage: e.target.value || undefined })
+                }
+                placeholder="e.g., Blood pressure is outside normal range. Please contact supervisor immediately."
+                rows={2}
+              />
+              <p className="text-xs text-foreground-tertiary">
+                This message will be included in the alert notification when the threshold is breached.
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ChoiceConfigEditor({
