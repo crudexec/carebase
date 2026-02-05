@@ -148,6 +148,7 @@ interface CarePlanFormProps {
   initialData?: CarePlanData;
   onSave?: (data: CarePlanData) => Promise<void>;
   isLoading?: boolean;
+  intakeId?: string | null;
 }
 
 // Constants
@@ -228,6 +229,7 @@ export function CarePlanForm({
   initialData,
   onSave,
   isLoading = false,
+  intakeId,
 }: CarePlanFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
@@ -665,6 +667,9 @@ export function CarePlanForm({
 
       if (onSave) {
         await onSave(carePlan);
+      } else if (intakeId) {
+        // Redirect back to intake if this care plan is part of an intake
+        router.push(`/intake/${intakeId}`);
       } else {
         router.push(`/clients/${clientId}/care-plans/${carePlan.id}`);
       }

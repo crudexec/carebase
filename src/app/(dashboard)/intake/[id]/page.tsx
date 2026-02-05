@@ -26,6 +26,7 @@ import {
   Plus,
   ExternalLink,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 
 interface IntakeData {
@@ -93,11 +94,15 @@ interface IntakeData {
   } | null;
 }
 
-interface RequiredTemplate {
+interface AvailableTemplate {
   id: string;
   name: string;
-  code: string;
   description: string | null;
+  isRequired: boolean;
+  sections: {
+    id: string;
+    items: { id: string }[];
+  }[];
 }
 
 interface RequiredConsent {
@@ -130,13 +135,14 @@ export default function IntakeWizardPage() {
   const intakeId = params.id as string;
 
   const [intake, setIntake] = React.useState<IntakeData | null>(null);
-  const [requiredTemplates, setRequiredTemplates] = React.useState<RequiredTemplate[]>([]);
+  const [availableTemplates, setAvailableTemplates] = React.useState<AvailableTemplate[]>([]);
   const [requiredConsents, setRequiredConsents] = React.useState<RequiredConsent[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [currentStep, setCurrentStep] = React.useState(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isGeneratingCarePlan, setIsGeneratingCarePlan] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   React.useEffect(() => {
     fetchIntake();
@@ -153,9 +159,11 @@ export default function IntakeWizardPage() {
       }
 
       setIntake(data.intake);
-      setRequiredTemplates(data.requiredTemplates || []);
+      setAvailableTemplates(data.availableTemplates || []);
       setRequiredConsents(data.requiredConsents || []);
-      setCurrentStep(data.intake.currentStep || 1);
+      // Parse currentStep - handle both numeric strings and default to 1
+      const step = parseInt(data.intake.currentStep, 10);
+      setCurrentStep(isNaN(step) ? 1 : step);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch intake");
     } finally {
@@ -278,6 +286,31 @@ export default function IntakeWizardPage() {
     }
   };
 
+  const deleteIntake = async () => {
+    if (!confirm("Are you sure you want to delete this intake? This action cannot be undone.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/intake/${intakeId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        router.push("/intake");
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to delete intake");
+      }
+    } catch (err) {
+      console.error("Failed to delete intake:", err);
+      setError("Failed to delete intake");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -322,7 +355,7 @@ export default function IntakeWizardPage() {
   // Check step completion
   const isStep1Complete = true; // Client info is always complete if intake exists
   const completedAssessments = intake.assessments.filter((a) => a.status === "COMPLETED");
-  const isStep2Complete = requiredTemplates.length === 0 || completedAssessments.length >= requiredTemplates.length;
+  const isStep2Complete = completedAssessments.length > 0; // At least one completed assessment
   const completedConsents = intake.consents.filter((c) => c.status === "SIGNED");
   const isStep3Complete = requiredConsents.length === 0 || completedConsents.length >= requiredConsents.length;
   const isStep4Complete = intake.carePlan !== null;
@@ -422,85 +455,90 @@ export default function IntakeWizardPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Required Assessments</CardTitle>
+              <CardTitle>Assessment Template</CardTitle>
               <CardDescription>
-                Complete all required assessments for this intake
+                Choose the assessment instrument to use
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {requiredTemplates.length === 0 ? (
+            <CardContent className="space-y-3">
+              {availableTemplates.length === 0 ? (
                 <div className="text-center py-8 text-foreground-secondary">
                   <ClipboardList className="mx-auto h-10 w-10 mb-3 opacity-50" />
-                  <p>No required assessments for your state.</p>
+                  <p>No assessments available.</p>
                 </div>
               ) : (
-                requiredTemplates.map((template) => {
+                availableTemplates.map((template) => {
                   const existing = intake.assessments.find(
-                    (a) => a.template.code === template.code
+                    (a) => a.template.id === template.id
                   );
                   const isCompleted = existing?.status === "COMPLETED";
+                  const totalItems = template.sections.reduce(
+                    (sum, s) => sum + s.items.length,
+                    0
+                  );
 
                   return (
                     <div
                       key={template.id}
-                      className="p-4 rounded-lg border flex items-center justify-between"
+                      className={`p-4 rounded-lg border transition-colors ${
+                        existing
+                          ? isCompleted
+                            ? "border-success bg-success/5"
+                            : "border-warning bg-warning/5"
+                          : "hover:border-primary/50"
+                      }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            isCompleted
-                              ? "bg-success/10 text-success"
-                              : existing
-                              ? "bg-warning/10 text-warning"
-                              : "bg-background-secondary"
-                          }`}
-                        >
-                          {isCompleted ? (
-                            <CheckCircle className="h-5 w-5" />
-                          ) : existing ? (
-                            <Clock className="h-5 w-5" />
-                          ) : (
-                            <ClipboardList className="h-5 w-5" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium">{template.name}</p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{template.name}</p>
+                            {existing && (
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                  isCompleted
+                                    ? "bg-success/10 text-success"
+                                    : "bg-warning/10 text-warning"
+                                }`}
+                              >
+                                {isCompleted ? "Completed" : "In Progress"}
+                              </span>
+                            )}
+                          </div>
                           {template.description && (
-                            <p className="text-sm text-foreground-secondary">
+                            <p className="text-sm text-foreground-secondary mt-1">
                               {template.description}
                             </p>
                           )}
-                          {existing && isCompleted && (
-                            <p className="text-sm text-success">
+                          <div className="flex items-center gap-4 mt-2 text-xs text-foreground-secondary">
+                            <span>{template.sections.length} sections</span>
+                            <span>{totalItems} items</span>
+                          </div>
+                          {existing && isCompleted && existing.totalScore !== null && (
+                            <p className="text-sm text-success mt-2">
                               Score: {existing.totalScore}
                               {existing.template.maxScore && ` / ${existing.template.maxScore}`}
                               {existing.interpretation && ` - ${existing.interpretation}`}
                             </p>
                           )}
                         </div>
+                        <div className="flex-shrink-0">
+                          {existing ? (
+                            <Link href={`/assessments/${existing.id}`}>
+                              <Button variant="secondary" size="sm">
+                                {isCompleted ? "View" : "Continue"}
+                              </Button>
+                            </Link>
+                          ) : (
+                            <Button size="sm" onClick={() => startAssessment(template.id)}>
+                              <Plus className="mr-1 h-4 w-4" />
+                              Start
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      {existing ? (
-                        <Link href={`/assessments/${existing.id}`}>
-                          <Button variant="secondary" size="sm">
-                            {isCompleted ? "View" : "Continue"}
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button size="sm" onClick={() => startAssessment(template.id)}>
-                          <Plus className="mr-1 h-4 w-4" />
-                          Start
-                        </Button>
-                      )}
                     </div>
                   );
                 })
-              )}
-
-              {!isStep2Complete && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning text-sm">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Complete all required assessments before proceeding.</span>
-                </div>
               )}
             </CardContent>
           </Card>
@@ -610,6 +648,11 @@ export default function IntakeWizardPage() {
                     >
                       {intake.carePlan.status}
                     </Badge>
+                    <Link href={`/clients/${intake.client.id}/care-plans/${intake.carePlan.id}`}>
+                      <Button variant="secondary" size="sm">
+                        Edit Care Plan
+                      </Button>
+                    </Link>
                   </div>
                   <div className="space-y-2">
                     {intake.carePlan.tasks.map((task) => (
@@ -685,7 +728,7 @@ export default function IntakeWizardPage() {
                   <div className="flex items-center gap-3">
                     <ClipboardList className="h-5 w-5" />
                     <span>
-                      Assessments ({completedAssessments.length}/{requiredTemplates.length} completed)
+                      Assessments ({completedAssessments.length} completed)
                     </span>
                   </div>
                   {isStep2Complete ? (
@@ -781,6 +824,19 @@ export default function IntakeWizardPage() {
           </h1>
           <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
         </div>
+        <Button
+          variant="secondary"
+          onClick={deleteIntake}
+          disabled={isDeleting}
+          className="text-error hover:bg-error/10"
+        >
+          {isDeleting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2 className="mr-2 h-4 w-4" />
+          )}
+          Delete
+        </Button>
       </div>
 
       {/* Step Navigation */}

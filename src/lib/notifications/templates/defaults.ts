@@ -770,6 +770,13 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
   },
+
+  NEW_INBOX_MESSAGE: {
+    IN_APP: {
+      subject: "New message from {{senderName}}",
+      body: `{{senderName}} sent you a message: "{{subject}}"`,
+    },
+  },
 };
 
 // ============================================

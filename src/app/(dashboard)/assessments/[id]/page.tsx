@@ -81,6 +81,10 @@ interface Assessment {
     firstName: string;
     lastName: string;
   };
+  intake: {
+    id: string;
+    status: string;
+  } | null;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -206,7 +210,12 @@ export default function AssessmentDetailPage() {
         throw new Error(data.error || "Failed to complete assessment");
       }
 
-      setAssessment(data.assessment);
+      // If this assessment is part of an intake, redirect back to intake
+      if (assessment?.intake?.id) {
+        router.push(`/intake/${assessment.intake.id}`);
+      } else {
+        setAssessment(data.assessment);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to complete assessment");
     } finally {

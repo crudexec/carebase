@@ -103,6 +103,9 @@ export default function ConsentDetailPage() {
     setIsSigning(true);
     setError(null);
 
+    // Save intake info before API call
+    const intakeId = consent?.intake?.id;
+
     try {
       const response = await fetch(`/api/consents/${consentId}/sign`, {
         method: "POST",
@@ -120,13 +123,11 @@ export default function ConsentDetailPage() {
         throw new Error(result.error || "Failed to sign consent");
       }
 
-      setConsent(result.consent);
-
       // Redirect back to intake if applicable
-      if (consent?.intake) {
-        setTimeout(() => {
-          router.push(`/intake/${consent.intake!.id}`);
-        }, 1500);
+      if (intakeId) {
+        router.push(`/intake/${intakeId}`);
+      } else {
+        setConsent(result.consent);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign consent");

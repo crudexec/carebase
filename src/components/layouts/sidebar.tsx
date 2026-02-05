@@ -195,13 +195,13 @@ const navigation: NavEntry[] = [
   {
     label: "Communication",
     icon: MessagesSquare,
-    roles: ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "CARER", "SPONSOR"],
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
     items: [
       {
-        label: "Chat",
-        href: "/chat",
+        label: "Messages",
+        href: "/inbox",
         icon: MessageSquare,
-        roles: ["ADMIN", "CARER", "SPONSOR"],
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
       },
       {
         label: "Escalations",

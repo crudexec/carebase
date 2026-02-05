@@ -95,7 +95,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Intake not found" }, { status: 404 });
     }
 
-    // Get required assessment templates for the state
+    // Get company state config
     const companyState = await prisma.companyStateConfig.findFirst({
       where: {
         companyId: session.user.companyId,
@@ -106,17 +106,38 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
     });
 
-    const requiredTemplates = await prisma.assessmentTemplate.findMany({
+    // Get all available assessment templates (state-level, company-level, and global)
+    const availableTemplates = await prisma.assessmentTemplate.findMany({
       where: {
-        stateConfigId: companyState?.stateConfigId,
-        isRequired: true,
         isActive: true,
+        OR: [
+          // State-specific templates
+          ...(companyState?.stateConfigId ? [{ stateConfigId: companyState.stateConfigId }] : []),
+          // Company-specific templates
+          { companyId: session.user.companyId },
+          // Global templates (no state or company)
+          { stateConfigId: null, companyId: null },
+        ],
       },
       select: {
         id: true,
         name: true,
         description: true,
+        isRequired: true,
+        sections: {
+          select: {
+            id: true,
+            items: {
+              select: { id: true },
+            },
+          },
+        },
       },
+      orderBy: [
+        { isRequired: "desc" },
+        { displayOrder: "asc" },
+        { name: "asc" },
+      ],
     });
 
     // Get required consent form templates
@@ -136,7 +157,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({
       intake,
-      requiredTemplates,
+      availableTemplates,
       requiredConsents,
       stateConfig: companyState?.stateConfig,
     });
@@ -199,7 +220,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const updateData: Record<string, unknown> = {};
 
     if (validation.data.status) updateData.status = validation.data.status;
-    if (validation.data.currentStep !== undefined) updateData.currentStep = validation.data.currentStep;
+    if (validation.data.currentStep !== undefined) updateData.currentStep = String(validation.data.currentStep);
     if (validation.data.notes !== undefined) updateData.notes = validation.data.notes;
     if (validation.data.scheduledDate !== undefined) {
       updateData.scheduledDate = validation.data.scheduledDate
@@ -261,7 +282,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 }
 
-// DELETE /api/intake/[id] - Cancel/delete intake
+// DELETE /api/intake/[id] - Delete intake
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
@@ -289,10 +310,41 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Intake not found" }, { status: 404 });
     }
 
-    // Cancel instead of hard delete
-    await prisma.intake.update({
-      where: { id },
-      data: { status: "CANCELLED" },
+    // Hard delete intake and related records in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete assessment responses first (child of assessments)
+      await tx.assessmentResponse.deleteMany({
+        where: {
+          assessment: { intakeId: id },
+        },
+      });
+
+      // Delete assessments linked to this intake
+      await tx.assessment.deleteMany({
+        where: { intakeId: id },
+      });
+
+      // Delete consent signatures linked to this intake
+      await tx.consentSignature.deleteMany({
+        where: { intakeId: id },
+      });
+
+      // Delete care plan task templates (child of care plans)
+      await tx.carePlanTaskTemplate.deleteMany({
+        where: {
+          carePlan: { intakeId: id },
+        },
+      });
+
+      // Delete care plans linked to this intake
+      await tx.carePlan.deleteMany({
+        where: { intakeId: id },
+      });
+
+      // Delete the intake
+      await tx.intake.delete({
+        where: { id },
+      });
     });
 
     // Create audit log
@@ -300,7 +352,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       data: {
         companyId: session.user.companyId,
         userId: session.user.id,
-        action: "INTAKE_CANCELLED",
+        action: "INTAKE_DELETED",
         entityType: "Intake",
         entityId: id,
         changes: {
@@ -311,9 +363,9 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error cancelling intake:", error);
+    console.error("Error deleting intake:", error);
     return NextResponse.json(
-      { error: "Failed to cancel intake" },
+      { error: "Failed to delete intake" },
       { status: 500 }
     );
   }

@@ -66,6 +66,9 @@ interface CarePlanData {
   clientSignerName: string | null;
   clientSignerRelation: string | null;
   client: Client;
+  intake: {
+    id: string;
+  } | null;
   physician: {
     id: string;
     firstName: string;
@@ -164,6 +167,7 @@ export default function CarePlanDetailPage() {
       clientId={clientId}
       clientName={`${carePlan.client.firstName} ${carePlan.client.lastName}`}
       initialData={initialData}
+      intakeId={carePlan.intake?.id}
     />
   );
 }

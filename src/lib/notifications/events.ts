@@ -406,6 +406,16 @@ export const EVENT_CONFIGS: Record<NotificationEventType, EventConfig> = {
       "summaryUrl",
     ],
   },
+
+  // -------------------- Inbox Messaging --------------------
+  NEW_INBOX_MESSAGE: {
+    eventType: "NEW_INBOX_MESSAGE",
+    description: "New message received in inbox",
+    defaultRecipientRoles: [],
+    priority: "MEDIUM",
+    defaultChannels: ["IN_APP"],
+    variables: ["senderName", "subject", "messagePreview", "conversationUrl"],
+  },
 };
 
 // ============================================

@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     });
 
     // Build reset URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     // Get email template

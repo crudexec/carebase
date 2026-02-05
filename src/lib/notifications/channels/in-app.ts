@@ -51,6 +51,8 @@ const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
   USER_ACCOUNT_CREATED: "account_created",
   PASSWORD_RESET: "password_reset",
   WEEKLY_SUMMARY: "weekly_summary",
+  // Inbox
+  NEW_INBOX_MESSAGE: "inbox_message",
 };
 
 export class InAppChannelProvider implements NotificationChannelProvider {

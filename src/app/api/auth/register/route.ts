@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     });
 
     // Send welcome email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
     sendNotification({
       eventType: "USER_ACCOUNT_CREATED",
       recipientIds: [result.user.id],

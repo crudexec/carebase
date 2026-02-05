@@ -22,7 +22,6 @@ import {
   MapPin,
   Calendar,
   Clock,
-  UserPlus,
   Edit2,
   Check,
   X,
@@ -215,7 +214,7 @@ export default function ReferralDetailPage() {
   const handleConvert = async () => {
     if (!referral) return;
 
-    if (!confirm("Convert this referral to a client and start intake?")) {
+    if (!confirm("Start intake for this referral? This will create a client record and begin the intake process.")) {
       return;
     }
 
@@ -357,12 +356,12 @@ export default function ReferralDetailPage() {
               {isConverting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Converting...
+                  Starting...
                 </>
               ) : (
                 <>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Convert to Client
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                  Start Intake
                 </>
               )}
             </Button>

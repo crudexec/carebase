@@ -182,7 +182,7 @@ export async function POST(request: Request) {
         status: scheduledDate ? "ASSESSMENT_SCHEDULED" : "REFERRAL",
         targetStartDate: scheduledDate ? new Date(scheduledDate) : null,
         notes,
-        currentStep: "client_info",
+        currentStep: "1",
       },
       include: {
         client: {

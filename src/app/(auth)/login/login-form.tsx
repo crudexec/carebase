@@ -132,17 +132,6 @@ export function LoginForm() {
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-
-            {/* Register Link */}
-            <p className="text-center text-sm text-foreground-secondary mt-4">
-              Need to register as a Sponsor?{" "}
-              <Link
-                href="/register"
-                className="text-foreground hover:underline font-medium"
-              >
-                Create account
-              </Link>
-            </p>
           </CardContent>
         </Card>
 

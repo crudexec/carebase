@@ -24,7 +24,7 @@ export async function POST() {
         shiftTime: "9:00 AM",
         shiftEndTime: "1:00 PM",
         address: "123 Test Street, Test City, TX 12345",
-        shiftUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/scheduling`,
+        shiftUrl: `${process.env.NEXTAUTH_URL || "https://app.carebasehealth.com"}/scheduling`,
       },
     });
 
