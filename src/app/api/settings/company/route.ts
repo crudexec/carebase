@@ -18,6 +18,7 @@ export async function GET() {
         name: true,
         address: true,
         phone: true,
+        faxNumber: true,
         isActive: true,
         createdAt: true,
       },
@@ -55,12 +56,20 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { name, address, phone } = body;
+    const { name, address, phone, faxNumber } = body;
 
     // Validate name is required
     if (!name || !name.trim()) {
       return NextResponse.json(
         { error: "Company name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate fax number format if provided (E.164 format)
+    if (faxNumber && !/^\+?[1-9]\d{1,14}$/.test(faxNumber.trim())) {
+      return NextResponse.json(
+        { error: "Fax number must be in E.164 format (e.g., +12025551234)" },
         { status: 400 }
       );
     }
@@ -71,12 +80,14 @@ export async function PATCH(request: Request) {
         name: name.trim(),
         address: address?.trim() || null,
         phone: phone?.trim() || null,
+        faxNumber: faxNumber?.trim() || null,
       },
       select: {
         id: true,
         name: true,
         address: true,
         phone: true,
+        faxNumber: true,
         isActive: true,
         updatedAt: true,
       },
@@ -90,7 +101,7 @@ export async function PATCH(request: Request) {
         action: "COMPANY_UPDATED",
         entityType: "Company",
         entityId: company.id,
-        changes: { name, address, phone },
+        changes: { name, address, phone, faxNumber },
       },
     });
 

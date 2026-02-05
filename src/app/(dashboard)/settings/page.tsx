@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle,
   Save,
+  Phone,
 } from "lucide-react";
 
 interface CompanyData {
@@ -19,6 +20,7 @@ interface CompanyData {
   name: string;
   address: string | null;
   phone: string | null;
+  faxNumber: string | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -35,6 +37,7 @@ export default function SettingsPage() {
     name: "",
     address: "",
     phone: "",
+    faxNumber: "",
   });
 
   // Fetch company details
@@ -49,6 +52,7 @@ export default function SettingsPage() {
           name: data.company.name || "",
           address: data.company.address || "",
           phone: data.company.phone || "",
+          faxNumber: data.company.faxNumber || "",
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load company");
@@ -199,6 +203,28 @@ export default function SettingsPage() {
                   onChange={handleChange}
                   disabled={!isAdmin}
                 />
+              </div>
+
+              {/* Fax Number */}
+              <div className="space-y-2">
+                <Label htmlFor="faxNumber">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Virtual Fax Number
+                  </div>
+                </Label>
+                <Input
+                  id="faxNumber"
+                  name="faxNumber"
+                  type="tel"
+                  placeholder="+12025551234"
+                  value={formData.faxNumber}
+                  onChange={handleChange}
+                  disabled={!isAdmin}
+                />
+                <p className="text-xs text-foreground-tertiary">
+                  E.164 format (e.g., +12025551234). This number will receive incoming faxes for your organization.
+                </p>
               </div>
 
               {/* Company ID (read-only) */}

@@ -164,6 +164,11 @@ enum FaxStatus {
   FAILED
 }
 
+enum FaxDirection {
+  INBOUND
+  OUTBOUND
+}
+
 // ============================================
 // NOTIFICATION SYSTEM ENUMS
 // ============================================
@@ -252,6 +257,9 @@ model Company {
   billingZip       String? // 5 or 9 digit ZIP
   billingPhone     String?
   billingFrequency BillingFrequency? @default(WEEKLY)
+
+  // Virtual Fax Number for receiving faxes (E.164 format)
+  faxNumber String? @unique
 
   // Relations - all tenant-scoped models
   users             User[]
@@ -394,7 +402,8 @@ model User {
   visitNotesQAReviewed  VisitNote[]  @relation("VisitNoteQAReviewer")
 
   // Fax records
-  faxRecordsSent FaxRecord[]
+  faxRecordsSent     FaxRecord[] @relation("SentFaxes")
+  faxRecordsAssigned FaxRecord[] @relation("AssignedFaxes")
 
   // Notification system
   notificationPreferences NotificationPreference[]
@@ -526,6 +535,9 @@ model Client {
 
   // Threshold breaches
   thresholdBreaches ThresholdBreach[]
+
+  // Inbound fax records linked to this client
+  faxRecords FaxRecord[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])
@@ -2504,28 +2516,38 @@ model AuthorizationAlert {
 // ============================================
 
 model FaxRecord {
-  id        String    @id @default(cuid())
-  sinchFaxId String?  @unique // Fax ID from Sinch API
+  id         String       @id @default(cuid())
+  sinchFaxId String?      @unique // Fax ID from Sinch API
+  direction  FaxDirection @default(OUTBOUND)
 
   // Fax details
-  toNumber    String   // Recipient fax number (E.164 format)
-  fromNumber  String   // Sender fax number (E.164 format)
-  status      FaxStatus @default(QUEUED)
+  toNumber   String    // Recipient fax number (E.164 format)
+  fromNumber String    // Sender fax number (E.164 format)
+  status     FaxStatus @default(QUEUED)
 
   // Document info
-  documentType  String   // e.g., "CARE_PLAN"
-  documentId    String?  // ID of the related document (e.g., carePlanId)
-  documentName  String?  // Human-readable document name
+  documentType  String  // e.g., "CARE_PLAN", "INBOUND_FAX"
+  documentId    String? // ID of the related document (e.g., carePlanId)
+  documentName  String? // Human-readable document name
+  documentUrl   String? // URL to stored document (for inbound faxes)
   numberOfPages Int?
 
-  // Recipient info
-  recipientName  String?  // e.g., Physician name
-  recipientType  String?  // e.g., "PHYSICIAN"
+  // Recipient/Sender info (context depends on direction)
+  recipientName String? // e.g., Physician name (outbound) or sender name (inbound)
+  recipientType String? // e.g., "PHYSICIAN"
 
   // Status details
-  errorCode     Int?
-  errorMessage  String?
-  completedAt   DateTime?
+  errorCode    Int?
+  errorMessage String?
+  completedAt  DateTime?
+
+  // Inbound fax processing
+  processedAt  DateTime? // When inbound fax was reviewed/processed
+  assignedToId String?   // User assigned to handle inbound fax
+  assignedTo   User?     @relation("AssignedFaxes", fields: [assignedToId], references: [id])
+  clientId     String?   // Client the inbound fax relates to
+  client       Client?   @relation(fields: [clientId], references: [id])
+  notes        String?   // Notes about the fax
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -2535,8 +2557,8 @@ model FaxRecord {
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
-  sentById  String
-  sentBy    User @relation(fields: [sentById], references: [id])
+  sentById String? // Optional for inbound faxes
+  sentBy   User?   @relation("SentFaxes", fields: [sentById], references: [id])
 
   // Optional relation to care plan
   carePlanId String?
@@ -2544,8 +2566,10 @@ model FaxRecord {
 
   @@index([companyId])
   @@index([status])
+  @@index([direction])
   @@index([createdAt])
   @@index([carePlanId])
+  @@index([clientId])
 }
 
 // ============================================

@@ -87,6 +87,7 @@ export async function POST(request: Request) {
     // Create fax record first
     const faxRecord = await prisma.faxRecord.create({
       data: {
+        direction: "OUTBOUND",
         toNumber,
         fromNumber: process.env.SINCH_FAX_NUMBER || "",
         status: "QUEUED",

@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   MessageSquare,
   Receipt,
-  TrendingUp,
   Settings,
   LogOut,
   Kanban,
@@ -34,7 +33,6 @@ import {
   ChevronRight,
   Stethoscope,
   Wallet,
-  MessagesSquare,
   UserCog,
   Cog,
   FolderOpen,
@@ -191,25 +189,12 @@ const navigation: NavEntry[] = [
     ],
   },
 
-  // Communication Group
+  // Inbox - standalone
   {
-    label: "Communication",
-    icon: MessagesSquare,
+    label: "Inbox",
+    href: "/inbox",
+    icon: MessageSquare,
     roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
-    items: [
-      {
-        label: "Messages",
-        href: "/inbox",
-        icon: MessageSquare,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
-      },
-      {
-        label: "Escalations",
-        href: "/escalations",
-        icon: TrendingUp,
-        roles: ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "CARER"],
-      },
-    ],
   },
 
   // Reports - standalone

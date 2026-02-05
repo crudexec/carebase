@@ -180,3 +180,93 @@ export async function getFaxStatus(faxId: string): Promise<SinchFaxResponse> {
 
   return response.json();
 }
+
+// Get the fax document content (PDF) for an inbound fax
+export async function getFaxDocument(faxId: string): Promise<Buffer> {
+  const projectId = process.env.SINCH_PROJECT_ID;
+
+  if (!projectId) {
+    throw new Error("SINCH_PROJECT_ID not configured");
+  }
+
+  const url = `${SINCH_API_BASE}/projects/${projectId}/faxes/${faxId}/file`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: getAuthHeader(),
+      Accept: "application/pdf",
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text().catch(() => response.statusText);
+    throw new Error(`Sinch API error fetching fax document: ${error}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+// Download fax document and return as base64 encoded string
+export async function getFaxDocumentBase64(faxId: string): Promise<string> {
+  const buffer = await getFaxDocument(faxId);
+  return buffer.toString("base64");
+}
+
+// List faxes with optional filters
+interface ListFaxesOptions {
+  direction?: "INBOUND" | "OUTBOUND";
+  status?: "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "FAILURE";
+  to?: string;
+  from?: string;
+  createTimeAfter?: string; // ISO 8601 format
+  createTimeBefore?: string; // ISO 8601 format
+  pageSize?: number;
+  pageToken?: string;
+}
+
+interface ListFaxesResponse {
+  faxes: SinchFaxResponse[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export async function listFaxes(options: ListFaxesOptions = {}): Promise<ListFaxesResponse> {
+  const projectId = process.env.SINCH_PROJECT_ID;
+
+  if (!projectId) {
+    throw new Error("SINCH_PROJECT_ID not configured");
+  }
+
+  const params = new URLSearchParams();
+  if (options.direction) params.append("direction", options.direction);
+  if (options.status) params.append("status", options.status);
+  if (options.to) params.append("to", options.to);
+  if (options.from) params.append("from", options.from);
+  if (options.createTimeAfter) params.append("createTime.after", options.createTimeAfter);
+  if (options.createTimeBefore) params.append("createTime.before", options.createTimeBefore);
+  if (options.pageSize) params.append("pageSize", options.pageSize.toString());
+  if (options.pageToken) params.append("pageToken", options.pageToken);
+
+  const url = `${SINCH_API_BASE}/projects/${projectId}/faxes?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: getAuthHeader(),
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(`Sinch API error: ${error.message || response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Export auth header getter for webhook verification
+export function getSinchAuthHeader(): string {
+  return getAuthHeader();
+}
