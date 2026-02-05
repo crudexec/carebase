@@ -36,7 +36,7 @@ async function main() {
   // Create test users for each role
   const users = [
     {
-      email: "admin@carebase.com",
+      email: "olumide.southpaw@gmail.com",
       firstName: "Admin",
       lastName: "User",
       role: UserRole.ADMIN,
@@ -176,7 +176,7 @@ async function main() {
 
   console.log("\n✨ Seeding complete!");
   console.log("\n📋 Test Credentials:");
-  console.log("   Email: admin@carebase.com");
+  console.log("   Email: olumide.southpaw@gmail.com");
   console.log("   Password: Password123!");
   console.log("\n   (Same password for all test users)");
 }

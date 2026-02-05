@@ -147,11 +147,35 @@ export async function processThresholdBreaches(
   // Generate visit note URL
   const visitNoteUrl = `/visit-notes/${visitNoteId}`;
 
+  // Format visit date for readability
+  const formattedVisitDate = new Date(visitDate).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   // Send notifications for each breach
   for (const breach of breaches) {
-    const thresholdType = breach.breachType === "BELOW_MIN" ? "minimum" : "maximum";
-    const thresholdValue =
-      breach.breachType === "BELOW_MIN" ? breach.minThreshold : breach.maxThreshold;
+    // Build human-readable threshold description
+    let thresholdDescription: string;
+    let expectedRange: string;
+
+    if (breach.breachType === "BELOW_MIN") {
+      thresholdDescription = `below the minimum of ${breach.minThreshold}`;
+      if (breach.maxThreshold !== undefined) {
+        expectedRange = `${breach.minThreshold} - ${breach.maxThreshold}`;
+      } else {
+        expectedRange = `At least ${breach.minThreshold}`;
+      }
+    } else {
+      thresholdDescription = `above the maximum of ${breach.maxThreshold}`;
+      if (breach.minThreshold !== undefined) {
+        expectedRange = `${breach.minThreshold} - ${breach.maxThreshold}`;
+      } else {
+        expectedRange = `No more than ${breach.maxThreshold}`;
+      }
+    }
 
     await sendNotification({
       eventType: "THRESHOLD_BREACH",
@@ -160,11 +184,11 @@ export async function processThresholdBreaches(
       data: {
         clientName,
         carerName,
-        visitDate,
+        visitDate: formattedVisitDate,
         fieldLabel: breach.fieldLabel,
         enteredValue: breach.value.toString(),
-        thresholdType,
-        thresholdValue: thresholdValue?.toString() || "",
+        thresholdDescription,
+        expectedRange,
         customMessage: breach.customMessage || "",
         visitNoteUrl,
       },

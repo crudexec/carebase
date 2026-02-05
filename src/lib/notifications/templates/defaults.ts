@@ -21,30 +21,13 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
   // -------------------- Shift-Related --------------------
   SHIFT_ASSIGNED: {
     EMAIL: {
-      subject: "New Shift Assigned - {{clientName}} on {{shiftDate}}",
+      subject: "You've been assigned to {{clientName}} on {{shiftDate}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>You have been assigned a new shift:</p>
+<p>You've been assigned a new shift with <strong>{{clientName}}</strong> on <strong>{{shiftDate}}</strong> from <strong>{{shiftTime}} to {{shiftEndTime}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Time</td>
-    <td>{{shiftTime}} - {{shiftEndTime}}</td>
-  </tr>
-  <tr>
-    <td>Location</td>
-    <td>{{address}}</td>
-  </tr>
-</table>
+<p>The visit will be at {{address}}.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -54,83 +37,47 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "You have been assigned a shift with {{clientName}} on {{shiftDate}} at {{shiftTime}}.",
+      body: "You've been assigned to {{clientName}} on {{shiftDate}} from {{shiftTime}} to {{shiftEndTime}}.",
     },
   },
 
   SHIFT_REMINDER_24H: {
     EMAIL: {
-      subject: "Shift Reminder - {{clientName}} Tomorrow",
+      subject: "Reminder: You're visiting {{clientName}} tomorrow",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-info">
-  <strong>Reminder:</strong> You have a shift scheduled for tomorrow.
-</div>
+<p>Just a friendly reminder that you have a shift with <strong>{{clientName}}</strong> tomorrow at <strong>{{shiftTime}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Time</td>
-    <td>{{shiftTime}}</td>
-  </tr>
-  <tr>
-    <td>Location</td>
-    <td>{{address}}</td>
-  </tr>
-</table>
+<p>The visit will be at {{address}}.</p>
 
 <p>
-  <a href="{{shiftUrl}}" class="button">View Shift</a>
+  <a href="{{shiftUrl}}" class="button">View Shift Details</a>
 </p>
 
 <p>Thanks,<br>{{companyName}}</p>
       `.trim(),
     },
     IN_APP: {
-      body: "Reminder: You have a shift with {{clientName}} tomorrow at {{shiftTime}}.",
+      body: "Reminder: You're visiting {{clientName}} tomorrow at {{shiftTime}}.",
     },
   },
 
   SHIFT_REMINDER_1H: {
     EMAIL: {
-      subject: "Shift Starting Soon - {{clientName}}",
+      subject: "Your shift with {{clientName}} starts in 1 hour",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Your shift starts in 1 hour!</strong>
-</div>
+<p>Your shift with <strong>{{clientName}}</strong> starts in 1 hour at <strong>{{shiftTime}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Time</td>
-    <td>{{shiftTime}}</td>
-  </tr>
-  <tr>
-    <td>Location</td>
-    <td>{{address}}</td>
-  </tr>
-</table>
-
-<p>Please make sure to arrive on time and check in when you get there.</p>
+<p>The address is {{address}}. Please make sure to check in when you arrive.</p>
 
 <p>Thanks,<br>{{companyName}}</p>
       `.trim(),
     },
     SMS: {
-      body: "Reminder: Your shift with {{clientName}} starts at {{shiftTime}}. Address: {{address}}",
+      body: "Your shift with {{clientName}} starts in 1 hour at {{shiftTime}}. Address: {{address}}",
     },
     IN_APP: {
       body: "Your shift with {{clientName}} starts in 1 hour at {{shiftTime}}.",
@@ -139,32 +86,13 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
 
   SHIFT_CANCELLED: {
     EMAIL: {
-      subject: "Shift Cancelled - {{clientName}} on {{shiftDate}}",
+      subject: "Your shift with {{clientName}} on {{shiftDate}} has been cancelled",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Your shift has been cancelled.</strong>
-</div>
+<p>Your shift with <strong>{{clientName}}</strong> on <strong>{{shiftDate}}</strong> at <strong>{{shiftTime}}</strong> has been cancelled.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Time</td>
-    <td>{{shiftTime}}</td>
-  </tr>
-  <tr>
-    <td>Reason</td>
-    <td>{{cancellationReason}}</td>
-  </tr>
-</table>
+<p><strong>Reason:</strong> {{cancellationReason}}</p>
 
 <p>If you have any questions, please contact your supervisor.</p>
 
@@ -175,32 +103,20 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       body: "Your shift with {{clientName}} on {{shiftDate}} has been cancelled. Reason: {{cancellationReason}}",
     },
     IN_APP: {
-      body: "Your shift with {{clientName}} on {{shiftDate}} has been cancelled.",
+      body: "Your shift with {{clientName}} on {{shiftDate}} has been cancelled. Reason: {{cancellationReason}}",
     },
   },
 
   SHIFT_RESCHEDULED: {
     EMAIL: {
-      subject: "Shift Rescheduled - {{clientName}}",
+      subject: "Your shift with {{clientName}} has been rescheduled",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>Your shift has been rescheduled:</p>
+<p>Your shift with <strong>{{clientName}}</strong> has been rescheduled.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Original</td>
-    <td>{{originalDate}} at {{originalTime}}</td>
-  </tr>
-  <tr>
-    <td>New Schedule</td>
-    <td><strong>{{newDate}} at {{newTime}}</strong></td>
-  </tr>
-</table>
+<p><strong>Originally:</strong> {{originalDate}} at {{originalTime}}<br>
+<strong>New time:</strong> {{newDate}} at {{newTime}}</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Updated Shift</a>
@@ -210,118 +126,53 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Your shift with {{clientName}} has been rescheduled from {{originalDate}} to {{newDate}} at {{newTime}}.",
+      body: "Your shift with {{clientName}} has been moved from {{originalDate}} at {{originalTime}} to {{newDate}} at {{newTime}}.",
     },
   },
 
   CHECK_IN_CONFIRMATION: {
     EMAIL: {
-      subject: "Check-In Confirmation - {{carerName}} with {{clientName}}",
+      subject: "{{carerName}} has arrived at {{clientName}}'s",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-success">
-  <strong>{{carerName}}</strong> has checked in for their shift.
-</div>
-
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Carer</td>
-    <td>{{carerName}}</td>
-  </tr>
-  <tr>
-    <td>Check-In Time</td>
-    <td>{{checkInTime}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-</table>
+<p><strong>{{carerName}}</strong> checked in for their shift with <strong>{{clientName}}</strong> at <strong>{{checkInTime}}</strong> on {{shiftDate}}.</p>
 
 <p>Thanks,<br>{{companyName}}</p>
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} checked in for their shift with {{clientName}} at {{checkInTime}}.",
+      body: "{{carerName}} has arrived at {{clientName}}'s and checked in at {{checkInTime}}.",
     },
   },
 
   CHECK_OUT_CONFIRMATION: {
     EMAIL: {
-      subject: "Check-Out Confirmation - {{carerName}} with {{clientName}}",
+      subject: "{{carerName}} has completed their visit with {{clientName}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-success">
-  <strong>{{carerName}}</strong> has checked out from their shift.
-</div>
+<p><strong>{{carerName}}</strong> has completed their visit with <strong>{{clientName}}</strong> and checked out at <strong>{{checkOutTime}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Carer</td>
-    <td>{{carerName}}</td>
-  </tr>
-  <tr>
-    <td>Check-Out Time</td>
-    <td>{{checkOutTime}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Total Hours</td>
-    <td>{{totalHours}}</td>
-  </tr>
-</table>
+<p>The visit lasted <strong>{{totalHours}} hours</strong>.</p>
 
 <p>Thanks,<br>{{companyName}}</p>
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} checked out from their shift with {{clientName}}. Total hours: {{totalHours}}.",
+      body: "{{carerName}} has completed their visit with {{clientName}}. Total time: {{totalHours}} hours.",
     },
   },
 
   MISSED_CHECK_IN: {
     EMAIL: {
-      subject: "URGENT: Missed Check-In Alert - {{clientName}}",
+      subject: "{{carerName}} hasn't checked in for {{clientName}}'s visit",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>ALERT:</strong> A carer has missed their scheduled check-in.
-</div>
+<p><strong>{{carerName}}</strong> was expected to check in for their shift with <strong>{{clientName}}</strong> at <strong>{{expectedCheckInTime}}</strong> on {{shiftDate}}, but hasn't done so yet.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Carer</td>
-    <td><strong>{{carerName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Expected Check-In</td>
-    <td>{{expectedCheckInTime}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-</table>
-
-<p>Please contact the carer immediately to confirm their status.</p>
+<p>Please contact them to confirm their status.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -331,49 +182,22 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "ALERT: {{carerName}} missed check-in for {{clientName}} at {{expectedCheckInTime}}. Please contact immediately.",
+      body: "{{carerName}} hasn't checked in for {{clientName}}'s visit (expected at {{expectedCheckInTime}}). Please follow up.",
     },
     IN_APP: {
-      body: "ALERT: {{carerName}} missed their check-in for {{clientName}}. Expected at {{expectedCheckInTime}}.",
+      body: "{{carerName}} hasn't checked in for {{clientName}}'s visit. They were expected at {{expectedCheckInTime}}.",
     },
   },
 
   LATE_CHECK_IN: {
     EMAIL: {
-      subject: "Late Check-In Alert - {{carerName}} for {{clientName}}",
+      subject: "{{carerName}} checked in {{minutesLate}} minutes late for {{clientName}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Late Check-In:</strong> A carer checked in late for their shift.
-</div>
+<p><strong>{{carerName}}</strong> checked in <strong>{{minutesLate}} minutes late</strong> for their shift with <strong>{{clientName}}</strong> on {{shiftDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Carer</td>
-    <td><strong>{{carerName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Scheduled Time</td>
-    <td>{{scheduledTime}}</td>
-  </tr>
-  <tr>
-    <td>Actual Check-In</td>
-    <td>{{actualCheckInTime}}</td>
-  </tr>
-  <tr>
-    <td>Minutes Late</td>
-    <td><strong>{{minutesLate}} minutes</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-</table>
+<p>They were scheduled to arrive at {{scheduledTime}} but checked in at {{actualCheckInTime}}.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -383,46 +207,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} checked in {{minutesLate}} minutes late for {{clientName}} on {{shiftDate}}.",
+      body: "{{carerName}} checked in {{minutesLate}} minutes late for {{clientName}} (arrived at {{actualCheckInTime}} instead of {{scheduledTime}}).",
     },
   },
 
   EARLY_CHECK_OUT: {
     EMAIL: {
-      subject: "Early Check-Out Alert - {{carerName}} for {{clientName}}",
+      subject: "{{carerName}} left {{clientName}}'s {{minutesEarly}} minutes early",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Early Check-Out:</strong> A carer checked out before the scheduled end time.
-</div>
+<p><strong>{{carerName}}</strong> checked out <strong>{{minutesEarly}} minutes early</strong> from their shift with <strong>{{clientName}}</strong> on {{shiftDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Carer</td>
-    <td><strong>{{carerName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Scheduled End</td>
-    <td>{{scheduledEndTime}}</td>
-  </tr>
-  <tr>
-    <td>Actual Check-Out</td>
-    <td>{{actualCheckOutTime}}</td>
-  </tr>
-  <tr>
-    <td>Minutes Early</td>
-    <td><strong>{{minutesEarly}} minutes</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-</table>
+<p>They were scheduled to stay until {{scheduledEndTime}} but left at {{actualCheckOutTime}}.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -432,46 +229,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} checked out {{minutesEarly}} minutes early from {{clientName}} on {{shiftDate}}.",
+      body: "{{carerName}} left {{clientName}}'s {{minutesEarly}} minutes early (left at {{actualCheckOutTime}} instead of {{scheduledEndTime}}).",
     },
   },
 
   OVERTIME_ALERT: {
     EMAIL: {
-      subject: "Overtime Alert - {{carerName}} for {{clientName}}",
+      subject: "{{carerName}} worked {{overtimeMinutes}} minutes overtime at {{clientName}}'s",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Overtime:</strong> A shift has exceeded the scheduled hours.
-</div>
+<p><strong>{{carerName}}</strong> worked <strong>{{overtimeMinutes}} minutes overtime</strong> during their visit with <strong>{{clientName}}</strong> on {{shiftDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Carer</td>
-    <td><strong>{{carerName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Scheduled Hours</td>
-    <td>{{scheduledHours}}</td>
-  </tr>
-  <tr>
-    <td>Actual Hours</td>
-    <td>{{actualHours}}</td>
-  </tr>
-  <tr>
-    <td>Overtime</td>
-    <td><strong>{{overtimeMinutes}} minutes</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-</table>
+<p>They were scheduled for {{scheduledHours}} hours but worked {{actualHours}} hours.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -481,40 +251,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} worked {{overtimeMinutes}} minutes overtime for {{clientName}} on {{shiftDate}}.",
+      body: "{{carerName}} worked {{overtimeMinutes}} minutes overtime at {{clientName}}'s ({{actualHours}} hours instead of {{scheduledHours}}).",
     },
   },
 
   NO_SHOW_ALERT: {
     EMAIL: {
-      subject: "CRITICAL: No-Show Alert - {{clientName}}",
+      subject: "{{carerName}} didn't show up for {{clientName}}'s visit",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>NO-SHOW ALERT:</strong> A scheduled shift was missed entirely.
-</div>
+<p><strong>{{carerName}}</strong> did not show up for their scheduled visit with <strong>{{clientName}}</strong> on {{shiftDate}} at {{shiftTime}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Carer</td>
-    <td><strong>{{carerName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Client</td>
-    <td>{{clientName}}</td>
-  </tr>
-  <tr>
-    <td>Scheduled Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Scheduled Time</td>
-    <td>{{shiftTime}}</td>
-  </tr>
-</table>
-
-<p>The carer did not check in for this shift. Please take immediate action to ensure client care.</p>
+<p>Please take immediate action to ensure the client receives the care they need.</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View Shift Details</a>
@@ -524,90 +273,42 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "CRITICAL: No-show for {{clientName}} on {{shiftDate}}. {{carerName}} did not check in. Immediate action required.",
+      body: "{{carerName}} didn't show up for {{clientName}}'s visit on {{shiftDate}} at {{shiftTime}}. Please follow up urgently.",
     },
     IN_APP: {
-      body: "CRITICAL: {{carerName}} did not show up for shift with {{clientName}} on {{shiftDate}}.",
+      body: "{{carerName}} didn't show up for {{clientName}}'s visit on {{shiftDate}} at {{shiftTime}}.",
     },
   },
 
   SHIFT_COMPLETED: {
     EMAIL: {
-      subject: "Shift Completed - {{clientName}}",
+      subject: "{{carerName}} has completed their visit with {{clientName}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-success">
-  <strong>Shift Completed</strong>
-</div>
+<p><strong>{{carerName}}</strong> has completed their visit with <strong>{{clientName}}</strong> on {{shiftDate}}.</p>
 
-<p>A care shift has been completed for your loved one.</p>
-
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Caregiver</td>
-    <td>{{carerName}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Check-In</td>
-    <td>{{checkInTime}}</td>
-  </tr>
-  <tr>
-    <td>Check-Out</td>
-    <td>{{checkOutTime}}</td>
-  </tr>
-  <tr>
-    <td>Total Hours</td>
-    <td>{{totalHours}}</td>
-  </tr>
-</table>
+<p>They arrived at {{checkInTime}} and left at {{checkOutTime}}, for a total of <strong>{{totalHours}} hours</strong>.</p>
 
 <p>{{companyName}}</p>
       `.trim(),
     },
     IN_APP: {
-      body: "Shift completed for {{clientName}} by {{carerName}}. Total hours: {{totalHours}}.",
+      body: "{{carerName}} completed their visit with {{clientName}} ({{checkInTime}} - {{checkOutTime}}, {{totalHours}} hours).",
     },
   },
 
   COVERAGE_NEEDED: {
     EMAIL: {
-      subject: "Coverage Needed - {{clientName}} on {{shiftDate}}",
+      subject: "Can you cover a shift with {{clientName}} on {{shiftDate}}?",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Open Shift Available</strong>
-</div>
+<p>We need someone to cover a shift with <strong>{{clientName}}</strong> on <strong>{{shiftDate}}</strong> from <strong>{{shiftTime}} to {{shiftEndTime}}</strong>.</p>
 
-<p>A shift needs coverage. Are you available?</p>
+<p>The visit will be at {{address}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{shiftDate}}</td>
-  </tr>
-  <tr>
-    <td>Time</td>
-    <td>{{shiftTime}} - {{shiftEndTime}}</td>
-  </tr>
-  <tr>
-    <td>Location</td>
-    <td>{{address}}</td>
-  </tr>
-</table>
+<p>Are you available?</p>
 
 <p>
   <a href="{{shiftUrl}}" class="button">View & Accept Shift</a>
@@ -617,39 +318,22 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "Coverage needed: {{clientName}} on {{shiftDate}} at {{shiftTime}}. Reply or check app to accept.",
+      body: "Can you cover {{clientName}} on {{shiftDate}} at {{shiftTime}}? Check the app to accept.",
     },
     IN_APP: {
-      body: "Open shift available: {{clientName}} on {{shiftDate}} at {{shiftTime}}.",
+      body: "Coverage needed: {{clientName}} on {{shiftDate}} from {{shiftTime}} to {{shiftEndTime}}. Are you available?",
     },
   },
 
   WEEKLY_SCHEDULE_PUBLISHED: {
     EMAIL: {
-      subject: "Your Weekly Schedule - {{weekStartDate}} to {{weekEndDate}}",
+      subject: "Your schedule for {{weekStartDate}} - {{weekEndDate}} is ready",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-info">
-  <strong>Weekly Schedule Published</strong>
-</div>
+<p>Your schedule for the week of <strong>{{weekStartDate}} to {{weekEndDate}}</strong> has been published.</p>
 
-<p>Your schedule for the upcoming week has been published.</p>
-
-<table class="info-table">
-  <tr>
-    <td>Week</td>
-    <td>{{weekStartDate}} - {{weekEndDate}}</td>
-  </tr>
-  <tr>
-    <td>Total Shifts</td>
-    <td>{{totalShifts}}</td>
-  </tr>
-  <tr>
-    <td>Total Hours</td>
-    <td>{{totalHours}}</td>
-  </tr>
-</table>
+<p>You have <strong>{{totalShifts}} shifts</strong> totaling <strong>{{totalHours}} hours</strong>.</p>
 
 <p>
   <a href="{{scheduleUrl}}" class="button">View Your Schedule</a>
@@ -659,41 +343,22 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Your weekly schedule is ready: {{totalShifts}} shifts, {{totalHours}} hours from {{weekStartDate}} to {{weekEndDate}}.",
+      body: "Your schedule for {{weekStartDate}} - {{weekEndDate}} is ready: {{totalShifts}} shifts, {{totalHours}} hours.",
     },
   },
 
   // -------------------- Authorization Alerts --------------------
   AUTH_UNITS_80_PERCENT: {
     EMAIL: {
-      subject: "Authorization Alert: 80% Units Used - {{clientName}}",
+      subject: "{{clientName}}'s authorization is 80% used",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Authorization units at 80%</strong>
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) has reached <strong>80% usage</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Used</td>
-    <td>{{usedUnits}} of {{totalUnits}} units ({{percentUsed}}%)</td>
-  </tr>
-  <tr>
-    <td>Remaining</td>
-    <td>{{remainingUnits}} units</td>
-  </tr>
-</table>
+<p>They've used {{usedUnits}} of {{totalUnits}} units, with <strong>{{remainingUnits}} units remaining</strong>.</p>
 
-<p>Consider requesting a reauthorization soon.</p>
+<p>You may want to start the reauthorization process soon.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -703,40 +368,21 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "{{clientName}}'s authorization is at 80% usage ({{usedUnits}}/{{totalUnits}} units).",
+      body: "{{clientName}}'s authorization is 80% used ({{remainingUnits}} units remaining).",
     },
   },
 
   AUTH_UNITS_90_PERCENT: {
     EMAIL: {
-      subject: "URGENT: Authorization at 90% - {{clientName}}",
+      subject: "{{clientName}}'s authorization is almost used up (90%)",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>Authorization units at 90%</strong> - Reauthorization needed soon!
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) is almost used up at <strong>90%</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Used</td>
-    <td>{{usedUnits}} of {{totalUnits}} units ({{percentUsed}}%)</td>
-  </tr>
-  <tr>
-    <td>Remaining</td>
-    <td>{{remainingUnits}} units</td>
-  </tr>
-</table>
+<p>Only <strong>{{remainingUnits}} units remaining</strong> out of {{totalUnits}}.</p>
 
-<p>Please initiate the reauthorization process immediately.</p>
+<p>Please start the reauthorization process now to avoid any interruption in care.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -746,39 +392,24 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "URGENT: {{clientName}}'s authorization at 90% ({{remainingUnits}} units left). Request reauth now.",
+      body: "{{clientName}}'s authorization is 90% used - only {{remainingUnits}} units left. Please request reauthorization.",
     },
     IN_APP: {
-      body: "URGENT: {{clientName}}'s authorization is at 90% usage. Only {{remainingUnits}} units remaining.",
+      body: "{{clientName}}'s authorization is 90% used. Only {{remainingUnits}} units remaining - please request reauthorization.",
     },
   },
 
   AUTH_UNITS_EXHAUSTED: {
     EMAIL: {
-      subject: "CRITICAL: Authorization Units Exhausted - {{clientName}}",
+      subject: "{{clientName}}'s authorization has run out of units",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>CRITICAL:</strong> Authorization units have been exhausted!
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) has <strong>run out of units</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Total Used</td>
-    <td>{{usedUnits}} of {{totalUnits}} units</td>
-  </tr>
-</table>
+<p>All {{totalUnits}} authorized units have been used. No more services can be billed under this authorization.</p>
 
-<p>No more services can be provided under this authorization. Immediate action required.</p>
+<p>Please arrange for reauthorization immediately to continue providing care.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -788,43 +419,22 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "CRITICAL: {{clientName}}'s authorization units exhausted. No services can be billed. Action required!",
+      body: "{{clientName}}'s authorization has run out of units. Please arrange reauthorization immediately.",
     },
     IN_APP: {
-      body: "CRITICAL: {{clientName}}'s authorization units are exhausted. Immediate action required.",
+      body: "{{clientName}}'s authorization has run out of units. Reauthorization needed immediately.",
     },
   },
 
   AUTH_EXPIRING_30_DAYS: {
     EMAIL: {
-      subject: "Authorization Expiring in 30 Days - {{clientName}}",
+      subject: "{{clientName}}'s authorization expires in {{daysRemaining}} days",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-info">
-  Authorization expiring in 30 days
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) will expire on <strong>{{expirationDate}}</strong>, which is {{daysRemaining}} days away.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Expiration Date</td>
-    <td>{{expirationDate}}</td>
-  </tr>
-  <tr>
-    <td>Days Remaining</td>
-    <td>{{daysRemaining}}</td>
-  </tr>
-</table>
-
-<p>Consider starting the reauthorization process.</p>
+<p>You may want to start the reauthorization process soon.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -840,34 +450,13 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
 
   AUTH_EXPIRING_7_DAYS: {
     EMAIL: {
-      subject: "URGENT: Authorization Expiring in 7 Days - {{clientName}}",
+      subject: "{{clientName}}'s authorization expires in {{daysRemaining}} days - action needed",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>URGENT:</strong> Authorization expiring in 7 days!
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) expires on <strong>{{expirationDate}}</strong>, which is only {{daysRemaining}} days away.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Expiration Date</td>
-    <td>{{expirationDate}}</td>
-  </tr>
-  <tr>
-    <td>Days Remaining</td>
-    <td>{{daysRemaining}}</td>
-  </tr>
-</table>
-
-<p>Please ensure reauthorization is in progress.</p>
+<p>Please ensure the reauthorization process is underway to avoid any interruption in care.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -877,39 +466,22 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "URGENT: {{clientName}}'s authorization expires in {{daysRemaining}} days. Ensure reauth is in progress.",
+      body: "{{clientName}}'s authorization expires in {{daysRemaining}} days. Please ensure reauthorization is in progress.",
     },
     IN_APP: {
-      body: "URGENT: {{clientName}}'s authorization expires in {{daysRemaining}} days!",
+      body: "{{clientName}}'s authorization expires in {{daysRemaining}} days - please ensure reauthorization is in progress.",
     },
   },
 
   AUTH_EXPIRED: {
     EMAIL: {
-      subject: "CRITICAL: Authorization Expired - {{clientName}}",
+      subject: "{{clientName}}'s authorization has expired",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>CRITICAL:</strong> Authorization has expired!
-</div>
+<p><strong>{{clientName}}</strong>'s authorization ({{authNumber}}) <strong>expired on {{expirationDate}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Auth Number</td>
-    <td>{{authNumber}}</td>
-  </tr>
-  <tr>
-    <td>Expired On</td>
-    <td>{{expirationDate}}</td>
-  </tr>
-</table>
-
-<p>No more services can be provided under this authorization. Immediate action required.</p>
+<p>No more services can be billed under this authorization. Please arrange for reauthorization immediately to continue providing care.</p>
 
 <p>
   <a href="{{authUrl}}" class="button">View Authorization</a>
@@ -919,46 +491,25 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "CRITICAL: {{clientName}}'s authorization has EXPIRED. No services can be billed. Action required!",
+      body: "{{clientName}}'s authorization has expired. Please arrange reauthorization immediately.",
     },
     IN_APP: {
-      body: "CRITICAL: {{clientName}}'s authorization has expired. Immediate action required.",
+      body: "{{clientName}}'s authorization has expired. Reauthorization needed immediately.",
     },
   },
 
   // -------------------- Care Events --------------------
   INCIDENT_REPORTED: {
     EMAIL: {
-      subject: "INCIDENT REPORTED: {{incidentType}} - {{clientName}}",
+      subject: "{{reportedBy}} reported a {{incidentType}} incident for {{clientName}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-critical">
-  <strong>Incident Report</strong> - Immediate attention may be required
-</div>
+<p><strong>{{reportedBy}}</strong> has reported a <strong>{{incidentType}}</strong> incident for <strong>{{clientName}}</strong> on {{incidentDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Incident Type</td>
-    <td>{{incidentType}}</td>
-  </tr>
-  <tr>
-    <td>Severity</td>
-    <td>{{severity}}</td>
-  </tr>
-  <tr>
-    <td>Reported By</td>
-    <td>{{reportedBy}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{incidentDate}}</td>
-  </tr>
-</table>
+<p>Severity: <strong>{{severity}}</strong></p>
+
+<p>Please review the incident report for more details.</p>
 
 <p>
   <a href="{{incidentUrl}}" class="button">View Incident Report</a>
@@ -968,80 +519,40 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     SMS: {
-      body: "INCIDENT: {{incidentType}} for {{clientName}} ({{severity}}). Reported by {{reportedBy}}. Review ASAP.",
+      body: "{{reportedBy}} reported a {{incidentType}} incident ({{severity}}) for {{clientName}}. Please review.",
     },
     IN_APP: {
-      body: "Incident reported for {{clientName}}: {{incidentType}} ({{severity}}).",
+      body: "{{reportedBy}} reported a {{incidentType}} incident ({{severity}}) for {{clientName}}.",
     },
   },
 
   INCIDENT_RESOLVED: {
     EMAIL: {
-      subject: "Incident Resolved - {{clientName}}",
+      subject: "{{clientName}}'s {{incidentType}} incident has been resolved",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-success">
-  An incident has been resolved
-</div>
+<p>The <strong>{{incidentType}}</strong> incident for <strong>{{clientName}}</strong> has been resolved by <strong>{{resolvedBy}}</strong> on {{resolvedDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Incident Type</td>
-    <td>{{incidentType}}</td>
-  </tr>
-  <tr>
-    <td>Resolution</td>
-    <td>{{resolution}}</td>
-  </tr>
-  <tr>
-    <td>Resolved By</td>
-    <td>{{resolvedBy}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{resolvedDate}}</td>
-  </tr>
-</table>
+<p><strong>Resolution:</strong> {{resolution}}</p>
 
 <p>{{companyName}}</p>
       `.trim(),
     },
     IN_APP: {
-      body: "Incident for {{clientName}} has been resolved: {{resolution}}.",
+      body: "{{clientName}}'s {{incidentType}} incident has been resolved by {{resolvedBy}}: {{resolution}}",
     },
   },
 
   CARE_PLAN_UPDATED: {
     EMAIL: {
-      subject: "Care Plan Updated - {{clientName}}",
+      subject: "{{updatedBy}} updated {{clientName}}'s care plan",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>A care plan has been updated:</p>
+<p><strong>{{updatedBy}}</strong> has updated the care plan ({{planNumber}}) for <strong>{{clientName}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Plan Number</td>
-    <td>{{planNumber}}</td>
-  </tr>
-  <tr>
-    <td>Updated By</td>
-    <td>{{updatedBy}}</td>
-  </tr>
-  <tr>
-    <td>Summary</td>
-    <td>{{updateSummary}}</td>
-  </tr>
-</table>
+<p><strong>Changes:</strong> {{updateSummary}}</p>
 
 <p>
   <a href="{{carePlanUrl}}" class="button">View Care Plan</a>
@@ -1051,38 +562,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Care plan for {{clientName}} has been updated by {{updatedBy}}.",
+      body: "{{updatedBy}} updated {{clientName}}'s care plan: {{updateSummary}}",
     },
   },
 
   CARE_PLAN_APPROVED: {
     EMAIL: {
-      subject: "Care Plan Approved - {{clientName}}",
+      subject: "{{clientName}}'s care plan has been approved",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-success">
-  A care plan has been approved
-</div>
+<p><strong>{{clientName}}</strong>'s care plan ({{planNumber}}) has been approved by <strong>{{approvedBy}}</strong>.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Plan Number</td>
-    <td>{{planNumber}}</td>
-  </tr>
-  <tr>
-    <td>Approved By</td>
-    <td>{{approvedBy}}</td>
-  </tr>
-  <tr>
-    <td>Effective Date</td>
-    <td>{{effectiveDate}}</td>
-  </tr>
-</table>
+<p>The plan is effective starting <strong>{{effectiveDate}}</strong>.</p>
 
 <p>
   <a href="{{carePlanUrl}}" class="button">View Care Plan</a>
@@ -1092,34 +584,17 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Care plan for {{clientName}} has been approved. Effective: {{effectiveDate}}.",
+      body: "{{clientName}}'s care plan has been approved by {{approvedBy}}. Effective from {{effectiveDate}}.",
     },
   },
 
   ASSESSMENT_DUE: {
     EMAIL: {
-      subject: "Assessment Due - {{clientName}}",
+      subject: "{{clientName}}'s {{assessmentType}} assessment is due by {{dueDate}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-info">
-  An assessment is due
-</div>
-
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Assessment Type</td>
-    <td>{{assessmentType}}</td>
-  </tr>
-  <tr>
-    <td>Due Date</td>
-    <td>{{dueDate}}</td>
-  </tr>
-</table>
+<p>A <strong>{{assessmentType}}</strong> assessment for <strong>{{clientName}}</strong> is due by <strong>{{dueDate}}</strong>.</p>
 
 <p>
   <a href="{{assessmentUrl}}" class="button">Start Assessment</a>
@@ -1129,40 +604,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Assessment due for {{clientName}}: {{assessmentType}} by {{dueDate}}.",
+      body: "{{clientName}}'s {{assessmentType}} assessment is due by {{dueDate}}.",
     },
   },
 
   ASSESSMENT_COMPLETED: {
     EMAIL: {
-      subject: "Assessment Completed - {{clientName}}",
+      subject: "{{completedBy}} completed {{clientName}}'s {{assessmentType}} assessment",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>An assessment has been completed:</p>
+<p><strong>{{completedBy}}</strong> completed a <strong>{{assessmentType}}</strong> assessment for <strong>{{clientName}}</strong> on {{completedDate}}.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Assessment Type</td>
-    <td>{{assessmentType}}</td>
-  </tr>
-  <tr>
-    <td>Completed By</td>
-    <td>{{completedBy}}</td>
-  </tr>
-  <tr>
-    <td>Date</td>
-    <td>{{completedDate}}</td>
-  </tr>
-  <tr>
-    <td>Score</td>
-    <td>{{score}}</td>
-  </tr>
-</table>
+<p>Score: <strong>{{score}}</strong></p>
 
 <p>
   <a href="{{assessmentUrl}}" class="button">View Assessment</a>
@@ -1172,32 +626,17 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Assessment completed for {{clientName}} by {{completedBy}}. Score: {{score}}.",
+      body: "{{completedBy}} completed {{clientName}}'s {{assessmentType}} assessment with a score of {{score}}.",
     },
   },
 
   VISIT_NOTE_SUBMITTED: {
     EMAIL: {
-      subject: "Visit Note Submitted - {{clientName}}",
+      subject: "{{carerName}} submitted a visit note for {{clientName}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>A visit note has been submitted:</p>
-
-<table class="info-table">
-  <tr>
-    <td>Client</td>
-    <td><strong>{{clientName}}</strong></td>
-  </tr>
-  <tr>
-    <td>Carer</td>
-    <td>{{carerName}}</td>
-  </tr>
-  <tr>
-    <td>Visit Date</td>
-    <td>{{visitDate}}</td>
-  </tr>
-</table>
+<p><strong>{{carerName}}</strong> has submitted a visit note for <strong>{{clientName}}</strong> from their visit on <strong>{{visitDate}}</strong>.</p>
 
 <p>
   <a href="{{visitNoteUrl}}" class="button">View Visit Note</a>
@@ -1207,19 +646,17 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "{{carerName}} submitted a visit note for {{clientName}} on {{visitDate}}.",
+      body: "{{carerName}} submitted a visit note for {{clientName}} ({{visitDate}}).",
     },
   },
 
   THRESHOLD_BREACH: {
     EMAIL: {
-      subject: "ALERT: Threshold Breach - {{fieldLabel}} for {{clientName}}",
+      subject: "{{clientName}}'s {{fieldLabel}} requires attention",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<div class="alert-box alert-warning">
-  <strong>Threshold Alert:</strong> A visit note field value exceeded the configured threshold.
-</div>
+<p>{{carerName}} recorded a {{fieldLabel}} of <strong>{{enteredValue}}</strong> for {{clientName}}, which is {{thresholdDescription}}.</p>
 
 <table class="info-table">
   <tr>
@@ -1227,7 +664,7 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
     <td><strong>{{clientName}}</strong></td>
   </tr>
   <tr>
-    <td>Carer</td>
+    <td>Recorded by</td>
     <td>{{carerName}}</td>
   </tr>
   <tr>
@@ -1235,22 +672,18 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
     <td>{{visitDate}}</td>
   </tr>
   <tr>
-    <td>Field</td>
     <td>{{fieldLabel}}</td>
-  </tr>
-  <tr>
-    <td>Value Entered</td>
     <td><strong>{{enteredValue}}</strong></td>
   </tr>
   <tr>
-    <td>Threshold Exceeded</td>
-    <td>{{thresholdType}} threshold: {{thresholdValue}}</td>
+    <td>Expected Range</td>
+    <td>{{expectedRange}}</td>
   </tr>
 </table>
 
 {{#customMessage}}
 <div class="alert-box alert-info">
-  <strong>Note:</strong> {{customMessage}}
+  {{customMessage}}
 </div>
 {{/customMessage}}
 
@@ -1262,36 +695,25 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
     IN_APP: {
-      body: "Threshold alert for {{clientName}}: {{fieldLabel}} value ({{enteredValue}}) exceeds {{thresholdType}} threshold ({{thresholdValue}}).",
+      body: "{{carerName}} recorded {{clientName}}'s {{fieldLabel}} as {{enteredValue}}, which is {{thresholdDescription}}.",
     },
   },
 
   // -------------------- Administrative --------------------
   USER_ACCOUNT_CREATED: {
     EMAIL: {
-      subject: "Welcome to CareBase - Your Account is Ready",
+      subject: "Welcome to CareBase, {{firstName}}!",
       body: `
 <p>Hi {{firstName}},</p>
 
-<p>Welcome to CareBase! Your account has been created and is ready to use.</p>
+<p>Your CareBase account has been created and is ready to use.</p>
 
-<table class="info-table">
-  <tr>
-    <td>Email</td>
-    <td>{{email}}</td>
-  </tr>
-  {{#tempPassword}}
-  <tr>
-    <td>Temporary Password</td>
-    <td><strong>{{tempPassword}}</strong></td>
-  </tr>
-  {{/tempPassword}}
-</table>
+<p>Your login email is <strong>{{email}}</strong>.</p>
 
 {{#tempPassword}}
-<div class="alert-box alert-warning">
-  <strong>Important:</strong> Please change your password after your first login for security.
-</div>
+<p>Your temporary password is: <strong>{{tempPassword}}</strong></p>
+
+<p>Please change your password after your first login for security.</p>
 {{/tempPassword}}
 
 <p>
@@ -1307,21 +729,19 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
 
   PASSWORD_RESET: {
     EMAIL: {
-      subject: "Password Reset Request - CareBase",
+      subject: "Reset your CareBase password",
       body: `
 <p>Hi {{firstName}},</p>
 
-<p>We received a request to reset your password.</p>
+<p>We received a request to reset your CareBase password. Click the button below to create a new password.</p>
 
 <p>
   <a href="{{resetUrl}}" class="button">Reset Your Password</a>
 </p>
 
-<div class="alert-box alert-warning">
-  This link will expire in {{expiresIn}}.
-</div>
+<p>This link will expire in {{expiresIn}}.</p>
 
-<p>If you didn't request a password reset, please ignore this email or contact your administrator if you're concerned.</p>
+<p>If you didn't request this, you can safely ignore this email - your password won't be changed.</p>
 
 <p>{{companyName}}</p>
       `.trim(),
@@ -1330,30 +750,17 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
 
   WEEKLY_SUMMARY: {
     EMAIL: {
-      subject: "Weekly Summary Report - {{weekStartDate}} to {{weekEndDate}}",
+      subject: "Your week in review: {{weekStartDate}} - {{weekEndDate}}",
       body: `
 <p>Hi {{recipientName}},</p>
 
-<p>Here's your weekly summary for {{weekStartDate}} to {{weekEndDate}}:</p>
+<p>Here's a summary of the week from {{weekStartDate}} to {{weekEndDate}}:</p>
 
-<table class="info-table">
-  <tr>
-    <td>Total Shifts</td>
-    <td>{{totalShifts}}</td>
-  </tr>
-  <tr>
-    <td>Completed Shifts</td>
-    <td>{{completedShifts}}</td>
-  </tr>
-  <tr>
-    <td>Total Hours</td>
-    <td>{{totalHours}}</td>
-  </tr>
-  <tr>
-    <td>Incidents</td>
-    <td>{{incidentCount}}</td>
-  </tr>
-</table>
+<ul>
+  <li><strong>{{completedShifts}}</strong> of {{totalShifts}} shifts completed</li>
+  <li><strong>{{totalHours}} hours</strong> of care provided</li>
+  <li><strong>{{incidentCount}}</strong> incidents reported</li>
+</ul>
 
 <p>
   <a href="{{summaryUrl}}" class="button">View Full Report</a>
