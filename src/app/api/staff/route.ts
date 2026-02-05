@@ -209,7 +209,7 @@ export async function POST(request: Request) {
     });
 
     // Send welcome email with login credentials
-    const appUrl = process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
+    const appUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
     sendNotification({
       eventType: "USER_ACCOUNT_CREATED",
       recipientIds: [user.id],

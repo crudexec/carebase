@@ -329,11 +329,15 @@ export async function DELETE(request: Request, { params }: RouteParams) {
         where: { intakeId: id },
       });
 
-      // Delete care plan task templates (child of care plans)
-      await tx.carePlanTaskTemplate.deleteMany({
-        where: {
-          carePlan: { intakeId: id },
-        },
+      // Delete care plan related records (children of care plans)
+      await tx.carePlanTask.deleteMany({
+        where: { carePlan: { intakeId: id } },
+      });
+      await tx.carePlanDiagnosis.deleteMany({
+        where: { carePlan: { intakeId: id } },
+      });
+      await tx.carePlanOrder.deleteMany({
+        where: { carePlan: { intakeId: id } },
       });
 
       // Delete care plans linked to this intake
