@@ -23,6 +23,8 @@ import {
   Calendar,
   AlertCircle,
   FileText,
+  User,
+  ChevronRight,
 } from "lucide-react";
 
 interface Intake {
@@ -64,14 +66,103 @@ interface Intake {
   } | null;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  SCHEDULED: { label: "Scheduled", color: "bg-primary/10 text-primary", icon: Calendar },
-  IN_PROGRESS: { label: "In Progress", color: "bg-warning/10 text-warning", icon: Clock },
-  PENDING_APPROVAL: { label: "Pending Approval", color: "bg-secondary/10 text-secondary", icon: AlertCircle },
-  APPROVED: { label: "Approved", color: "bg-success/10 text-success", icon: CheckCircle },
-  REJECTED: { label: "Rejected", color: "bg-error/10 text-error", icon: XCircle },
-  CANCELLED: { label: "Cancelled", color: "bg-foreground/10 text-foreground-secondary", icon: XCircle },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
+  SCHEDULED: { label: "Scheduled", color: "text-primary", bgColor: "bg-primary/10", icon: Calendar },
+  IN_PROGRESS: { label: "In Progress", color: "text-warning", bgColor: "bg-warning/10", icon: Clock },
+  PENDING_APPROVAL: { label: "Pending Approval", color: "text-secondary", bgColor: "bg-secondary/10", icon: AlertCircle },
+  APPROVED: { label: "Approved", color: "text-success", bgColor: "bg-success/10", icon: CheckCircle },
+  REJECTED: { label: "Rejected", color: "text-error", bgColor: "bg-error/10", icon: XCircle },
+  CANCELLED: { label: "Cancelled", color: "text-foreground-secondary", bgColor: "bg-foreground/10", icon: XCircle },
 };
+
+// Stage configuration for intake workflow
+const STAGES = [
+  { id: 1, name: "Client Info", short: "Info" },
+  { id: 2, name: "Assessments", short: "Assess" },
+  { id: 3, name: "Consents", short: "Consent" },
+  { id: 4, name: "Care Plan", short: "Plan" },
+  { id: 5, name: "Approval", short: "Approve" },
+];
+
+function StageIndicator({ currentStage, status }: { currentStage: number; status: string }) {
+  const isCompleted = status === "APPROVED";
+  const isCancelled = status === "CANCELLED" || status === "REJECTED";
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {STAGES.map((stage, index) => {
+        const isActive = index + 1 === currentStage;
+        const isDone = index + 1 < currentStage || isCompleted;
+        const isLast = index === STAGES.length - 1;
+
+        return (
+          <React.Fragment key={stage.id}>
+            <div
+              className={`relative flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-medium transition-colors ${
+                isCancelled
+                  ? "bg-foreground/10 text-foreground-tertiary"
+                  : isDone
+                  ? "bg-success text-white"
+                  : isActive
+                  ? "bg-primary text-white"
+                  : "bg-background-secondary text-foreground-tertiary"
+              }`}
+              title={stage.name}
+            >
+              {isDone && !isCancelled ? (
+                <CheckCircle className="w-3.5 h-3.5" />
+              ) : (
+                stage.id
+              )}
+            </div>
+            {!isLast && (
+              <div
+                className={`w-3 h-0.5 ${
+                  isCancelled
+                    ? "bg-foreground/10"
+                    : isDone
+                    ? "bg-success"
+                    : "bg-background-secondary"
+                }`}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function getStageName(intake: Intake): string {
+  if (intake.status === "APPROVED") return "Completed";
+  if (intake.status === "CANCELLED") return "Cancelled";
+  if (intake.status === "REJECTED") return "Rejected";
+  if (intake.status === "PENDING_APPROVAL") return "Pending Approval";
+
+  const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
+  const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
+
+  if (intake.carePlan) return "Care Plan";
+  if (consentsDone > 0 || intake.consents.length > 0) return "Consents";
+  if (assessmentsDone > 0 || intake.assessments.length > 0) return "Assessments";
+  return "Client Info";
+}
+
+function getCurrentStage(intake: Intake): number {
+  if (intake.status === "APPROVED") return 5;
+  if (intake.status === "PENDING_APPROVAL") return 5;
+  if (intake.status === "CANCELLED" || intake.status === "REJECTED") return 1;
+
+  const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
+  const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
+
+  if (intake.carePlan) return 4;
+  if (consentsDone > 0) return 4;
+  if (intake.consents.length > 0) return 3;
+  if (assessmentsDone > 0) return 3;
+  if (intake.assessments.length > 0) return 2;
+  return 1;
+}
 
 export default function IntakePage() {
   const [intakes, setIntakes] = React.useState<Intake[]>([]);
@@ -113,19 +204,6 @@ export default function IntakePage() {
       intake.client.lastName.toLowerCase().includes(searchLower)
     );
   });
-
-  const getProgress = (intake: Intake) => {
-    const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
-    const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
-    const steps = [
-      true, // Step 1: Client info always done
-      assessmentsDone > 0,
-      consentsDone > 0,
-      intake.carePlan !== null,
-      intake.status === "APPROVED",
-    ];
-    return steps.filter(Boolean).length;
-  };
 
   return (
     <div className="space-y-6">
@@ -179,12 +257,12 @@ export default function IntakePage() {
         </CardContent>
       </Card>
 
-      {/* Intake List */}
+      {/* Intake Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Intakes ({total})</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Intakes ({total})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -208,79 +286,158 @@ export default function IntakePage() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredIntakes.map((intake) => {
-                const statusConfig = STATUS_CONFIG[intake.status] || STATUS_CONFIG.IN_PROGRESS;
-                const StatusIcon = statusConfig.icon;
-                const progress = getProgress(intake);
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-background-secondary/50">
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Client
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Stage Progress
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Current Stage
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Status
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Assessments
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Consents
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Care Plan
+                    </th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
+                      Created
+                    </th>
+                    <th className="w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredIntakes.map((intake) => {
+                    const statusConfig = STATUS_CONFIG[intake.status] || STATUS_CONFIG.IN_PROGRESS;
+                    const StatusIcon = statusConfig.icon;
+                    const currentStage = getCurrentStage(intake);
+                    const stageName = getStageName(intake);
+                    const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
+                    const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
 
-                return (
-                  <Link
-                    key={intake.id}
-                    href={`/intake/${intake.id}`}
-                    className="block"
-                  >
-                    <div className="p-4 rounded-lg border hover:border-primary/50 transition-colors">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg ${statusConfig.color}`}>
-                            <StatusIcon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium">
-                              {intake.client.firstName} {intake.client.lastName}
-                            </h3>
-                            {intake.coordinator && (
-                              <p className="text-sm text-foreground-secondary">
-                                Coordinator: {intake.coordinator.firstName} {intake.coordinator.lastName}
+                    return (
+                      <tr
+                        key={intake.id}
+                        className="hover:bg-background-secondary/30 transition-colors cursor-pointer group"
+                        onClick={() => window.location.href = `/intake/${intake.id}`}
+                      >
+                        {/* Client */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">
+                                {intake.client.firstName} {intake.client.lastName}
                               </p>
-                            )}
+                              {intake.coordinator && (
+                                <p className="text-xs text-foreground-tertiary">
+                                  {intake.coordinator.firstName} {intake.coordinator.lastName}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <Badge className={statusConfig.color}>
-                          {statusConfig.label}
-                        </Badge>
-                      </div>
+                        </td>
 
-                      {/* Progress Bar */}
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-foreground-secondary">Progress</span>
-                          <span className="font-medium">{progress} / 5 steps</span>
-                        </div>
-                        <div className="h-2 bg-background-secondary rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-300"
-                            style={{ width: `${(progress / 5) * 100}%` }}
-                          />
-                        </div>
-                      </div>
+                        {/* Stage Progress */}
+                        <td className="px-4 py-3">
+                          <StageIndicator currentStage={currentStage} status={intake.status} />
+                        </td>
 
-                      {/* Details */}
-                      <div className="flex items-center gap-4 mt-3 text-xs text-foreground-secondary">
-                        {intake.scheduledDate && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Scheduled: {new Date(intake.scheduledDate).toLocaleDateString()}
+                        {/* Current Stage */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm font-medium">{stageName}</span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-3">
+                          <Badge className={`${statusConfig.bgColor} ${statusConfig.color} gap-1`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusConfig.label}
+                          </Badge>
+                        </td>
+
+                        {/* Assessments */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <ClipboardCheck className="w-3.5 h-3.5 text-foreground-tertiary" />
+                            <span className={`text-sm ${assessmentsDone === intake.assessments.length && intake.assessments.length > 0 ? "text-success font-medium" : ""}`}>
+                              {assessmentsDone}/{intake.assessments.length}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Consents */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-foreground-tertiary" />
+                            <span className={`text-sm ${consentsDone === intake.consents.length && intake.consents.length > 0 ? "text-success font-medium" : ""}`}>
+                              {consentsDone}/{intake.consents.length}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Care Plan */}
+                        <td className="px-4 py-3">
+                          {intake.carePlan ? (
+                            <Badge className="bg-success/10 text-success">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Created
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-foreground-tertiary">-</span>
+                          )}
+                        </td>
+
+                        {/* Created Date */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-foreground-secondary">
+                            {new Date(intake.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
                           </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <ClipboardCheck className="h-3 w-3" />
-                          Assessments: {intake.assessments.filter((a) => a.status === "COMPLETED").length}/{intake.assessments.length}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          Consents: {intake.consents.filter((c) => c.status === "SIGNED").length}/{intake.consents.length}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                        </td>
+
+                        {/* Arrow */}
+                        <td className="px-4 py-3">
+                          <ChevronRight className="w-4 h-4 text-foreground-tertiary group-hover:text-primary transition-colors" />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Stage Legend */}
+      <div className="flex items-center justify-center gap-6 text-xs text-foreground-secondary">
+        <span className="font-medium">Stages:</span>
+        {STAGES.map((stage, index) => (
+          <span key={stage.id} className="flex items-center gap-1">
+            <span className="w-4 h-4 rounded-full bg-background-secondary flex items-center justify-center text-[10px] font-medium">
+              {index + 1}
+            </span>
+            {stage.name}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

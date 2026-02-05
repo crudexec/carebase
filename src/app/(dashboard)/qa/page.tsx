@@ -13,6 +13,7 @@ import {
   Select,
   Badge,
   Textarea,
+  Breadcrumb,
 } from "@/components/ui";
 import {
   Search,
@@ -27,6 +28,8 @@ import {
   AlertCircle,
   X,
   ChevronDown,
+  ChevronRight,
+  Eye,
 } from "lucide-react";
 
 interface QAItem {
@@ -61,11 +64,79 @@ interface Client {
   lastName: string;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  PENDING_REVIEW: { label: "Pending Review", color: "bg-warning/10 text-warning", icon: Clock },
-  APPROVED: { label: "Approved", color: "bg-success/10 text-success", icon: CheckCircle },
-  REJECTED: { label: "Rejected", color: "bg-error/10 text-error", icon: XCircle },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
+  PENDING_REVIEW: { label: "Pending", color: "text-warning", bgColor: "bg-warning/10", icon: Clock },
+  APPROVED: { label: "Approved", color: "text-success", bgColor: "bg-success/10", icon: CheckCircle },
+  REJECTED: { label: "Rejected", color: "text-error", bgColor: "bg-error/10", icon: XCircle },
 };
+
+const TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+  assessment: { label: "Assessment", color: "text-primary", bgColor: "bg-primary/10" },
+  "visit-note": { label: "Visit Note", color: "text-secondary", bgColor: "bg-secondary/10" },
+};
+
+// Skeleton loader for table rows
+function TableSkeleton() {
+  return (
+    <>
+      {[...Array(5)].map((_, i) => (
+        <tr key={i} className="border-b border-border animate-pulse">
+          <td className="px-4 py-3">
+            <div className="h-5 bg-background-secondary rounded w-24" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="h-5 bg-background-secondary rounded w-32" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-background-secondary" />
+              <div className="h-5 bg-background-secondary rounded w-28" />
+            </div>
+          </td>
+          <td className="px-4 py-3">
+            <div className="h-5 bg-background-secondary rounded w-24" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="h-5 bg-background-secondary rounded w-28" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="h-6 bg-background-secondary rounded w-20" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="h-5 bg-background-secondary rounded w-28" />
+          </td>
+          <td className="px-4 py-3">
+            <div className="flex gap-2">
+              <div className="h-8 bg-background-secondary rounded w-16" />
+              <div className="h-8 bg-background-secondary rounded w-16" />
+            </div>
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+// Skeleton loader for stats cards
+function StatsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i}>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4 animate-pulse">
+              <div className="p-3 rounded-full bg-background-secondary w-12 h-12" />
+              <div>
+                <div className="h-7 bg-background-secondary rounded w-12 mb-2" />
+                <div className="h-4 bg-background-secondary rounded w-24" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export default function QAManagerPage() {
   const [items, setItems] = React.useState<QAItem[]>([]);
@@ -77,6 +148,7 @@ export default function QAManagerPage() {
   });
   const [clients, setClients] = React.useState<Client[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isStatsLoading, setIsStatsLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState<string>("");
   const [statusFilter, setStatusFilter] = React.useState<string>("PENDING_REVIEW");
@@ -125,7 +197,6 @@ export default function QAManagerPage() {
     try {
       const response = await fetch("/api/clients?limit=500");
       const data = await response.json();
-      console.log("Clients API response:", data);
       if (response.ok && data.clients) {
         setClients(data.clients);
       }
@@ -136,16 +207,15 @@ export default function QAManagerPage() {
 
   const fetchQAItems = async () => {
     setIsLoading(true);
+    setIsStatsLoading(true);
     try {
       const params = new URLSearchParams();
       if (typeFilter) params.set("type", typeFilter);
       if (statusFilter) params.set("status", statusFilter);
       if (clientFilter) params.set("clientId", clientFilter);
 
-      console.log("Fetching QA items with params:", params.toString());
       const response = await fetch(`/api/qa?${params}`);
       const data = await response.json();
-      console.log("QA API response:", data);
 
       if (response.ok) {
         // Transform assessments and visit notes into unified items
@@ -196,6 +266,7 @@ export default function QAManagerPage() {
       console.error("Failed to fetch QA items:", error);
     } finally {
       setIsLoading(false);
+      setIsStatsLoading(false);
     }
   };
 
@@ -247,6 +318,8 @@ export default function QAManagerPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "QA Manager" }]} />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">QA Manager</h1>
@@ -256,62 +329,66 @@ export default function QAManagerPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-warning/10">
-                <Clock className="h-6 w-6 text-warning" />
+      {isStatsLoading ? (
+        <StatsSkeleton />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-warning/10">
+                  <Clock className="h-6 w-6 text-warning" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {stats.pendingAssessments + stats.pendingVisitNotes}
+                  </p>
+                  <p className="text-sm text-foreground-secondary">Pending Review</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stats.pendingAssessments + stats.pendingVisitNotes}
-                </p>
-                <p className="text-sm text-foreground-secondary">Pending Review</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <ClipboardCheck className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.pendingAssessments}</p>
+                  <p className="text-sm text-foreground-secondary">Assessments</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <ClipboardCheck className="h-6 w-6 text-primary" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-secondary/10">
+                  <FileText className="h-6 w-6 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.pendingVisitNotes}</p>
+                  <p className="text-sm text-foreground-secondary">Visit Notes</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.pendingAssessments}</p>
-                <p className="text-sm text-foreground-secondary">Assessments</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-success/10">
+                  <CheckCircle className="h-6 w-6 text-success" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.approvedToday}</p>
+                  <p className="text-sm text-foreground-secondary">Approved Today</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-secondary/10">
-                <FileText className="h-6 w-6 text-secondary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.pendingVisitNotes}</p>
-                <p className="text-sm text-foreground-secondary">Visit Notes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-success/10">
-                <CheckCircle className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.approvedToday}</p>
-                <p className="text-sm text-foreground-secondary">Approved Today</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Filters */}
       <Card>
@@ -425,18 +502,31 @@ export default function QAManagerPage() {
         </CardContent>
       </Card>
 
-      {/* QA Items List */}
+      {/* QA Items Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Items for Review</CardTitle>
-          <CardDescription>
-            {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""} found
-          </CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Items for Review ({filteredItems.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-background-secondary/50">
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Type</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Template</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Client</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Submitted By</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Submitted</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Status</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Reviewer</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <TableSkeleton />
+                </tbody>
+              </table>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="text-center py-12">
@@ -449,99 +539,159 @@ export default function QAManagerPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredItems.map((item) => {
-                const statusConfig = STATUS_CONFIG[item.qaStatus] || STATUS_CONFIG.PENDING_REVIEW;
-                const StatusIcon = statusConfig.icon;
-                const isPending = item.qaStatus === "PENDING_REVIEW";
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-background-secondary/50">
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Type</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Template</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Client</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Submitted By</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Submitted</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Status</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Reviewer</th>
+                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredItems.map((item) => {
+                    const statusConfig = STATUS_CONFIG[item.qaStatus] || STATUS_CONFIG.PENDING_REVIEW;
+                    const typeConfig = TYPE_CONFIG[item.type];
+                    const StatusIcon = statusConfig.icon;
+                    const isPending = item.qaStatus === "PENDING_REVIEW";
 
-                return (
-                  <div
-                    key={`${item.type}-${item.id}`}
-                    className="p-4 rounded-lg border hover:border-primary/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${statusConfig.color}`}>
-                          <StatusIcon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{item.templateName}</h3>
-                            <Badge
-                              className={
-                                item.type === "assessment"
-                                  ? "bg-primary/10 text-primary"
-                                  : "bg-secondary/10 text-secondary"
-                              }
-                            >
-                              {item.type === "assessment" ? "Assessment" : "Visit Note"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 text-sm text-foreground-secondary">
-                            <User className="h-4 w-4" />
-                            <span>{item.clientName}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
-                        {isPending && (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => openReviewModal(item, "approve")}
-                            >
-                              <CheckCircle className="mr-1 h-4 w-4" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => openReviewModal(item, "reject")}
-                            >
-                              <XCircle className="mr-1 h-4 w-4" />
-                              Reject
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 mt-3 text-xs text-foreground-secondary">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Submitted: {new Date(item.submittedAt).toLocaleString()}
-                      </span>
-                      <span>By: {item.submitterName}</span>
-                      {item.qaReviewedAt && (
-                        <span className="flex items-center gap-1">
-                          Reviewed: {new Date(item.qaReviewedAt).toLocaleString()} by{" "}
-                          {item.qaReviewerName}
-                        </span>
-                      )}
-                    </div>
-                    {item.qaComment && (
-                      <div className="mt-2 p-2 rounded bg-background-secondary text-sm">
-                        <span className="font-medium">QA Comment:</span> {item.qaComment}
-                      </div>
-                    )}
-                    <div className="mt-3">
-                      <Link
-                        href={
-                          item.type === "assessment"
-                            ? `/assessments/${item.id}`
-                            : `/visit-notes/${item.id}`
-                        }
+                    return (
+                      <tr
+                        key={`${item.type}-${item.id}`}
+                        className="hover:bg-background-secondary/30 transition-colors"
                       >
-                        <Button variant="secondary" size="sm">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
+                        {/* Type */}
+                        <td className="px-4 py-3">
+                          <Badge className={`${typeConfig.bgColor} ${typeConfig.color}`}>
+                            {item.type === "assessment" ? (
+                              <ClipboardCheck className="w-3 h-3 mr-1" />
+                            ) : (
+                              <FileText className="w-3 h-3 mr-1" />
+                            )}
+                            {typeConfig.label}
+                          </Badge>
+                        </td>
+
+                        {/* Template */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm font-medium">{item.templateName}</span>
+                        </td>
+
+                        {/* Client */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <Link
+                              href={`/clients/${item.clientId}`}
+                              className="text-sm hover:text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {item.clientName}
+                            </Link>
+                          </div>
+                        </td>
+
+                        {/* Submitted By */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-foreground-secondary">{item.submitterName}</span>
+                        </td>
+
+                        {/* Submitted Date */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-foreground-secondary">
+                            {new Date(item.submittedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                          <span className="text-xs text-foreground-tertiary block">
+                            {new Date(item.submittedAt).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-3">
+                          <Badge className={`${statusConfig.bgColor} ${statusConfig.color} gap-1`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusConfig.label}
+                          </Badge>
+                        </td>
+
+                        {/* Reviewer */}
+                        <td className="px-4 py-3">
+                          {item.qaReviewerName ? (
+                            <div>
+                              <span className="text-sm">{item.qaReviewerName}</span>
+                              {item.qaReviewedAt && (
+                                <span className="text-xs text-foreground-tertiary block">
+                                  {new Date(item.qaReviewedAt).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-foreground-tertiary">-</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {isPending ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => openReviewModal(item, "approve")}
+                                  className="h-7 px-2"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => openReviewModal(item, "reject")}
+                                  className="h-7 px-2"
+                                >
+                                  <XCircle className="w-3.5 h-3.5 mr-1" />
+                                  Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <Link
+                                href={
+                                  item.type === "assessment"
+                                    ? `/assessments/${item.id}`
+                                    : `/visit-notes/${item.id}`
+                                }
+                              >
+                                <Button size="sm" variant="secondary" className="h-7 px-2">
+                                  <Eye className="w-3.5 h-3.5 mr-1" />
+                                  View
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

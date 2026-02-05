@@ -67,11 +67,9 @@ const STATUS_LABELS: Record<string, string> = {
 export default function ReferralsPage() {
   const router = useRouter();
   const [referrals, setReferrals] = React.useState<Referral[]>([]);
-  const [statusCounts, setStatusCounts] = React.useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("");
-  const [total, setTotal] = React.useState(0);
 
   React.useEffect(() => {
     fetchReferrals();
@@ -88,8 +86,6 @@ export default function ReferralsPage() {
 
       if (response.ok) {
         setReferrals(data.referrals || []);
-        setStatusCounts(data.statusCounts || {});
-        setTotal(data.total || 0);
       }
     } catch (error) {
       console.error("Failed to fetch referrals:", error);
@@ -107,10 +103,6 @@ export default function ReferralsPage() {
     if (!followUpDate) return false;
     return new Date(followUpDate) < new Date();
   };
-
-  const totalActive = (statusCounts.PENDING || 0) +
-                      (statusCounts.CONTACTED || 0) +
-                      (statusCounts.QUALIFIED || 0);
 
   return (
     <div className="space-y-6">
@@ -130,55 +122,6 @@ export default function ReferralsPage() {
             New Referral
           </Button>
         </Link>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card
-          className={`cursor-pointer transition-colors ${
-            !statusFilter ? "border-primary" : ""
-          }`}
-          onClick={() => setStatusFilter("")}
-        >
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{total}</div>
-            <p className="text-xs text-foreground-secondary">Total Referrals</p>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-colors ${
-            statusFilter === "PENDING" ? "border-warning" : ""
-          }`}
-          onClick={() => setStatusFilter("PENDING")}
-        >
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-warning">
-              {statusCounts.PENDING || 0}
-            </div>
-            <p className="text-xs text-foreground-secondary">Pending</p>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-colors ${
-            statusFilter === "QUALIFIED" ? "border-success" : ""
-          }`}
-          onClick={() => setStatusFilter("QUALIFIED")}
-        >
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-success">
-              {statusCounts.QUALIFIED || 0}
-            </div>
-            <p className="text-xs text-foreground-secondary">Qualified</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-primary">
-              {statusCounts.CONVERTED || 0}
-            </div>
-            <p className="text-xs text-foreground-secondary">Converted</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters */}

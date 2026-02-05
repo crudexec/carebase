@@ -107,13 +107,16 @@ export default function ConsentDetailPage() {
     const intakeId = consent?.intake?.id;
 
     try {
+      // Map field names from frontend to API expected names
       const response = await fetch(`/api/consents/${consentId}/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...data,
-          ipAddress: "", // Could capture this client-side
-          userAgent: navigator.userAgent,
+          signatureType: data.signatureType,
+          signatureData: data.signatureData,
+          signerName: data.signedByName, // API expects signerName
+          signerRelation: data.signedByRelation, // API expects signerRelation
+          witnessId: data.witnessId,
         }),
       });
 
