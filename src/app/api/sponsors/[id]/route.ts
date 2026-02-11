@@ -11,6 +11,8 @@ const updateSponsorSchema = z.object({
   phone: z.string().max(20).optional().nullable(),
   password: z.string().min(8).optional(),
   isActive: z.boolean().optional(),
+  clientsToAdd: z.array(z.string()).optional(),
+  clientsToRemove: z.array(z.string()).optional(),
 });
 
 // GET /api/sponsors/[id] - Get sponsor details
@@ -153,30 +155,103 @@ export async function PATCH(
       updateData.passwordHash = await bcrypt.hash(validation.data.password, 12);
     }
 
-    const sponsor = await prisma.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        phone: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-        sponsoredClients: {
+    // Use transaction if we have client changes
+    const { clientsToAdd, clientsToRemove } = validation.data;
+    const hasClientChanges = (clientsToAdd && clientsToAdd.length > 0) || (clientsToRemove && clientsToRemove.length > 0);
+
+    let sponsor;
+
+    if (hasClientChanges) {
+      // Use transaction for atomic update
+      sponsor = await prisma.$transaction(async (tx) => {
+        // Update user data
+        await tx.user.update({
+          where: { id },
+          data: updateData,
+        });
+
+        // Remove sponsor from clients
+        if (clientsToRemove && clientsToRemove.length > 0) {
+          await tx.client.updateMany({
+            where: {
+              id: { in: clientsToRemove },
+              companyId: session.user.companyId,
+              sponsorId: id,
+            },
+            data: { sponsorId: null },
+          });
+        }
+
+        // Add sponsor to clients
+        if (clientsToAdd && clientsToAdd.length > 0) {
+          await tx.client.updateMany({
+            where: {
+              id: { in: clientsToAdd },
+              companyId: session.user.companyId,
+            },
+            data: { sponsorId: id },
+          });
+        }
+
+        // Return updated user with clients
+        return tx.user.findUnique({
+          where: { id },
           select: {
             id: true,
+            email: true,
             firstName: true,
             lastName: true,
-            status: true,
+            role: true,
+            phone: true,
+            isActive: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+            sponsoredClients: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                status: true,
+              },
+            },
+          },
+        });
+      });
+    } else {
+      // Simple update without client changes
+      sponsor = await prisma.user.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          phone: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+          sponsoredClients: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              status: true,
+            },
           },
         },
-      },
-    });
+      });
+    }
+
+    if (!sponsor) {
+      return NextResponse.json(
+        { error: "Failed to update sponsor" },
+        { status: 500 }
+      );
+    }
 
     // Create audit log
     await prisma.auditLog.create({
@@ -192,6 +267,8 @@ export async function PATCH(
           phone: validation.data.phone,
           isActive: validation.data.isActive,
           password: validation.data.password ? "[REDACTED]" : undefined,
+          clientsAdded: clientsToAdd,
+          clientsRemoved: clientsToRemove,
         },
       },
     });
@@ -214,7 +291,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/sponsors/[id] - Deactivate sponsor
+// DELETE /api/sponsors/[id] - Permanently delete sponsor
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -232,12 +309,17 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Get existing sponsor
+    // Get existing sponsor with their clients
     const existingSponsor = await prisma.user.findFirst({
       where: {
         id,
         companyId: session.user.companyId,
         role: "SPONSOR",
+      },
+      include: {
+        sponsoredClients: {
+          select: { id: true },
+        },
       },
     });
 
@@ -248,10 +330,25 @@ export async function DELETE(
       );
     }
 
-    // Soft delete by setting isActive to false
-    await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
+    // Use transaction to safely delete sponsor
+    await prisma.$transaction(async (tx) => {
+      // Remove sponsor assignment from all clients
+      if (existingSponsor.sponsoredClients.length > 0) {
+        await tx.client.updateMany({
+          where: { sponsorId: id },
+          data: { sponsorId: null },
+        });
+      }
+
+      // Delete any notifications for this user
+      await tx.notification.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete the user
+      await tx.user.delete({
+        where: { id },
+      });
     });
 
     // Create audit log
@@ -259,22 +356,23 @@ export async function DELETE(
       data: {
         companyId: session.user.companyId,
         userId: session.user.id,
-        action: "SPONSOR_DEACTIVATED",
+        action: "SPONSOR_DELETED",
         entityType: "User",
         entityId: id,
         changes: {
           email: existingSponsor.email,
           firstName: existingSponsor.firstName,
           lastName: existingSponsor.lastName,
+          clientsUnassigned: existingSponsor.sponsoredClients.length,
         },
       },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deactivating sponsor:", error);
+    console.error("Error deleting sponsor:", error);
     return NextResponse.json(
-      { error: "Failed to deactivate sponsor" },
+      { error: "Failed to delete sponsor" },
       { status: 500 }
     );
   }

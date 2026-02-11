@@ -25,6 +25,8 @@ import {
   ChevronDown,
   Mail,
   Heart,
+  AlertTriangle,
+  Power,
 } from "lucide-react";
 
 interface SponsoredClient {
@@ -70,7 +72,9 @@ export default function SponsorsPage() {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showInviteModal, setShowInviteModal] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [selectedSponsor, setSelectedSponsor] = React.useState<Sponsor | null>(null);
+  const [sponsorToDelete, setSponsorToDelete] = React.useState<Sponsor | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Form state for adding sponsor directly
@@ -104,9 +108,18 @@ export default function SponsorsPage() {
   const [inviteSelectedClientName, setInviteSelectedClientName] = React.useState("");
   const [showInviteClientDropdown, setShowInviteClientDropdown] = React.useState(false);
 
+  // Client management state for Edit modal
+  const [editAssignedClients, setEditAssignedClients] = React.useState<SponsoredClient[]>([]);
+  const [editClientSearch, setEditClientSearch] = React.useState("");
+  const [editClientSuggestions, setEditClientSuggestions] = React.useState<Client[]>([]);
+  const [showEditClientDropdown, setShowEditClientDropdown] = React.useState(false);
+  const [clientsToAdd, setClientsToAdd] = React.useState<string[]>([]);
+  const [clientsToRemove, setClientsToRemove] = React.useState<string[]>([]);
+
   // Refs for click outside handling
   const clientDropdownRef = React.useRef<HTMLDivElement>(null);
   const inviteClientDropdownRef = React.useRef<HTMLDivElement>(null);
+  const editClientDropdownRef = React.useRef<HTMLDivElement>(null);
 
   const fetchSponsors = React.useCallback(async () => {
     try {
@@ -172,6 +185,18 @@ export default function SponsorsPage() {
     return () => clearTimeout(timer);
   }, [inviteClientSearch, searchClients]);
 
+  // Debounced client search for Edit modal
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (editClientSearch) {
+        searchClients(editClientSearch, setEditClientSuggestions);
+      } else {
+        setEditClientSuggestions([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [editClientSearch, searchClients]);
+
   // Click outside handler for dropdowns
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -180,6 +205,9 @@ export default function SponsorsPage() {
       }
       if (inviteClientDropdownRef.current && !inviteClientDropdownRef.current.contains(event.target as Node)) {
         setShowInviteClientDropdown(false);
+      }
+      if (editClientDropdownRef.current && !editClientDropdownRef.current.contains(event.target as Node)) {
+        setShowEditClientDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -289,6 +317,8 @@ export default function SponsorsPage() {
           lastName: formData.lastName,
           phone: formData.phone || null,
           ...(formData.password ? { password: formData.password } : {}),
+          clientsToAdd: clientsToAdd.length > 0 ? clientsToAdd : undefined,
+          clientsToRemove: clientsToRemove.length > 0 ? clientsToRemove : undefined,
         }),
       });
 
@@ -299,7 +329,7 @@ export default function SponsorsPage() {
 
       setShowEditModal(false);
       setSelectedSponsor(null);
-      resetForm();
+      resetEditForm();
       await fetchSponsors();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update sponsor");
@@ -326,6 +356,35 @@ export default function SponsorsPage() {
     }
   };
 
+  const handleDeleteSponsor = async () => {
+    if (!sponsorToDelete) return;
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/sponsors/${sponsorToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete sponsor");
+      }
+
+      setShowDeleteModal(false);
+      setSponsorToDelete(null);
+      await fetchSponsors();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete sponsor");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openDeleteModal = (sponsor: Sponsor) => {
+    setSponsorToDelete(sponsor);
+    setShowDeleteModal(true);
+  };
+
   const openEditModal = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
     setFormData({
@@ -336,7 +395,57 @@ export default function SponsorsPage() {
       phone: sponsor.phone || "",
       clientId: "",
     });
+    // Load assigned clients
+    setEditAssignedClients(sponsor.sponsoredClients || []);
+    setClientsToAdd([]);
+    setClientsToRemove([]);
+    setEditClientSearch("");
+    setEditClientSuggestions([]);
+    setShowEditClientDropdown(false);
     setShowEditModal(true);
+  };
+
+  const resetEditForm = () => {
+    resetForm();
+    setEditAssignedClients([]);
+    setClientsToAdd([]);
+    setClientsToRemove([]);
+    setEditClientSearch("");
+    setEditClientSuggestions([]);
+    setShowEditClientDropdown(false);
+  };
+
+  const handleAddClientToEdit = (client: Client) => {
+    // Check if already assigned or already in the add list
+    const alreadyAssigned = editAssignedClients.some((c) => c.id === client.id);
+    const alreadyInAddList = clientsToAdd.includes(client.id);
+
+    if (!alreadyAssigned && !alreadyInAddList) {
+      // Add to the UI list
+      setEditAssignedClients((prev) => [
+        ...prev,
+        { id: client.id, firstName: client.firstName, lastName: client.lastName, status: client.status },
+      ]);
+      // Track for API call
+      setClientsToAdd((prev) => [...prev, client.id]);
+      // If it was marked for removal, unmark it
+      setClientsToRemove((prev) => prev.filter((id) => id !== client.id));
+    }
+    setEditClientSearch("");
+    setEditClientSuggestions([]);
+    setShowEditClientDropdown(false);
+  };
+
+  const handleRemoveClientFromEdit = (clientId: string) => {
+    // Remove from UI list
+    setEditAssignedClients((prev) => prev.filter((c) => c.id !== clientId));
+    // If it was newly added, just remove from add list
+    if (clientsToAdd.includes(clientId)) {
+      setClientsToAdd((prev) => prev.filter((id) => id !== clientId));
+    } else {
+      // Otherwise mark for removal
+      setClientsToRemove((prev) => [...prev, clientId]);
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -591,10 +700,18 @@ export default function SponsorsPage() {
                           title={sponsor.isActive ? "Deactivate" : "Reactivate"}
                         >
                           {sponsor.isActive ? (
-                            <Trash2 className="w-4 h-4 text-error" />
+                            <Power className="w-4 h-4 text-warning" />
                           ) : (
                             <RotateCcw className="w-4 h-4 text-success" />
                           )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDeleteModal(sponsor)}
+                          title="Delete permanently"
+                        >
+                          <Trash2 className="w-4 h-4 text-error" />
                         </Button>
                       </div>
                     </td>
@@ -950,7 +1067,7 @@ export default function SponsorsPage() {
                 onClick={() => {
                   setShowEditModal(false);
                   setSelectedSponsor(null);
-                  resetForm();
+                  resetEditForm();
                 }}
                 className="text-foreground-secondary hover:text-foreground"
               >
@@ -1026,6 +1143,89 @@ export default function SponsorsPage() {
                   />
                 </div>
 
+                {/* Client Management Section */}
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <Label>Assigned Clients</Label>
+
+                  {/* Currently assigned clients */}
+                  {editAssignedClients.length > 0 ? (
+                    <div className="space-y-2">
+                      {editAssignedClients.map((client) => (
+                        <div
+                          key={client.id}
+                          className="flex items-center justify-between p-2 bg-background-secondary rounded-md"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-foreground-tertiary" />
+                            <span className="text-sm">
+                              {client.firstName} {client.lastName}
+                            </span>
+                            <Badge variant={client.status === "ACTIVE" ? "success" : "warning"} className="text-xs">
+                              {client.status}
+                            </Badge>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveClientFromEdit(client.id)}
+                            className="text-foreground-tertiary hover:text-error p-1"
+                            title="Remove client"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-foreground-tertiary py-2">
+                      No clients assigned to this sponsor
+                    </p>
+                  )}
+
+                  {/* Add client search */}
+                  <div className="relative pt-2" ref={editClientDropdownRef}>
+                    <Input
+                      placeholder="Search clients to add..."
+                      value={editClientSearch}
+                      onChange={(e) => {
+                        setEditClientSearch(e.target.value);
+                        setShowEditClientDropdown(true);
+                      }}
+                      onFocus={() => setShowEditClientDropdown(true)}
+                      autoComplete="off"
+                    />
+                    {showEditClientDropdown && editClientSuggestions.length > 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {editClientSuggestions
+                          .filter((client) => !editAssignedClients.some((c) => c.id === client.id))
+                          .map((client) => (
+                            <button
+                              key={client.id}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-background-secondary text-sm flex items-center justify-between"
+                              onClick={() => handleAddClientToEdit(client)}
+                            >
+                              <span>{client.firstName} {client.lastName}</span>
+                              <Plus className="w-4 h-4 text-success" />
+                            </button>
+                          ))}
+                        {editClientSuggestions.filter((client) => !editAssignedClients.some((c) => c.id === client.id)).length === 0 && (
+                          <div className="px-3 py-2 text-sm text-foreground-tertiary">
+                            All matching clients are already assigned
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {showEditClientDropdown && editClientSearch.length >= 2 && editClientSuggestions.length === 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg p-3 text-sm text-foreground-tertiary">
+                        No clients found
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-foreground-tertiary">
+                    Type at least 2 characters to search for clients
+                  </p>
+                </div>
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button
                     type="button"
@@ -1033,7 +1233,7 @@ export default function SponsorsPage() {
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedSponsor(null);
-                      resetForm();
+                      resetEditForm();
                     }}
                   >
                     Cancel
@@ -1043,6 +1243,67 @@ export default function SponsorsPage() {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && sponsorToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-error">
+                <AlertTriangle className="w-5 h-5" />
+                Delete Sponsor
+              </CardTitle>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSponsorToDelete(null);
+                }}
+                className="text-foreground-secondary hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-foreground-secondary">
+                Are you sure you want to permanently delete{" "}
+                <strong className="text-foreground">
+                  {sponsorToDelete.firstName} {sponsorToDelete.lastName}
+                </strong>
+                ?
+              </p>
+              <div className="p-3 rounded-md bg-error/10 text-sm">
+                <p className="font-medium text-error">Warning: This action cannot be undone.</p>
+                <p className="text-foreground-secondary mt-1">
+                  The sponsor will be permanently removed from the system along with their login access.
+                  {sponsorToDelete.clientCount > 0 && (
+                    <span className="block mt-1">
+                      This sponsor is currently assigned to {sponsorToDelete.clientCount} client(s).
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setSponsorToDelete(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="error"
+                  onClick={handleDeleteSponsor}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Deleting..." : "Delete Permanently"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
