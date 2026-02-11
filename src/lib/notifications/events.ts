@@ -416,6 +416,16 @@ export const EVENT_CONFIGS: Record<NotificationEventType, EventConfig> = {
     defaultChannels: ["IN_APP"],
     variables: ["senderName", "subject", "messagePreview", "conversationUrl"],
   },
+
+  // -------------------- Sponsor Management --------------------
+  SPONSOR_INVITED: {
+    eventType: "SPONSOR_INVITED",
+    description: "Invitation sent to a new sponsor",
+    defaultRecipientRoles: [], // Sent directly to the invitee email
+    priority: "HIGH",
+    defaultChannels: ["EMAIL"],
+    variables: ["firstName", "inviterName", "companyName", "inviteUrl", "clientName"],
+  },
 };
 
 // ============================================

@@ -38,6 +38,7 @@ import {
   FolderOpen,
   Send,
   Bell,
+  Heart,
 } from "lucide-react";
 
 interface NavItem {
@@ -118,6 +119,33 @@ const navigation: NavEntry[] = [
         href: "/care-plans",
         icon: ClipboardList,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
+      },
+      {
+        label: "Sponsors",
+        href: "/sponsors",
+        icon: Heart,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+    ],
+  },
+
+  // Staff Management Group
+  {
+    label: "Staff Management",
+    icon: UserCog,
+    roles: ["ADMIN", "OPS_MANAGER", "CARER"],
+    items: [
+      {
+        label: "Staff Directory",
+        href: "/staff",
+        icon: Users,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "My Availability",
+        href: "/availability",
+        icon: Calendar,
+        roles: ["CARER"],
       },
     ],
   },
@@ -203,27 +231,6 @@ const navigation: NavEntry[] = [
     href: "/reports",
     icon: BarChart3,
     roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR"],
-  },
-
-  // Staff Management Group
-  {
-    label: "Staff Management",
-    icon: UserCog,
-    roles: ["ADMIN", "OPS_MANAGER", "CARER"],
-    items: [
-      {
-        label: "Staff Directory",
-        href: "/staff",
-        icon: Users,
-        roles: ["ADMIN", "OPS_MANAGER"],
-      },
-      {
-        label: "My Availability",
-        href: "/availability",
-        icon: Calendar,
-        roles: ["CARER"],
-      },
-    ],
   },
 
   // Settings Group

@@ -6,7 +6,8 @@ import { CheckInWidget } from "@/components/dashboard/check-in-widget";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
-import { InboxWidget } from "@/components/dashboard/inbox-widget";
+import { ShiftsInProgressWidget } from "@/components/dashboard/shifts-in-progress-widget";
+import { UpcomingShiftsWidget } from "@/components/dashboard/upcoming-shifts-widget";
 import {
   Users,
   Calendar,
@@ -244,12 +245,19 @@ export default async function DashboardPage() {
 
       {/* Widgets Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Inbox Widget - visible to all users */}
-        <InboxWidget />
+        {/* Shifts in Progress Widget */}
+        {user.role !== "SPONSOR" && <ShiftsInProgressWidget />}
 
-        {/* Check-in Widget for Carers */}
-        {user.role === "CARER" && <CheckInWidget />}
+        {/* Upcoming Shifts Widget */}
+        {user.role !== "SPONSOR" && <UpcomingShiftsWidget />}
       </div>
+
+      {/* Check-in Widget for Carers */}
+      {user.role === "CARER" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CheckInWidget />
+        </div>
+      )}
 
       {/* Activity Feed at bottom for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (

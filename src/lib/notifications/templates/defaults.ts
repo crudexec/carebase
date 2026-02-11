@@ -777,6 +777,36 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       body: `{{senderName}} sent you a message: "{{subject}}"`,
     },
   },
+
+  // -------------------- Sponsor Management --------------------
+  SPONSOR_INVITED: {
+    EMAIL: {
+      subject: "You've been invited to join {{companyName}} on CareBase",
+      body: `
+<p>Hi {{firstName}},</p>
+
+<p>{{inviterName}} from <strong>{{companyName}}</strong> has invited you to join CareBase as a family sponsor.</p>
+
+<p>As a sponsor, you'll be able to:</p>
+<ul>
+  <li>View visit notes and care updates for your loved one</li>
+  <li>See scheduling information</li>
+  <li>Communicate with the care team</li>
+  <li>View and manage invoices</li>
+</ul>
+
+<p>
+  <a href="{{inviteUrl}}" class="button">Accept Invitation & Create Account</a>
+</p>
+
+<p>This invitation link will expire in 7 days.</p>
+
+<p>If you have any questions, please contact {{companyName}} directly.</p>
+
+<p>Thanks,<br>{{companyName}}</p>
+      `.trim(),
+    },
+  },
 };
 
 // ============================================

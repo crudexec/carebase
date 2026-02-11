@@ -178,6 +178,7 @@ export default function ClientDetailPage() {
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [authorizations, setAuthorizations] = React.useState<Authorization[]>([]);
   const [carers, setCarers] = React.useState<CarerOption[]>([]);
+  const [sponsors, setSponsors] = React.useState<CarerOption[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<TabType>("details");
@@ -194,6 +195,7 @@ export default function ClientDetailPage() {
     medicalNotes: "",
     status: "PROSPECT" as ClientStatus,
     assignedCarerId: "",
+    sponsorId: "",
   });
 
   const fetchClient = React.useCallback(async () => {
@@ -217,6 +219,7 @@ export default function ClientDetailPage() {
         medicalNotes: data.client.medicalNotes || "",
         status: data.client.status,
         assignedCarerId: data.client.assignedCarer?.id || "",
+        sponsorId: data.client.sponsor?.id || "",
       });
       setError(null);
     } catch (err) {
@@ -286,6 +289,18 @@ export default function ClientDetailPage() {
     }
   }, []);
 
+  const fetchSponsors = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/sponsors?limit=100");
+      if (response.ok) {
+        const data = await response.json();
+        setSponsors(data.sponsors);
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
   React.useEffect(() => {
     fetchClient();
     fetchActivities();
@@ -293,7 +308,8 @@ export default function ClientDetailPage() {
     fetchAssessments();
     fetchAuthorizations();
     fetchCarers();
-  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchAuthorizations, fetchCarers]);
+    fetchSponsors();
+  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchAuthorizations, fetchCarers, fetchSponsors]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -310,6 +326,7 @@ export default function ClientDetailPage() {
           medicalNotes: formData.medicalNotes || null,
           status: formData.status,
           assignedCarerId: formData.assignedCarerId || null,
+          sponsorId: formData.sponsorId || null,
         }),
       });
 
@@ -339,6 +356,7 @@ export default function ClientDetailPage() {
         medicalNotes: client.medicalNotes || "",
         status: client.status,
         assignedCarerId: client.assignedCarer?.id || "",
+        sponsorId: client.sponsor?.id || "",
       });
     }
     setIsEditing(false);
@@ -852,15 +870,32 @@ export default function ClientDetailPage() {
               </CardContent>
             </Card>
 
-            {client.sponsor && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Sponsor / Family Contact
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Sponsor / Family Contact
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isEditing ? (
+                  <Select
+                    value={formData.sponsorId}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sponsorId: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">No Sponsor Assigned</option>
+                    {sponsors.map((sponsor) => (
+                      <option key={sponsor.id} value={sponsor.id}>
+                        {sponsor.firstName} {sponsor.lastName}
+                      </option>
+                    ))}
+                  </Select>
+                ) : client.sponsor ? (
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
                       <span className="text-sm font-medium text-warning">
@@ -882,9 +917,11 @@ export default function ClientDetailPage() {
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <p className="text-foreground-tertiary">No sponsor assigned</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}

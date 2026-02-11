@@ -231,6 +231,9 @@ enum NotificationEventType {
 
   // Inbox messaging
   NEW_INBOX_MESSAGE
+
+  // Sponsor management
+  SPONSOR_INVITED
 }
 
 // ============================================
@@ -310,6 +313,9 @@ model Company {
 
   // Inbox messaging
   conversations Conversation[]
+
+  // Sponsor invite tokens
+  sponsorInviteTokens SponsorInviteToken[]
 
   @@index([isActive])
 }
@@ -435,6 +441,27 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
+model SponsorInviteToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  email       String
+  firstName   String
+  lastName    String
+  phone       String?
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+  clientId    String?   // Optional pre-assignment to a client
+  client      Client?   @relation(fields: [clientId], references: [id])
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+  createdById String    // User who created the invite
+
+  @@index([token])
+  @@index([email])
+  @@index([companyId])
+}
+
 model CaregiverProfile {
   id               String   @id @default(cuid())
   userId           String   @unique
@@ -538,6 +565,9 @@ model Client {
 
   // Inbound fax records linked to this client
   faxRecords FaxRecord[]
+
+  // Sponsor invite tokens for this client
+  sponsorInviteTokens SponsorInviteToken[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])

@@ -11,7 +11,6 @@ import {
   ChannelSendOptions,
   ChannelSendResult,
 } from "../types";
-import { EVENT_CONFIGS } from "../events";
 
 // Map event types to notification types for the existing Notification model
 const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
@@ -79,14 +78,13 @@ export class InAppChannelProvider implements NotificationChannelProvider {
         };
       }
 
-      const eventConfig = EVENT_CONFIGS[metadata.eventType];
       const notificationType = EVENT_TYPE_MAP[metadata.eventType] || "general";
 
       // Create notification in the existing Notification model
       const notification = await prisma.notification.create({
         data: {
           type: notificationType,
-          title: metadata.title || options.subject || eventConfig?.description || "Notification",
+          title: metadata.title || options.subject || "Notification",
           message: this.stripHtml(options.body),
           link: metadata.link,
           userId: metadata.userId,
