@@ -39,6 +39,7 @@ import {
   Send,
   Bell,
   Heart,
+  HelpCircle,
 } from "lucide-react";
 
 interface NavItem {
@@ -231,6 +232,14 @@ const navigation: NavEntry[] = [
     href: "/reports",
     icon: BarChart3,
     roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR"],
+  },
+
+  // Help - standalone (accessible to all roles)
+  {
+    label: "Help",
+    href: "/help",
+    icon: HelpCircle,
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
   },
 
   // Settings Group

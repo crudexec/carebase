@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { UserRole } from "@prisma/client";
-import { Menu } from "lucide-react";
+import { Menu, HelpCircle } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { cn } from "@/lib/utils";
 import { AlertsDrawer, AlertsBellTrigger } from "@/components/alerts/alerts-drawer";
@@ -83,11 +84,27 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
               <span className="text-sm font-semibold text-foreground">{companyName}</span>
             </div>
           </div>
-          <AlertsBellTrigger onClick={() => setAlertsOpen(true)} />
+          <div className="flex items-center gap-1">
+            <Link
+              href="/help"
+              className="relative p-2 rounded-lg hover:bg-background-secondary transition-colors"
+              title="Help Center"
+            >
+              <HelpCircle className="w-5 h-5 text-foreground-secondary" />
+            </Link>
+            <AlertsBellTrigger onClick={() => setAlertsOpen(true)} />
+          </div>
         </header>
 
         {/* Desktop header */}
-        <header className="hidden lg:flex sticky top-0 z-30 items-center justify-end px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-border">
+        <header className="hidden lg:flex sticky top-0 z-30 items-center justify-end gap-1 px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-border">
+          <Link
+            href="/help"
+            className="relative p-2 rounded-lg hover:bg-background-secondary transition-colors"
+            title="Help Center"
+          >
+            <HelpCircle className="w-5 h-5 text-foreground-secondary" />
+          </Link>
           <AlertsBellTrigger onClick={() => setAlertsOpen(true)} />
         </header>
 
