@@ -64,7 +64,7 @@ export default function HelpSearchPage() {
                         <span>Matched in: {result.matchedIn.join(", ")}</span>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="flex-shrink-0">
+                    <Badge variant="default" className="flex-shrink-0">
                       {getCategoryTitle(result.article.category)}
                     </Badge>
                   </div>

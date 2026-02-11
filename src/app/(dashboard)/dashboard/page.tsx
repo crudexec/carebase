@@ -256,21 +256,26 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Check-in Widget for Carers - Show first */}
+      {/* Carer Widgets - Today's Shifts + Upcoming side by side, then Shifts in Progress */}
       {user.role === "CARER" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CheckInWidget />
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CheckInWidget />
+            <UpcomingShiftsWidget />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ShiftsInProgressWidget />
+          </div>
+        </>
       )}
 
-      {/* Widgets Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Shifts in Progress Widget */}
-        {user.role !== "SPONSOR" && <ShiftsInProgressWidget />}
-
-        {/* Upcoming Shifts Widget */}
-        {user.role !== "SPONSOR" && <UpcomingShiftsWidget />}
-      </div>
+      {/* Widgets Section for non-carers */}
+      {user.role !== "CARER" && user.role !== "SPONSOR" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ShiftsInProgressWidget />
+          <UpcomingShiftsWidget />
+        </div>
+      )}
 
       {/* Activity Feed at bottom for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
