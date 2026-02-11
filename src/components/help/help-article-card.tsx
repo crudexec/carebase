@@ -24,7 +24,7 @@ export function HelpArticleCard({
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               {showCategory && (
-                <Badge variant="secondary" className="mb-2 text-xs">
+                <Badge variant="default" className="mb-2 text-xs">
                   {getCategoryTitle(article.category)}
                 </Badge>
               )}
