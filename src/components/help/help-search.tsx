@@ -167,7 +167,7 @@ export function HelpSearch({
                             {result.excerpt}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="flex-shrink-0 text-xs">
+                        <Badge variant="default" className="flex-shrink-0 text-xs">
                           {getCategoryTitle(result.article.category)}
                         </Badge>
                       </div>
