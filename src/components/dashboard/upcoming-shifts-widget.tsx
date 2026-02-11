@@ -4,11 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 import { Calendar, ArrowRight, Loader2, Clock, User, MapPin } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
+import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
+import { ShiftData } from "@/components/scheduling/shift-card";
 
 interface Shift {
   id: string;
   scheduledStart: string;
   scheduledEnd: string;
+  actualStart?: string;
+  actualEnd?: string;
   status: string;
   client: {
     id: string;
@@ -55,6 +59,30 @@ function formatShiftTime(start: string, end: string): string {
 export function UpcomingShiftsWidget() {
   const [shifts, setShifts] = React.useState<Shift[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedShift, setSelectedShift] = React.useState<ShiftData | null>(null);
+
+  const handleShiftClick = (shift: Shift) => {
+    if (!shift.carer) return;
+    setSelectedShift({
+      id: shift.id,
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+      actualStart: shift.actualStart,
+      actualEnd: shift.actualEnd,
+      status: shift.status as ShiftData["status"],
+      client: {
+        id: shift.client.id,
+        firstName: shift.client.firstName,
+        lastName: shift.client.lastName,
+        address: shift.client.address,
+      },
+      carer: {
+        id: shift.carer.id,
+        firstName: shift.carer.firstName,
+        lastName: shift.carer.lastName,
+      },
+    });
+  };
 
   React.useEffect(() => {
     const fetchShifts = async () => {
@@ -130,9 +158,9 @@ export function UpcomingShiftsWidget() {
                 <ul className="space-y-1">
                   {dateShifts.map((shift) => (
                     <li key={shift.id}>
-                      <Link
-                        href={"/scheduling?shiftId=" + shift.id}
-                        className="block px-3 py-2 rounded-md transition-colors hover:bg-background-secondary"
+                      <button
+                        onClick={() => handleShiftClick(shift)}
+                        className="block w-full text-left px-3 py-2 rounded-md transition-colors hover:bg-background-secondary"
                       >
                         <div className="flex items-start gap-3">
                           {/* Time indicator */}
@@ -170,7 +198,7 @@ export function UpcomingShiftsWidget() {
                             )}
                           </div>
                         </div>
-                      </Link>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -192,6 +220,13 @@ export function UpcomingShiftsWidget() {
           </Link>
         </div>
       )}
+
+      {/* Shift Detail Modal */}
+      <ShiftDetailModal
+        isOpen={!!selectedShift}
+        onClose={() => setSelectedShift(null)}
+        shift={selectedShift}
+      />
     </div>
   );
 }

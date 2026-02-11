@@ -25,23 +25,29 @@ function QuickAction({
   description,
   href,
   icon: Icon,
+  primary = false,
 }: {
   title: string;
   description: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  primary?: boolean;
 }) {
   return (
     <a
       href={href}
-      className="block p-4 rounded-lg border border-border-light bg-background-tertiary hover:border-primary/50 hover:shadow-sm transition-all"
+      className={
+        primary
+          ? "block p-4 rounded-lg border-2 border-primary bg-primary/10 hover:bg-primary/20 hover:shadow-md transition-all"
+          : "block p-4 rounded-lg border border-border-light bg-background-tertiary hover:border-primary/50 hover:shadow-sm transition-all"
+      }
     >
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-md bg-primary/10">
-          <Icon className="w-5 h-5 text-primary" />
+        <div className={primary ? "p-2 rounded-md bg-primary" : "p-2 rounded-md bg-primary/10"}>
+          <Icon className={primary ? "w-5 h-5 text-white" : "w-5 h-5 text-primary"} />
         </div>
         <div>
-          <p className="text-body font-medium text-foreground">{title}</p>
+          <p className={primary ? "text-body font-semibold text-primary" : "text-body font-medium text-foreground"}>{title}</p>
           <p className="text-body-sm text-foreground-secondary">{description}</p>
         </div>
       </div>
@@ -90,8 +96,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Dashboard Stats */}
-      <DashboardStats role={user.role} />
+      {/* Dashboard Stats - Hide for Carers */}
+      {user.role !== "CARER" && <DashboardStats role={user.role} />}
 
       {/* Quick Actions */}
       <div>
@@ -179,18 +185,25 @@ export default async function DashboardPage() {
                 description="Start your shift"
                 href="/check-in"
                 icon={Clock}
+                primary
               />
               <QuickAction
-                title="Submit Report"
-                description="Complete daily care report"
-                href="/reports/daily/new"
+                title="My Schedule"
+                description="View your upcoming shifts"
+                href="/scheduling"
+                icon={Calendar}
+              />
+              <QuickAction
+                title="Visit Notes"
+                description="View and create visit notes"
+                href="/visit-notes"
                 icon={FileText}
               />
               <QuickAction
-                title="Message Sponsor"
-                description="Chat with family member"
-                href="/chat"
-                icon={FileText}
+                title="My Availability"
+                description="Set your availability"
+                href="/availability"
+                icon={Calendar}
               />
             </>
           )}
@@ -243,6 +256,13 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Check-in Widget for Carers - Show first */}
+      {user.role === "CARER" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CheckInWidget />
+        </div>
+      )}
+
       {/* Widgets Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Shifts in Progress Widget */}
@@ -251,13 +271,6 @@ export default async function DashboardPage() {
         {/* Upcoming Shifts Widget */}
         {user.role !== "SPONSOR" && <UpcomingShiftsWidget />}
       </div>
-
-      {/* Check-in Widget for Carers */}
-      {user.role === "CARER" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CheckInWidget />
-        </div>
-      )}
 
       {/* Activity Feed at bottom for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (

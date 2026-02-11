@@ -2,14 +2,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Clock, ArrowRight, Loader2, User, MapPin, Play } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Clock, ArrowRight, Loader2, User, MapPin, Play, LogOut } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
+import { ShiftData } from "@/components/scheduling/shift-card";
 
 interface Shift {
   id: string;
   scheduledStart: string;
   scheduledEnd: string;
   actualStart?: string;
+  actualEnd?: string;
   status: string;
   client: {
     id: string;
@@ -25,8 +30,58 @@ interface Shift {
 }
 
 export function ShiftsInProgressWidget() {
+  const { data: session } = useSession();
   const [shifts, setShifts] = React.useState<Shift[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedShift, setSelectedShift] = React.useState<ShiftData | null>(null);
+  const [checkingOut, setCheckingOut] = React.useState<string | null>(null);
+
+  const isCarer = session?.user?.role === "CARER";
+  const userId = session?.user?.id;
+
+  const handleCheckOut = async (e: React.MouseEvent, shiftId: string) => {
+    e.stopPropagation(); // Prevent opening the modal
+    try {
+      setCheckingOut(shiftId);
+      const response = await fetch(`/api/check-in/${shiftId}/check-out`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to check out");
+      }
+      // Remove the shift from the list after successful check-out
+      setShifts((prev) => prev.filter((s) => s.id !== shiftId));
+    } catch (error) {
+      console.error("Check-out failed:", error);
+    } finally {
+      setCheckingOut(null);
+    }
+  };
+
+  const handleShiftClick = (shift: Shift) => {
+    if (!shift.carer) return;
+    setSelectedShift({
+      id: shift.id,
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+      actualStart: shift.actualStart,
+      actualEnd: shift.actualEnd,
+      status: shift.status as ShiftData["status"],
+      client: {
+        id: shift.client.id,
+        firstName: shift.client.firstName,
+        lastName: shift.client.lastName,
+        address: shift.client.address,
+      },
+      carer: {
+        id: shift.carer.id,
+        firstName: shift.carer.firstName,
+        lastName: shift.carer.lastName,
+      },
+    });
+  };
 
   React.useEffect(() => {
     const fetchShifts = async () => {
@@ -91,51 +146,80 @@ export function ShiftsInProgressWidget() {
             {shifts.map((shift) => {
               const startTime = shift.actualStart || shift.scheduledStart;
               const duration = formatDistanceToNow(new Date(startTime), { addSuffix: false });
-              
+              const isMyShift = isCarer && shift.carer?.id === userId;
+              const isCheckingOut = checkingOut === shift.id;
+
               return (
                 <li key={shift.id}>
-                  <Link
-                    href={"/scheduling?shiftId=" + shift.id}
-                    className="block px-3 py-2 rounded-md transition-colors hover:bg-background-secondary"
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Status indicator */}
-                      <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0 relative">
-                        <Clock className="w-4 h-4 text-warning" />
-                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-warning rounded-full animate-pulse" />
-                      </div>
+                  <div className="px-3 py-2 rounded-md transition-colors hover:bg-background-secondary">
+                    <button
+                      onClick={() => handleShiftClick(shift)}
+                      className="block w-full text-left"
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Status indicator */}
+                        <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0 relative">
+                          <Clock className="w-4 h-4 text-warning" />
+                          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-warning rounded-full animate-pulse" />
+                        </div>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {shift.client.firstName} {shift.client.lastName}
-                          </p>
-                          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning/10 text-warning whitespace-nowrap">
-                            {duration}
-                          </span>
-                        </div>
-                        {shift.carer && (
-                          <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-                            <User className="w-3 h-3" />
-                            <span>{shift.carer.firstName} {shift.carer.lastName}</span>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {shift.client.firstName} {shift.client.lastName}
+                            </p>
+                            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning/10 text-warning whitespace-nowrap">
+                              {duration}
+                            </span>
                           </div>
-                        )}
-                        <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          <span>Started {format(new Date(startTime), "h:mm a")}</span>
-                          <span className="text-foreground-tertiary">•</span>
-                          <span>Ends {format(new Date(shift.scheduledEnd), "h:mm a")}</span>
-                        </div>
-                        {shift.client.address && (
-                          <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
-                            <MapPin className="w-3 h-3" />
-                            <span className="truncate">{shift.client.address}</span>
+                          {shift.carer && (
+                            <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
+                              <User className="w-3 h-3" />
+                              <span>{shift.carer.firstName} {shift.carer.lastName}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
+                            <Clock className="w-3 h-3" />
+                            <span>Started {format(new Date(startTime), "h:mm a")}</span>
+                            <span className="text-foreground-tertiary">•</span>
+                            <span>Ends {format(new Date(shift.scheduledEnd), "h:mm a")}</span>
                           </div>
-                        )}
+                          {shift.client.address && (
+                            <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
+                              <MapPin className="w-3 h-3" />
+                              <span className="truncate">{shift.client.address}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </button>
+
+                    {/* Check-out button for carers */}
+                    {isMyShift && (
+                      <div className="mt-2 ml-11">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="w-full"
+                          onClick={(e) => handleCheckOut(e, shift.id)}
+                          disabled={isCheckingOut}
+                        >
+                          {isCheckingOut ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              Checking Out...
+                            </>
+                          ) : (
+                            <>
+                              <LogOut className="w-4 h-4 mr-1" />
+                              Check Out
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </li>
               );
             })}
@@ -155,6 +239,13 @@ export function ShiftsInProgressWidget() {
           </Link>
         </div>
       )}
+
+      {/* Shift Detail Modal */}
+      <ShiftDetailModal
+        isOpen={!!selectedShift}
+        onClose={() => setSelectedShift(null)}
+        shift={selectedShift}
+      />
     </div>
   );
 }
