@@ -3,11 +3,10 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { CheckInWidget } from "@/components/dashboard/check-in-widget";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
-import { ShiftsInProgressWidget } from "@/components/dashboard/shifts-in-progress-widget";
-import { UpcomingShiftsWidget } from "@/components/dashboard/upcoming-shifts-widget";
+import { ShiftsWidget } from "@/components/dashboard/shifts-widget";
+import { CredentialAlertsWidget } from "@/components/dashboard/credential-alerts-widget";
 import {
   Users,
   Calendar,
@@ -96,8 +95,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Dashboard Stats - Hide for Carers */}
-      {user.role !== "CARER" && <DashboardStats role={user.role} />}
 
       {/* Quick Actions */}
       <div>
@@ -256,30 +253,32 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Carer Widgets - Today's Shifts + Upcoming side by side, then Shifts in Progress */}
+      {/* Carer Widgets - Check-in widget and combined shifts widget */}
       {user.role === "CARER" && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CheckInWidget />
-            <UpcomingShiftsWidget />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ShiftsInProgressWidget />
-          </div>
-        </>
-      )}
-
-      {/* Widgets Section for non-carers */}
-      {user.role !== "CARER" && user.role !== "SPONSOR" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ShiftsInProgressWidget />
-          <UpcomingShiftsWidget />
+          <CheckInWidget />
+          <ShiftsWidget />
         </div>
       )}
 
-      {/* Activity Feed at bottom for Admin/Ops Manager */}
+      {/* Credential Alerts Panel at top for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
-        <ActivityFeed />
+        <CredentialAlertsWidget />
+      )}
+
+      {/* Shifts + Activity Feed side by side for Admin/Ops Manager */}
+      {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ShiftsWidget />
+          <ActivityFeed />
+        </div>
+      )}
+
+      {/* Shifts widget for other non-carer, non-sponsor roles */}
+      {user.role !== "CARER" && user.role !== "SPONSOR" && user.role !== "ADMIN" && user.role !== "OPS_MANAGER" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ShiftsWidget />
+        </div>
       )}
     </div>
   );

@@ -178,6 +178,7 @@ export interface VisitNoteDetail {
   templateId: string;
   templateVersion: number;
   qaStatus: string;
+  qaComment?: string | null;
   qaReviewedAt?: string | null;
   qaReviewedBy?: {
     id: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -20,47 +21,74 @@ import {
   Receipt,
   Calendar,
   User,
+  Plus,
+  FileText,
+  AlertTriangle,
+  XCircle,
+  Eye,
+  Zap,
 } from "lucide-react";
+import { GenerateInvoicesModal } from "@/components/invoices/generate-invoices-modal";
 
 interface Invoice {
   id: string;
   invoiceNumber: string;
   periodStart: string;
   periodEnd: string;
-  amount: number;
+  total: number;
+  amountPaid: number;
+  amountDue: number;
   status: string;
-  markedPaidAt: string | null;
+  dueDate: string | null;
   createdAt: string;
   client: {
     id: string;
     firstName: string;
     lastName: string;
   };
+  sponsor: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
 }
 
-interface InvoiceStats {
-  PENDING?: { count: number; amount: number };
-  PAID?: { count: number; amount: number };
-}
 
-interface InvoiceTotals {
-  count: number;
-  amount: number;
-}
-
-const STATUS_COLORS: Record<string, "warning" | "success"> = {
-  PENDING: "warning",
-  PAID: "success",
+const STATUS_CONFIG: Record<string, { variant: "default" | "warning" | "success" | "error"; icon: React.ElementType }> = {
+  DRAFT: { variant: "default", icon: FileText },
+  PENDING: { variant: "warning", icon: Clock },
+  SENT: { variant: "warning", icon: Clock },
+  PARTIAL: { variant: "warning", icon: DollarSign },
+  PAID: { variant: "success", icon: CheckCircle },
+  OVERDUE: { variant: "error", icon: AlertTriangle },
+  CANCELLED: { variant: "default", icon: XCircle },
 };
+
+interface Client {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface Sponsor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = React.useState<Invoice[]>([]);
-  const [summary, setSummary] = React.useState<InvoiceStats>({});
-  const [totals, setTotals] = React.useState<InvoiceTotals>({ count: 0, amount: 0 });
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  // Generate modal state
+  const [showGenerateModal, setShowGenerateModal] = React.useState(false);
+  const [clients, setClients] = React.useState<Client[]>([]);
+  const [sponsors, setSponsors] = React.useState<Sponsor[]>([]);
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -75,8 +103,6 @@ export default function InvoicesPage() {
       if (response.ok) {
         const data = await response.json();
         setInvoices(data.invoices || []);
-        setSummary(data.summary || {});
-        setTotals(data.totals || { count: 0, amount: 0 });
       } else {
         setError("Failed to load invoices");
       }
@@ -90,6 +116,32 @@ export default function InvoicesPage() {
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Fetch clients and sponsors for generate modal
+  React.useEffect(() => {
+    async function fetchClientsAndSponsors() {
+      try {
+        const [clientsRes, sponsorsRes] = await Promise.all([
+          fetch("/api/clients?limit=1000"),
+          fetch("/api/sponsors?limit=1000"),
+        ]);
+
+        if (clientsRes.ok) {
+          const data = await clientsRes.json();
+          setClients(data.clients || []);
+        }
+
+        if (sponsorsRes.ok) {
+          const data = await sponsorsRes.json();
+          setSponsors(data.sponsors || []);
+        }
+      } catch (err) {
+        console.error("Error fetching clients/sponsors:", err);
+      }
+    }
+
+    fetchClientsAndSponsors();
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -112,7 +164,9 @@ export default function InvoicesPage() {
     return (
       invoice.invoiceNumber.toLowerCase().includes(query) ||
       invoice.client.firstName.toLowerCase().includes(query) ||
-      invoice.client.lastName.toLowerCase().includes(query)
+      invoice.client.lastName.toLowerCase().includes(query) ||
+      invoice.sponsor?.firstName.toLowerCase().includes(query) ||
+      invoice.sponsor?.lastName.toLowerCase().includes(query)
     );
   });
 
@@ -131,13 +185,25 @@ export default function InvoicesPage() {
         <div>
           <h1 className="text-heading-2 text-foreground">Invoices</h1>
           <p className="text-body-sm text-foreground-secondary mt-1">
-            View and manage client invoices
+            Create, manage, and track client invoices
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={fetchData}>
-          <RefreshCw className="w-4 h-4 mr-1" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={fetchData}>
+            <RefreshCw className="w-4 h-4 mr-1" />
+            Refresh
+          </Button>
+          <Button variant="secondary" onClick={() => setShowGenerateModal(true)}>
+            <Zap className="w-4 h-4 mr-1" />
+            Generate from Shifts
+          </Button>
+          <Link href="/invoices/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-1" />
+              Create Invoice
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -152,71 +218,6 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Total Invoices</p>
-                <p className="text-2xl font-semibold">{totals.count}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Total Amount</p>
-                <p className="text-2xl font-semibold">{formatCurrency(totals.amount)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Pending</p>
-                <p className="text-2xl font-semibold">{summary.PENDING?.count || 0}</p>
-                <p className="text-xs text-foreground-secondary">
-                  {formatCurrency(summary.PENDING?.amount || 0)}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-warning" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Paid</p>
-                <p className="text-2xl font-semibold">{summary.PAID?.count || 0}</p>
-                <p className="text-xs text-foreground-secondary">
-                  {formatCurrency(summary.PAID?.amount || 0)}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
@@ -225,7 +226,7 @@ export default function InvoicesPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground-secondary" />
                 <Input
-                  placeholder="Search by invoice number or client name..."
+                  placeholder="Search by invoice number, client, or sponsor..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -238,8 +239,13 @@ export default function InvoicesPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="all">All Statuses</option>
+                <option value="DRAFT">Draft</option>
                 <option value="PENDING">Pending</option>
+                <option value="SENT">Sent</option>
+                <option value="PARTIAL">Partially Paid</option>
                 <option value="PAID">Paid</option>
+                <option value="OVERDUE">Overdue</option>
+                <option value="CANCELLED">Cancelled</option>
               </Select>
             </div>
           </div>
@@ -253,9 +259,19 @@ export default function InvoicesPage() {
         </CardHeader>
         <CardContent>
           {filteredInvoices.length === 0 ? (
-            <p className="text-foreground-secondary text-center py-8">
-              No invoices found
-            </p>
+            <div className="text-center py-12">
+              <Receipt className="w-12 h-12 text-foreground-tertiary mx-auto mb-4" />
+              <p className="text-foreground-secondary">No invoices found</p>
+              <p className="text-sm text-foreground-tertiary mt-1">
+                Create your first invoice to get started
+              </p>
+              <Link href="/invoices/new">
+                <Button className="mt-4">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Invoice
+                </Button>
+              </Link>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -268,72 +284,113 @@ export default function InvoicesPage() {
                       Client
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-foreground-secondary">
+                      Bill To
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-foreground-secondary">
                       Period
                     </th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-foreground-secondary">
-                      Amount
+                      Total
+                    </th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-foreground-secondary">
+                      Due
                     </th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-foreground-secondary">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-foreground-secondary">
-                      Created
+                    <th className="text-center py-3 px-4 text-sm font-medium text-foreground-secondary">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredInvoices.map((invoice) => (
-                    <tr
-                      key={invoice.id}
-                      className="border-b last:border-b-0 hover:bg-background-secondary transition-colors"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Receipt className="w-4 h-4 text-foreground-secondary" />
-                          <span className="font-medium text-sm">{invoice.invoiceNumber}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="w-4 h-4 text-primary" />
+                  {filteredInvoices.map((invoice) => {
+                    const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.PENDING;
+                    const StatusIcon = statusConfig.icon;
+
+                    return (
+                      <tr
+                        key={invoice.id}
+                        className="border-b last:border-b-0 hover:bg-background-secondary transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <Link
+                            href={`/invoices/${invoice.id}`}
+                            className="flex items-center gap-2 hover:text-primary"
+                          >
+                            <Receipt className="w-4 h-4 text-foreground-secondary" />
+                            <span className="font-medium text-sm">{invoice.invoiceNumber}</span>
+                          </Link>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="w-4 h-4 text-primary" />
+                            </div>
+                            <span className="text-sm">
+                              {invoice.client.firstName} {invoice.client.lastName}
+                            </span>
                           </div>
-                          <span className="text-sm">
-                            {invoice.client.firstName} {invoice.client.lastName}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-foreground-secondary">
+                            {invoice.sponsor
+                              ? `${invoice.sponsor.firstName} ${invoice.sponsor.lastName}`
+                              : "Client"
+                            }
                           </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-foreground-secondary" />
-                          <span className="text-sm">
-                            {formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-foreground-secondary" />
+                            <span className="text-sm">
+                              {formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className="font-semibold text-sm">
+                            {formatCurrency(invoice.total)}
                           </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="font-semibold text-sm">
-                          {formatCurrency(invoice.amount)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <Badge variant={STATUS_COLORS[invoice.status]}>
-                          {invoice.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-foreground-secondary">
-                          {formatDate(invoice.createdAt)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`text-sm ${invoice.amountDue > 0 ? "text-warning font-medium" : "text-foreground-secondary"}`}>
+                            {formatCurrency(invoice.amountDue)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <Badge variant={statusConfig.variant}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {invoice.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <Link href={`/invoices/${invoice.id}`}>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Generate Invoices Modal */}
+      <GenerateInvoicesModal
+        isOpen={showGenerateModal}
+        onClose={() => {
+          setShowGenerateModal(false);
+          fetchData();
+        }}
+        clients={clients}
+        sponsors={sponsors}
+      />
     </div>
   );
 }

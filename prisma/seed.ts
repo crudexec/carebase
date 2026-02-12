@@ -1,6 +1,7 @@
 import { PrismaClient, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedMarylandConfiguration } from "./seeds/maryland-state-config";
+import { seedCredentialTypes } from "./seeds/credential-types";
 
 const prisma = new PrismaClient();
 
@@ -173,6 +174,10 @@ async function main() {
   // Seed Maryland state configuration
   console.log("\n🏛️  Seeding state configurations...");
   await seedMarylandConfiguration();
+
+  // Seed credential types
+  console.log("\n📜 Seeding credential types...");
+  await seedCredentialTypes();
 
   console.log("\n✨ Seeding complete!");
   console.log("\n📋 Test Credentials:");

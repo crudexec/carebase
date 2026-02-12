@@ -11,7 +11,9 @@ import {
   Calendar,
   ExternalLink,
   X,
-  RefreshCw
+  RefreshCw,
+  Award,
+  Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,30 @@ const NOTIFICATION_CONFIG: Record<string, {
     bgColor: "bg-green-100",
     textColor: "text-green-600",
     actionLabel: "View Shift",
+  },
+  shift_reminder: {
+    icon: Clock,
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-600",
+    actionLabel: "View Shift",
+  },
+  CREDENTIAL_EXPIRING: {
+    icon: Award,
+    bgColor: "bg-orange-100",
+    textColor: "text-orange-600",
+    actionLabel: "View Credential",
+  },
+  CREDENTIAL_EXPIRED: {
+    icon: Award,
+    bgColor: "bg-red-100",
+    textColor: "text-red-600",
+    actionLabel: "View Credential",
+  },
+  CREDENTIAL_ALERT: {
+    icon: Award,
+    bgColor: "bg-amber-100",
+    textColor: "text-amber-600",
+    actionLabel: "View Alerts",
   },
   DEFAULT: {
     icon: Bell,

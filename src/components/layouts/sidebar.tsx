@@ -40,6 +40,7 @@ import {
   Bell,
   Heart,
   HelpCircle,
+  Award,
 } from "lucide-react";
 
 interface NavItem {
@@ -141,6 +142,18 @@ const navigation: NavEntry[] = [
         href: "/staff",
         icon: Users,
         roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "Credentials",
+        href: "/credentials",
+        icon: Award,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "My Credentials",
+        href: "/my-credentials",
+        icon: Award,
+        roles: ["CARER"],
       },
       {
         label: "My Availability",

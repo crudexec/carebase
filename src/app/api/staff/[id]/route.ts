@@ -103,6 +103,35 @@ export async function GET(
             },
           },
         },
+        // Caregiver profile with credentials
+        caregiverProfile: {
+          select: {
+            id: true,
+            credentials: {
+              orderBy: { expirationDate: "asc" },
+              select: {
+                id: true,
+                licenseNumber: true,
+                issueDate: true,
+                expirationDate: true,
+                status: true,
+                documentUrls: true,
+                notes: true,
+                remindersSentDays: true,
+                createdAt: true,
+                updatedAt: true,
+                credentialType: {
+                  select: {
+                    id: true,
+                    name: true,
+                    category: true,
+                    isRequired: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -130,13 +159,15 @@ export async function GET(
     ]);
 
     // Destructure to rename fields for frontend compatibility
-    const { assignedClients, visitNotes, ...rest } = user;
+    const { assignedClients, visitNotes, caregiverProfile, ...rest } = user;
 
     return NextResponse.json({
       staff: {
         ...rest,
         carerClients: assignedClients,
         carerVisitNotes: visitNotes,
+        caregiverProfileId: caregiverProfile?.id || null,
+        credentials: caregiverProfile?.credentials || [],
         profileData: user.profileData || null,
         lastLogin: user.lastLogin?.toISOString() || null,
         createdAt: user.createdAt.toISOString(),

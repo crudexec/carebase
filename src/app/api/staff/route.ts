@@ -87,6 +87,11 @@ export async function GET(request: Request) {
           isActive: true,
           lastLogin: true,
           createdAt: true,
+          caregiverProfile: {
+            select: {
+              id: true,
+            },
+          },
         },
         orderBy: [{ isActive: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
         skip: (page - 1) * limit,
@@ -101,6 +106,7 @@ export async function GET(request: Request) {
         profileData: s.profileData || null,
         lastLogin: s.lastLogin?.toISOString() || null,
         createdAt: s.createdAt.toISOString(),
+        caregiverProfile: s.caregiverProfile || null,
       })),
       pagination: {
         page,

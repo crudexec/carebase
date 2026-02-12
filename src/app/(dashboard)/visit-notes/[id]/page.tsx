@@ -41,6 +41,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock3,
+  XCircle,
 } from "lucide-react";
 import { Rating } from "@/components/ui";
 
@@ -95,6 +96,18 @@ export default function ViewVisitNotePage() {
   const [mentionSearch, setMentionSearch] = React.useState("");
   const [mentionPosition, setMentionPosition] = React.useState(0);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // QA Review state
+  const [qaComment, setQaComment] = React.useState("");
+  const [isQaSubmitting, setIsQaSubmitting] = React.useState(false);
+  const [showQaModal, setShowQaModal] = React.useState<"approve" | "reject" | null>(null);
+
+  // Check if user can review QA
+  const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"].includes(session.user.role);
+
+  // Check if user is the carer who owns the note
+  const isOwner = session?.user?.id === visitNote?.carerId;
+  const canResubmit = isOwner && visitNote?.qaStatus === "REJECTED";
 
   React.useEffect(() => {
     fetchVisitNote();
@@ -259,6 +272,57 @@ export default function ViewVisitNotePage() {
   const cancelEditing = () => {
     setEditingCommentId(null);
     setEditContent("");
+  };
+
+  const handleQaReview = async (status: "APPROVED" | "REJECTED") => {
+    setIsQaSubmitting(true);
+    try {
+      const response = await fetch(`/api/qa/visit-notes/${noteId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          comment: qaComment || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit review");
+      }
+
+      setShowQaModal(null);
+      setQaComment("");
+      await fetchVisitNote();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit review");
+    } finally {
+      setIsQaSubmitting(false);
+    }
+  };
+
+  const handleResubmit = async () => {
+    if (!confirm("Are you sure you want to resubmit this visit note for review?")) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/visit-notes/${noteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resubmit: true }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to resubmit");
+      }
+
+      await fetchVisitNote();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resubmit");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -505,6 +569,58 @@ export default function ViewVisitNotePage() {
                       {formatDate(visitNote.qaReviewedAt)} at {formatTime(visitNote.qaReviewedAt)}
                     </p>
                   )}
+                  {visitNote.qaComment && (
+                    <p className="text-sm text-foreground-secondary mt-2 p-2 bg-background-secondary rounded">
+                      &ldquo;{visitNote.qaComment}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : visitNote.qaStatus === "REJECTED" ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center">
+                  <XCircle className="h-6 w-6 text-error" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-error">Rejected</span>
+                  </div>
+                  {visitNote.qaReviewedAt && visitNote.qaReviewedBy && (
+                    <p className="text-sm text-foreground-secondary">
+                      Rejected by {visitNote.qaReviewedBy.firstName} {visitNote.qaReviewedBy.lastName} on{" "}
+                      {formatDate(visitNote.qaReviewedAt)} at {formatTime(visitNote.qaReviewedAt)}
+                    </p>
+                  )}
+                  {visitNote.qaComment && (
+                    <p className="text-sm text-foreground-secondary mt-2 p-2 bg-error/5 border border-error/20 rounded">
+                      &ldquo;{visitNote.qaComment}&rdquo;
+                    </p>
+                  )}
+                  {/* Carer can resubmit rejected notes */}
+                  {canResubmit && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={handleResubmit}
+                        disabled={isSubmitting}
+                        variant="default"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Resubmitting...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Resubmit for Review
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-xs text-foreground-tertiary mt-2">
+                        Click to resubmit this visit note for QA review
+                      </p>
+                    </div>
+                  )}
                 </div>
               </>
             ) : visitNote.qaStatus === "NEEDS_REVISION" ? (
@@ -520,6 +636,11 @@ export default function ViewVisitNotePage() {
                     <p className="text-sm text-foreground-secondary">
                       Reviewed by {visitNote.qaReviewedBy.firstName} {visitNote.qaReviewedBy.lastName} on{" "}
                       {formatDate(visitNote.qaReviewedAt)} at {formatTime(visitNote.qaReviewedAt)}
+                    </p>
+                  )}
+                  {visitNote.qaComment && (
+                    <p className="text-sm text-foreground-secondary mt-2 p-2 bg-warning/5 border border-warning/20 rounded">
+                      &ldquo;{visitNote.qaComment}&rdquo;
                     </p>
                   )}
                 </div>
@@ -540,8 +661,145 @@ export default function ViewVisitNotePage() {
               </>
             )}
           </div>
+
+          {/* QA Review Actions */}
+          {canReviewQA && visitNote.qaStatus === "PENDING_REVIEW" && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-foreground-secondary mb-3">Review this visit note:</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowQaModal("approve")}
+                  className="bg-success hover:bg-success/90"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Approve
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowQaModal("reject")}
+                  className="border-error text-error hover:bg-error/10"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Allow reviewer to change decision on rejected notes */}
+          {canReviewQA && visitNote.qaStatus === "REJECTED" && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-foreground-secondary mb-3">Change your decision:</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowQaModal("approve")}
+                  className="bg-success hover:bg-success/90"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Approve Instead
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* QA Review Modal */}
+      {showQaModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                    showQaModal === "approve" ? "bg-success/20" : "bg-error/20"
+                  }`}
+                >
+                  {showQaModal === "approve" ? (
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-error" />
+                  )}
+                </div>
+                <div>
+                  <CardTitle>
+                    {showQaModal === "approve" ? "Approve" : "Reject"} Visit Note
+                  </CardTitle>
+                  <CardDescription>{schema.templateName}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 rounded-lg bg-background-secondary text-sm">
+                <p>
+                  <span className="font-medium">Client:</span>{" "}
+                  {visitNote.client.firstName} {visitNote.client.lastName}
+                </p>
+                <p>
+                  <span className="font-medium">Submitted by:</span>{" "}
+                  {visitNote.carer.firstName} {visitNote.carer.lastName}
+                </p>
+                <p>
+                  <span className="font-medium">Date:</span>{" "}
+                  {formatDate(visitNote.submittedAt)}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>
+                  Comment {showQaModal === "reject" && "(recommended)"}
+                </Label>
+                <Textarea
+                  value={qaComment}
+                  onChange={(e) => setQaComment(e.target.value)}
+                  placeholder={
+                    showQaModal === "approve"
+                      ? "Optional comment..."
+                      : "Please provide a reason for rejection..."
+                  }
+                  rows={4}
+                />
+              </div>
+
+              {showQaModal === "reject" && !qaComment && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning text-sm">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>A comment is recommended when rejecting</span>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowQaModal(null);
+                    setQaComment("");
+                  }}
+                  disabled={isQaSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handleQaReview(showQaModal === "approve" ? "APPROVED" : "REJECTED")}
+                  disabled={isQaSubmitting}
+                  className={showQaModal === "approve" ? "bg-success hover:bg-success/90" : "bg-error hover:bg-error/90"}
+                >
+                  {isQaSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : showQaModal === "approve" ? (
+                    "Approve"
+                  ) : (
+                    "Reject"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Comments Section */}
       <Card>

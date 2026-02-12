@@ -329,14 +329,14 @@ async function getSponsorStats(companyId: string, sponsorId: string) {
         clientId: { in: clientIds },
       },
     }),
-    // Pending invoices (using amount field)
+    // Pending invoices (using amountDue field)
     prisma.invoice.aggregate({
       where: {
         companyId,
         clientId: { in: clientIds },
-        status: "PENDING",
+        status: { in: ["PENDING", "SENT", "PARTIAL", "OVERDUE"] },
       },
-      _sum: { amount: true },
+      _sum: { amountDue: true },
     }),
     // Care days this quarter
     prisma.shift.count({
@@ -352,7 +352,7 @@ async function getSponsorStats(companyId: string, sponsorId: string) {
   return {
     careReports,
     unreadMessages: 0,
-    pendingInvoice: Number(pendingInvoices._sum.amount || 0),
+    pendingInvoice: Number(pendingInvoices._sum.amountDue || 0),
     careDays,
   };
 }

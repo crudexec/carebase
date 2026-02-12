@@ -158,7 +158,7 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <Card className="col-span-full">
+      <Card className="h-full">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Activity className="w-4 h-4" />
@@ -176,7 +176,7 @@ export function ActivityFeed() {
 
   return (
     <>
-    <Card className="col-span-full">
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -194,7 +194,7 @@ export function ActivityFeed() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-y-auto">
         {activities.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="w-10 h-10 mx-auto text-foreground-tertiary mb-2" />

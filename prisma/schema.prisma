@@ -71,8 +71,35 @@ enum PayrollStatus {
 }
 
 enum InvoiceStatus {
+  DRAFT
   PENDING
+  SENT
+  PARTIAL
   PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum LineItemType {
+  SHIFT
+  CUSTOM
+}
+
+enum CredentialCategory {
+  LICENSE
+  CERTIFICATION
+  HEALTH
+  TRAINING
+  COMPLIANCE
+  OTHER
+}
+
+enum CredentialStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  PENDING_VERIFICATION
+  REVOKED
 }
 
 enum EscalationStatus {
@@ -234,6 +261,14 @@ enum NotificationEventType {
 
   // Sponsor management
   SPONSOR_INVITED
+
+  // Credential alerts
+  CREDENTIAL_EXPIRING_60_DAYS
+  CREDENTIAL_EXPIRING_30_DAYS
+  CREDENTIAL_EXPIRING_7_DAYS
+  CREDENTIAL_EXPIRED
+  CREDENTIAL_RENEWED
+  CREDENTIAL_VERIFICATION_NEEDED
 }
 
 // ============================================
@@ -301,6 +336,10 @@ model Company {
   authorizations       Authorization[]
   authorizationAlerts  AuthorizationAlert[]
   physicians           Physician[]
+
+  // Credential management
+  credentialTypes   CredentialType[]
+  credentialAlerts  CredentialAlert[]
   faxRecords           FaxRecord[]
 
   // Notification system
@@ -418,6 +457,15 @@ model User {
   // Threshold breaches
   thresholdBreaches ThresholdBreach[] @relation("CarerThresholdBreaches")
 
+  // Invoice relations
+  sponsorInvoices         Invoice[]        @relation("SponsorInvoices")
+  invoicePaymentsRecorded InvoicePayment[] @relation("InvoicePaymentsRecorded")
+
+  // Credential management
+  credentialsVerified        CaregiverCredential[] @relation("CredentialVerifier")
+  credentialAlertsDismissed  CredentialAlert[]     @relation("CredentialAlertDismisser")
+  credentialAlertsActioned   CredentialAlert[]     @relation("CredentialAlertAction")
+
   @@index([email])
   @@index([role])
   @@index([isActive])
@@ -465,7 +513,7 @@ model SponsorInviteToken {
 model CaregiverProfile {
   id               String   @id @default(cuid())
   userId           String   @unique
-  certifications   String[]
+  certifications   String[] // Legacy field - use credentials relation instead
   healthStatus     String?
   emergencyContact String?
   availableDays    String[]
@@ -475,6 +523,7 @@ model CaregiverProfile {
   // Relations
   user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   availabilitySlots CaregiverAvailability[]
+  credentials       CaregiverCredential[]
 }
 
 model CaregiverAvailability {
@@ -493,6 +542,119 @@ model CaregiverAvailability {
 
   @@index([caregiverProfileId])
   @@index([dayOfWeek])
+}
+
+// ============================================
+// CREDENTIAL MANAGEMENT
+// ============================================
+
+model CredentialType {
+  id                    String             @id @default(cuid())
+  name                  String             // "CNA Certification", "CPR/BLS", etc.
+  category              CredentialCategory
+  description           String?
+  defaultValidityMonths Int                @default(24)
+  isRequired            Boolean            @default(false)
+  requiredForRoles      String[]           // ["CARER"] or specific roles
+  reminderDays          Int[]              @default([60, 30, 7]) // Company-configurable
+  isActive              Boolean            @default(true)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  credentials CaregiverCredential[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([isActive])
+}
+
+model CaregiverCredential {
+  id String @id @default(cuid())
+
+  // Credential details
+  licenseNumber    String?
+  issuingAuthority String? // "Maryland Board of Nursing"
+  issuingState     String? // "MD"
+  issueDate        DateTime
+  expirationDate   DateTime
+
+  // Status
+  status CredentialStatus @default(ACTIVE)
+
+  // Documents
+  documentUrls    String[]
+  verificationUrl String?
+
+  // Verification (optional admin verification)
+  isVerified   Boolean   @default(false)
+  verifiedAt   DateTime?
+  verifiedById String?
+  verifiedBy   User?     @relation("CredentialVerifier", fields: [verifiedById], references: [id])
+
+  // Reminder tracking (for configurable reminders)
+  lastReminderSent   DateTime?
+  remindersSentDays  Int[]     @default([]) // Track which day reminders have been sent
+  expiredAlertSent   Boolean   @default(false)
+
+  notes String?
+
+  // Relations
+  credentialTypeId String
+  credentialType   CredentialType @relation(fields: [credentialTypeId], references: [id])
+
+  caregiverProfileId String
+  caregiverProfile   CaregiverProfile @relation(fields: [caregiverProfileId], references: [id], onDelete: Cascade)
+
+  alerts CredentialAlert[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([caregiverProfileId])
+  @@index([credentialTypeId])
+  @@index([expirationDate])
+  @@index([status])
+}
+
+model CredentialAlert {
+  id String @id @default(cuid())
+
+  alertType String // EXPIRING_60, EXPIRING_30, EXPIRING_7, EXPIRED
+  message   String
+  severity  String // INFO, WARNING, HIGH, CRITICAL
+
+  // Status
+  isRead        Boolean   @default(false)
+  readAt        DateTime?
+  isDismissed   Boolean   @default(false)
+  dismissedAt   DateTime?
+  dismissedById String?
+  dismissedBy   User?     @relation("CredentialAlertDismisser", fields: [dismissedById], references: [id])
+
+  // Action tracking
+  actionTaken     String?
+  actionTakenAt   DateTime?
+  actionTakenById String?
+  actionTakenBy   User?   @relation("CredentialAlertAction", fields: [actionTakenById], references: [id])
+
+  // Relations
+  credentialId String
+  credential   CaregiverCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([credentialId])
+  @@index([companyId])
+  @@index([severity])
+  @@index([isRead])
+  @@index([createdAt])
 }
 
 model Client {
@@ -631,6 +793,7 @@ model Shift {
   checkInLocation  Json?
   checkOutLocation Json?
   status           ShiftStatus @default(SCHEDULED)
+  remindersSentMinutes Int[]   @default([]) // Track which reminders have been sent (e.g., [1440, 60] for 24h and 1h)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -650,6 +813,7 @@ model Shift {
   payrollRecord     PayrollRecord?
   attendanceRecords ShiftAttendance[]
   visitNotes        VisitNote[]
+  invoiceLineItems  InvoiceLineItem[]
 
   @@index([carerId])
   @@index([clientId])
@@ -800,9 +964,17 @@ model Invoice {
   invoiceNumber String        @unique
   periodStart   DateTime
   periodEnd     DateTime
-  amount        Decimal       @db.Decimal(10, 2)
-  status        InvoiceStatus @default(PENDING)
-  markedPaidAt  DateTime?
+  subtotal      Decimal       @db.Decimal(10, 2)
+  taxRate       Decimal       @db.Decimal(5, 4) @default(0)
+  taxAmount     Decimal       @db.Decimal(10, 2) @default(0)
+  total         Decimal       @db.Decimal(10, 2)
+  amountPaid    Decimal       @db.Decimal(10, 2) @default(0)
+  amountDue     Decimal       @db.Decimal(10, 2)
+  status        InvoiceStatus @default(DRAFT)
+  dueDate       DateTime?
+  notes         String?
+  sentAt        DateTime?
+  paidAt        DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -810,15 +982,63 @@ model Invoice {
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
-  // Relations
-  sponsorId String
-  clientId  String
-  client    Client @relation(fields: [clientId], references: [id])
+  // Bill To - either sponsor or client directly
+  sponsorId String?
+  sponsor   User?   @relation("SponsorInvoices", fields: [sponsorId], references: [id])
+
+  // For which client
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Line items and payments
+  lineItems InvoiceLineItem[]
+  payments  InvoicePayment[]
 
   @@index([sponsorId])
   @@index([clientId])
   @@index([status])
   @@index([companyId])
+  @@index([dueDate])
+}
+
+model InvoiceLineItem {
+  id          String       @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  type        LineItemType
+  description String
+  quantity    Decimal      @db.Decimal(10, 2)
+  unitPrice   Decimal      @db.Decimal(10, 2)
+  amount      Decimal      @db.Decimal(10, 2)
+
+  // For shift-based items
+  shiftId     String?
+  shift       Shift?       @relation(fields: [shiftId], references: [id])
+  serviceDate DateTime?
+
+  createdAt   DateTime     @default(now())
+
+  @@index([invoiceId])
+  @@index([shiftId])
+}
+
+model InvoicePayment {
+  id           String   @id @default(cuid())
+  invoiceId    String
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  amount       Decimal  @db.Decimal(10, 2)
+  paidAt       DateTime @default(now())
+  notes        String?
+
+  recordedById String
+  recordedBy   User     @relation("InvoicePaymentsRecorded", fields: [recordedById], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([recordedById])
 }
 
 model ChatMessage {

@@ -650,7 +650,19 @@ export default function QAManagerPage() {
                         {/* Actions */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            {isPending ? (
+                            <Link
+                              href={
+                                item.type === "assessment"
+                                  ? `/assessments/${item.id}`
+                                  : `/visit-notes/${item.id}`
+                              }
+                            >
+                              <Button size="sm" variant="ghost" className="h-7 px-2">
+                                <Eye className="w-3.5 h-3.5 mr-1" />
+                                View
+                              </Button>
+                            </Link>
+                            {isPending && (
                               <>
                                 <Button
                                   size="sm"
@@ -671,19 +683,6 @@ export default function QAManagerPage() {
                                   Reject
                                 </Button>
                               </>
-                            ) : (
-                              <Link
-                                href={
-                                  item.type === "assessment"
-                                    ? `/assessments/${item.id}`
-                                    : `/visit-notes/${item.id}`
-                                }
-                              >
-                                <Button size="sm" variant="secondary" className="h-7 px-2">
-                                  <Eye className="w-3.5 h-3.5 mr-1" />
-                                  View
-                                </Button>
-                              </Link>
                             )}
                           </div>
                         </td>

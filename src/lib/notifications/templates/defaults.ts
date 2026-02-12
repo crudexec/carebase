@@ -807,6 +807,147 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       `.trim(),
     },
   },
+
+  // -------------------- Credential Alerts --------------------
+  CREDENTIAL_EXPIRING_60_DAYS: {
+    EMAIL: {
+      subject: "{{credentialName}} expires in {{daysRemaining}} days",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p>This is a reminder that <strong>{{carerName}}</strong>'s <strong>{{credentialName}}</strong> ({{credentialCategory}}) will expire on <strong>{{expirationDate}}</strong> ({{daysRemaining}} days from now).</p>
+
+<p>Please ensure this credential is renewed before the expiration date to maintain compliance.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">View Credential Details</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{carerName}}'s {{credentialName}} expires in {{daysRemaining}} days.",
+    },
+  },
+
+  CREDENTIAL_EXPIRING_30_DAYS: {
+    EMAIL: {
+      subject: "Urgent: {{credentialName}} expires in {{daysRemaining}} days",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>Action Required:</strong> <strong>{{carerName}}</strong>'s <strong>{{credentialName}}</strong> ({{credentialCategory}}) will expire on <strong>{{expirationDate}}</strong> - only {{daysRemaining}} days remaining.</p>
+
+<p>Please take action to renew this credential promptly to avoid any disruption to scheduling.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">View Credential Details</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Urgent: {{carerName}}'s {{credentialName}} expires in {{daysRemaining}} days.",
+    },
+  },
+
+  CREDENTIAL_EXPIRING_7_DAYS: {
+    EMAIL: {
+      subject: "CRITICAL: {{credentialName}} expires in {{daysRemaining}} days",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>CRITICAL:</strong> <strong>{{carerName}}</strong>'s <strong>{{credentialName}}</strong> ({{credentialCategory}}) expires on <strong>{{expirationDate}}</strong> - only {{daysRemaining}} days left!</p>
+
+<p>If this credential is not renewed immediately, it may affect the caregiver's ability to work.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">View Credential Details</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    SMS: {
+      body: "URGENT: {{carerName}}'s {{credentialName}} expires in {{daysRemaining}} days. Please renew immediately.",
+    },
+    IN_APP: {
+      body: "CRITICAL: {{carerName}}'s {{credentialName}} expires in {{daysRemaining}} days!",
+    },
+  },
+
+  CREDENTIAL_EXPIRED: {
+    EMAIL: {
+      subject: "ALERT: {{credentialName}} has expired",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>ALERT:</strong> <strong>{{carerName}}</strong>'s <strong>{{credentialName}}</strong> ({{credentialCategory}}) has <strong>expired</strong> as of <strong>{{expirationDate}}</strong>.</p>
+
+<p>This credential has been expired for {{daysPastExpiration}} days. Immediate action is required to renew this credential.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">View Credential Details</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    SMS: {
+      body: "ALERT: {{carerName}}'s {{credentialName}} has expired. Immediate renewal required.",
+    },
+    IN_APP: {
+      body: "ALERT: {{carerName}}'s {{credentialName}} has expired!",
+    },
+  },
+
+  CREDENTIAL_RENEWED: {
+    EMAIL: {
+      subject: "{{credentialName}} has been renewed",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>{{carerName}}</strong>'s <strong>{{credentialName}}</strong> ({{credentialCategory}}) has been renewed.</p>
+
+<p>The new expiration date is <strong>{{newExpirationDate}}</strong>.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">View Credential Details</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{carerName}}'s {{credentialName}} has been renewed. New expiration: {{newExpirationDate}}.",
+    },
+  },
+
+  CREDENTIAL_VERIFICATION_NEEDED: {
+    EMAIL: {
+      subject: "Credential verification needed: {{credentialName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>{{carerName}}</strong> has submitted a new <strong>{{credentialName}}</strong> ({{credentialCategory}}) that requires verification.</p>
+
+<p>Submitted on: <strong>{{submittedDate}}</strong></p>
+
+<p>Please review and verify this credential at your earliest convenience.</p>
+
+<p>
+  <a href="{{credentialUrl}}" class="button">Review Credential</a>
+</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{carerName}}'s {{credentialName}} needs verification.",
+    },
+  },
 };
 
 // ============================================

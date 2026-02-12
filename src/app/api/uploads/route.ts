@@ -7,14 +7,32 @@ import { v4 as uuidv4 } from "uuid";
 // Max file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// Allowed file types
-const ALLOWED_TYPES = [
+// Allowed file types for images
+const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
   "image/png",
   "image/gif",
   "image/webp",
 ];
+
+// Allowed file types for documents
+const ALLOWED_DOCUMENT_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
+// Get allowed types based on upload type
+function getAllowedTypes(type: string | null): string[] {
+  if (type === "credentials" || type === "documents") {
+    return ALLOWED_DOCUMENT_TYPES;
+  }
+  return ALLOWED_IMAGE_TYPES;
+}
 
 // POST /api/uploads - Upload a file
 export async function POST(request: Request) {
@@ -26,16 +44,20 @@ export async function POST(request: Request) {
 
     const formData = await request.formData() as unknown as globalThis.FormData;
     const file = formData.get("file") as File | null;
-    const type = formData.get("type") as string | null; // "photo" or "signature"
+    const type = formData.get("type") as string | null; // "photo", "signature", "credentials", "documents"
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    // Validate file type based on upload type
+    const allowedTypes = getAllowedTypes(type);
+    if (!allowedTypes.includes(file.type)) {
+      const allowedMessage = type === "credentials" || type === "documents"
+        ? "Only images and PDF files are allowed."
+        : "Only images are allowed.";
       return NextResponse.json(
-        { error: "Invalid file type. Only images are allowed." },
+        { error: `Invalid file type. ${allowedMessage}` },
         { status: 400 }
       );
     }
@@ -108,7 +130,7 @@ export async function PUT(request: Request) {
     const base64Data = matches[2];
 
     // Validate file type
-    if (!ALLOWED_TYPES.includes(fileType)) {
+    if (!ALLOWED_IMAGE_TYPES.includes(fileType)) {
       return NextResponse.json(
         { error: "Invalid file type. Only images are allowed." },
         { status: 400 }

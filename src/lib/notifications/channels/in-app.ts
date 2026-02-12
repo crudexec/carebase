@@ -53,6 +53,13 @@ const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
   SPONSOR_INVITED: "sponsor_invited",
   // Inbox
   NEW_INBOX_MESSAGE: "inbox_message",
+  // Credentials
+  CREDENTIAL_EXPIRING_60_DAYS: "credential_expiring",
+  CREDENTIAL_EXPIRING_30_DAYS: "credential_expiring",
+  CREDENTIAL_EXPIRING_7_DAYS: "credential_expiring",
+  CREDENTIAL_EXPIRED: "credential_expired",
+  CREDENTIAL_RENEWED: "credential_renewed",
+  CREDENTIAL_VERIFICATION_NEEDED: "credential_verification",
 };
 
 export class InAppChannelProvider implements NotificationChannelProvider {
