@@ -106,7 +106,7 @@ export default function ViewVisitNotePage() {
   const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"].includes(session.user.role);
 
   // Check if user is the carer who owns the note
-  const isOwner = session?.user?.id === visitNote?.carerId;
+  const isOwner = session?.user?.id === visitNote?.carer?.id;
   const canResubmit = isOwner && visitNote?.qaStatus === "REJECTED";
 
   React.useEffect(() => {
