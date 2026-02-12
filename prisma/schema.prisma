@@ -249,6 +249,7 @@ enum NotificationEventType {
   ASSESSMENT_DUE
   ASSESSMENT_COMPLETED
   VISIT_NOTE_SUBMITTED
+  VISIT_NOTE_MISSING
   THRESHOLD_BREACH
 
   // Administrative
@@ -794,6 +795,7 @@ model Shift {
   checkOutLocation Json?
   status           ShiftStatus @default(SCHEDULED)
   remindersSentMinutes Int[]   @default([]) // Track which reminders have been sent (e.g., [1440, 60] for 24h and 1h)
+  visitNoteReminderSent Boolean @default(false) // Track if missing visit note reminder was sent
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 

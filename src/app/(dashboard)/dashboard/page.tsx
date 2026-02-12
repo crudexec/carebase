@@ -7,6 +7,7 @@ import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
 import { ShiftsWidget } from "@/components/dashboard/shifts-widget";
 import { CredentialAlertsWidget } from "@/components/dashboard/credential-alerts-widget";
+import { MissingVisitNotesWidget } from "@/components/dashboard/missing-visit-notes-widget";
 import {
   Users,
   Calendar,
@@ -255,15 +256,21 @@ export default async function DashboardPage() {
 
       {/* Carer Widgets - Check-in widget and combined shifts widget */}
       {user.role === "CARER" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CheckInWidget />
-          <ShiftsWidget />
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CheckInWidget />
+            <ShiftsWidget />
+          </div>
+          <MissingVisitNotesWidget />
+        </>
       )}
 
       {/* Credential Alerts Panel at top for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
-        <CredentialAlertsWidget />
+        <>
+          <CredentialAlertsWidget />
+          <MissingVisitNotesWidget />
+        </>
       )}
 
       {/* Shifts + Activity Feed side by side for Admin/Ops Manager */}

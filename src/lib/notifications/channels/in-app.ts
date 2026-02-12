@@ -18,6 +18,7 @@ const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
   SHIFT_ASSIGNED: "shift_assigned",
   SHIFT_REMINDER_24H: "shift_reminder",
   SHIFT_REMINDER_1H: "shift_reminder",
+  VISIT_NOTE_MISSING: "visit_note_missing",
   SHIFT_CANCELLED: "shift_cancelled",
   SHIFT_RESCHEDULED: "shift_rescheduled",
   CHECK_IN_CONFIRMATION: "check_in",

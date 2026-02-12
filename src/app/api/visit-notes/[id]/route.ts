@@ -150,7 +150,7 @@ export async function GET(
 
 // Schema for updating visit note
 const updateVisitNoteSchema = z.object({
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
   resubmit: z.boolean().optional(),
 });
 
@@ -246,7 +246,7 @@ export async function PATCH(
       updateData.qaStatus = "PENDING_REVIEW";
       updateData.qaComment = null;
       updateData.qaReviewedAt = null;
-      updateData.qaReviewedById = null;
+      updateData.qaReviewedBy = { disconnect: true };
     }
 
     // Update the visit note

@@ -650,6 +650,28 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
     },
   },
 
+  VISIT_NOTE_MISSING: {
+    EMAIL: {
+      subject: "Reminder: Visit note needed for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p>You completed a shift with <strong>{{clientName}}</strong> on <strong>{{shiftDate}}</strong> at <strong>{{shiftTime}}</strong>, but haven't submitted a visit note yet.</p>
+
+<p>Please submit your visit note as soon as possible to maintain accurate care records.</p>
+
+<p>
+  <a href="{{shiftUrl}}" class="button">Submit Visit Note</a>
+</p>
+
+<p>Thanks,<br>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Reminder: Please submit a visit note for {{clientName}} ({{shiftDate}} at {{shiftTime}}).",
+    },
+  },
+
   THRESHOLD_BREACH: {
     EMAIL: {
       subject: "{{clientName}}'s {{fieldLabel}} requires attention",

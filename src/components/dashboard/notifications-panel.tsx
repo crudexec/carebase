@@ -66,6 +66,12 @@ const NOTIFICATION_CONFIG: Record<string, {
     textColor: "text-blue-600",
     actionLabel: "View Shift",
   },
+  visit_note_missing: {
+    icon: AlertTriangle,
+    bgColor: "bg-orange-100",
+    textColor: "text-orange-600",
+    actionLabel: "Submit Note",
+  },
   CREDENTIAL_EXPIRING: {
     icon: Award,
     bgColor: "bg-orange-100",

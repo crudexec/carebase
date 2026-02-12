@@ -354,6 +354,14 @@ export const EVENT_CONFIGS: Record<NotificationEventType, EventConfig> = {
     defaultChannels: ["EMAIL", "IN_APP"],
     variables: ["clientName", "carerName", "visitDate", "visitNoteUrl"],
   },
+  VISIT_NOTE_MISSING: {
+    eventType: "VISIT_NOTE_MISSING",
+    description: "Reminder when a shift is completed without a visit note",
+    defaultRecipientRoles: ["CARER"],
+    priority: "HIGH",
+    defaultChannels: ["EMAIL", "IN_APP"],
+    variables: ["clientName", "shiftDate", "shiftTime", "shiftUrl"],
+  },
   THRESHOLD_BREACH: {
     eventType: "THRESHOLD_BREACH",
     description: "Alert when a recorded value falls outside the expected range",
