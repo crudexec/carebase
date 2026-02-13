@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -20,8 +20,8 @@ export async function GET(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -43,7 +43,7 @@ export async function GET(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
     });
@@ -60,7 +60,7 @@ export async function GET(
       prisma.conversation.findUnique({
         where: {
           id: conversationId,
-          companyId: session.user.companyId,
+          companyId: user.companyId,
         },
         include: {
           participants: {
@@ -115,7 +115,7 @@ export async function GET(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
       data: { lastReadAt: new Date() },
@@ -140,7 +140,7 @@ export async function GET(
           content: m.content,
           createdAt: m.createdAt.toISOString(),
           sender: m.sender,
-          isOwn: m.senderId === session.user.id,
+          isOwn: m.senderId === user.id,
         })),
       },
       pagination: {
@@ -165,8 +165,8 @@ export async function PATCH(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -188,7 +188,7 @@ export async function PATCH(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
       data: {

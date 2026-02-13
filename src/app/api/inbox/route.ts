@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { sendNotification } from "@/lib/notifications";
@@ -21,8 +21,8 @@ const createConversationSchema = z.object({
 // GET /api/inbox - List conversations
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -43,10 +43,10 @@ export async function GET(request: Request) {
     const [conversations, total] = await Promise.all([
       prisma.conversation.findMany({
         where: {
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           participants: {
             some: {
-              userId: session.user.id,
+              userId: user.id,
               isArchived,
             },
           },
@@ -91,10 +91,10 @@ export async function GET(request: Request) {
       }),
       prisma.conversation.count({
         where: {
-          companyId: session.user.companyId,
+          companyId: user.companyId,
           participants: {
             some: {
-              userId: session.user.id,
+              userId: user.id,
               isArchived,
             },
           },
@@ -104,7 +104,7 @@ export async function GET(request: Request) {
 
     // Transform to include unread status
     const response = conversations.map((conv) => {
-      const userParticipant = conv.participants.find((p) => p.userId === session.user.id);
+      const userParticipant = conv.participants.find((p) => p.userId === user.id);
       const lastMessage = conv.messages[0];
       const hasUnread = lastMessage && userParticipant?.lastReadAt
         ? new Date(lastMessage.createdAt) > new Date(userParticipant.lastReadAt)
@@ -156,8 +156,8 @@ export async function GET(request: Request) {
 // POST /api/inbox - Create a new conversation
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
     const participants = await prisma.user.findMany({
       where: {
         id: { in: participantIds },
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         isActive: true,
       },
       select: { id: true, firstName: true, lastName: true },
@@ -191,23 +191,23 @@ export async function POST(request: Request) {
     }
 
     // Create conversation with participants and initial message
-    const allParticipantIds = [...new Set([session.user.id, ...participantIds])];
+    const allParticipantIds = [...new Set([user.id, ...participantIds])];
 
     const conversation = await prisma.conversation.create({
       data: {
         subject,
-        companyId: session.user.companyId,
-        createdById: session.user.id,
+        companyId: user.companyId,
+        createdById: user.id,
         participants: {
           create: allParticipantIds.map((userId) => ({
             userId,
-            lastReadAt: userId === session.user.id ? new Date() : null,
+            lastReadAt: userId === user.id ? new Date() : null,
           })),
         },
         messages: {
           create: {
             content: initialMessage,
-            senderId: session.user.id,
+            senderId: user.id,
           },
         },
       },
@@ -239,14 +239,14 @@ export async function POST(request: Request) {
     });
 
     // Send notifications to other participants
-    const recipientIds = participantIds.filter((id) => id !== session.user.id);
+    const recipientIds = participantIds.filter((id) => id !== user.id);
     if (recipientIds.length > 0) {
       await sendNotification({
         eventType: "NEW_INBOX_MESSAGE",
         recipientIds,
         channels: ["IN_APP"],
         data: {
-          senderName: `${session.user.firstName} ${session.user.lastName}`,
+          senderName: `${user.firstName} ${user.lastName}`,
           subject,
           messagePreview: initialMessage.substring(0, 50),
           conversationUrl: `/inbox/${conversation.id}`,

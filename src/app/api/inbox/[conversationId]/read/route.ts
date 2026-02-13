@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 
 // POST /api/inbox/[conversationId]/read - Mark conversation as read
@@ -8,8 +8,8 @@ export async function POST(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function POST(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
       data: { lastReadAt: new Date() },

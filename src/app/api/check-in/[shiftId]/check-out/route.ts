@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { deductAuthorizationUnits, calculateShiftHours } from "@/lib/authorization-tracking";
 import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
+import {
+  validateEVVLocation,
+  createEVVLocationData,
+  DEFAULT_GEOFENCE_RADIUS,
+  type EVVValidationResult,
+  type EVVLocationData,
+} from "@/lib/evv";
+
+// Request body schema with optional location
+const checkOutSchema = z.object({
+  location: z
+    .object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      accuracy: z.number().min(0),
+    })
+    .optional(),
+});
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
@@ -19,6 +38,19 @@ function isLastDayOfShift(scheduledEnd: Date): boolean {
     scheduledEnd.getDate()
   ));
   return today.getTime() >= endDate.getTime();
+}
+
+// Detect source from user agent
+function getLocationSource(request: NextRequest): "mobile" | "web" {
+  const userAgent = request.headers.get("user-agent") || "";
+  if (
+    userAgent.includes("Expo") ||
+    userAgent.includes("okhttp") ||
+    userAgent.includes("CFNetwork")
+  ) {
+    return "mobile";
+  }
+  return "web";
 }
 
 export async function POST(
@@ -43,14 +75,23 @@ export async function POST(
     const today = getTodayDate();
     const checkOutTime = new Date();
 
-    // Get the shift with today's attendance
+    // Parse request body for location data
+    const body = await request.json().catch(() => ({}));
+    const validation = checkOutSchema.safeParse(body);
+    const locationData = validation.success ? validation.data.location : null;
+
+    // Get the shift with client location data for EVV validation
     const shift = await prisma.shift.findFirst({
       where: { id: shiftId, companyId: user.companyId },
       include: {
         client: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
+            latitude: true,
+            longitude: true,
+            geofenceRadius: true,
           },
         },
         attendanceRecords: {
@@ -79,6 +120,42 @@ export async function POST(
       return NextResponse.json(
         { error: `Cannot check out - shift status is ${shift.status}, not in progress` },
         { status: 400 }
+      );
+    }
+
+    // Get company settings for EVV
+    const company = await prisma.company.findUnique({
+      where: { id: user.companyId },
+      select: {
+        evvEnabled: true,
+        defaultGeofenceRadius: true,
+      },
+    });
+
+    // Perform EVV validation if location provided and client has coordinates
+    let evvResult: EVVValidationResult | null = null;
+    let evvData: EVVLocationData | null = null;
+
+    if (
+      locationData &&
+      shift.client.latitude &&
+      shift.client.longitude
+    ) {
+      const geofenceRadius =
+        shift.client.geofenceRadius ??
+        company?.defaultGeofenceRadius ??
+        DEFAULT_GEOFENCE_RADIUS;
+
+      evvResult = validateEVVLocation(locationData, {
+        latitude: Number(shift.client.latitude),
+        longitude: Number(shift.client.longitude),
+        geofenceRadius,
+      });
+
+      evvData = createEVVLocationData(
+        locationData,
+        evvResult,
+        getLocationSource(request)
       );
     }
 
@@ -120,14 +197,26 @@ export async function POST(
     // Check if this is the last day of the shift (or past the scheduled end)
     const _isLastDay = isLastDayOfShift(shift.scheduledEnd);
 
-    // Mark shift as COMPLETED - either it's the last day or user is explicitly checking out
-    // For mobile app UX, checking out should complete the shift
+    // Mark shift as COMPLETED and store EVV location data
+    interface ShiftUpdateData {
+      actualEnd: Date;
+      status: "COMPLETED";
+      checkOutLocation?: string;
+    }
+
+    const updateData: ShiftUpdateData = {
+      actualEnd: checkOutTime,
+      status: "COMPLETED",
+    };
+
+    // Store EVV location data
+    if (evvData) {
+      updateData.checkOutLocation = JSON.stringify(evvData);
+    }
+
     await prisma.shift.update({
       where: { id: shiftId },
-      data: {
-        actualEnd: checkOutTime,
-        status: "COMPLETED",
-      },
+      data: updateData,
     });
 
     // Calculate total hours worked for the shift and deduct from authorization
@@ -154,7 +243,7 @@ export async function POST(
       );
     }
 
-    // Create audit log for check-out
+    // Create audit log for check-out with EVV data
     await prisma.auditLog.create({
       data: {
         companyId: user.companyId,
@@ -167,6 +256,11 @@ export async function POST(
           clientName: `${shift.client.firstName} ${shift.client.lastName}`,
           checkOutTime: checkOutTime.toISOString(),
           hoursWorked: Math.round(hoursWorkedToday * 100) / 100,
+          ...(evvResult && {
+            evvStatus: evvResult.status,
+            evvIsWithinGeofence: evvResult.isWithinGeofence,
+            evvDistanceFromClient: evvResult.distanceFromClient,
+          }),
         },
       },
     });
@@ -219,6 +313,25 @@ export async function POST(
           scheduledHours: scheduledHours.toFixed(1),
           actualHours: actualHours.toFixed(1),
           overtimeMinutes: String(overtimeMinutes),
+          shiftDate,
+          shiftUrl,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
+
+    // Send notification if check-out is outside geofence
+    if (evvResult && !evvResult.isWithinGeofence) {
+      sendNotificationToRole(
+        "EARLY_CHECK_OUT", // TODO: Add EVV_OUT_OF_GEOFENCE event type
+        ["SUPERVISOR", "ADMIN"],
+        user.companyId,
+        {
+          carerName,
+          clientName,
+          scheduledEndTime: shift.scheduledEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          actualCheckOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          minutesEarly: `EVV Alert: ${evvResult.distanceFromClient}m from client location`,
           shiftDate,
           shiftUrl,
         },
@@ -327,6 +440,11 @@ export async function POST(
         checkOutTime: updatedAttendance.checkOutTime?.toISOString(),
         hoursWorkedToday: Math.round(hoursWorkedToday * 100) / 100,
       },
+      // EVV response data
+      evvStatus: evvResult?.status ?? "LOCATION_UNAVAILABLE",
+      evvIsWithinGeofence: evvResult?.isWithinGeofence ?? null,
+      distanceFromClient: evvResult?.distanceFromClient ?? null,
+      evvMessage: evvResult?.message ?? "Location not provided",
     });
   } catch (error) {
     console.error("Error checking out:", error);

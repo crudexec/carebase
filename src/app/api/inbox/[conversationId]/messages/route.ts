@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { sendNotification } from "@/lib/notifications";
@@ -15,8 +15,8 @@ export async function POST(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -38,7 +38,7 @@ export async function POST(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
     });
@@ -54,7 +54,7 @@ export async function POST(
     const conversation = await prisma.conversation.findUnique({
       where: {
         id: conversationId,
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       include: {
         participants: {
@@ -78,7 +78,7 @@ export async function POST(
         data: {
           content,
           conversationId,
-          senderId: session.user.id,
+          senderId: user.id,
         },
         include: {
           sender: {
@@ -99,7 +99,7 @@ export async function POST(
         where: {
           conversationId_userId: {
             conversationId,
-            userId: session.user.id,
+            userId: user.id,
           },
         },
         data: { lastReadAt: new Date() },
@@ -109,7 +109,7 @@ export async function POST(
     // Send notifications to other participants
     const recipientIds = conversation.participants
       .map((p) => p.userId)
-      .filter((id) => id !== session.user.id);
+      .filter((id) => id !== user.id);
 
     if (recipientIds.length > 0) {
       await sendNotification({
@@ -117,7 +117,7 @@ export async function POST(
         recipientIds,
         channels: ["IN_APP"],
         data: {
-          senderName: `${session.user.firstName} ${session.user.lastName}`,
+          senderName: `${user.firstName} ${user.lastName}`,
           subject: conversation.subject,
           messagePreview: content.substring(0, 50),
           conversationUrl: `/inbox/${conversationId}`,

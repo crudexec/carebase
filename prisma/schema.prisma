@@ -297,6 +297,10 @@ model Company {
   billingPhone     String?
   billingFrequency BillingFrequency? @default(WEEKLY)
 
+  // EVV (Electronic Visit Verification) Settings
+  evvEnabled            Boolean @default(true)  // Company-wide EVV toggle
+  defaultGeofenceRadius Int     @default(150)   // Default geofence radius in meters
+
   // Virtual Fax Number for receiving faxes (E.164 format)
   faxNumber String? @unique
 
@@ -667,9 +671,10 @@ model Client {
   city         String?
   state        String? // 2-letter state code
   zipCode      String?
-  latitude     Decimal?     @db.Decimal(10, 8)
-  longitude    Decimal?     @db.Decimal(11, 8)
-  phone        String?
+  latitude       Decimal?     @db.Decimal(10, 8)
+  longitude      Decimal?     @db.Decimal(11, 8)
+  geofenceRadius Int?         // EVV geofence radius in meters, null uses company default
+  phone          String?
   medicalNotes String?
   profileData  Json? // Custom profile fields from profile templates
   status       ClientStatus @default(PROSPECT)
@@ -793,6 +798,12 @@ model Shift {
   actualEnd        DateTime? // Legacy: final check-out time
   checkInLocation  Json?
   checkOutLocation Json?
+
+  // Client signature captured during shift
+  clientSignature          String?   @db.Text // Base64 PNG data URL
+  clientSignatureTimestamp DateTime?
+  clientSignatureName      String?   // Name of person who signed (optional)
+
   status           ShiftStatus @default(SCHEDULED)
   remindersSentMinutes Int[]   @default([]) // Track which reminders have been sent (e.g., [1440, 60] for 24h and 1h)
   visitNoteReminderSent Boolean @default(false) // Track if missing visit note reminder was sent

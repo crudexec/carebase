@@ -1,12 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { sendNotificationToRole, sendNotificationToSponsor } from "@/lib/notifications";
+import {
+  validateEVVLocation,
+  createEVVLocationData,
+  DEFAULT_GEOFENCE_RADIUS,
+  type EVVValidationResult,
+  type EVVLocationData,
+} from "@/lib/evv";
+
+// Request body schema with optional location
+const checkInSchema = z.object({
+  location: z
+    .object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      accuracy: z.number().min(0),
+    })
+    .optional(),
+});
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
   const now = new Date();
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
+// Detect source from user agent
+function getLocationSource(request: NextRequest): "mobile" | "web" {
+  const userAgent = request.headers.get("user-agent") || "";
+  // Mobile apps typically have specific user agents
+  if (
+    userAgent.includes("Expo") ||
+    userAgent.includes("okhttp") ||
+    userAgent.includes("CFNetwork")
+  ) {
+    return "mobile";
+  }
+  return "web";
 }
 
 export async function POST(
@@ -31,14 +64,23 @@ export async function POST(
     const today = getTodayDate();
     const checkInTime = new Date();
 
-    // Get the shift with today's attendance record
+    // Parse request body for location data
+    const body = await request.json().catch(() => ({}));
+    const validation = checkInSchema.safeParse(body);
+    const locationData = validation.success ? validation.data.location : null;
+
+    // Get the shift with client location data for EVV validation
     const shift = await prisma.shift.findFirst({
       where: { id: shiftId, companyId: user.companyId },
       include: {
         client: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
+            latitude: true,
+            longitude: true,
+            geofenceRadius: true,
           },
         },
         attendanceRecords: {
@@ -78,6 +120,42 @@ export async function POST(
       );
     }
 
+    // Get company settings for EVV
+    const company = await prisma.company.findUnique({
+      where: { id: user.companyId },
+      select: {
+        evvEnabled: true,
+        defaultGeofenceRadius: true,
+      },
+    });
+
+    // Perform EVV validation if location provided and client has coordinates
+    let evvResult: EVVValidationResult | null = null;
+    let evvData: EVVLocationData | null = null;
+
+    if (
+      locationData &&
+      shift.client.latitude &&
+      shift.client.longitude
+    ) {
+      const geofenceRadius =
+        shift.client.geofenceRadius ??
+        company?.defaultGeofenceRadius ??
+        DEFAULT_GEOFENCE_RADIUS;
+
+      evvResult = validateEVVLocation(locationData, {
+        latitude: Number(shift.client.latitude),
+        longitude: Number(shift.client.longitude),
+        geofenceRadius,
+      });
+
+      evvData = createEVVLocationData(
+        locationData,
+        evvResult,
+        getLocationSource(request)
+      );
+    }
+
     // Create or update attendance record for today
     const attendance = await prisma.shiftAttendance.upsert({
       where: {
@@ -98,8 +176,14 @@ export async function POST(
     });
 
     // Update the shift status to IN_PROGRESS if not already
-    // Also set actualStart on first check-in ever
-    const updateData: { status: "IN_PROGRESS"; actualStart?: Date } = {
+    // Also set actualStart on first check-in ever and store EVV location
+    interface ShiftUpdateData {
+      status: "IN_PROGRESS";
+      actualStart?: Date;
+      checkInLocation?: string;
+    }
+
+    const updateData: ShiftUpdateData = {
       status: "IN_PROGRESS",
     };
 
@@ -107,12 +191,17 @@ export async function POST(
       updateData.actualStart = checkInTime;
     }
 
+    // Store EVV location data
+    if (evvData) {
+      updateData.checkInLocation = JSON.stringify(evvData);
+    }
+
     await prisma.shift.update({
       where: { id: shiftId },
       data: updateData,
     });
 
-    // Create audit log for check-in
+    // Create audit log for check-in with EVV data
     await prisma.auditLog.create({
       data: {
         companyId: user.companyId,
@@ -124,6 +213,11 @@ export async function POST(
           shiftId: shiftId,
           clientName: `${shift.client.firstName} ${shift.client.lastName}`,
           checkInTime: checkInTime.toISOString(),
+          ...(evvResult && {
+            evvStatus: evvResult.status,
+            evvIsWithinGeofence: evvResult.isWithinGeofence,
+            evvDistanceFromClient: evvResult.distanceFromClient,
+          }),
         },
       },
     });
@@ -140,7 +234,9 @@ export async function POST(
 
     // Calculate if check-in is late (15+ minutes after scheduled start)
     const scheduledStartTime = new Date(shift.scheduledStart);
-    const minutesLate = Math.floor((checkInTime.getTime() - scheduledStartTime.getTime()) / (1000 * 60));
+    const minutesLate = Math.floor(
+      (checkInTime.getTime() - scheduledStartTime.getTime()) / (1000 * 60)
+    );
 
     if (minutesLate >= 15) {
       // Send LATE_CHECK_IN notification to supervisors/admins
@@ -151,10 +247,49 @@ export async function POST(
         {
           carerName,
           clientName,
-          scheduledTime: scheduledStartTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-          actualCheckInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          scheduledTime: scheduledStartTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          actualCheckInTime: checkInTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
           minutesLate: String(minutesLate),
-          shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+          shiftDate: scheduledStartTime.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          }),
+          shiftUrl,
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
+
+    // Send notification if check-in is outside geofence
+    if (evvResult && !evvResult.isWithinGeofence) {
+      sendNotificationToRole(
+        "LATE_CHECK_IN", // TODO: Add EVV_OUT_OF_GEOFENCE event type
+        ["SUPERVISOR", "ADMIN"],
+        user.companyId,
+        {
+          carerName,
+          clientName,
+          scheduledTime: scheduledStartTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          actualCheckInTime: checkInTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          minutesLate: `EVV Alert: ${evvResult.distanceFromClient}m from client location`,
+          shiftDate: scheduledStartTime.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          }),
           shiftUrl,
         },
         { relatedEntityType: "Shift", relatedEntityId: shiftId }
@@ -168,8 +303,15 @@ export async function POST(
       {
         carerName,
         clientName,
-        checkInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-        shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+        checkInTime: checkInTime.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        shiftDate: scheduledStartTime.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
       },
       { relatedEntityType: "Shift", relatedEntityId: shiftId }
     ).catch(console.error);
@@ -182,8 +324,15 @@ export async function POST(
       {
         carerName,
         clientName,
-        checkInTime: checkInTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-        shiftDate: scheduledStartTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+        checkInTime: checkInTime.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        shiftDate: scheduledStartTime.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
       },
       { relatedEntityType: "Shift", relatedEntityId: shiftId }
     ).catch(console.error);
@@ -226,23 +375,32 @@ export async function POST(
         actualStart: updatedShift!.actualStart?.toISOString() || null,
         actualEnd: updatedShift!.actualEnd?.toISOString() || null,
         status: updatedShift!.status,
-        client: updatedShift!.client ? {
-          id: updatedShift!.client.id,
-          firstName: updatedShift!.client.firstName,
-          lastName: updatedShift!.client.lastName,
-          address: updatedShift!.client.address,
-        } : null,
-        carer: updatedShift!.carer ? {
-          id: updatedShift!.carer.id,
-          firstName: updatedShift!.carer.firstName,
-          lastName: updatedShift!.carer.lastName,
-        } : null,
+        client: updatedShift!.client
+          ? {
+              id: updatedShift!.client.id,
+              firstName: updatedShift!.client.firstName,
+              lastName: updatedShift!.client.lastName,
+              address: updatedShift!.client.address,
+            }
+          : null,
+        carer: updatedShift!.carer
+          ? {
+              id: updatedShift!.carer.id,
+              firstName: updatedShift!.carer.firstName,
+              lastName: updatedShift!.carer.lastName,
+            }
+          : null,
       },
       attendance: {
         id: attendance.id,
         date: attendance.date.toISOString(),
         checkInTime: attendance.checkInTime?.toISOString(),
       },
+      // EVV response data
+      evvStatus: evvResult?.status ?? "LOCATION_UNAVAILABLE",
+      evvIsWithinGeofence: evvResult?.isWithinGeofence ?? null,
+      distanceFromClient: evvResult?.distanceFromClient ?? null,
+      evvMessage: evvResult?.message ?? "Location not provided",
     });
   } catch (error) {
     console.error("Error checking in:", error);

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 
 // GET /api/users/mentionable - Get users that can be mentioned in comments
 // This is a lightweight endpoint accessible by any authenticated user
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     // Get all active users in the same company (excluding sponsors)
     const users = await prisma.user.findMany({
       where: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
         isActive: true,
         role: {
           not: "SPONSOR", // Sponsors typically shouldn't be mentioned in internal comments

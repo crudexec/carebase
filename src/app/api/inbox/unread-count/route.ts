@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 
 // GET /api/inbox/unread-count - Get count of unread conversations
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get all user's non-archived participations with their last read time
     const participations = await prisma.conversationParticipant.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         isArchived: false,
         conversation: {
-          companyId: session.user.companyId,
+          companyId: user.companyId,
         },
       },
       select: {
@@ -43,7 +43,7 @@ export async function GET() {
       if (!lastMessage) return false;
 
       // Don't count as unread if the user sent the last message
-      if (lastMessage.senderId === session.user.id) return false;
+      if (lastMessage.senderId === user.id) return false;
 
       // Unread if no lastReadAt or lastReadAt is before the last message
       if (!p.lastReadAt) return true;

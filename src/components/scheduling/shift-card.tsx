@@ -39,6 +39,9 @@ export interface ShiftData {
     address?: string | null;
   };
   visitNotes?: VisitNoteData[];
+  clientSignature?: string | null;
+  clientSignatureTimestamp?: string | null;
+  clientSignatureName?: string | null;
 }
 
 interface ShiftCardProps {
