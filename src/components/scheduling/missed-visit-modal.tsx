@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import {
   AlertTriangle,
   Loader2,
@@ -113,17 +107,18 @@ export function MissedVisitModal({
                 <Label htmlFor="reason">
                   Reason <span className="text-error">*</span>
                 </Label>
-                <Select value={reason} onValueChange={setReason} disabled={isSubmitting}>
-                  <SelectTrigger id="reason">
-                    <SelectValue placeholder="Select a reason" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MISSED_VISIT_REASONS.map((r) => (
-                      <SelectItem key={r.code} value={r.code}>
-                        {r.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select
+                  id="reason"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select a reason</option>
+                  {MISSED_VISIT_REASONS.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
 
