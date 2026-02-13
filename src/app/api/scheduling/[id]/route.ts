@@ -13,7 +13,7 @@ const updateShiftSchema = z.object({
   clientId: z.string().optional(),
   scheduledStart: z.string().optional(),
   scheduledEnd: z.string().optional(),
-  status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+  status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "MISSED"]).optional(),
 });
 
 // GET /api/scheduling/[id] - Get shift details

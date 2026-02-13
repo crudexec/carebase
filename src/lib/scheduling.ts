@@ -26,6 +26,12 @@ export const SHIFT_STATUSES = [
     color: "bg-gray-100 text-gray-800",
     dotColor: "bg-gray-500",
   },
+  {
+    id: "MISSED" as ShiftStatus,
+    label: "Missed",
+    color: "bg-orange-100 text-orange-800",
+    dotColor: "bg-orange-500",
+  },
 ];
 
 export function getShiftStatusConfig(status: ShiftStatus) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Clock, User, MapPin, Calendar, AlertTriangle, Loader2, FileText, CheckCircle2, LogIn, LogOut, PenLine } from "lucide-react";
+import { X, Clock, User, MapPin, Calendar, AlertTriangle, Loader2, FileText, CheckCircle2, LogIn, LogOut, PenLine, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShiftData, VisitNoteData } from "./shift-card";
@@ -9,6 +9,8 @@ import { getShiftStatusConfig, formatTime, getShiftDuration } from "@/lib/schedu
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ClientSignatureModal } from "./client-signature-modal";
+import { MissedVisitModal } from "./missed-visit-modal";
+import { getMissedVisitReasonLabel } from "@/lib/missed-visit-reasons";
 
 interface ShiftDetailModalProps {
   isOpen: boolean;
@@ -32,6 +34,7 @@ export function ShiftDetailModal({
   const [fullShift, setFullShift] = useState<ShiftData | null>(null);
   const [fetchId, setFetchId] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [showMissedVisitModal, setShowMissedVisitModal] = useState(false);
 
   // Derive loading state from comparing the current shift id with the fetched one
   const isLoadingDetails = isOpen && shift && (!fullShift || fullShift.id !== shift.id);
@@ -103,6 +106,7 @@ export function ShiftDetailModal({
 
   const canCancelShift = canManage && displayShift.status === "SCHEDULED";
   const canEditShift = canManage && ["SCHEDULED", "IN_PROGRESS"].includes(displayShift.status);
+  const canMarkAsMissed = ["SCHEDULED", "IN_PROGRESS"].includes(displayShift.status);
 
   // Check-in/out status
   const isCheckedIn = !!displayShift.actualStart;
@@ -235,6 +239,40 @@ export function ShiftDetailModal({
             </div>
           </div>
 
+          {/* Missed Visit Info */}
+          {displayShift.status === "MISSED" && (
+            <div className="p-3 rounded-lg border border-orange-200 bg-orange-50 space-y-2">
+              <h5 className="text-sm font-medium text-orange-800 flex items-center gap-2">
+                <XCircle className="w-4 h-4" />
+                Visit Marked as Missed
+              </h5>
+              <div className="text-sm">
+                <span className="font-medium text-orange-900">Reason: </span>
+                <span className="text-orange-800">
+                  {displayShift.missedReason
+                    ? getMissedVisitReasonLabel(displayShift.missedReason)
+                    : "Not specified"}
+                </span>
+              </div>
+              {displayShift.missedReasonNotes && (
+                <div className="text-sm">
+                  <span className="font-medium text-orange-900">Notes: </span>
+                  <span className="text-orange-800">{displayShift.missedReasonNotes}</span>
+                </div>
+              )}
+              {displayShift.missedAt && (
+                <div className="text-xs text-orange-600 mt-1">
+                  Marked at {new Date(displayShift.missedAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Client Signature Section */}
           <div className="p-3 rounded-lg border space-y-3">
             <h5 className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -341,10 +379,20 @@ export function ShiftDetailModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 pt-2 border-t">
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
             <Button variant="ghost" onClick={onClose} className="flex-1">
               Close
             </Button>
+            {canMarkAsMissed && (
+              <Button
+                variant="secondary"
+                onClick={() => setShowMissedVisitModal(true)}
+                className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Mark as Missed
+              </Button>
+            )}
             {canEditShift && (
               <Button variant="secondary" onClick={onEdit} className="flex-1">
                 Edit Shift
@@ -384,6 +432,19 @@ export function ShiftDetailModal({
             setFetchId(null);
           }}
           onClose={() => setShowSignatureModal(false)}
+        />
+      )}
+
+      {/* Missed Visit Modal */}
+      {showMissedVisitModal && displayShift && (
+        <MissedVisitModal
+          shiftId={displayShift.id}
+          clientName={`${displayShift.client.firstName} ${displayShift.client.lastName}`}
+          onSuccess={() => {
+            // Refetch shift details to show the missed status
+            setFetchId(null);
+          }}
+          onClose={() => setShowMissedVisitModal(false)}
         />
       )}
     </div>

@@ -36,6 +36,7 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [isDrawing, setIsDrawing] = React.useState(false);
     const [hasSignature, setHasSignature] = React.useState(false);
+    const hasDrawnRef = React.useRef(false); // Ref to track drawing synchronously
 
     // Merge refs
     React.useImperativeHandle(ref, () => canvasRef.current!);
@@ -74,6 +75,7 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
         const img = new Image();
         img.onload = () => {
           ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+          hasDrawnRef.current = true;
           setHasSignature(true);
         };
         img.src = value;
@@ -132,6 +134,7 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
 
       ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
+      hasDrawnRef.current = true;
       setHasSignature(true);
     };
 
@@ -141,7 +144,9 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
       setIsDrawing(false);
 
       const canvas = canvasRef.current;
-      if (canvas && hasSignature) {
+      // Use ref for synchronous check since state updates are async
+      if (canvas && hasDrawnRef.current) {
+        setHasSignature(true); // Ensure state is also updated for UI
         onChange?.(canvas.toDataURL("image/png"));
       }
     };
@@ -159,6 +164,7 @@ const SignaturePad = React.forwardRef<HTMLCanvasElement, SignaturePadProps>(
 
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, displayWidth, displayHeight);
+      hasDrawnRef.current = false;
       setHasSignature(false);
       onChange?.(null);
     };

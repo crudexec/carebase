@@ -42,6 +42,9 @@ export interface ShiftData {
   clientSignature?: string | null;
   clientSignatureTimestamp?: string | null;
   clientSignatureName?: string | null;
+  missedReason?: string | null;
+  missedReasonNotes?: string | null;
+  missedAt?: string | null;
 }
 
 interface ShiftCardProps {
