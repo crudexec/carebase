@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Required for containerized deployments (Railway, Docker, etc.)
+  output: 'standalone',
+
   // Image optimization configuration for MinIO
   images: {
     remotePatterns: [
