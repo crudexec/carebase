@@ -249,13 +249,13 @@ async function main() {
             sectionId: section.id,
             code: itemData.code,
             question: itemData.question,
-            description: itemData.description || null,
+            description: itemData.description || undefined,
             responseType: itemData.responseType,
             isRequired: itemData.isRequired,
             displayOrder: itemData.displayOrder,
-            responseOptions: itemData.responseOptions || null,
-            minValue: itemData.minValue ?? null,
-            maxValue: itemData.maxValue ?? null,
+            responseOptions: itemData.responseOptions || undefined,
+            minValue: itemData.minValue ?? undefined,
+            maxValue: itemData.maxValue ?? undefined,
           },
         });
       }

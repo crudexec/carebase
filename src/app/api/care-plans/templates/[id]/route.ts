@@ -6,7 +6,7 @@ import { z } from "zod";
 import { FormTemplateStatus, FormFieldType, Prisma } from "@prisma/client";
 
 // Zod schemas for validation
-const fieldConfigSchema = z.record(z.unknown()).optional();
+const fieldConfigSchema = z.record(z.string(), z.unknown()).optional();
 
 const fieldSchema = z.object({
   id: z.string().optional(),

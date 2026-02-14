@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { AssessmentTemplateData } from "@/lib/assessments/types";
 import { TemplateBuilder } from "@/components/assessments/template-builder";
 import { Button, Badge } from "@/components/ui";
