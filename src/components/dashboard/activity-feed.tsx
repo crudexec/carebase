@@ -22,11 +22,11 @@ import {
   FileText,
   Download,
   Search,
-  Filter,
   LogOut,
   X,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
+import { CollapsibleWidget } from "./collapsible-widget";
 
 interface ActivityItem {
   id: string;
@@ -158,94 +158,86 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Activity Feed
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        </CardContent>
-      </Card>
+      <CollapsibleWidget
+        id="activity-feed"
+        title="Activity Feed"
+        icon={<Activity className="w-4 h-4" />}
+      >
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </CollapsibleWidget>
     );
   }
 
   return (
     <>
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Activity Feed
-          </CardTitle>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-foreground-secondary">
-              Auto-refreshes every 30s
-            </span>
-            <Button variant="ghost" size="sm" onClick={handleViewAll}>
-              <FileText className="w-4 h-4 mr-1" />
-              View All
-            </Button>
-          </div>
+    <CollapsibleWidget
+      id="activity-feed"
+      title="Activity Feed"
+      icon={<Activity className="w-4 h-4" />}
+      badge={
+        <span className="text-xs text-foreground-secondary">
+          Auto-refreshes
+        </span>
+      }
+      headerActions={
+        <Button variant="ghost" size="sm" onClick={handleViewAll}>
+          <FileText className="w-4 h-4 mr-1" />
+          View All
+        </Button>
+      }
+    >
+      {activities.length === 0 ? (
+        <div className="text-center py-8">
+          <Activity className="w-10 h-10 mx-auto text-foreground-tertiary mb-2" />
+          <p className="text-sm text-foreground-secondary">No recent activity</p>
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto">
-        {activities.length === 0 ? (
-          <div className="text-center py-8">
-            <Activity className="w-10 h-10 mx-auto text-foreground-tertiary mb-2" />
-            <p className="text-sm text-foreground-secondary">No recent activity</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {activities.map((activity) => {
-              const IconComponent = ICON_MAP[activity.icon] || Activity;
-              const colorClass = TYPE_COLORS[activity.type] || "bg-gray-100 text-gray-600";
+      ) : (
+        <div className="space-y-1">
+          {activities.map((activity) => {
+            const IconComponent = ICON_MAP[activity.icon] || Activity;
+            const colorClass = TYPE_COLORS[activity.type] || "bg-gray-100 text-gray-600";
 
-              const content = (
-                <div
-                  className={`flex items-start gap-3 p-3 rounded-lg hover:bg-background-secondary/50 transition-colors ${
-                    activity.link ? "cursor-pointer" : ""
-                  }`}
-                >
-                  <div className={`p-2 rounded-lg flex-shrink-0 ${colorClass}`}>
-                    <IconComponent className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {activity.title}
-                      </p>
-                      <span className="text-xs text-foreground-tertiary whitespace-nowrap">
-                        {formatTime(activity.timestamp)}
-                      </span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary mt-0.5 line-clamp-1">
-                      {activity.description}
-                    </p>
-                  </div>
-                  {activity.link && (
-                    <ChevronRight className="w-4 h-4 text-foreground-tertiary flex-shrink-0 mt-1" />
-                  )}
+            const content = (
+              <div
+                className={`flex items-start gap-3 p-3 rounded-lg hover:bg-background-secondary/50 transition-colors ${
+                  activity.link ? "cursor-pointer" : ""
+                }`}
+              >
+                <div className={`p-2 rounded-lg flex-shrink-0 ${colorClass}`}>
+                  <IconComponent className="w-4 h-4" />
                 </div>
-              );
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {activity.title}
+                    </p>
+                    <span className="text-xs text-foreground-tertiary whitespace-nowrap">
+                      {formatTime(activity.timestamp)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-foreground-secondary mt-0.5 line-clamp-1">
+                    {activity.description}
+                  </p>
+                </div>
+                {activity.link && (
+                  <ChevronRight className="w-4 h-4 text-foreground-tertiary flex-shrink-0 mt-1" />
+                )}
+              </div>
+            );
 
-              return activity.link ? (
-                <Link key={activity.id} href={activity.link}>
-                  {content}
-                </Link>
-              ) : (
-                <div key={activity.id}>{content}</div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            return activity.link ? (
+              <Link key={activity.id} href={activity.link}>
+                {content}
+              </Link>
+            ) : (
+              <div key={activity.id}>{content}</div>
+            );
+          })}
+        </div>
+      )}
+    </CollapsibleWidget>
 
     {/* Activity Report Modal */}
     {showReportModal && (

@@ -10,16 +10,16 @@ import {
   CardTitle,
   CardDescription,
   Button,
-  Select,
-  Label,
   Breadcrumb,
 } from "@/components/ui";
-import { ArrowLeft, Loader2, ClipboardList, CheckCircle } from "lucide-react";
+import { ClientSearchSelect } from "@/components/clients/client-search-select";
+import { Loader2, ClipboardList, CheckCircle } from "lucide-react";
 
 interface Client {
   id: string;
   firstName: string;
   lastName: string;
+  dateOfBirth?: string | null;
 }
 
 interface AssessmentTemplate {
@@ -43,9 +43,9 @@ export default function NewAssessmentPage() {
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [clients, setClients] = React.useState<Client[]>([]);
   const [templates, setTemplates] = React.useState<AssessmentTemplate[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedClient, setSelectedClient] = React.useState<Client | null>(null);
 
   const [formData, setFormData] = React.useState({
     clientId: preselectedClientId || "",
@@ -54,34 +54,28 @@ export default function NewAssessmentPage() {
   });
 
   React.useEffect(() => {
-    fetchData();
+    fetchTemplates();
   }, []);
 
-  const fetchData = async () => {
+  const fetchTemplates = async () => {
     setIsLoading(true);
     try {
-      const [clientsRes, templatesRes] = await Promise.all([
-        fetch("/api/clients?limit=100"),
-        fetch("/api/assessments/templates"),
-      ]);
+      const response = await fetch("/api/assessments/templates");
+      const data = await response.json();
 
-      const [clientsData, templatesData] = await Promise.all([
-        clientsRes.json(),
-        templatesRes.json(),
-      ]);
-
-      if (clientsRes.ok) {
-        setClients(clientsData.clients || []);
-      }
-
-      if (templatesRes.ok) {
-        setTemplates(templatesData.templates || []);
+      if (response.ok) {
+        setTemplates(data.templates || []);
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch templates:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClientChange = (clientId: string, client: Client | null) => {
+    setSelectedClient(client);
+    setFormData((prev) => ({ ...prev, clientId }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,10 +105,8 @@ export default function NewAssessmentPage() {
 
   const selectedTemplate = templates.find((t) => t.id === formData.templateId);
 
-  // Find preselected client for breadcrumb
-  const preselectedClient = preselectedClientId
-    ? clients.find((c) => c.id === preselectedClientId)
-    : null;
+  // Use selected client for breadcrumb (handles both preselected and searched)
+  const displayClient = selectedClient;
 
   if (isLoading) {
     return (
@@ -126,13 +118,13 @@ export default function NewAssessmentPage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      {/* Breadcrumb - different path if coming from client */}
+      {/* Breadcrumb - different path if client is selected */}
       <Breadcrumb
         items={
-          preselectedClient
+          displayClient
             ? [
                 { label: "Clients", href: "/clients" },
-                { label: `${preselectedClient.firstName} ${preselectedClient.lastName}`, href: `/clients/${preselectedClient.id}` },
+                { label: `${displayClient.firstName} ${displayClient.lastName}`, href: `/clients/${displayClient.id}` },
                 { label: "New Assessment" },
               ]
             : [
@@ -163,30 +155,15 @@ export default function NewAssessmentPage() {
           <CardHeader>
             <CardTitle>Select Client</CardTitle>
             <CardDescription>
-              Choose the client to assess
+              Search and select the client to assess
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="clientId" required>
-                Client
-              </Label>
-              <Select
-                id="clientId"
-                value={formData.clientId}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, clientId: e.target.value }))
-                }
-                required
-              >
-                <option value="">Select a client...</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.firstName} {client.lastName}
-                  </option>
-                ))}
-              </Select>
-            </div>
+          <CardContent>
+            <ClientSearchSelect
+              value={formData.clientId}
+              onChange={handleClientChange}
+              required
+            />
           </CardContent>
         </Card>
 

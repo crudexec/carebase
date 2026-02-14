@@ -34,7 +34,6 @@ import {
   Breadcrumb,
 } from "@/components/ui";
 import { ICD10Search, DiagnosisItem } from "./icd10-search";
-import { PhysicianSearch } from "./physician-search";
 import { CarePlanPrint } from "./care-plan-print";
 
 // Types
@@ -139,6 +138,38 @@ interface CarePlanData {
   caseManager?: CaseManager | null;
   diagnoses?: Diagnosis[];
   orders?: Order[];
+  // Template fields
+  templateId?: string | null;
+  templateVersion?: number | null;
+  formSchemaSnapshot?: TemplateSchema | null;
+  formData?: Record<string, unknown> | null;
+}
+
+interface TemplateSection {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  fields: {
+    id: string;
+    label: string;
+    type: string;
+    required: boolean;
+    order: number;
+    config: Record<string, unknown> | null;
+  }[];
+}
+
+interface TemplateSchema {
+  templateId: string;
+  templateName: string;
+  version: number;
+  includesDiagnoses: boolean;
+  includesGoals: boolean;
+  includesInterventions: boolean;
+  includesMedications: boolean;
+  includesOrders: boolean;
+  sections: TemplateSection[];
 }
 
 interface CarePlanFormProps {
@@ -149,6 +180,8 @@ interface CarePlanFormProps {
   onSave?: (data: CarePlanData) => Promise<void>;
   isLoading?: boolean;
   intakeId?: string | null;
+  templateId?: string | null;
+  onBack?: () => void;
 }
 
 // Constants
@@ -230,6 +263,8 @@ export function CarePlanForm({
   onSave,
   isLoading = false,
   intakeId,
+  templateId,
+  onBack,
 }: CarePlanFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
@@ -239,6 +274,12 @@ export function CarePlanForm({
   const [isSendingFax, setIsSendingFax] = React.useState(false);
   const [faxSuccess, setFaxSuccess] = React.useState<string | null>(null);
   const printRef = React.useRef<HTMLDivElement>(null);
+  const [templateSchema, setTemplateSchema] = React.useState<TemplateSchema | null>(
+    initialData?.formSchemaSnapshot as TemplateSchema | null
+  );
+  const [templateFormData, setTemplateFormData] = React.useState<Record<string, unknown>>(
+    (initialData?.formData as Record<string, unknown>) || {}
+  );
 
   // PDF export options
   const pdfOptions: Options = {
@@ -337,9 +378,6 @@ export function CarePlanForm({
         heightLeft -= pageHeight;
       }
 
-      // Convert to base64
-      const pdfBase64 = pdf.output("datauristring").split(",")[1];
-
       // Convert PDF to blob
       const pdfBlob = pdf.output("blob");
       const pdfSizeMB = pdfBlob.size / (1024 * 1024);
@@ -392,7 +430,7 @@ export function CarePlanForm({
     initialData?.diagnoses || []
   );
   const [orders, setOrders] = React.useState<Order[]>(initialData?.orders || []);
-  const [selectedPhysician, setSelectedPhysician] = React.useState<Physician | null>(
+  const [selectedPhysician] = React.useState<Physician | null>(
     initialData?.physician || null
   );
   const [faxError, setFaxError] = React.useState<string | null>(null);
@@ -451,6 +489,42 @@ export function CarePlanForm({
     };
     fetchCaseManagers();
   }, []);
+
+  // Fetch template if templateId is provided and we don't already have the schema
+  React.useEffect(() => {
+    if (templateId && !templateSchema) {
+      const fetchTemplate = async () => {
+        try {
+          const response = await fetch(`/api/care-plans/templates/${templateId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const template = data.template;
+            // Create schema from template
+            const schema: TemplateSchema = {
+              templateId: template.id,
+              templateName: template.name,
+              version: template.version,
+              includesDiagnoses: template.includesDiagnoses,
+              includesGoals: template.includesGoals,
+              includesInterventions: template.includesInterventions,
+              includesMedications: template.includesMedications,
+              includesOrders: template.includesOrders,
+              sections: template.sections,
+            };
+            setTemplateSchema(schema);
+          }
+        } catch (error) {
+          console.error("Failed to fetch template:", error);
+        }
+      };
+      fetchTemplate();
+    }
+  }, [templateId, templateSchema]);
+
+  // Update template form field
+  const updateTemplateField = (fieldId: string, value: unknown) => {
+    setTemplateFormData((prev) => ({ ...prev, [fieldId]: value }));
+  };
 
   const updateField = <K extends keyof CarePlanData>(
     field: K,
@@ -532,6 +606,219 @@ export function CarePlanForm({
     setOrders((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Render a template field based on its type
+  const renderTemplateField = (field: TemplateSection["fields"][0]) => {
+    const value = templateFormData[field.id] ?? "";
+    const config = (field.config || {}) as Record<string, unknown>;
+
+    switch (field.type) {
+      case "TEXT_SHORT":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+              placeholder={config.placeholder as string || ""}
+            />
+          </div>
+        );
+
+      case "TEXT_LONG":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Textarea
+              id={field.id}
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+              rows={4}
+              placeholder={config.placeholder as string || ""}
+            />
+          </div>
+        );
+
+      case "NUMBER":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              type="number"
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value ? parseFloat(e.target.value) : "")}
+              min={config.min as number}
+              max={config.max as number}
+            />
+          </div>
+        );
+
+      case "DATE":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              type="date"
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+            />
+          </div>
+        );
+
+      case "TIME":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              type="time"
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+            />
+          </div>
+        );
+
+      case "SELECT": {
+        const options = (config.options as string[]) || [];
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Select
+              id={field.id}
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+            >
+              <option value="">Select...</option>
+              {options.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Select>
+          </div>
+        );
+      }
+
+      case "MULTI_SELECT": {
+        const multiOptions = (config.options as string[]) || [];
+        const selectedValues = (value as string[]) || [];
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label required={field.required}>{field.label}</Label>
+            <div className="space-y-2">
+              {multiOptions.map((opt) => (
+                <Checkbox
+                  key={opt}
+                  label={opt}
+                  checked={selectedValues.includes(opt)}
+                  onChange={() => {
+                    const newValues = selectedValues.includes(opt)
+                      ? selectedValues.filter((v) => v !== opt)
+                      : [...selectedValues, opt];
+                    updateTemplateField(field.id, newValues);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case "CHECKBOX":
+        return (
+          <div key={field.id}>
+            <Checkbox
+              label={field.label}
+              checked={value as boolean}
+              onChange={() => updateTemplateField(field.id, !value)}
+            />
+          </div>
+        );
+
+      case "RADIO": {
+        const radioOptions = (config.options as string[]) || [];
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label required={field.required}>{field.label}</Label>
+            <div className="space-y-2">
+              {radioOptions.map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={field.id}
+                    value={opt}
+                    checked={value === opt}
+                    onChange={() => updateTemplateField(field.id, opt)}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm">{opt}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case "FILE":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  updateTemplateField(field.id, file.name);
+                }
+              }}
+            />
+          </div>
+        );
+
+      case "SIGNATURE":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label required={field.required}>{field.label}</Label>
+            <SignaturePad
+              value={(value as string) || ""}
+              onChange={(sig) => updateTemplateField(field.id, sig)}
+            />
+          </div>
+        );
+
+      default:
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} required={field.required}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              value={value as string}
+              onChange={(e) => updateTemplateField(field.id, e.target.value)}
+            />
+          </div>
+        );
+    }
+  };
+
   // Save handler
   const handleSave = async () => {
     setIsSaving(true);
@@ -607,14 +894,22 @@ export function CarePlanForm({
         response = await fetch(`/api/care-plans/${carePlanId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            ...payload,
+            formData: Object.keys(templateFormData).length > 0 ? templateFormData : undefined,
+          }),
         });
       } else {
         // Create new care plan
         response = await fetch("/api/care-plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, clientId }),
+          body: JSON.stringify({
+            ...payload,
+            clientId,
+            templateId: templateId || undefined,
+            formData: Object.keys(templateFormData).length > 0 ? templateFormData : undefined,
+          }),
         });
       }
 
@@ -708,16 +1003,21 @@ export function CarePlanForm({
           </h1>
           <p className="text-body-sm text-foreground-secondary mt-1">
             {clientName}
+            {templateSchema && (
+              <span className="ml-2 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                Template: {templateSchema.templateName}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            onClick={() => router.back()}
+            onClick={onBack || (() => router.back())}
             disabled={isSaving || isExporting}
           >
             <X className="w-4 h-4 mr-1" />
-            Cancel
+            {onBack ? "Back" : "Cancel"}
           </Button>
           {carePlanId && (
             <>
@@ -1423,6 +1723,29 @@ export function CarePlanForm({
         </div>
       </CollapsibleSection>
 
+      {/* Custom Template Sections */}
+      {templateSchema?.sections && templateSchema.sections.length > 0 && (
+        <>
+          {templateSchema.sections
+            .sort((a, b) => a.order - b.order)
+            .map((section) => (
+              <CollapsibleSection
+                key={section.id}
+                title={section.title}
+                description={section.description || undefined}
+                icon={FileText}
+                defaultOpen={true}
+              >
+                <div className="space-y-4 pt-4">
+                  {section.fields
+                    .sort((a, b) => a.order - b.order)
+                    .map((field) => renderTemplateField(field))}
+                </div>
+              </CollapsibleSection>
+            ))}
+        </>
+      )}
+
       {/* Section 8: Clinical Summary */}
       <CollapsibleSection
         title="Clinical Summary"
@@ -1576,10 +1899,10 @@ export function CarePlanForm({
       <div className="flex justify-end gap-2 pt-4 border-t border-border">
         <Button
           variant="ghost"
-          onClick={() => router.back()}
+          onClick={onBack || (() => router.back())}
           disabled={isSaving || isExporting || isSendingFax}
         >
-          Cancel
+          {onBack ? "Back" : "Cancel"}
         </Button>
         {carePlanId && (
           <>

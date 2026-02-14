@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Clock,
@@ -15,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CollapsibleWidget } from "./collapsible-widget";
 
 interface TodayAttendance {
   id: string;
@@ -154,39 +154,40 @@ export function CheckInWidget() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Today&apos;s Shifts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        </CardContent>
-      </Card>
+      <CollapsibleWidget
+        id="check-in-widget"
+        title="Today's Shifts"
+        icon={<Clock className="w-4 h-4" />}
+      >
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </CollapsibleWidget>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Today&apos;s Shifts
-          </CardTitle>
-          <Link
-            href="/check-in"
-            className="text-xs text-primary hover:underline flex items-center gap-1"
-          >
-            View All <ChevronRight className="w-3 h-3" />
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <CollapsibleWidget
+      id="check-in-widget"
+      title="Today's Shifts"
+      icon={<Clock className="w-4 h-4" />}
+      badge={
+        todayShifts.length > 0 ? (
+          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+            {todayShifts.length}
+          </span>
+        ) : null
+      }
+      headerActions={
+        <Link
+          href="/check-in"
+          className="text-xs text-primary hover:underline flex items-center gap-1"
+        >
+          View All <ChevronRight className="w-3 h-3" />
+        </Link>
+      }
+    >
+      <div className="space-y-3">
         {error && (
           <div className="flex items-center gap-2 p-2 rounded bg-error-light text-red-800 text-xs">
             <AlertCircle className="w-4 h-4" />
@@ -301,7 +302,7 @@ export function CheckInWidget() {
             +{todayShifts.length - 3} more shifts
           </Link>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleWidget>
   );
 }

@@ -216,6 +216,9 @@ const updateCarePlanSchema = z.object({
   clientSignedAt: z.string().nullable().optional(),
   clientSignerName: z.string().nullable().optional(),
   clientSignerRelation: z.string().nullable().optional(),
+
+  // Template form data
+  formData: z.any().optional(),
 });
 
 // PATCH /api/care-plans/[id] - Update care plan
@@ -357,6 +360,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (data.clientSignedAt !== undefined) updateData.clientSignedAt = processDate(data.clientSignedAt);
     if (data.clientSignerName !== undefined) updateData.clientSignerName = data.clientSignerName;
     if (data.clientSignerRelation !== undefined) updateData.clientSignerRelation = data.clientSignerRelation;
+
+    // Template form data
+    if (data.formData !== undefined) updateData.formData = data.formData;
 
     const updatedCarePlan = await prisma.carePlan.update({
       where: { id },

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 // GET /api/care-plans - List care plans
@@ -96,6 +96,9 @@ const createCarePlanSchema = z.object({
   // Required fields
   clientId: z.string().min(1, "Client is required"),
 
+  // Template (optional)
+  templateId: z.string().optional().nullable(),
+
   // Optional identifiers
   intakeId: z.string().optional().nullable(),
 
@@ -185,6 +188,9 @@ const createCarePlanSchema = z.object({
   clientSignedAt: z.string().optional().nullable(),
   clientSignerName: z.string().optional().nullable(),
   clientSignerRelation: z.string().optional().nullable(),
+
+  // Template form data
+  formData: z.any().optional().nullable(),
 });
 
 // POST /api/care-plans - Create new care plan
@@ -228,6 +234,71 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
+    // If templateId is provided, fetch the template and create a snapshot
+    let templateData: {
+      templateId?: string;
+      templateVersion?: number;
+      formSchemaSnapshot?: Prisma.InputJsonValue;
+    } = {};
+
+    if (data.templateId) {
+      const template = await prisma.carePlanTemplate.findFirst({
+        where: {
+          id: data.templateId,
+          companyId: session.user.companyId,
+        },
+        include: {
+          sections: {
+            orderBy: { order: "asc" },
+            include: {
+              fields: {
+                orderBy: { order: "asc" },
+              },
+            },
+          },
+        },
+      });
+
+      if (!template) {
+        return NextResponse.json(
+          { error: "Template not found" },
+          { status: 404 }
+        );
+      }
+
+      // Create schema snapshot
+      const schemaSnapshot = {
+        templateId: template.id,
+        templateName: template.name,
+        version: template.version,
+        includesDiagnoses: template.includesDiagnoses,
+        includesGoals: template.includesGoals,
+        includesInterventions: template.includesInterventions,
+        includesMedications: template.includesMedications,
+        includesOrders: template.includesOrders,
+        sections: template.sections.map((section) => ({
+          id: section.id,
+          title: section.title,
+          description: section.description,
+          order: section.order,
+          fields: section.fields.map((field) => ({
+            id: field.id,
+            label: field.label,
+            type: field.type,
+            required: field.required,
+            order: field.order,
+            config: field.config,
+          })),
+        })),
+      };
+
+      templateData = {
+        templateId: template.id,
+        templateVersion: template.version,
+        formSchemaSnapshot: schemaSnapshot as Prisma.InputJsonValue,
+      };
+    }
+
     // Generate plan number
     const planNumber = `CP-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
@@ -240,6 +311,12 @@ export async function POST(request: Request) {
         createdById: session.user.id,
         planNumber,
         status: data.status || "DRAFT",
+
+        // Template data
+        templateId: templateData.templateId,
+        templateVersion: templateData.templateVersion,
+        formSchemaSnapshot: templateData.formSchemaSnapshot,
+        formData: data.formData,
 
         // Dates
         effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : null,

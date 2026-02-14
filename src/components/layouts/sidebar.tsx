@@ -41,6 +41,8 @@ import {
   Heart,
   HelpCircle,
   Award,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 
 interface NavItem {
@@ -292,6 +294,18 @@ const navigation: NavEntry[] = [
         roles: ["ADMIN", "OPS_MANAGER"],
       },
       {
+        label: "Assessment Templates",
+        href: "/assessments/templates",
+        icon: ClipboardList,
+        roles: ["ADMIN"],
+      },
+      {
+        label: "Care Plan Templates",
+        href: "/care-plans/templates",
+        icon: ClipboardList,
+        roles: ["ADMIN"],
+      },
+      {
         label: "Profile Forms",
         href: "/settings/profile-templates",
         icon: FileEdit,
@@ -329,6 +343,21 @@ interface SidebarProps {
   companyName: string;
   onClose?: () => void;
   showClose?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+// Tooltip component for collapsed state
+function Tooltip({ children, label }: { children: React.ReactNode; label: string }) {
+  return (
+    <div className="relative group/tooltip">
+      {children}
+      <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-white text-xs rounded-md whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-150 z-50 pointer-events-none">
+        {label}
+        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
+      </div>
+    </div>
+  );
 }
 
 function NavGroupItem({
@@ -336,11 +365,13 @@ function NavGroupItem({
   userRole,
   pathname,
   onClose,
+  isCollapsed,
 }: {
   group: NavGroup;
   userRole: UserRole;
   pathname: string;
   onClose?: () => void;
+  isCollapsed?: boolean;
 }) {
   const filteredItems = group.items.filter((item) => item.roles.includes(userRole));
 
@@ -362,6 +393,55 @@ function NavGroupItem({
 
   const Icon = group.icon;
 
+  // Collapsed view - show icon with dropdown on hover
+  if (isCollapsed) {
+    return (
+      <li className="relative group/nav">
+        <Tooltip label={group.label}>
+          <div
+            className={cn(
+              "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 cursor-pointer mx-auto",
+              hasActiveChild
+                ? "bg-sidebar-active text-white"
+                : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+            )}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+        </Tooltip>
+
+        {/* Flyout menu on hover */}
+        <div className="absolute left-full top-0 ml-1 py-2 px-1 bg-sidebar rounded-lg shadow-xl opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-150 z-50 min-w-[180px]">
+          <div className="px-3 py-1.5 text-xs font-semibold text-sidebar-text border-b border-sidebar-hover mb-1">
+            {group.label}
+          </div>
+          {filteredItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            const ItemIcon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2 rounded-md text-xs transition-all duration-150",
+                  isActive
+                    ? "bg-sidebar-active text-white font-medium"
+                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+                )}
+              >
+                <ItemIcon className="w-4 h-4 flex-shrink-0" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </li>
+    );
+  }
+
+  // Expanded view
   return (
     <li>
       <button
@@ -414,8 +494,36 @@ function NavGroupItem({
   );
 }
 
-export function Sidebar({ user, companyName, onClose, showClose = false }: SidebarProps) {
+export function Sidebar({ user, companyName, onClose, showClose = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const navRef = React.useRef<HTMLElement>(null);
+  const [scrollState, setScrollState] = React.useState({ top: false, bottom: false });
+
+  // Track scroll position for gradient indicators
+  React.useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const updateScrollState = () => {
+      const { scrollTop, scrollHeight, clientHeight } = nav;
+      setScrollState({
+        top: scrollTop > 10,
+        bottom: scrollTop < scrollHeight - clientHeight - 10,
+      });
+    };
+
+    updateScrollState();
+    nav.addEventListener("scroll", updateScrollState);
+
+    // Also update on resize
+    const resizeObserver = new ResizeObserver(updateScrollState);
+    resizeObserver.observe(nav);
+
+    return () => {
+      nav.removeEventListener("scroll", updateScrollState);
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   const filteredNavigation = navigation.filter((entry) => {
     if (isNavGroup(entry)) {
@@ -426,16 +534,24 @@ export function Sidebar({ user, companyName, onClose, showClose = false }: Sideb
   });
 
   return (
-    <aside className="w-56 bg-sidebar h-screen flex flex-col">
+    <aside className={cn(
+      "bg-sidebar h-full flex flex-col transition-all duration-300 ease-in-out shadow-xl lg:shadow-none",
+      isCollapsed ? "w-16" : "w-56"
+    )}>
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-sidebar-hover flex items-center justify-between">
+      <div className={cn(
+        "py-4 border-b border-sidebar-hover flex items-center",
+        isCollapsed ? "px-3 justify-center" : "px-4 justify-between"
+      )}>
         <Link href="/dashboard" className="flex items-center gap-2" onClick={onClose}>
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
             <span className="text-white font-semibold text-xs">{companyName[0]?.toUpperCase() || "C"}</span>
           </div>
-          <span className="text-sm font-semibold text-white">{companyName}</span>
+          {!isCollapsed && (
+            <span className="text-sm font-semibold text-white truncate">{companyName}</span>
+          )}
         </Link>
-        {showClose && (
+        {showClose && !isCollapsed && (
           <button
             onClick={onClose}
             className="p-1 rounded-md text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
@@ -447,8 +563,20 @@ export function Sidebar({ user, companyName, onClose, showClose = false }: Sideb
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto">
-        <ul className="space-y-0.5">
+      <div className="flex-1 relative overflow-hidden">
+        {/* Top scroll indicator */}
+        <div
+          className={cn(
+            "absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-sidebar to-transparent z-10 pointer-events-none transition-opacity duration-200",
+            scrollState.top ? "opacity-100" : "opacity-0"
+          )}
+        />
+
+        <nav
+          ref={navRef}
+          className="h-full px-2 py-3 overflow-y-auto overflow-x-hidden sidebar-scroll"
+        >
+          <ul className={cn("space-y-1", isCollapsed && "space-y-2")}>
           {filteredNavigation.map((entry) => {
             if (isNavGroup(entry)) {
               return (
@@ -458,12 +586,34 @@ export function Sidebar({ user, companyName, onClose, showClose = false }: Sideb
                   userRole={user.role}
                   pathname={pathname}
                   onClose={onClose}
+                  isCollapsed={isCollapsed}
                 />
               );
             }
 
             const isActive = pathname === entry.href || pathname.startsWith(entry.href + "/");
             const Icon = entry.icon;
+
+            if (isCollapsed) {
+              return (
+                <li key={entry.href}>
+                  <Tooltip label={entry.label}>
+                    <Link
+                      href={entry.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center justify-center w-10 h-10 rounded-lg mx-auto transition-all duration-150",
+                        isActive
+                          ? "bg-sidebar-active text-white"
+                          : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </Link>
+                  </Tooltip>
+                </li>
+              );
+            }
 
             return (
               <li key={entry.href}>
@@ -483,33 +633,93 @@ export function Sidebar({ user, companyName, onClose, showClose = false }: Sideb
               </li>
             );
           })}
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+
+        {/* Bottom scroll indicator */}
+        <div
+          className={cn(
+            "absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-sidebar to-transparent z-10 pointer-events-none transition-opacity duration-200",
+            scrollState.bottom ? "opacity-100" : "opacity-0"
+          )}
+        />
+      </div>
+
+      {/* Collapse Toggle - Desktop only */}
+      {onToggleCollapse && !showClose && (
+        <div className={cn(
+          "px-2 py-2 border-t border-sidebar-hover",
+          isCollapsed && "flex justify-center"
+        )}>
+          <button
+            onClick={onToggleCollapse}
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-lg text-xs text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-all duration-200",
+              isCollapsed ? "w-10 h-10 mx-auto" : "w-full px-2.5 py-2"
+            )}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <PanelLeft className="w-5 h-5" />
+            ) : (
+              <>
+                <PanelLeftClose className="w-4 h-4" />
+                <span className="flex-1 text-left">Collapse menu</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* User Profile */}
-      <div className="px-3 py-3 border-t border-sidebar-hover">
-        <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-8 h-8 rounded-full bg-sidebar-hover flex items-center justify-center">
-            <span className="text-white font-medium text-xs">
-              {user.firstName[0]}{user.lastName[0]}
-            </span>
+      <div className={cn(
+        "py-3 border-t border-sidebar-hover",
+        isCollapsed ? "px-2" : "px-3"
+      )}>
+        {isCollapsed ? (
+          <div className="flex flex-col items-center gap-2">
+            <Tooltip label={`${user.firstName} ${user.lastName}`}>
+              <div className="w-8 h-8 rounded-full bg-sidebar-hover flex items-center justify-center cursor-default">
+                <span className="text-white font-medium text-xs">
+                  {user.firstName[0]}{user.lastName[0]}
+                </span>
+              </div>
+            </Tooltip>
+            <Tooltip label="Sign out">
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="p-2 rounded-md text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </Tooltip>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-white truncate">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="text-[10px] text-sidebar-text">
-              {ROLE_LABELS[user.role]}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-xs text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          Sign out
-        </button>
+        ) : (
+          <>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-8 h-8 rounded-full bg-sidebar-hover flex items-center justify-center">
+                <span className="text-white font-medium text-xs">
+                  {user.firstName[0]}{user.lastName[0]}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-white truncate">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-[10px] text-sidebar-text">
+                  {ROLE_LABELS[user.role]}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-xs text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign out
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );

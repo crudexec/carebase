@@ -103,14 +103,17 @@ export async function GET(
     }
 
     // Transform response
+    const schemaSnapshot = visitNote.formSchemaSnapshot as unknown as FormSchemaSnapshot;
     const response = {
       id: visitNote.id,
-      formSchemaSnapshot: visitNote.formSchemaSnapshot as unknown as FormSchemaSnapshot,
+      formSchemaSnapshot: schemaSnapshot,
       data: visitNote.data as unknown as VisitNoteData,
       submittedAt: visitNote.submittedAt.toISOString(),
       updatedAt: visitNote.updatedAt.toISOString(),
       templateId: visitNote.templateId,
+      templateName: schemaSnapshot?.templateName || (schemaSnapshot as FormSchemaSnapshot & { name?: string })?.name || null,
       templateVersion: visitNote.templateVersion,
+      shiftId: visitNote.shiftId,
       qaStatus: visitNote.qaStatus,
       qaComment: visitNote.qaComment,
       qaReviewedAt: visitNote.qaReviewedAt?.toISOString() || null,
@@ -202,14 +205,14 @@ export async function PATCH(
     const isOwner = visitNote.carerId === user.id;
     const canManageAll = hasPermission(user.role, PERMISSIONS.VISIT_NOTE_VIEW_ALL);
 
-    // Carers can only edit their own rejected notes
+    // Carers can only edit their own notes that haven't been approved
     if (user.role === "CARER") {
       if (!isOwner) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
-      if (visitNote.qaStatus !== "REJECTED") {
+      if (visitNote.qaStatus === "APPROVED") {
         return NextResponse.json(
-          { error: "Can only edit rejected visit notes" },
+          { error: "Cannot edit approved visit notes" },
           { status: 400 }
         );
       }

@@ -74,14 +74,6 @@ export async function POST(
       );
     }
 
-    // Check if signature already exists
-    if (shift.clientSignature) {
-      return NextResponse.json(
-        { error: "Client signature has already been captured for this shift" },
-        { status: 400 }
-      );
-    }
-
     // Parse and validate request body
     const body = await request.json();
     const validation = signatureSchema.safeParse(body);

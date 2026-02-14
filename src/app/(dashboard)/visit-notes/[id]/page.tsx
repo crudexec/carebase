@@ -15,19 +15,15 @@ import {
   Label,
   Textarea,
   Breadcrumb,
+  Input,
 } from "@/components/ui";
 import {
-  VisitNoteDetail,
-  FormSchemaSnapshot,
   FieldValue,
-  FIELD_TYPE_LABELS,
-  ThresholdBreachData,
   VisitNoteDetailWithBreaches,
 } from "@/lib/visit-notes/types";
 import { ThresholdAlertBanner } from "@/components/visit-notes/threshold-alert-banner";
 import { FormFieldType, UserRole } from "@prisma/client";
 import {
-  ArrowLeft,
   Loader2,
   Calendar,
   Clock,
@@ -42,6 +38,8 @@ import {
   AlertCircle,
   Clock3,
   XCircle,
+  FileText,
+  Printer,
 } from "lucide-react";
 import { Rating } from "@/components/ui";
 
@@ -102,6 +100,15 @@ export default function ViewVisitNotePage() {
   const [isQaSubmitting, setIsQaSubmitting] = React.useState(false);
   const [showQaModal, setShowQaModal] = React.useState<"approve" | "reject" | null>(null);
 
+  // PDF/Fax state
+  const [isDownloadingPdf, setIsDownloadingPdf] = React.useState(false);
+  const [showFaxModal, setShowFaxModal] = React.useState(false);
+  const [faxNumber, setFaxNumber] = React.useState("");
+  const [faxRecipientName, setFaxRecipientName] = React.useState("");
+  const [isSendingFax, setIsSendingFax] = React.useState(false);
+  const [faxSuccess, setFaxSuccess] = React.useState<string | null>(null);
+  const [faxError, setFaxError] = React.useState<string | null>(null);
+
   // Check if user can review QA
   const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"].includes(session.user.role);
 
@@ -109,13 +116,7 @@ export default function ViewVisitNotePage() {
   const isOwner = session?.user?.id === visitNote?.carer?.id;
   const canResubmit = isOwner && visitNote?.qaStatus === "REJECTED";
 
-  React.useEffect(() => {
-    fetchVisitNote();
-    fetchComments();
-    fetchStaffMembers();
-  }, [noteId]);
-
-  const fetchVisitNote = async () => {
+  const fetchVisitNote = React.useCallback(async () => {
     try {
       const response = await fetch(`/api/visit-notes/${noteId}`);
       const data = await response.json();
@@ -130,9 +131,9 @@ export default function ViewVisitNotePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [noteId]);
 
-  const fetchComments = async () => {
+  const fetchComments = React.useCallback(async () => {
     try {
       const response = await fetch(`/api/visit-notes/${noteId}/comments`);
       if (response.ok) {
@@ -142,7 +143,13 @@ export default function ViewVisitNotePage() {
     } catch {
       // Ignore errors for comments
     }
-  };
+  }, [noteId]);
+
+  React.useEffect(() => {
+    fetchVisitNote();
+    fetchComments();
+    fetchStaffMembers();
+  }, [fetchVisitNote, fetchComments]);
 
   const fetchStaffMembers = async () => {
     try {
@@ -325,6 +332,84 @@ export default function ViewVisitNotePage() {
     }
   };
 
+  // PDF Download handler
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const response = await fetch(`/api/visit-notes/${noteId}/pdf`);
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = response.headers.get("Content-Disposition")?.split("filename=")[1]?.replace(/"/g, "") || "visit-note.pdf";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download PDF");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  // Fax send handler
+  const handleSendFax = async () => {
+    if (!faxNumber.trim()) {
+      setFaxError("Please enter a fax number");
+      return;
+    }
+
+    setIsSendingFax(true);
+    setFaxError(null);
+    setFaxSuccess(null);
+
+    try {
+      const response = await fetch(`/api/visit-notes/${noteId}/fax`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toNumber: faxNumber,
+          recipientName: faxRecipientName || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send fax");
+      }
+
+      setFaxSuccess("Fax queued successfully!");
+      setTimeout(() => {
+        setShowFaxModal(false);
+        setFaxNumber("");
+        setFaxRecipientName("");
+        setFaxSuccess(null);
+      }, 2000);
+    } catch (err) {
+      setFaxError(err instanceof Error ? err.message : "Failed to send fax");
+    } finally {
+      setIsSendingFax(false);
+    }
+  };
+
+  // Open fax modal with pre-filled physician fax if available
+  const openFaxModal = () => {
+    if (visitNote?.client) {
+      // Pre-fill with client's physician info if available
+      const clientData = visitNote.client as { physicianFax?: string; physicianName?: string };
+      setFaxNumber(clientData.physicianFax || "");
+      setFaxRecipientName(clientData.physicianName || "");
+    }
+    setFaxError(null);
+    setFaxSuccess(null);
+    setShowFaxModal(true);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
@@ -439,15 +524,43 @@ export default function ViewVisitNotePage() {
       />
 
       {/* Header */}
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">{schema.templateName}</h1>
-          <Badge variant="default">v{schema.version}</Badge>
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{schema.templateName}</h1>
+            <Badge variant="default">v{schema.version}</Badge>
+          </div>
+          <p className="text-foreground-secondary">
+            Submitted {formatDate(visitNote.submittedAt)} at{" "}
+            {formatTime(visitNote.submittedAt)}
+          </p>
         </div>
-        <p className="text-foreground-secondary">
-          Submitted {formatDate(visitNote.submittedAt)} at{" "}
-          {formatTime(visitNote.submittedAt)}
-        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+          >
+            {isDownloadingPdf ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4 mr-2" />
+                Export PDF
+              </>
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={openFaxModal}
+          >
+            <Printer className="w-4 h-4 mr-2" />
+            Send Fax
+          </Button>
+        </div>
       </div>
 
       {/* Threshold Breach Alerts */}
@@ -959,6 +1072,99 @@ export default function ViewVisitNotePage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Fax Modal */}
+      {showFaxModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                  <Printer className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Send Visit Note via Fax</CardTitle>
+                  <CardDescription>
+                    {visitNote.client.firstName} {visitNote.client.lastName}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {faxSuccess ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>{faxSuccess}</span>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="faxNumber">Fax Number *</Label>
+                    <Input
+                      id="faxNumber"
+                      type="tel"
+                      value={faxNumber}
+                      onChange={(e) => setFaxNumber(e.target.value)}
+                      placeholder="(555) 123-4567"
+                    />
+                    <p className="text-xs text-foreground-tertiary">
+                      Enter the fax number to send to
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="faxRecipientName">Recipient Name</Label>
+                    <Input
+                      id="faxRecipientName"
+                      value={faxRecipientName}
+                      onChange={(e) => setFaxRecipientName(e.target.value)}
+                      placeholder="Dr. John Smith"
+                    />
+                  </div>
+
+                  {faxError && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-error/10 text-error text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{faxError}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowFaxModal(false);
+                        setFaxNumber("");
+                        setFaxRecipientName("");
+                        setFaxError(null);
+                      }}
+                      disabled={isSendingFax}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSendFax}
+                      disabled={isSendingFax || !faxNumber.trim()}
+                    >
+                      {isSendingFax ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Fax
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

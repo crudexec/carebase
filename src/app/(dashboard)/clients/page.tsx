@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ClientStatus } from "@prisma/client";
 import {
@@ -27,6 +26,12 @@ import {
   ChevronDown,
   Trash2,
   RotateCcw,
+  Stethoscope,
+  Phone,
+  HeartPulse,
+  UserCheck,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 
 interface ClientData {
@@ -39,6 +44,25 @@ interface ClientData {
   medicalNotes: string | null;
   status: ClientStatus;
   createdAt: string;
+  // Insurance fields
+  medicaidId: string | null;
+  medicaidPayerId: string | null;
+  secondaryInsuranceId: string | null;
+  secondaryPayerId: string | null;
+  // PCP fields
+  physicianName: string | null;
+  physicianNpi: string | null;
+  physicianPhone: string | null;
+  physicianFax: string | null;
+  physicianAddress: string | null;
+  // Referral fields
+  referralSource: string | null;
+  referralDate: string | null;
+  referringPhysicianName: string | null;
+  referringPhysicianNpi: string | null;
+  referringPhysicianPhone: string | null;
+  referringPhysicianFax: string | null;
+  referralNotes: string | null;
   sponsor: {
     id: string;
     firstName: string;
@@ -75,7 +99,6 @@ type SortField = "name" | "dob" | "status" | "carer" | "createdAt";
 type SortDirection = "asc" | "desc";
 
 export default function ClientsPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [clients, setClients] = React.useState<ClientData[]>([]);
   const [carers, setCarers] = React.useState<CarerOption[]>([]);
@@ -87,7 +110,6 @@ export default function ClientsPage() {
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
   // Modal states
-  const [showAddModal, setShowAddModal] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<ClientData | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -102,6 +124,25 @@ export default function ClientsPage() {
     medicalNotes: "",
     status: "PROSPECT" as ClientStatus,
     assignedCarerId: "",
+    // Insurance fields
+    medicaidId: "",
+    medicaidPayerId: "",
+    secondaryInsuranceId: "",
+    secondaryPayerId: "",
+    // PCP fields
+    physicianName: "",
+    physicianNpi: "",
+    physicianPhone: "",
+    physicianFax: "",
+    physicianAddress: "",
+    // Referral fields
+    referralSource: "",
+    referralDate: "",
+    referringPhysicianName: "",
+    referringPhysicianNpi: "",
+    referringPhysicianPhone: "",
+    referringPhysicianFax: "",
+    referralNotes: "",
   });
 
   const fetchClients = React.useCallback(async () => {
@@ -150,40 +191,26 @@ export default function ClientsPage() {
       medicalNotes: "",
       status: "PROSPECT",
       assignedCarerId: "",
+      // Insurance fields
+      medicaidId: "",
+      medicaidPayerId: "",
+      secondaryInsuranceId: "",
+      secondaryPayerId: "",
+      // PCP fields
+      physicianName: "",
+      physicianNpi: "",
+      physicianPhone: "",
+      physicianFax: "",
+      physicianAddress: "",
+      // Referral fields
+      referralSource: "",
+      referralDate: "",
+      referringPhysicianName: "",
+      referringPhysicianNpi: "",
+      referringPhysicianPhone: "",
+      referringPhysicianFax: "",
+      referralNotes: "",
     });
-  };
-
-  const handleAddClient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          dateOfBirth: formData.dateOfBirth || null,
-          address: formData.address || null,
-          phone: formData.phone || null,
-          medicalNotes: formData.medicalNotes || null,
-          assignedCarerId: formData.assignedCarerId || null,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to add client");
-      }
-
-      setShowAddModal(false);
-      resetForm();
-      await fetchClients();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add client");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleEditClient = async (e: React.FormEvent) => {
@@ -204,6 +231,25 @@ export default function ClientsPage() {
           medicalNotes: formData.medicalNotes || null,
           status: formData.status,
           assignedCarerId: formData.assignedCarerId || null,
+          // Insurance fields
+          medicaidId: formData.medicaidId || null,
+          medicaidPayerId: formData.medicaidPayerId || null,
+          secondaryInsuranceId: formData.secondaryInsuranceId || null,
+          secondaryPayerId: formData.secondaryPayerId || null,
+          // PCP fields
+          physicianName: formData.physicianName || null,
+          physicianNpi: formData.physicianNpi || null,
+          physicianPhone: formData.physicianPhone || null,
+          physicianFax: formData.physicianFax || null,
+          physicianAddress: formData.physicianAddress || null,
+          // Referral fields
+          referralSource: formData.referralSource || null,
+          referralDate: formData.referralDate || null,
+          referringPhysicianName: formData.referringPhysicianName || null,
+          referringPhysicianNpi: formData.referringPhysicianNpi || null,
+          referringPhysicianPhone: formData.referringPhysicianPhone || null,
+          referringPhysicianFax: formData.referringPhysicianFax || null,
+          referralNotes: formData.referralNotes || null,
         }),
       });
 
@@ -253,6 +299,25 @@ export default function ClientsPage() {
       medicalNotes: client.medicalNotes || "",
       status: client.status,
       assignedCarerId: client.assignedCarer?.id || "",
+      // Insurance fields
+      medicaidId: client.medicaidId || "",
+      medicaidPayerId: client.medicaidPayerId || "",
+      secondaryInsuranceId: client.secondaryInsuranceId || "",
+      secondaryPayerId: client.secondaryPayerId || "",
+      // PCP fields
+      physicianName: client.physicianName || "",
+      physicianNpi: client.physicianNpi || "",
+      physicianPhone: client.physicianPhone || "",
+      physicianFax: client.physicianFax || "",
+      physicianAddress: client.physicianAddress || "",
+      // Referral fields
+      referralSource: client.referralSource || "",
+      referralDate: client.referralDate ? client.referralDate.split("T")[0] : "",
+      referringPhysicianName: client.referringPhysicianName || "",
+      referringPhysicianNpi: client.referringPhysicianNpi || "",
+      referringPhysicianPhone: client.referringPhysicianPhone || "",
+      referringPhysicianFax: client.referringPhysicianFax || "",
+      referralNotes: client.referralNotes || "",
     });
     setShowEditModal(true);
   };
@@ -355,7 +420,7 @@ export default function ClientsPage() {
             <RefreshCw className="w-4 h-4 mr-1" />
             Refresh
           </Button>
-          <Button onClick={() => setShowAddModal(true)}>
+          <Button onClick={() => router.push("/clients/new")}>
             <Plus className="w-4 h-4 mr-1" />
             Add Client
           </Button>
@@ -414,7 +479,7 @@ export default function ClientsPage() {
           <CardContent className="p-12 text-center">
             <User className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
             <p className="text-foreground-secondary">No clients found</p>
-            <Button className="mt-4" onClick={() => setShowAddModal(true)}>
+            <Button className="mt-4" onClick={() => router.push("/clients/new")}>
               <Plus className="w-4 h-4 mr-1" />
               Add Client
             </Button>
@@ -547,162 +612,6 @@ export default function ClientsPage() {
         </Card>
       )}
 
-      {/* Add Client Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-background z-10">
-              <CardTitle>Add New Client</CardTitle>
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  resetForm();
-                }}
-                className="text-foreground-secondary hover:text-foreground"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleAddClient} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" required>
-                      First Name
-                    </Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, firstName: e.target.value }))
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" required>
-                      Last Name
-                    </Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, lastName: e.target.value }))
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    id="status"
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        status: e.target.value as ClientStatus,
-                      }))
-                    }
-                  >
-                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="assignedCarerId">Assigned Carer</Label>
-                  <Select
-                    id="assignedCarerId"
-                    value={formData.assignedCarerId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        assignedCarerId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">No Carer Assigned</option>
-                    {carers.map((carer) => (
-                      <option key={carer.id} value={carer.id}>
-                        {carer.firstName} {carer.lastName}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="medicalNotes">Medical Notes</Label>
-                  <Textarea
-                    id="medicalNotes"
-                    value={formData.medicalNotes}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, medicalNotes: e.target.value }))
-                    }
-                    rows={4}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowAddModal(false);
-                      resetForm();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Adding..." : "Add Client"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Edit Client Modal */}
       {showEditModal && selectedClient && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -721,125 +630,376 @@ export default function ClientsPage() {
               </button>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleEditClient} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleEditClient} className="space-y-6">
+                {/* Personal Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <User className="w-4 h-4 text-primary" />
+                    Personal Information
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editFirstName" required>
+                        First Name
+                      </Label>
+                      <Input
+                        id="editFirstName"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editLastName" required>
+                        Last Name
+                      </Label>
+                      <Input
+                        id="editLastName"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editFirstName" required>
-                      First Name
-                    </Label>
+                    <Label htmlFor="editDateOfBirth">Date of Birth</Label>
                     <Input
-                      id="editFirstName"
-                      value={formData.firstName}
+                      id="editDateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                        setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
                       }
-                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Information Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Phone className="w-4 h-4 text-primary" />
+                    Contact Information
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editPhone">Phone</Label>
+                    <Input
+                      id="editPhone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                      }
+                      placeholder="(555) 123-4567"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editLastName" required>
-                      Last Name
-                    </Label>
+                    <Label htmlFor="editAddress">Address</Label>
                     <Input
-                      id="editLastName"
-                      value={formData.lastName}
+                      id="editAddress"
+                      value={formData.address}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                        setFormData((prev) => ({ ...prev, address: e.target.value }))
                       }
-                      required
+                      placeholder="123 Main St, City, State 12345"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editDateOfBirth">Date of Birth</Label>
-                  <Input
-                    id="editDateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
-                    }
-                  />
+                {/* Care Assignment Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <UserCheck className="w-4 h-4 text-primary" />
+                    Care Assignment
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editStatus">Status</Label>
+                      <Select
+                        id="editStatus"
+                        value={formData.status}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            status: e.target.value as ClientStatus,
+                          }))
+                        }
+                      >
+                        {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editAssignedCarerId">Assigned Carer</Label>
+                      <Select
+                        id="editAssignedCarerId"
+                        value={formData.assignedCarerId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            assignedCarerId: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">No Carer Assigned</option>
+                        {carers.map((carer) => (
+                          <option key={carer.id} value={carer.id}>
+                            {carer.firstName} {carer.lastName}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editPhone">Phone</Label>
-                  <Input
-                    id="editPhone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                    }
-                  />
+                {/* Insurance Information Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <CreditCard className="w-4 h-4 text-primary" />
+                    Insurance Information
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editMedicaidId">Medicaid ID</Label>
+                      <Input
+                        id="editMedicaidId"
+                        value={formData.medicaidId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, medicaidId: e.target.value }))
+                        }
+                        placeholder="Member ID"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editMedicaidPayerId">Medicaid Payer ID</Label>
+                      <Input
+                        id="editMedicaidPayerId"
+                        value={formData.medicaidPayerId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, medicaidPayerId: e.target.value }))
+                        }
+                        placeholder="Payer ID"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editSecondaryInsuranceId">Secondary Insurance ID</Label>
+                      <Input
+                        id="editSecondaryInsuranceId"
+                        value={formData.secondaryInsuranceId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, secondaryInsuranceId: e.target.value }))
+                        }
+                        placeholder="Secondary Member ID"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editSecondaryPayerId">Secondary Payer ID</Label>
+                      <Input
+                        id="editSecondaryPayerId"
+                        value={formData.secondaryPayerId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, secondaryPayerId: e.target.value }))
+                        }
+                        placeholder="Secondary Payer ID"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editAddress">Address</Label>
-                  <Input
-                    id="editAddress"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                  />
+                {/* Medical Information Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <HeartPulse className="w-4 h-4 text-primary" />
+                    Medical Information
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editMedicalNotes">Medical Notes</Label>
+                    <Textarea
+                      id="editMedicalNotes"
+                      value={formData.medicalNotes}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, medicalNotes: e.target.value }))
+                      }
+                      rows={3}
+                      placeholder="Enter medical conditions, medications, or special care requirements..."
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editStatus">Status</Label>
-                  <Select
-                    id="editStatus"
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        status: e.target.value as ClientStatus,
-                      }))
-                    }
-                  >
-                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </Select>
+                {/* PCP (Primary Care Physician) Information Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Stethoscope className="w-4 h-4 text-primary" />
+                    PCP (Primary Care Physician)
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editPhysicianName">Physician Name</Label>
+                      <Input
+                        id="editPhysicianName"
+                        value={formData.physicianName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianName: e.target.value }))
+                        }
+                        placeholder="Dr. John Smith"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editPhysicianNpi">NPI Number</Label>
+                      <Input
+                        id="editPhysicianNpi"
+                        value={formData.physicianNpi}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianNpi: e.target.value }))
+                        }
+                        placeholder="10-digit NPI"
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editPhysicianPhone">Phone Number</Label>
+                      <Input
+                        id="editPhysicianPhone"
+                        type="tel"
+                        value={formData.physicianPhone}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianPhone: e.target.value }))
+                        }
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editPhysicianFax">Fax Number</Label>
+                      <Input
+                        id="editPhysicianFax"
+                        type="tel"
+                        value={formData.physicianFax}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianFax: e.target.value }))
+                        }
+                        placeholder="(555) 123-4568"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editPhysicianAddress">Office Address</Label>
+                    <Input
+                      id="editPhysicianAddress"
+                      value={formData.physicianAddress}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, physicianAddress: e.target.value }))
+                      }
+                      placeholder="123 Medical Center Dr, City, State 12345"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editAssignedCarerId">Assigned Carer</Label>
-                  <Select
-                    id="editAssignedCarerId"
-                    value={formData.assignedCarerId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        assignedCarerId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">No Carer Assigned</option>
-                    {carers.map((carer) => (
-                      <option key={carer.id} value={carer.id}>
-                        {carer.firstName} {carer.lastName}
-                      </option>
-                    ))}
-                  </Select>
+                {/* Referral Information Section */}
+                <div className="border-t border-border pt-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <FileText className="w-4 h-4 text-primary" />
+                    Referral Information
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferralSource">Referral Source</Label>
+                      <Input
+                        id="editReferralSource"
+                        value={formData.referralSource}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referralSource: e.target.value }))
+                        }
+                        placeholder="Hospital, Physician, Self, etc."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferralDate">Referral Date</Label>
+                      <Input
+                        id="editReferralDate"
+                        type="date"
+                        value={formData.referralDate}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referralDate: e.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferringPhysicianName">Referring Physician Name</Label>
+                      <Input
+                        id="editReferringPhysicianName"
+                        value={formData.referringPhysicianName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referringPhysicianName: e.target.value }))
+                        }
+                        placeholder="Dr. Jane Doe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferringPhysicianNpi">Referring Physician NPI</Label>
+                      <Input
+                        id="editReferringPhysicianNpi"
+                        value={formData.referringPhysicianNpi}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referringPhysicianNpi: e.target.value }))
+                        }
+                        placeholder="10-digit NPI"
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferringPhysicianPhone">Referring Physician Phone</Label>
+                      <Input
+                        id="editReferringPhysicianPhone"
+                        type="tel"
+                        value={formData.referringPhysicianPhone}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referringPhysicianPhone: e.target.value }))
+                        }
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editReferringPhysicianFax">Referring Physician Fax</Label>
+                      <Input
+                        id="editReferringPhysicianFax"
+                        type="tel"
+                        value={formData.referringPhysicianFax}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, referringPhysicianFax: e.target.value }))
+                        }
+                        placeholder="(555) 123-4568"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editReferralNotes">Referral Notes</Label>
+                    <Textarea
+                      id="editReferralNotes"
+                      value={formData.referralNotes}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, referralNotes: e.target.value }))
+                      }
+                      rows={2}
+                      placeholder="Additional referral information..."
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="editMedicalNotes">Medical Notes</Label>
-                  <Textarea
-                    id="editMedicalNotes"
-                    value={formData.medicalNotes}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, medicalNotes: e.target.value }))
-                    }
-                    rows={4}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-end gap-2 pt-4 border-t border-border">
                   <Button
                     type="button"
                     variant="ghost"

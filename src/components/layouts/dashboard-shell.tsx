@@ -1,12 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
-import { Menu, HelpCircle } from "lucide-react";
+import { Menu, HelpCircle, PanelLeft } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { cn } from "@/lib/utils";
 import { AlertsDrawer, AlertsBellTrigger } from "@/components/alerts/alerts-drawer";
+
+const SIDEBAR_COLLAPSED_KEY = "carebase-sidebar-collapsed";
+
+// Custom hook for localStorage with SSR support
+function useLocalStorage(key: string, defaultValue: boolean): [boolean, (value: boolean) => void] {
+  const getSnapshot = () => {
+    const stored = localStorage.getItem(key);
+    return stored === "true";
+  };
+
+  const getServerSnapshot = () => defaultValue;
+
+  const subscribe = (callback: () => void) => {
+    window.addEventListener("storage", callback);
+    return () => window.removeEventListener("storage", callback);
+  };
+
+  const storedValue = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const setValue = (value: boolean) => {
+    localStorage.setItem(key, String(value));
+    // Dispatch storage event to trigger re-render
+    window.dispatchEvent(new StorageEvent("storage", { key }));
+  };
+
+  return [storedValue, setValue];
+}
 
 interface DashboardShellProps {
   user: {
@@ -23,12 +50,19 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
+
+  // Toggle collapsed state (automatically persisted via useLocalStorage)
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
   // Handle responsive detection
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
         setSidebarOpen(false);
       }
     };
@@ -46,7 +80,7 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && isMobile && (
         <div
@@ -55,18 +89,26 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Sticky on desktop, fixed on mobile */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out",
+          "lg:sticky lg:top-0 lg:h-screen lg:z-40",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <Sidebar user={user} companyName={companyName} onClose={() => setSidebarOpen(false)} showClose={isMobile} />
+        <Sidebar
+          user={user}
+          companyName={companyName}
+          onClose={() => setSidebarOpen(false)}
+          showClose={isMobile}
+          isCollapsed={!isMobile && isCollapsed}
+          onToggleCollapse={!isMobile ? toggleCollapsed : undefined}
+        />
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Mobile header */}
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white border-b border-border lg:hidden">
           <div className="flex items-center gap-3">
@@ -97,19 +139,35 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
         </header>
 
         {/* Desktop header */}
-        <header className="hidden lg:flex sticky top-0 z-30 items-center justify-end gap-1 px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-border">
-          <Link
-            href="/help"
-            className="relative p-2 rounded-lg hover:bg-background-secondary transition-colors"
-            title="Help Center"
-          >
-            <HelpCircle className="w-5 h-5 text-foreground-secondary" />
-          </Link>
-          <AlertsBellTrigger onClick={() => setAlertsOpen(true)} />
+        <header className="hidden lg:flex sticky top-0 z-30 items-center justify-between gap-1 px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-border">
+          {/* Left side - Collapse toggle when collapsed */}
+          <div className="flex items-center">
+            {isCollapsed && (
+              <button
+                onClick={toggleCollapsed}
+                className="p-2 -ml-2 rounded-lg text-foreground-secondary hover:bg-background-secondary hover:text-foreground transition-colors"
+                title="Expand sidebar"
+              >
+                <PanelLeft className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Right side - Help and alerts */}
+          <div className="flex items-center gap-1">
+            <Link
+              href="/help"
+              className="relative p-2 rounded-lg hover:bg-background-secondary transition-colors"
+              title="Help Center"
+            >
+              <HelpCircle className="w-5 h-5 text-foreground-secondary" />
+            </Link>
+            <AlertsBellTrigger onClick={() => setAlertsOpen(true)} />
+          </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-4 lg:p-6">{children}</div>
         </main>
       </div>

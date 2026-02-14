@@ -18,10 +18,15 @@ import {
   BarChart3,
   ArrowRight,
   Check,
-  Phone,
   Mail,
   MapPin,
+  X,
+  ChevronDown,
+  ShieldCheck,
+  Award,
+  Building2,
 } from "lucide-react";
+import { DemoRequestForm } from "@/components/marketing/demo-request-form";
 
 const features = [
   {
@@ -140,6 +145,55 @@ const stats = [
   { value: "4.9/5", label: "User Rating" },
 ];
 
+const comparisonFeatures = [
+  { feature: "Client Management", carebase: true, spreadsheets: false, legacy: true },
+  { feature: "Real-time Scheduling", carebase: true, spreadsheets: false, legacy: false },
+  { feature: "Mobile App for Carers", carebase: true, spreadsheets: false, legacy: false },
+  { feature: "Automated EVV Compliance", carebase: true, spreadsheets: false, legacy: true },
+  { feature: "Family Portal Access", carebase: true, spreadsheets: false, legacy: false },
+  { feature: "Integrated Billing", carebase: true, spreadsheets: false, legacy: true },
+  { feature: "Custom Assessments", carebase: true, spreadsheets: false, legacy: false },
+  { feature: "Real-time Notifications", carebase: true, spreadsheets: false, legacy: false },
+  { feature: "HIPAA Compliant", carebase: true, spreadsheets: false, legacy: true },
+  { feature: "Setup in 24 Hours", carebase: true, spreadsheets: true, legacy: false },
+  { feature: "No IT Team Required", carebase: true, spreadsheets: true, legacy: false },
+  { feature: "Modern User Interface", carebase: true, spreadsheets: false, legacy: false },
+];
+
+const faqs = [
+  {
+    question: "How long does it take to get started with CareBase?",
+    answer: "Most agencies are fully operational within 24 hours. Our onboarding team helps you import existing client and staff data, configure your settings, and train your team. We provide hands-on support throughout the entire process.",
+  },
+  {
+    question: "Can I import data from my current system?",
+    answer: "Yes! We support data imports from spreadsheets, legacy software, and other care management systems. Our team handles the migration for you, ensuring all your client records, staff information, and historical data transfer seamlessly.",
+  },
+  {
+    question: "Is CareBase HIPAA compliant?",
+    answer: "Absolutely. CareBase is fully HIPAA compliant with enterprise-grade security. We use end-to-end encryption, secure data centers, regular security audits, and strict access controls. We also provide Business Associate Agreements (BAAs) for all customers.",
+  },
+  {
+    question: "Does CareBase work with Medicaid and EVV requirements?",
+    answer: "Yes, CareBase is designed to meet state EVV (Electronic Visit Verification) requirements. We support GPS verification, telephony check-in, and integrate with state aggregators. Our system automatically captures all required data points for compliance.",
+  },
+  {
+    question: "What kind of support is included?",
+    answer: "All plans include email support with 24-hour response times. Professional and Enterprise plans include priority phone support, dedicated account managers, and custom training sessions. We also provide extensive documentation and video tutorials.",
+  },
+  {
+    question: "Can family members access the system?",
+    answer: "Yes! Our Sponsor Portal allows family members to view care updates, scheduled visits, and communicate with caregivers. They get read-only access to relevant information while maintaining full privacy controls for your agency.",
+  },
+];
+
+const complianceBadges = [
+  { name: "HIPAA", description: "Compliant" },
+  { name: "SOC 2", description: "Type II Certified" },
+  { name: "EVV", description: "All 50 States" },
+  { name: "256-bit", description: "Encryption" },
+];
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
@@ -167,6 +221,12 @@ export default function Home() {
                 className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
               >
                 Benefits
+              </a>
+              <a
+                href="#demo"
+                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
+              >
+                Demo
               </a>
               <a
                 href="#contact"
@@ -233,18 +293,18 @@ export default function Home() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slideUp"
               style={{ animationDelay: "0.3s" }}
             >
-              <Link
-                href="/register"
+              <a
+                href="#demo"
                 className="group bg-primary hover:bg-primary-hover text-white font-medium px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
               >
-                Start Free Trial
+                Request a Demo
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </a>
               <Link
-                href="/login"
+                href="/register"
                 className="bg-white hover:bg-background-secondary text-foreground font-medium px-8 py-4 rounded-xl border border-border transition-all flex items-center gap-2"
               >
-                Sign In to Dashboard
+                Start Free Trial
               </Link>
             </div>
           </div>
@@ -264,6 +324,25 @@ export default function Home() {
                 </div>
                 <div className="text-body-sm text-foreground-secondary">
                   {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust Badges */}
+          <div
+            className="flex flex-wrap justify-center items-center gap-8 mt-16 animate-slideUp"
+            style={{ animationDelay: "0.5s" }}
+          >
+            {complianceBadges.map((badge, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 px-5 py-3 rounded-full bg-background-tertiary border border-border/50"
+              >
+                <ShieldCheck className="w-5 h-5 text-success" />
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-foreground">{badge.name}</div>
+                  <div className="text-xs text-foreground-secondary">{badge.description}</div>
                 </div>
               </div>
             ))}
@@ -394,6 +473,184 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Comparison Section */}
+      <section className="py-24 px-6 bg-background-secondary/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Why Switch to
+              <br />
+              <span className="text-primary">CareBase?</span>
+            </h2>
+            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
+              See how CareBase compares to spreadsheets and legacy care management systems.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-4 px-4 text-foreground font-semibold">Feature</th>
+                  <th className="text-center py-4 px-4 min-w-[140px]">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
+                      <Heart className="w-4 h-4 text-primary" />
+                      <span className="text-primary font-semibold">CareBase</span>
+                    </div>
+                  </th>
+                  <th className="text-center py-4 px-4 min-w-[140px]">
+                    <span className="text-foreground-secondary font-medium">Spreadsheets</span>
+                  </th>
+                  <th className="text-center py-4 px-4 min-w-[140px]">
+                    <span className="text-foreground-secondary font-medium">Legacy Systems</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonFeatures.map((row, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-border/50 hover:bg-background-tertiary/50 transition-colors"
+                  >
+                    <td className="py-4 px-4 text-foreground">{row.feature}</td>
+                    <td className="text-center py-4 px-4">
+                      {row.carebase ? (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
+                          <Check className="w-5 h-5 text-success" />
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
+                          <X className="w-5 h-5 text-foreground-tertiary" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      {row.spreadsheets ? (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
+                          <Check className="w-5 h-5 text-success" />
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
+                          <X className="w-5 h-5 text-foreground-tertiary" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      {row.legacy ? (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
+                          <Check className="w-5 h-5 text-success" />
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
+                          <X className="w-5 h-5 text-foreground-tertiary" />
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Frequently Asked
+              <br />
+              <span className="text-primary">Questions</span>
+            </h2>
+            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
+              Everything you need to know about getting started with CareBase.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <details
+                key={index}
+                className="group rounded-2xl bg-background-tertiary border border-border/50 overflow-hidden"
+              >
+                <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none hover:bg-background-secondary/50 transition-colors">
+                  <h3 className="text-foreground font-semibold text-left">
+                    {faq.question}
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-foreground-secondary flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-5 text-foreground-secondary leading-relaxed">
+                  {faq.answer}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Request Section */}
+      <section id="demo" className="py-24 px-6 bg-background-secondary/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                Ready to See CareBase
+                <br />
+                <span className="text-primary">In Action?</span>
+              </h2>
+              <p className="text-lg text-foreground-secondary mb-8">
+                Schedule a personalized demo with our team. We&apos;ll walk you through
+                how CareBase can transform your agency&apos;s operations.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">30-Minute Demo</h3>
+                    <p className="text-foreground-secondary text-sm">
+                      See the full platform tailored to your agency&apos;s specific needs
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Award className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Free Trial Access</h3>
+                    <p className="text-foreground-secondary text-sm">
+                      Get hands-on experience with a 14-day free trial after the demo
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Custom Onboarding</h3>
+                    <p className="text-foreground-secondary text-sm">
+                      Our team helps you migrate data and train your staff
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-background rounded-2xl border border-border shadow-xl p-8">
+              <h3 className="text-xl font-semibold text-foreground mb-6">
+                Request Your Demo
+              </h3>
+              <DemoRequestForm />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 px-6 bg-sidebar">
         <div className="max-w-4xl mx-auto text-center">
@@ -414,36 +671,20 @@ export default function Home() {
               Start Your Free Trial
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              href="/login"
+            <a
+              href="#demo"
               className="text-white hover:text-sidebar-text font-medium px-8 py-4 rounded-xl border border-sidebar-hover hover:bg-sidebar-hover transition-all flex items-center gap-2"
             >
-              Contact Sales
-            </Link>
+              Schedule a Demo
+            </a>
           </div>
         </div>
       </section>
 
       {/* Contact Section */}
       <section id="contact" className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-background-tertiary border border-border hover:border-primary/30 transition-colors">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-5">
-                <Phone className="w-7 h-7" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Call Us</h3>
-              <p className="text-body text-foreground-secondary mb-4">
-                Mon-Fri from 8am to 6pm
-              </p>
-              <a
-                href="tel:+1-800-CARE-123"
-                className="text-primary hover:text-primary-hover font-medium"
-              >
-                +1 (800) CARE-123
-              </a>
-            </div>
-
+        <div className="max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
             <div className="text-center p-8 rounded-2xl bg-background-tertiary border border-border hover:border-primary/30 transition-colors">
               <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-5">
                 <Mail className="w-7 h-7" />

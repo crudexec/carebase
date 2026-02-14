@@ -15,6 +15,25 @@ const updateClientSchema = z.object({
   status: z.nativeEnum(ClientStatus).optional(),
   assignedCarerId: z.string().nullable().optional(),
   sponsorId: z.string().nullable().optional(),
+  // Insurance fields
+  medicaidId: z.string().max(50).nullable().optional(),
+  medicaidPayerId: z.string().max(50).nullable().optional(),
+  secondaryInsuranceId: z.string().max(50).nullable().optional(),
+  secondaryPayerId: z.string().max(50).nullable().optional(),
+  // PCP (Primary Care Physician) fields
+  physicianName: z.string().max(200).nullable().optional(),
+  physicianNpi: z.string().max(20).nullable().optional(),
+  physicianPhone: z.string().max(20).nullable().optional(),
+  physicianFax: z.string().max(20).nullable().optional(),
+  physicianAddress: z.string().max(500).nullable().optional(),
+  // Referral fields
+  referralSource: z.string().max(200).nullable().optional(),
+  referralDate: z.string().nullable().optional(),
+  referringPhysicianName: z.string().max(200).nullable().optional(),
+  referringPhysicianNpi: z.string().max(20).nullable().optional(),
+  referringPhysicianPhone: z.string().max(20).nullable().optional(),
+  referringPhysicianFax: z.string().max(20).nullable().optional(),
+  referralNotes: z.string().nullable().optional(),
 });
 
 // GET /api/clients/[id] - Get client details
@@ -59,6 +78,25 @@ export async function GET(
         status: true,
         createdAt: true,
         updatedAt: true,
+        // Insurance fields
+        medicaidId: true,
+        medicaidPayerId: true,
+        secondaryInsuranceId: true,
+        secondaryPayerId: true,
+        // PCP fields
+        physicianName: true,
+        physicianNpi: true,
+        physicianPhone: true,
+        physicianFax: true,
+        physicianAddress: true,
+        // Referral fields
+        referralSource: true,
+        referralDate: true,
+        referringPhysicianName: true,
+        referringPhysicianNpi: true,
+        referringPhysicianPhone: true,
+        referringPhysicianFax: true,
+        referralNotes: true,
         sponsor: {
           select: {
             id: true,
@@ -152,6 +190,25 @@ export async function PATCH(
       status,
       assignedCarerId,
       sponsorId,
+      // Insurance fields
+      medicaidId,
+      medicaidPayerId,
+      secondaryInsuranceId,
+      secondaryPayerId,
+      // PCP fields
+      physicianName,
+      physicianNpi,
+      physicianPhone,
+      physicianFax,
+      physicianAddress,
+      // Referral fields
+      referralSource,
+      referralDate,
+      referringPhysicianName,
+      referringPhysicianNpi,
+      referringPhysicianPhone,
+      referringPhysicianFax,
+      referralNotes,
     } = validation.data;
 
     // Validate assigned carer if provided
@@ -203,6 +260,25 @@ export async function PATCH(
       status?: ClientStatus;
       assignedCarerId?: string | null;
       sponsorId?: string | null;
+      // Insurance fields
+      medicaidId?: string | null;
+      medicaidPayerId?: string | null;
+      secondaryInsuranceId?: string | null;
+      secondaryPayerId?: string | null;
+      // PCP fields
+      physicianName?: string | null;
+      physicianNpi?: string | null;
+      physicianPhone?: string | null;
+      physicianFax?: string | null;
+      physicianAddress?: string | null;
+      // Referral fields
+      referralSource?: string | null;
+      referralDate?: Date | null;
+      referringPhysicianName?: string | null;
+      referringPhysicianNpi?: string | null;
+      referringPhysicianPhone?: string | null;
+      referringPhysicianFax?: string | null;
+      referralNotes?: string | null;
     } = {};
 
     if (firstName !== undefined) updateData.firstName = firstName;
@@ -216,6 +292,27 @@ export async function PATCH(
     if (status !== undefined) updateData.status = status;
     if (assignedCarerId !== undefined) updateData.assignedCarerId = assignedCarerId;
     if (sponsorId !== undefined) updateData.sponsorId = sponsorId;
+    // Insurance fields
+    if (medicaidId !== undefined) updateData.medicaidId = medicaidId;
+    if (medicaidPayerId !== undefined) updateData.medicaidPayerId = medicaidPayerId;
+    if (secondaryInsuranceId !== undefined) updateData.secondaryInsuranceId = secondaryInsuranceId;
+    if (secondaryPayerId !== undefined) updateData.secondaryPayerId = secondaryPayerId;
+    // PCP fields
+    if (physicianName !== undefined) updateData.physicianName = physicianName;
+    if (physicianNpi !== undefined) updateData.physicianNpi = physicianNpi;
+    if (physicianPhone !== undefined) updateData.physicianPhone = physicianPhone;
+    if (physicianFax !== undefined) updateData.physicianFax = physicianFax;
+    if (physicianAddress !== undefined) updateData.physicianAddress = physicianAddress;
+    // Referral fields
+    if (referralSource !== undefined) updateData.referralSource = referralSource;
+    if (referralDate !== undefined) {
+      updateData.referralDate = referralDate ? new Date(referralDate) : null;
+    }
+    if (referringPhysicianName !== undefined) updateData.referringPhysicianName = referringPhysicianName;
+    if (referringPhysicianNpi !== undefined) updateData.referringPhysicianNpi = referringPhysicianNpi;
+    if (referringPhysicianPhone !== undefined) updateData.referringPhysicianPhone = referringPhysicianPhone;
+    if (referringPhysicianFax !== undefined) updateData.referringPhysicianFax = referringPhysicianFax;
+    if (referralNotes !== undefined) updateData.referralNotes = referralNotes;
 
     const client = await prisma.client.update({
       where: { id },
@@ -231,6 +328,25 @@ export async function PATCH(
         status: true,
         createdAt: true,
         updatedAt: true,
+        // Insurance fields
+        medicaidId: true,
+        medicaidPayerId: true,
+        secondaryInsuranceId: true,
+        secondaryPayerId: true,
+        // PCP fields
+        physicianName: true,
+        physicianNpi: true,
+        physicianPhone: true,
+        physicianFax: true,
+        physicianAddress: true,
+        // Referral fields
+        referralSource: true,
+        referralDate: true,
+        referringPhysicianName: true,
+        referringPhysicianNpi: true,
+        referringPhysicianPhone: true,
+        referringPhysicianFax: true,
+        referralNotes: true,
         sponsor: {
           select: {
             id: true,

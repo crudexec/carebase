@@ -318,10 +318,11 @@ model Company {
   chatMessages      ChatMessage[]
   escalations       Escalation[]
   onboardingRecords OnboardingRecord[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
-  formTemplates     FormTemplate[]
-  visitNotes        VisitNote[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  formTemplates      FormTemplate[]
+  carePlanTemplates  CarePlanTemplate[]
+  visitNotes         VisitNote[]
 
   // Billing relations
   serviceTypes     ServiceType[]
@@ -432,8 +433,9 @@ model User {
   auditLogs AuditLog[]
 
   // Form Builder
-  createdFormTemplates FormTemplate[] @relation("FormTemplateCreator")
-  visitNotes           VisitNote[]    @relation("CarerVisitNotes")
+  createdFormTemplates     FormTemplate[]     @relation("FormTemplateCreator")
+  createdCarePlanTemplates CarePlanTemplate[] @relation("CarePlanTemplateCreator")
+  visitNotes               VisitNote[]        @relation("CarerVisitNotes")
   submittedVisitNotes  VisitNote[]    @relation("VisitNoteSubmitter")
 
   // Comments
@@ -695,6 +697,22 @@ model Client {
   authorizationStart   DateTime?
   authorizationEnd     DateTime?
   authorizationUnits   Int? // Authorized units
+
+  // Physician Information (PCP)
+  physicianName        String? // Primary Care Physician name
+  physicianNpi         String? // Physician NPI number
+  physicianPhone       String? // Physician phone number
+  physicianFax         String? // Physician fax number (E.164 format)
+  physicianAddress     String? // Physician office address
+
+  // Referral Information
+  referralSource       String? // Where the referral came from (e.g., Hospital, Physician, Self, etc.)
+  referralDate         DateTime? // Date of referral
+  referringPhysicianName  String? // Referring physician name (if different from PCP)
+  referringPhysicianNpi   String? // Referring physician NPI
+  referringPhysicianPhone String? // Referring physician phone
+  referringPhysicianFax   String? // Referring physician fax
+  referralNotes        String? // Additional referral notes
 
   // Company relation
   companyId String
@@ -2416,6 +2434,13 @@ model CarePlan {
   status     CarePlanStatus @default(DRAFT)
   version    Int            @default(1)
 
+  // Template relation (optional - plans can be created without a template)
+  templateId         String?
+  template           CarePlanTemplate? @relation(fields: [templateId], references: [id])
+  templateVersion    Int?
+  formSchemaSnapshot Json? // Snapshot of template structure at creation time
+  formData           Json? // Form field values from template
+
   // Plan dates
   effectiveDate DateTime?
   endDate       DateTime?
@@ -2572,6 +2597,84 @@ model CarePlanTask {
 
   @@index([carePlanId])
   @@index([category])
+}
+
+// ============================================
+// CARE PLAN TEMPLATES
+// ============================================
+
+model CarePlanTemplate {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  status      FormTemplateStatus @default(DRAFT)
+  version     Int                @default(1)
+  isEnabled   Boolean            @default(false)
+
+  // Template configuration
+  includesDiagnoses     Boolean @default(true)
+  includesGoals         Boolean @default(true)
+  includesInterventions Boolean @default(true)
+  includesMedications   Boolean @default(true)
+  includesOrders        Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Creator
+  createdById String
+  createdBy   User   @relation("CarePlanTemplateCreator", fields: [createdById], references: [id])
+
+  // Relations
+  sections  CarePlanTemplateSection[]
+  carePlans CarePlan[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([isEnabled])
+}
+
+model CarePlanTemplateSection {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  order       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Template relation
+  templateId String
+  template   CarePlanTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // Fields
+  fields CarePlanTemplateField[]
+
+  @@index([templateId])
+  @@index([order])
+}
+
+model CarePlanTemplateField {
+  id       String        @id @default(cuid())
+  label    String
+  type     FormFieldType @default(TEXT_SHORT)
+  required Boolean       @default(false)
+  order    Int           @default(0)
+  config   Json? // Type-specific configuration (options, min/max, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Section relation
+  sectionId String
+  section   CarePlanTemplateSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+  @@index([order])
 }
 
 // ============================================

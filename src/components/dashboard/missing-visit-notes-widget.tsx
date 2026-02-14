@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { CollapsibleWidget } from "./collapsible-widget";
 
 interface MissingNoteShift {
   id: string;
@@ -91,28 +92,27 @@ export function MissingVisitNotesWidget() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-border-light bg-background-tertiary h-full flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-orange-500" />
-            <h3 className="font-semibold text-foreground">Missing Visit Notes</h3>
-          </div>
-        </div>
-        <div className="flex items-center justify-center py-8 flex-1">
+      <CollapsibleWidget
+        id="missing-visit-notes"
+        title="Missing Visit Notes"
+        icon={<FileText className="w-5 h-5" />}
+        variant="warning"
+      >
+        <div className="flex items-center justify-center py-8">
           <Loader2 className="w-5 h-5 animate-spin text-foreground-secondary" />
         </div>
-      </div>
+      </CollapsibleWidget>
     );
   }
 
   if (shifts.length === 0) {
     return (
-      <div className="rounded-lg border border-border-light bg-background-tertiary h-full flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-success" />
-            <h3 className="font-semibold text-foreground">Visit Notes</h3>
-          </div>
+      <CollapsibleWidget
+        id="missing-visit-notes"
+        title="Visit Notes"
+        icon={<FileText className="w-5 h-5" />}
+        variant="success"
+        headerActions={
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -121,27 +121,29 @@ export function MissingVisitNotesWidget() {
           >
             <RefreshCw className={`w-4 h-4 text-foreground-secondary ${isRefreshing ? "animate-spin" : ""}`} />
           </button>
-        </div>
-        <div className="text-center py-8 text-foreground-secondary flex-1 flex flex-col items-center justify-center">
+        }
+      >
+        <div className="text-center py-6">
           <FileText className="w-8 h-8 mx-auto mb-2 opacity-50 text-success" />
           <p className="text-sm text-success font-medium">All caught up!</p>
           <p className="text-xs text-foreground-tertiary mt-1">No missing visit notes</p>
         </div>
-      </div>
+      </CollapsibleWidget>
     );
   }
 
   return (
-    <div className="rounded-lg border border-orange-200 bg-orange-50/50 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-orange-200">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-orange-500" />
-          <h3 className="font-semibold text-foreground">Missing Visit Notes</h3>
-          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-600">
-            {shifts.length}
-          </span>
-        </div>
+    <CollapsibleWidget
+      id="missing-visit-notes"
+      title="Missing Visit Notes"
+      icon={<AlertTriangle className="w-5 h-5" />}
+      badge={
+        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-600">
+          {shifts.length}
+        </span>
+      }
+      variant="warning"
+      headerActions={
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
@@ -159,62 +161,57 @@ export function MissingVisitNotesWidget() {
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-2 flex-1 overflow-y-auto">
-        <ul className="space-y-1">
-          {shifts.slice(0, 5).map((shift) => (
-            <li key={shift.id}>
-              <div className={`px-3 py-2 rounded-md ${getUrgencyBgColor(shift.hoursSinceCompletion)} border border-orange-200/50`}>
-                <div className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full ${getUrgencyBgColor(shift.hoursSinceCompletion)} flex items-center justify-center flex-shrink-0`}>
-                    <FileText className={`w-4 h-4 ${getUrgencyColor(shift.hoursSinceCompletion)}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {shift.client.firstName} {shift.client.lastName}
-                      </p>
-                      <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getUrgencyBgColor(shift.hoursSinceCompletion)} ${getUrgencyColor(shift.hoursSinceCompletion)} whitespace-nowrap`}>
-                        {formatHoursSince(shift.hoursSinceCompletion)}
-                      </span>
-                    </div>
-                    {!isCarer && (
-                      <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-                        <User className="w-3 h-3" />
-                        <span>{shift.carer.firstName} {shift.carer.lastName}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                      <Clock className="w-3 h-3" />
-                      <span>{format(new Date(shift.scheduledStart), "MMM d, h:mm a")}</span>
-                    </div>
-                    <Link href={`/visit-notes/new?shiftId=${shift.id}`}>
-                      <Button size="sm" variant="secondary" className="mt-2 w-full text-xs h-7">
-                        <FileText className="w-3 h-3 mr-1" />
-                        Submit Note
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-        {shifts.length > 5 && (
-          <p className="text-xs text-center text-foreground-tertiary mt-2">
-            +{shifts.length - 5} more missing notes
-          </p>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-orange-200 mt-auto">
+      }
+      footer={
         <p className="text-xs text-orange-600 text-center">
           Please submit visit notes after completing shifts
         </p>
-      </div>
-    </div>
+      }
+    >
+      <ul className="space-y-1">
+        {shifts.slice(0, 5).map((shift) => (
+          <li key={shift.id}>
+            <div className={`px-3 py-2 rounded-md ${getUrgencyBgColor(shift.hoursSinceCompletion)} border border-orange-200/50`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-full ${getUrgencyBgColor(shift.hoursSinceCompletion)} flex items-center justify-center flex-shrink-0`}>
+                  <FileText className={`w-4 h-4 ${getUrgencyColor(shift.hoursSinceCompletion)}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {shift.client.firstName} {shift.client.lastName}
+                    </p>
+                    <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getUrgencyBgColor(shift.hoursSinceCompletion)} ${getUrgencyColor(shift.hoursSinceCompletion)} whitespace-nowrap`}>
+                      {formatHoursSince(shift.hoursSinceCompletion)}
+                    </span>
+                  </div>
+                  {!isCarer && (
+                    <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
+                      <User className="w-3 h-3" />
+                      <span>{shift.carer.firstName} {shift.carer.lastName}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
+                    <Clock className="w-3 h-3" />
+                    <span>{format(new Date(shift.scheduledStart), "MMM d, h:mm a")}</span>
+                  </div>
+                  <Link href={`/visit-notes/new?shiftId=${shift.id}`}>
+                    <Button size="sm" variant="secondary" className="mt-2 w-full text-xs h-7">
+                      <FileText className="w-3 h-3 mr-1" />
+                      Submit Note
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {shifts.length > 5 && (
+        <p className="text-xs text-center text-foreground-tertiary mt-2">
+          +{shifts.length - 5} more missing notes
+        </p>
+      )}
+    </CollapsibleWidget>
   );
 }

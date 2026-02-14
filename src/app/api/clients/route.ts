@@ -14,6 +14,25 @@ const createClientSchema = z.object({
   medicalNotes: z.string().nullable().optional(),
   status: z.nativeEnum(ClientStatus).default("PROSPECT"),
   assignedCarerId: z.string().nullable().optional(),
+  // Insurance fields
+  medicaidId: z.string().max(50).nullable().optional(),
+  medicaidPayerId: z.string().max(50).nullable().optional(),
+  secondaryInsuranceId: z.string().max(50).nullable().optional(),
+  secondaryPayerId: z.string().max(50).nullable().optional(),
+  // PCP (Primary Care Physician) fields
+  physicianName: z.string().max(200).nullable().optional(),
+  physicianNpi: z.string().max(20).nullable().optional(),
+  physicianPhone: z.string().max(20).nullable().optional(),
+  physicianFax: z.string().max(20).nullable().optional(),
+  physicianAddress: z.string().max(500).nullable().optional(),
+  // Referral fields
+  referralSource: z.string().max(200).nullable().optional(),
+  referralDate: z.string().nullable().optional(),
+  referringPhysicianName: z.string().max(200).nullable().optional(),
+  referringPhysicianNpi: z.string().max(20).nullable().optional(),
+  referringPhysicianPhone: z.string().max(20).nullable().optional(),
+  referringPhysicianFax: z.string().max(20).nullable().optional(),
+  referralNotes: z.string().nullable().optional(),
 });
 
 const querySchema = z.object({
@@ -148,6 +167,25 @@ export async function GET(request: Request) {
           medicalNotes: true,
           status: true,
           createdAt: true,
+          // Insurance fields
+          medicaidId: true,
+          medicaidPayerId: true,
+          secondaryInsuranceId: true,
+          secondaryPayerId: true,
+          // PCP fields
+          physicianName: true,
+          physicianNpi: true,
+          physicianPhone: true,
+          physicianFax: true,
+          physicianAddress: true,
+          // Referral fields
+          referralSource: true,
+          referralDate: true,
+          referringPhysicianName: true,
+          referringPhysicianNpi: true,
+          referringPhysicianPhone: true,
+          referringPhysicianFax: true,
+          referralNotes: true,
           sponsor: {
             select: {
               id: true,
@@ -226,6 +264,25 @@ export async function POST(request: Request) {
       medicalNotes,
       status,
       assignedCarerId,
+      // Insurance fields
+      medicaidId,
+      medicaidPayerId,
+      secondaryInsuranceId,
+      secondaryPayerId,
+      // PCP fields
+      physicianName,
+      physicianNpi,
+      physicianPhone,
+      physicianFax,
+      physicianAddress,
+      // Referral fields
+      referralSource,
+      referralDate,
+      referringPhysicianName,
+      referringPhysicianNpi,
+      referringPhysicianPhone,
+      referringPhysicianFax,
+      referralNotes,
     } = validation.data;
 
     // Validate assigned carer belongs to company
@@ -259,6 +316,25 @@ export async function POST(request: Request) {
         medicalNotes: medicalNotes || null,
         status,
         assignedCarerId: assignedCarerId || null,
+        // Insurance fields
+        medicaidId: medicaidId || null,
+        medicaidPayerId: medicaidPayerId || null,
+        secondaryInsuranceId: secondaryInsuranceId || null,
+        secondaryPayerId: secondaryPayerId || null,
+        // PCP fields
+        physicianName: physicianName || null,
+        physicianNpi: physicianNpi || null,
+        physicianPhone: physicianPhone || null,
+        physicianFax: physicianFax || null,
+        physicianAddress: physicianAddress || null,
+        // Referral fields
+        referralSource: referralSource || null,
+        referralDate: referralDate ? new Date(referralDate) : null,
+        referringPhysicianName: referringPhysicianName || null,
+        referringPhysicianNpi: referringPhysicianNpi || null,
+        referringPhysicianPhone: referringPhysicianPhone || null,
+        referringPhysicianFax: referringPhysicianFax || null,
+        referralNotes: referralNotes || null,
       },
       select: {
         id: true,
@@ -270,6 +346,25 @@ export async function POST(request: Request) {
         medicalNotes: true,
         status: true,
         createdAt: true,
+        // Insurance fields
+        medicaidId: true,
+        medicaidPayerId: true,
+        secondaryInsuranceId: true,
+        secondaryPayerId: true,
+        // PCP fields
+        physicianName: true,
+        physicianNpi: true,
+        physicianPhone: true,
+        physicianFax: true,
+        physicianAddress: true,
+        // Referral fields
+        referralSource: true,
+        referralDate: true,
+        referringPhysicianName: true,
+        referringPhysicianNpi: true,
+        referringPhysicianPhone: true,
+        referringPhysicianFax: true,
+        referralNotes: true,
         sponsor: {
           select: {
             id: true,

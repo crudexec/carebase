@@ -15,11 +15,9 @@ import {
 import { AssessmentRenderer } from "@/components/assessments/assessment-renderer";
 import { AssessmentScoreDisplay } from "@/components/assessments/assessment-score-display";
 import {
-  ArrowLeft,
   Loader2,
   User,
   Calendar,
-  Clock,
   CheckCircle,
   Printer,
   Trash2,
@@ -112,11 +110,7 @@ export default function AssessmentDetailPage() {
     { itemId: string; numericValue: number | null; textValue: string | null; notes: string | null }[]
   >([]);
 
-  React.useEffect(() => {
-    fetchAssessment();
-  }, [assessmentId]);
-
-  const fetchAssessment = async () => {
+  const fetchAssessment = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/assessments/${assessmentId}`);
@@ -133,7 +127,11 @@ export default function AssessmentDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [assessmentId]);
+
+  React.useEffect(() => {
+    fetchAssessment();
+  }, [fetchAssessment]);
 
   const handleResponseChange = (itemId: string, value: string | number, notes?: string) => {
     setLocalResponses((prev) => {
@@ -433,8 +431,10 @@ export default function AssessmentDetailPage() {
         </Card>
       </div>
 
-      {/* Completed Assessment Score */}
-      {isCompleted && assessment.totalScore !== null && (
+      {/* Completed Assessment Score - only show if template has items */}
+      {isCompleted &&
+       assessment.totalScore !== null &&
+       assessment.template.sections?.some(s => s.items?.length > 0) && (
         <AssessmentScoreDisplay
           templateName={assessment.template.name}
           templateCode={assessment.template.code || ""}

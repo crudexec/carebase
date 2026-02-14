@@ -13,6 +13,7 @@ import {
   Bell,
   CheckCircle,
 } from "lucide-react";
+import { CollapsibleWidget } from "./collapsible-widget";
 
 interface CredentialAlert {
   id: string;
@@ -91,32 +92,39 @@ export function CredentialAlertsWidget() {
     return `${Math.ceil(days / 30)}mo`;
   };
 
-  // Don't render anything if loading
+  // Loading state
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-border-light bg-background-tertiary p-4">
-        <div className="flex items-center gap-3">
+      <CollapsibleWidget
+        id="credential-alerts"
+        title="Credential Alerts"
+        icon={<Award className="h-5 w-5" />}
+        headerActions={
+          <Link
+            href="/credentials"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            Manage
+            <ChevronRight className="h-3 w-3" />
+          </Link>
+        }
+      >
+        <div className="flex items-center justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-foreground-secondary" />
-          <span className="text-sm text-foreground-secondary">Loading credential alerts...</span>
         </div>
-      </div>
+      </CollapsibleWidget>
     );
   }
 
-  // Don't render if no alerts
+  // No alerts state
   if (!summary || summary.total === 0) {
     return (
-      <div className="rounded-lg border border-success/30 bg-success/5 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-success/10">
-              <CheckCircle className="h-5 w-5 text-success" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">All Credentials Up to Date</p>
-              <p className="text-xs text-foreground-secondary">No expiring or expired credentials</p>
-            </div>
-          </div>
+      <CollapsibleWidget
+        id="credential-alerts"
+        title="Credential Alerts"
+        icon={<CheckCircle className="h-5 w-5" />}
+        variant="success"
+        headerActions={
           <Link
             href="/credentials"
             className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -124,45 +132,47 @@ export function CredentialAlertsWidget() {
             Manage Credentials
             <ChevronRight className="h-3 w-3" />
           </Link>
+        }
+      >
+        <div className="text-center py-6">
+          <CheckCircle className="w-8 h-8 mx-auto mb-2 text-success opacity-50" />
+          <p className="text-sm font-medium text-foreground">All Credentials Up to Date</p>
+          <p className="text-xs text-foreground-secondary">No expiring or expired credentials</p>
         </div>
-      </div>
+      </CollapsibleWidget>
     );
   }
 
-  // Determine panel severity styling
+  // Determine severity styling
   const hasCritical = summary.critical > 0;
   const hasHigh = summary.high > 0;
-  const panelBg = hasCritical ? "bg-error/5 border-error/30" : hasHigh ? "bg-warning/5 border-warning/30" : "bg-amber-50 border-amber-200";
-  const iconBg = hasCritical ? "bg-error/10" : hasHigh ? "bg-warning/10" : "bg-amber-100";
-  const iconColor = hasCritical ? "text-error" : hasHigh ? "text-warning" : "text-amber-600";
   const PanelIcon = hasCritical ? AlertTriangle : hasHigh ? AlertCircle : Bell;
+  const variant = hasCritical ? "error" : hasHigh ? "warning" : "warning";
+
+  const alertBadge = (
+    <Badge className={hasCritical ? "bg-error/10 text-error" : hasHigh ? "bg-warning/10 text-warning" : "bg-amber-100 text-amber-700"}>
+      {summary.total} alert{summary.total !== 1 ? "s" : ""}
+    </Badge>
+  );
+
+  const footerContent = summary.total > alerts.length ? (
+    <Link
+      href="/credentials/alerts"
+      className="text-xs text-foreground-secondary hover:text-primary flex items-center justify-center gap-1"
+    >
+      +{summary.total - alerts.length} more alerts
+      <ChevronRight className="h-3 w-3" />
+    </Link>
+  ) : null;
 
   return (
-    <div className={`rounded-lg border ${panelBg} p-4`}>
-      {/* Header Row */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full ${iconBg}`}>
-            <PanelIcon className={`h-5 w-5 ${iconColor}`} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">
-                Credential Alerts
-              </p>
-              <Badge className={hasCritical ? "bg-error/10 text-error" : hasHigh ? "bg-warning/10 text-warning" : "bg-amber-100 text-amber-700"}>
-                {summary.total} alert{summary.total !== 1 ? "s" : ""}
-              </Badge>
-            </div>
-            <p className="text-xs text-foreground-secondary mt-0.5">
-              {summary.critical > 0 && <span className="text-error font-medium">{summary.critical} expired</span>}
-              {summary.critical > 0 && summary.high > 0 && " · "}
-              {summary.high > 0 && <span className="text-warning font-medium">{summary.high} expiring soon</span>}
-              {(summary.critical > 0 || summary.high > 0) && summary.warning > 0 && " · "}
-              {summary.warning > 0 && <span>{summary.warning} warnings</span>}
-            </p>
-          </div>
-        </div>
+    <CollapsibleWidget
+      id="credential-alerts"
+      title="Credential Alerts"
+      icon={<PanelIcon className="h-5 w-5" />}
+      badge={alertBadge}
+      variant={variant}
+      headerActions={
         <Link
           href="/credentials/alerts"
           className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
@@ -170,6 +180,16 @@ export function CredentialAlertsWidget() {
           View All
           <ChevronRight className="h-3 w-3" />
         </Link>
+      }
+      footer={footerContent}
+    >
+      {/* Summary */}
+      <div className="px-2 mb-3 text-xs text-foreground-secondary">
+        {summary.critical > 0 && <span className="text-error font-medium">{summary.critical} expired</span>}
+        {summary.critical > 0 && summary.high > 0 && " · "}
+        {summary.high > 0 && <span className="text-warning font-medium">{summary.high} expiring soon</span>}
+        {(summary.critical > 0 || summary.high > 0) && summary.warning > 0 && " · "}
+        {summary.warning > 0 && <span>{summary.warning} warnings</span>}
       </div>
 
       {/* Alerts Grid */}
@@ -219,19 +239,6 @@ export function CredentialAlertsWidget() {
           );
         })}
       </div>
-
-      {/* Footer Link */}
-      {summary.total > alerts.length && (
-        <div className="mt-3 pt-3 border-t border-border-light/50">
-          <Link
-            href="/credentials/alerts"
-            className="text-xs text-foreground-secondary hover:text-primary flex items-center justify-center gap-1"
-          >
-            +{summary.total - alerts.length} more alerts
-            <ChevronRight className="h-3 w-3" />
-          </Link>
-        </div>
-      )}
-    </div>
+    </CollapsibleWidget>
   );
 }

@@ -34,7 +34,6 @@ import {
   HeartPulse,
   ShieldCheck,
   Plus,
-  AlertTriangle,
   CheckCircle,
   XCircle,
   CalendarPlus,
@@ -53,6 +52,10 @@ interface ClientDetails {
   status: ClientStatus;
   createdAt: string;
   updatedAt: string;
+  physicianName: string | null;
+  physicianNpi: string | null;
+  physicianPhone: string | null;
+  physicianFax: string | null;
   sponsor: {
     id: string;
     firstName: string;
@@ -196,6 +199,10 @@ export default function ClientDetailPage() {
     status: "PROSPECT" as ClientStatus,
     assignedCarerId: "",
     sponsorId: "",
+    physicianName: "",
+    physicianNpi: "",
+    physicianPhone: "",
+    physicianFax: "",
   });
 
   const fetchClient = React.useCallback(async () => {
@@ -220,6 +227,10 @@ export default function ClientDetailPage() {
         status: data.client.status,
         assignedCarerId: data.client.assignedCarer?.id || "",
         sponsorId: data.client.sponsor?.id || "",
+        physicianName: data.client.physicianName || "",
+        physicianNpi: data.client.physicianNpi || "",
+        physicianPhone: data.client.physicianPhone || "",
+        physicianFax: data.client.physicianFax || "",
       });
       setError(null);
     } catch (err) {
@@ -327,6 +338,10 @@ export default function ClientDetailPage() {
           status: formData.status,
           assignedCarerId: formData.assignedCarerId || null,
           sponsorId: formData.sponsorId || null,
+          physicianName: formData.physicianName || null,
+          physicianNpi: formData.physicianNpi || null,
+          physicianPhone: formData.physicianPhone || null,
+          physicianFax: formData.physicianFax || null,
         }),
       });
 
@@ -357,6 +372,10 @@ export default function ClientDetailPage() {
         status: client.status,
         assignedCarerId: client.assignedCarer?.id || "",
         sponsorId: client.sponsor?.id || "",
+        physicianName: client.physicianName || "",
+        physicianNpi: client.physicianNpi || "",
+        physicianPhone: client.physicianPhone || "",
+        physicianFax: client.physicianFax || "",
       });
     }
     setIsEditing(false);
@@ -919,6 +938,102 @@ export default function ClientDetailPage() {
                   </div>
                 ) : (
                   <p className="text-foreground-tertiary">No sponsor assigned</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Stethoscope className="w-4 h-4" />
+                  Physician Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="physicianName" className="text-xs">Name</Label>
+                      <Input
+                        id="physicianName"
+                        value={formData.physicianName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianName: e.target.value }))
+                        }
+                        placeholder="Dr. John Smith"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="physicianNpi" className="text-xs">NPI Number</Label>
+                      <Input
+                        id="physicianNpi"
+                        value={formData.physicianNpi}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianNpi: e.target.value }))
+                        }
+                        placeholder="10-digit NPI"
+                        maxLength={10}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="physicianPhone" className="text-xs">Phone</Label>
+                      <Input
+                        id="physicianPhone"
+                        type="tel"
+                        value={formData.physicianPhone}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianPhone: e.target.value }))
+                        }
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="physicianFax" className="text-xs">Fax</Label>
+                      <Input
+                        id="physicianFax"
+                        type="tel"
+                        value={formData.physicianFax}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, physicianFax: e.target.value }))
+                        }
+                        placeholder="(555) 123-4568"
+                      />
+                    </div>
+                  </div>
+                ) : client.physicianName ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                        <Stethoscope className="w-5 h-5 text-success" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{client.physicianName}</p>
+                        {client.physicianNpi && (
+                          <p className="text-sm text-foreground-secondary">
+                            NPI: {client.physicianNpi}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {(client.physicianPhone || client.physicianFax) && (
+                      <div className="pt-2 border-t border-border space-y-1">
+                        {client.physicianPhone && (
+                          <p className="text-sm flex items-center gap-2">
+                            <Phone className="w-3 h-3 text-foreground-tertiary" />
+                            {client.physicianPhone}
+                          </p>
+                        )}
+                        {client.physicianFax && (
+                          <p className="text-sm flex items-center gap-2">
+                            <FileText className="w-3 h-3 text-foreground-tertiary" />
+                            Fax: {client.physicianFax}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-foreground-tertiary">No physician assigned</p>
                 )}
               </CardContent>
             </Card>
