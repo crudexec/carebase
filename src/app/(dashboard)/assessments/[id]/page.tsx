@@ -264,7 +264,7 @@ export default function AssessmentDetailPage() {
 
   if (error && !assessment) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <Breadcrumb
           items={[
             { label: "Assessments", href: "/assessments" },
@@ -295,7 +295,7 @@ export default function AssessmentDetailPage() {
   const isCompleted = assessment.status === "COMPLETED";
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
