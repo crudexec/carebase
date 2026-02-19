@@ -96,6 +96,13 @@ export interface FormSchemaSnapshot {
 // Form Submission Types
 // ============================================
 
+// ICD-10 diagnosis value
+export interface ICD10DiagnosisValue {
+  code: string;
+  description: string;
+  type?: "PRIMARY" | "SECONDARY" | "ADMITTING" | "PRINCIPAL";
+}
+
 // Value types for different field types
 export type FieldValue =
   | string // TEXT_SHORT, TEXT_LONG, DATE, TIME, DATETIME
@@ -103,6 +110,8 @@ export type FieldValue =
   | boolean // YES_NO
   | string[] // MULTIPLE_CHOICE
   | FileValue // SIGNATURE, PHOTO
+  | BodyMapMarker[] // BODY_MAP
+  | ICD10DiagnosisValue[] // ICD10_DIAGNOSIS
   | null;
 
 export interface FileValue {
@@ -110,6 +119,19 @@ export interface FileValue {
   fileName: string;
   fileType: string;
   fileSize: number;
+}
+
+// Body map marker for wound care and pain documentation
+export interface BodyMapMarker {
+  id: string;
+  regionId: string;
+  regionLabel: string;
+  type: "pain" | "wound" | "bruise" | "rash" | "swelling" | "other";
+  severity: "mild" | "moderate" | "severe";
+  woundType?: string;
+  size?: string;
+  notes?: string;
+  photo?: FileValue;
 }
 
 // Submission data structure: { [fieldId]: FieldValue }
@@ -255,6 +277,8 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature",
   PHOTO: "Photo",
   RATING_SCALE: "Rating Scale",
+  BODY_MAP: "Body Map",
+  ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
 };
 
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
@@ -270,6 +294,8 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   SIGNATURE: "Digital signature capture",
   PHOTO: "Photo upload",
   RATING_SCALE: "Star or number rating",
+  BODY_MAP: "Interactive body diagram for documenting pain and wounds",
+  ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
 };
 
 // Helper to check if field type requires config

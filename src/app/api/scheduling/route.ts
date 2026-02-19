@@ -99,13 +99,25 @@ export async function GET(request: Request) {
             primaryDiagnosis: true,
           },
         },
+        _count: {
+          select: {
+            visitNotes: true,
+          },
+        },
       },
       orderBy: { scheduledStart: "asc" },
     });
 
+    // Transform to include hasVisitNote boolean
+    const shiftsWithVisitNoteStatus = shifts.map((shift) => ({
+      ...shift,
+      hasVisitNote: shift._count.visitNotes > 0,
+      _count: undefined, // Remove the _count field from response
+    }));
+
     console.log(`[Scheduling API] Returning ${shifts.length} shifts for user ${session.user.id} (role: ${session.user.role})`);
 
-    return NextResponse.json({ shifts });
+    return NextResponse.json({ shifts: shiftsWithVisitNoteStatus });
   } catch (error) {
     console.error("Error fetching shifts:", error);
     return NextResponse.json({ error: "Failed to fetch shifts" }, { status: 500 });

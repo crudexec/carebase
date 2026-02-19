@@ -11,6 +11,7 @@ import {
   CardTitle,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
 } from "@/components/ui";
@@ -103,6 +104,62 @@ const CATEGORY_LABELS: Record<CredentialCategory, string> = {
   COMPLIANCE: "Compliance",
   OTHER: "Other",
 };
+
+const US_STATES = [
+  { value: "AL", label: "Alabama" },
+  { value: "AK", label: "Alaska" },
+  { value: "AZ", label: "Arizona" },
+  { value: "AR", label: "Arkansas" },
+  { value: "CA", label: "California" },
+  { value: "CO", label: "Colorado" },
+  { value: "CT", label: "Connecticut" },
+  { value: "DE", label: "Delaware" },
+  { value: "DC", label: "District of Columbia" },
+  { value: "FL", label: "Florida" },
+  { value: "GA", label: "Georgia" },
+  { value: "HI", label: "Hawaii" },
+  { value: "ID", label: "Idaho" },
+  { value: "IL", label: "Illinois" },
+  { value: "IN", label: "Indiana" },
+  { value: "IA", label: "Iowa" },
+  { value: "KS", label: "Kansas" },
+  { value: "KY", label: "Kentucky" },
+  { value: "LA", label: "Louisiana" },
+  { value: "ME", label: "Maine" },
+  { value: "MD", label: "Maryland" },
+  { value: "MA", label: "Massachusetts" },
+  { value: "MI", label: "Michigan" },
+  { value: "MN", label: "Minnesota" },
+  { value: "MS", label: "Mississippi" },
+  { value: "MO", label: "Missouri" },
+  { value: "MT", label: "Montana" },
+  { value: "NE", label: "Nebraska" },
+  { value: "NV", label: "Nevada" },
+  { value: "NH", label: "New Hampshire" },
+  { value: "NJ", label: "New Jersey" },
+  { value: "NM", label: "New Mexico" },
+  { value: "NY", label: "New York" },
+  { value: "NC", label: "North Carolina" },
+  { value: "ND", label: "North Dakota" },
+  { value: "OH", label: "Ohio" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "OR", label: "Oregon" },
+  { value: "PA", label: "Pennsylvania" },
+  { value: "PR", label: "Puerto Rico" },
+  { value: "RI", label: "Rhode Island" },
+  { value: "SC", label: "South Carolina" },
+  { value: "SD", label: "South Dakota" },
+  { value: "TN", label: "Tennessee" },
+  { value: "TX", label: "Texas" },
+  { value: "UT", label: "Utah" },
+  { value: "VT", label: "Vermont" },
+  { value: "VA", label: "Virginia" },
+  { value: "VI", label: "Virgin Islands" },
+  { value: "WA", label: "Washington" },
+  { value: "WV", label: "West Virginia" },
+  { value: "WI", label: "Wisconsin" },
+  { value: "WY", label: "Wyoming" },
+];
 
 type SortField = "caregiver" | "type" | "expiration" | "status";
 type SortDirection = "asc" | "desc";
@@ -924,14 +981,20 @@ export default function CredentialsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="issuingState">Issuing State</Label>
-                    <Input
+                    <Select
                       id="issuingState"
                       value={formData.issuingState}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, issuingState: e.target.value }))
                       }
-                      placeholder="e.g., MD"
-                    />
+                    >
+                      <option value="">Select state...</option>
+                      {US_STATES.map((state) => (
+                        <option key={state.value} value={state.value}>
+                          {state.label}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                 </div>
 
@@ -941,37 +1004,27 @@ export default function CredentialsPage() {
                     <Label htmlFor="issueDate" required>
                       Issue Date
                     </Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-                      <Input
-                        id="issueDate"
-                        type="date"
-                        value={formData.issueDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, issueDate: e.target.value }))
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                    <DateInput
+                      id="issueDate"
+                      value={formData.issueDate}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, issueDate: e.target.value }))
+                      }
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="expirationDate" required>
                       Expiration Date
                     </Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-                      <Input
-                        id="expirationDate"
-                        type="date"
-                        value={formData.expirationDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                    <DateInput
+                      id="expirationDate"
+                      value={formData.expirationDate}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))
+                      }
+                      required
+                    />
                   </div>
                 </div>
 
@@ -1115,13 +1168,20 @@ export default function CredentialsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="editIssuingState">Issuing State</Label>
-                    <Input
+                    <Select
                       id="editIssuingState"
                       value={formData.issuingState}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, issuingState: e.target.value }))
                       }
-                    />
+                    >
+                      <option value="">Select state...</option>
+                      {US_STATES.map((state) => (
+                        <option key={state.value} value={state.value}>
+                          {state.label}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                 </div>
 
@@ -1131,9 +1191,8 @@ export default function CredentialsPage() {
                     <Label htmlFor="editIssueDate" required>
                       Issue Date
                     </Label>
-                    <Input
+                    <DateInput
                       id="editIssueDate"
-                      type="date"
                       value={formData.issueDate}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, issueDate: e.target.value }))
@@ -1145,9 +1204,8 @@ export default function CredentialsPage() {
                     <Label htmlFor="editExpirationDate" required>
                       Expiration Date
                     </Label>
-                    <Input
+                    <DateInput
                       id="editExpirationDate"
-                      type="date"
                       value={formData.expirationDate}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))

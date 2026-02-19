@@ -15,6 +15,7 @@ import {
   Select,
   Checkbox,
   Breadcrumb,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   Plus,
@@ -88,6 +89,13 @@ export default function CredentialTypesPage() {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedType, setSelectedType] = React.useState<CredentialType | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [deleteModal, setDeleteModal] = React.useState<{
+    isOpen: boolean;
+    type: CredentialType | null;
+  }>({ isOpen: false, type: null });
+
+  // Track which item is being deleted for fade animation
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = React.useState({
@@ -231,25 +239,31 @@ export default function CredentialTypesPage() {
     }
   };
 
-  const handleDelete = async (type: CredentialType) => {
-    if (!confirm(`Are you sure you want to delete "${type.name}"? This action cannot be undone.`)) {
-      return;
+  const handleDeleteClick = (type: CredentialType) => {
+    setDeleteModal({ isOpen: true, type });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.type) return;
+
+    const typeId = deleteModal.type.id;
+
+    const response = await fetch(`/api/credentials/types/${typeId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Failed to delete credential type");
     }
 
-    try {
-      const response = await fetch(`/api/credentials/types/${type.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete credential type");
-      }
-
-      await fetchCredentialTypes();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete credential type");
-    }
+    // Start fade-out animation
+    setDeletingId(typeId);
+    // Wait for animation to complete, then remove from state
+    setTimeout(() => {
+      setCredentialTypes((prev) => prev.filter((t) => t.id !== typeId));
+      setDeletingId(null);
+    }, 300);
   };
 
   const openEditModal = (type: CredentialType) => {
@@ -447,9 +461,9 @@ export default function CredentialTypesPage() {
                 {filteredAndSortedTypes.map((type) => (
                   <tr
                     key={type.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-colors ${
+                    className={`border-b border-border hover:bg-background-secondary/50 transition-all duration-300 ${
                       !type.isActive ? "opacity-60" : ""
-                    }`}
+                    } ${deletingId === type.id ? "opacity-0 scale-95" : ""}`}
                   >
                     <td className="p-4">
                       <div>
@@ -513,7 +527,7 @@ export default function CredentialTypesPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(type)}
+                            onClick={() => handleDeleteClick(type)}
                             title="Delete permanently"
                           >
                             <X className="w-4 h-4 text-error" />
@@ -850,6 +864,19 @@ export default function CredentialTypesPage() {
           </Card>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, type: null })}
+        onConfirm={handleDeleteConfirm}
+        variant="danger"
+        title="Delete Credential Type"
+        description="Are you sure you want to delete this credential type?"
+        itemName={deleteModal.type?.name}
+        warningText="This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }

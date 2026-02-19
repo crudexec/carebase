@@ -10,6 +10,7 @@ import {
   CardTitle,
   Button,
   Input,
+  DateInput,
   Select,
   Label,
   Textarea,
@@ -241,10 +242,9 @@ export default function NewReferralPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="prospectDob">Date of Birth</Label>
-                <Input
+                <DateInput
                   id="prospectDob"
                   name="prospectDob"
-                  type="date"
                   value={formData.prospectDob}
                   onChange={handleChange}
                 />

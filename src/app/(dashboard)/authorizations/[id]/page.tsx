@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -11,11 +12,13 @@ import {
   CardDescription,
   Button,
   Input,
+  DateInput,
   Select,
   Label,
   Textarea,
   Badge,
   Breadcrumb,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -109,6 +112,7 @@ export default function AuthorizationDetailPage() {
   const [isSaving, setIsSaving] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [showTerminateModal, setShowTerminateModal] = React.useState(false);
 
   const [formData, setFormData] = React.useState({
     authorizationNumber: "",
@@ -183,18 +187,21 @@ export default function AuthorizationDetailPage() {
 
       await fetchAuthorization();
       setIsEditing(false);
+      toast.success("Authorization updated successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update authorization");
+      const errorMessage = err instanceof Error ? err.message : "Failed to update authorization";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to terminate this authorization?")) {
-      return;
-    }
+  const handleTerminateClick = () => {
+    setShowTerminateModal(true);
+  };
 
+  const handleTerminateConfirm = async () => {
     setIsDeleting(true);
     setError(null);
 
@@ -208,10 +215,14 @@ export default function AuthorizationDetailPage() {
         throw new Error(data.error || "Failed to terminate authorization");
       }
 
+      toast.success("Authorization terminated");
       router.push("/authorizations");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to terminate authorization");
+      const errorMessage = err instanceof Error ? err.message : "Failed to terminate authorization";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setIsDeleting(false);
+      throw err;
     }
   };
 
@@ -285,7 +296,7 @@ export default function AuthorizationDetailPage() {
               </Button>
               <Button
                 variant="error"
-                onClick={handleDelete}
+                onClick={handleTerminateClick}
                 disabled={isDeleting}
               >
                 {isDeleting ? (
@@ -497,20 +508,18 @@ export default function AuthorizationDetailPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="startDate">Start Date</Label>
-                      <Input
+                      <DateInput
                         id="startDate"
                         name="startDate"
-                        type="date"
                         value={formData.startDate}
                         onChange={handleChange}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="endDate">End Date</Label>
-                      <Input
+                      <DateInput
                         id="endDate"
                         name="endDate"
-                        type="date"
                         value={formData.endDate}
                         onChange={handleChange}
                       />
@@ -774,6 +783,19 @@ export default function AuthorizationDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Terminate Authorization Modal */}
+      <ConfirmActionModal
+        isOpen={showTerminateModal}
+        onClose={() => setShowTerminateModal(false)}
+        onConfirm={handleTerminateConfirm}
+        variant="danger"
+        title="Terminate Authorization"
+        description="Are you sure you want to terminate this authorization?"
+        itemName={authorization?.authNumber}
+        warningText="This action cannot be undone."
+        confirmText="Terminate"
+      />
     </div>
   );
 }

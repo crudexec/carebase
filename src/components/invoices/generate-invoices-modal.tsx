@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Button,
   Input,
+  DateInput,
   Label,
   Select,
   Card,
@@ -19,6 +21,8 @@ import {
   Clock,
   ChevronRight,
 } from "lucide-react";
+import { ClientSearchSelect } from "@/components/clients";
+import { SponsorSearchSelect } from "@/components/sponsors";
 
 interface Client {
   id: string;
@@ -53,18 +57,29 @@ interface ClientPreview {
   shifts: ShiftPreview[];
 }
 
+interface ClientData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  status?: string;
+}
+
+interface SponsorData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  relationship?: string;
+}
+
 interface GenerateInvoicesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  clients: Client[];
-  sponsors: Sponsor[];
 }
 
 export function GenerateInvoicesModal({
   isOpen,
   onClose,
-  clients,
-  sponsors,
 }: GenerateInvoicesModalProps) {
   const router = useRouter();
 
@@ -82,9 +97,14 @@ export function GenerateInvoicesModal({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
   });
-  const [selectedClientId, setSelectedClientId] = React.useState<string>("all");
+  const [selectedClientId, setSelectedClientId] = React.useState<string>("");
   const [dueDate, setDueDate] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("0");
+
+  // Handler for client filter selection
+  const handleClientFilterChange = (clientId: string, _client: ClientData | null) => {
+    setSelectedClientId(clientId);
+  };
 
   // Preview state
   const [preview, setPreview] = React.useState<ClientPreview[]>([]);
@@ -117,7 +137,7 @@ export function GenerateInvoicesModal({
         periodStart,
         periodEnd,
       });
-      if (selectedClientId !== "all") {
+      if (selectedClientId) {
         params.set("clientId", selectedClientId);
       }
 
@@ -194,11 +214,14 @@ export function GenerateInvoicesModal({
       }
 
       // Navigate to invoices list on success
+      toast.success(`${count} invoice${count > 1 ? "s" : ""} generated successfully`);
       onClose();
       router.push("/invoices");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsGenerating(false);
     }
@@ -252,9 +275,8 @@ export function GenerateInvoicesModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="periodStart">Period Start *</Label>
-                  <Input
+                  <DateInput
                     id="periodStart"
-                    type="date"
                     value={periodStart}
                     onChange={(e) => setPeriodStart(e.target.value)}
                   />
@@ -262,9 +284,8 @@ export function GenerateInvoicesModal({
 
                 <div>
                   <Label htmlFor="periodEnd">Period End *</Label>
-                  <Input
+                  <DateInput
                     id="periodEnd"
-                    type="date"
                     value={periodEnd}
                     onChange={(e) => setPeriodEnd(e.target.value)}
                   />
@@ -272,27 +293,19 @@ export function GenerateInvoicesModal({
               </div>
 
               <div>
-                <Label htmlFor="clientFilter">Client</Label>
-                <Select
-                  id="clientFilter"
+                <ClientSearchSelect
                   value={selectedClientId}
-                  onChange={(e) => setSelectedClientId(e.target.value)}
-                >
-                  <option value="all">All Clients</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.firstName} {client.lastName}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={handleClientFilterChange}
+                  label="Client (leave empty for all)"
+                  placeholder="Search clients or leave empty for all..."
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="dueDate">Due Date (optional)</Label>
-                  <Input
+                  <DateInput
                     id="dueDate"
-                    type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
                   />
@@ -379,26 +392,17 @@ export function GenerateInvoicesModal({
 
                         {selectedClients.has(clientPreview.client.id) && (
                           <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
-                            <Label htmlFor={`sponsor-${clientPreview.client.id}`}>
-                              Bill To (Sponsor)
-                            </Label>
-                            <Select
-                              id={`sponsor-${clientPreview.client.id}`}
+                            <SponsorSearchSelect
                               value={clientSponsors[clientPreview.client.id] || ""}
-                              onChange={(e) => {
+                              onChange={(sponsorId, _sponsor) => {
                                 setClientSponsors({
                                   ...clientSponsors,
-                                  [clientPreview.client.id]: e.target.value,
+                                  [clientPreview.client.id]: sponsorId,
                                 });
                               }}
-                            >
-                              <option value="">Bill to client directly</option>
-                              {sponsors.map((sponsor) => (
-                                <option key={sponsor.id} value={sponsor.id}>
-                                  {sponsor.firstName} {sponsor.lastName} ({sponsor.email})
-                                </option>
-                              ))}
-                            </Select>
+                              label="Bill To (Sponsor)"
+                              placeholder="Search sponsor or leave empty for client..."
+                            />
                           </div>
                         )}
                       </CardContent>

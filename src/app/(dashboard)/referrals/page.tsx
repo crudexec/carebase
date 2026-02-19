@@ -106,17 +106,17 @@ export default function ReferralsPage() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Referrals" }]} />
+      <Breadcrumb items={[{ label: "Referral Pipeline" }]} />
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Referrals</h1>
+          <h1 className="text-2xl font-bold">Referral Pipeline</h1>
           <p className="text-foreground-secondary">
-            Manage incoming referrals and convert to clients
+            Track and manage incoming referrals
           </p>
         </div>
-        <Link href="/referrals/new">
+        <Link href="/clients/new">
           <Button>
             <UserPlus className="mr-2 h-4 w-4" />
             New Referral

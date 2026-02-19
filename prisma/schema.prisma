@@ -123,6 +123,8 @@ enum FormFieldType {
   SIGNATURE
   PHOTO
   RATING_SCALE
+  BODY_MAP
+  ICD10_DIAGNOSIS
 }
 
 enum FormTemplateStatus {
@@ -300,8 +302,8 @@ model Company {
   billingFrequency BillingFrequency? @default(WEEKLY)
 
   // EVV (Electronic Visit Verification) Settings
-  evvEnabled            Boolean @default(true)  // Company-wide EVV toggle
-  defaultGeofenceRadius Int     @default(150)   // Default geofence radius in meters
+  evvEnabled            Boolean @default(true) // Company-wide EVV toggle
+  defaultGeofenceRadius Int     @default(150) // Default geofence radius in meters
 
   // Virtual Fax Number for receiving faxes (E.164 format)
   faxNumber String? @unique
@@ -318,11 +320,11 @@ model Company {
   chatMessages      ChatMessage[]
   escalations       Escalation[]
   onboardingRecords OnboardingRecord[]
-  notifications      Notification[]
-  auditLogs          AuditLog[]
-  formTemplates      FormTemplate[]
-  carePlanTemplates  CarePlanTemplate[]
-  visitNotes         VisitNote[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  formTemplates     FormTemplate[]
+  carePlanTemplates CarePlanTemplate[]
+  visitNotes        VisitNote[]
 
   // Billing relations
   serviceTypes     ServiceType[]
@@ -346,9 +348,9 @@ model Company {
   physicians           Physician[]
 
   // Credential management
-  credentialTypes   CredentialType[]
-  credentialAlerts  CredentialAlert[]
-  faxRecords           FaxRecord[]
+  credentialTypes  CredentialType[]
+  credentialAlerts CredentialAlert[]
+  faxRecords       FaxRecord[]
 
   // Notification system
   notificationPreferences NotificationPreference[]
@@ -363,6 +365,23 @@ model Company {
 
   // Sponsor invite tokens
   sponsorInviteTokens SponsorInviteToken[]
+
+  // HR Compliance - Competency Management
+  competencies               Competency[]
+  staffCompetencies          StaffCompetency[]
+  taskCompetencyRequirements TaskCompetencyRequirement[]
+  remediationPlans           RemediationPlan[]
+
+  // HR Compliance - Training & Education
+  trainingCourses     TrainingCourse[]
+  trainingSessions    TrainingSession[]
+  trainingAttendances TrainingAttendance[]
+  trainingAssignments TrainingAssignment[]
+
+  // HR Compliance - Supervision
+  supervisoryRelationships SupervisoryRelationship[]
+  supervisionVisits        SupervisionVisit[]
+  staffDevelopmentPlans    StaffDevelopmentPlan[]
 
   @@index([isActive])
 }
@@ -436,7 +455,7 @@ model User {
   createdFormTemplates     FormTemplate[]     @relation("FormTemplateCreator")
   createdCarePlanTemplates CarePlanTemplate[] @relation("CarePlanTemplateCreator")
   visitNotes               VisitNote[]        @relation("CarerVisitNotes")
-  submittedVisitNotes  VisitNote[]    @relation("VisitNoteSubmitter")
+  submittedVisitNotes      VisitNote[]        @relation("VisitNoteSubmitter")
 
   // Comments
   comments VisitNoteComment[] @relation("CommentAuthor")
@@ -472,27 +491,48 @@ model User {
   invoicePaymentsRecorded InvoicePayment[] @relation("InvoicePaymentsRecorded")
 
   // Credential management
-  credentialsVerified        CaregiverCredential[] @relation("CredentialVerifier")
-  credentialAlertsDismissed  CredentialAlert[]     @relation("CredentialAlertDismisser")
-  credentialAlertsActioned   CredentialAlert[]     @relation("CredentialAlertAction")
+  credentialsVerified       CaregiverCredential[] @relation("CredentialVerifier")
+  credentialAlertsDismissed CredentialAlert[]     @relation("CredentialAlertDismisser")
+  credentialAlertsActioned  CredentialAlert[]     @relation("CredentialAlertAction")
+
+  // HR Compliance - Competency Management
+  staffCompetencies              StaffCompetency[]
+  competencyAssessmentsGiven     StaffCompetency[]     @relation("CompetencyAssessor")
+  remediationPlans               RemediationPlan[]
+  remediationPlansIdentified     RemediationPlan[]     @relation("GapIdentifier")
+  remediationPlansVerified       RemediationPlan[]     @relation("RemediationVerifier")
+  remediationActivitiesCompleted RemediationActivity[] @relation("ActivityCompleter")
+
+  // HR Compliance - Training & Education
+  trainingSessions           TrainingSession[]    @relation("TrainingInstructor")
+  trainingAttendances        TrainingAttendance[]
+  trainingAssignments        TrainingAssignment[]
+  trainingAssignmentsGiven   TrainingAssignment[] @relation("TrainingAssigner")
+  trainingExtensionsApproved TrainingAssignment[] @relation("ExtensionApprover")
+
+  // HR Compliance - Supervision
+  supervisorRelationships    SupervisoryRelationship[] @relation("Supervisor")
+  superviseeRelationships    SupervisoryRelationship[] @relation("Supervisee")
+  developmentPlans           StaffDevelopmentPlan[]
+  developmentPlansSupervised StaffDevelopmentPlan[]    @relation("DevelopmentSupervisor")
+
+  // Password reset tokens
+  passwordResetTokens PasswordResetToken[]
 
   @@index([email])
   @@index([role])
   @@index([isActive])
   @@index([companyId])
-
-  // Password reset tokens
-  passwordResetTokens PasswordResetToken[]
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([token])
   @@index([userId])
@@ -508,12 +548,12 @@ model SponsorInviteToken {
   phone       String?
   companyId   String
   company     Company   @relation(fields: [companyId], references: [id])
-  clientId    String?   // Optional pre-assignment to a client
+  clientId    String? // Optional pre-assignment to a client
   client      Client?   @relation(fields: [clientId], references: [id])
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime  @default(now())
-  createdById String    // User who created the invite
+  createdById String // User who created the invite
 
   @@index([token])
   @@index([email])
@@ -560,12 +600,12 @@ model CaregiverAvailability {
 
 model CredentialType {
   id                    String             @id @default(cuid())
-  name                  String             // "CNA Certification", "CPR/BLS", etc.
+  name                  String // "CNA Certification", "CPR/BLS", etc.
   category              CredentialCategory
   description           String?
   defaultValidityMonths Int                @default(24)
   isRequired            Boolean            @default(false)
-  requiredForRoles      String[]           // ["CARER"] or specific roles
+  requiredForRoles      String[] // ["CARER"] or specific roles
   reminderDays          Int[]              @default([60, 30, 7]) // Company-configurable
   isActive              Boolean            @default(true)
 
@@ -606,9 +646,9 @@ model CaregiverCredential {
   verifiedBy   User?     @relation("CredentialVerifier", fields: [verifiedById], references: [id])
 
   // Reminder tracking (for configurable reminders)
-  lastReminderSent   DateTime?
-  remindersSentDays  Int[]     @default([]) // Track which day reminders have been sent
-  expiredAlertSent   Boolean   @default(false)
+  lastReminderSent  DateTime?
+  remindersSentDays Int[]     @default([]) // Track which day reminders have been sent
+  expiredAlertSent  Boolean   @default(false)
 
   notes String?
 
@@ -649,7 +689,7 @@ model CredentialAlert {
   actionTaken     String?
   actionTakenAt   DateTime?
   actionTakenById String?
-  actionTakenBy   User?   @relation("CredentialAlertAction", fields: [actionTakenById], references: [id])
+  actionTakenBy   User?     @relation("CredentialAlertAction", fields: [actionTakenById], references: [id])
 
   // Relations
   credentialId String
@@ -668,23 +708,23 @@ model CredentialAlert {
 }
 
 model Client {
-  id           String       @id @default(cuid())
-  firstName    String
-  lastName     String
-  dateOfBirth  DateTime?
-  address      String?
-  city         String?
-  state        String? // 2-letter state code
-  zipCode      String?
+  id             String       @id @default(cuid())
+  firstName      String
+  lastName       String
+  dateOfBirth    DateTime?
+  address        String?
+  city           String?
+  state          String? // 2-letter state code
+  zipCode        String?
   latitude       Decimal?     @db.Decimal(10, 8)
   longitude      Decimal?     @db.Decimal(11, 8)
-  geofenceRadius Int?         // EVV geofence radius in meters, null uses company default
+  geofenceRadius Int? // EVV geofence radius in meters, null uses company default
   phone          String?
-  medicalNotes String?
-  profileData  Json? // Custom profile fields from profile templates
-  status       ClientStatus @default(PROSPECT)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  medicalNotes   String?
+  profileData    Json? // Custom profile fields from profile templates
+  status         ClientStatus @default(PROSPECT)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   // Medicaid/Insurance Information
   medicaidId           String? // Medicaid Member ID
@@ -699,20 +739,20 @@ model Client {
   authorizationUnits   Int? // Authorized units
 
   // Physician Information (PCP)
-  physicianName        String? // Primary Care Physician name
-  physicianNpi         String? // Physician NPI number
-  physicianPhone       String? // Physician phone number
-  physicianFax         String? // Physician fax number (E.164 format)
-  physicianAddress     String? // Physician office address
+  physicianName    String? // Primary Care Physician name
+  physicianNpi     String? // Physician NPI number
+  physicianPhone   String? // Physician phone number
+  physicianFax     String? // Physician fax number (E.164 format)
+  physicianAddress String? // Physician office address
 
   // Referral Information
-  referralSource       String? // Where the referral came from (e.g., Hospital, Physician, Self, etc.)
-  referralDate         DateTime? // Date of referral
+  referralSource          String? // Where the referral came from (e.g., Hospital, Physician, Self, etc.)
+  referralDate            DateTime? // Date of referral
   referringPhysicianName  String? // Referring physician name (if different from PCP)
   referringPhysicianNpi   String? // Referring physician NPI
   referringPhysicianPhone String? // Referring physician phone
   referringPhysicianFax   String? // Referring physician fax
-  referralNotes        String? // Additional referral notes
+  referralNotes           String? // Additional referral notes
 
   // Company relation
   companyId String
@@ -757,6 +797,9 @@ model Client {
 
   // Sponsor invite tokens for this client
   sponsorInviteTokens SponsorInviteToken[]
+
+  // HR Compliance - Supervision visits with this client
+  supervisionVisits SupervisionVisit[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])
@@ -812,7 +855,7 @@ model OnboardingStageHistory {
 }
 
 model Shift {
-  id               String      @id @default(cuid())
+  id               String    @id @default(cuid())
   scheduledStart   DateTime
   scheduledEnd     DateTime
   actualStart      DateTime? // Legacy: first check-in time
@@ -823,20 +866,20 @@ model Shift {
   // Client signature captured during shift
   clientSignature          String?   @db.Text // Base64 PNG data URL
   clientSignatureTimestamp DateTime?
-  clientSignatureName      String?   // Name of person who signed (optional)
+  clientSignatureName      String? // Name of person who signed (optional)
 
   // Missed visit tracking
-  missedReason      String?   // Predefined reason code
+  missedReason      String? // Predefined reason code
   missedReasonNotes String?   @db.Text // Optional additional notes
   missedAt          DateTime? // When it was marked as missed
-  missedById        String?   // User who marked it as missed
+  missedById        String? // User who marked it as missed
   missedBy          User?     @relation("MissedShifts", fields: [missedById], references: [id])
 
-  status           ShiftStatus @default(SCHEDULED)
-  remindersSentMinutes Int[]   @default([]) // Track which reminders have been sent (e.g., [1440, 60] for 24h and 1h)
-  visitNoteReminderSent Boolean @default(false) // Track if missing visit note reminder was sent
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  status                ShiftStatus @default(SCHEDULED)
+  remindersSentMinutes  Int[]       @default([]) // Track which reminders have been sent (e.g., [1440, 60] for 24h and 1h)
+  visitNoteReminderSent Boolean     @default(false) // Track if missing visit note reminder was sent
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 
   // Company relation
   companyId String
@@ -1006,10 +1049,10 @@ model Invoice {
   periodStart   DateTime
   periodEnd     DateTime
   subtotal      Decimal       @db.Decimal(10, 2)
-  taxRate       Decimal       @db.Decimal(5, 4) @default(0)
-  taxAmount     Decimal       @db.Decimal(10, 2) @default(0)
+  taxRate       Decimal       @default(0) @db.Decimal(5, 4)
+  taxAmount     Decimal       @default(0) @db.Decimal(10, 2)
   total         Decimal       @db.Decimal(10, 2)
-  amountPaid    Decimal       @db.Decimal(10, 2) @default(0)
+  amountPaid    Decimal       @default(0) @db.Decimal(10, 2)
   amountDue     Decimal       @db.Decimal(10, 2)
   status        InvoiceStatus @default(DRAFT)
   dueDate       DateTime?
@@ -1043,9 +1086,9 @@ model Invoice {
 }
 
 model InvoiceLineItem {
-  id          String       @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   type        LineItemType
   description String
@@ -1055,28 +1098,28 @@ model InvoiceLineItem {
 
   // For shift-based items
   shiftId     String?
-  shift       Shift?       @relation(fields: [shiftId], references: [id])
+  shift       Shift?    @relation(fields: [shiftId], references: [id])
   serviceDate DateTime?
 
-  createdAt   DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   @@index([invoiceId])
   @@index([shiftId])
 }
 
 model InvoicePayment {
-  id           String   @id @default(cuid())
-  invoiceId    String
-  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  amount       Decimal  @db.Decimal(10, 2)
-  paidAt       DateTime @default(now())
-  notes        String?
+  amount Decimal  @db.Decimal(10, 2)
+  paidAt DateTime @default(now())
+  notes  String?
 
   recordedById String
-  recordedBy   User     @relation("InvoicePaymentsRecorded", fields: [recordedById], references: [id])
+  recordedBy   User   @relation("InvoicePaymentsRecorded", fields: [recordedById], references: [id])
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([invoiceId])
   @@index([recordedById])
@@ -1116,10 +1159,10 @@ model ChatMessage {
 // ============================================
 
 model Conversation {
-  id          String   @id @default(cuid())
-  subject     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  subject   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Company relation (multi-tenancy)
   companyId String
@@ -1365,7 +1408,7 @@ model VisitNote {
   qaStatus       QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
   qaComment      String?   @db.Text // QA reviewer comments
   qaReviewedAt   DateTime? // When QA review was completed
-  qaReviewedById String?   // Who performed the QA review
+  qaReviewedById String? // Who performed the QA review
   qaReviewedBy   User?     @relation("VisitNoteQAReviewer", fields: [qaReviewedById], references: [id])
 
   // File attachments
@@ -1389,17 +1432,17 @@ model VisitNote {
 }
 
 model ThresholdBreach {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   visitNoteId   String
   visitNote     VisitNote @relation(fields: [visitNoteId], references: [id], onDelete: Cascade)
-  fieldId       String   // The form field ID that breached
-  fieldLabel    String   // Snapshot of field label at time of breach
-  value         Float    // The value that was entered
-  minThreshold  Float?   // The min threshold that was breached (if applicable)
-  maxThreshold  Float?   // The max threshold that was breached (if applicable)
-  breachType    String   // "BELOW_MIN" or "ABOVE_MAX"
-  customMessage String?  // Custom message configured on the field
-  createdAt     DateTime @default(now())
+  fieldId       String // The form field ID that breached
+  fieldLabel    String // Snapshot of field label at time of breach
+  value         Float // The value that was entered
+  minThreshold  Float? // The min threshold that was breached (if applicable)
+  maxThreshold  Float? // The max threshold that was breached (if applicable)
+  breachType    String // "BELOW_MIN" or "ABOVE_MAX"
+  customMessage String? // Custom message configured on the field
+  createdAt     DateTime  @default(now())
 
   // Company relation
   companyId String
@@ -1410,7 +1453,7 @@ model ThresholdBreach {
   client   Client @relation(fields: [clientId], references: [id])
 
   carerId String
-  carer   User @relation("CarerThresholdBreaches", fields: [carerId], references: [id])
+  carer   User   @relation("CarerThresholdBreaches", fields: [carerId], references: [id])
 
   @@index([visitNoteId])
   @@index([companyId])
@@ -1503,6 +1546,9 @@ model ServiceType {
   // Relations
   billingRates BillingRate[]
   claimLines   ClaimLine[]
+
+  // HR Compliance - Required competencies for this service
+  competencyRequirements TaskCompetencyRequirement[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -1802,13 +1848,23 @@ enum AssessmentSectionType {
 }
 
 enum AssessmentResponseType {
-  SCALE // Numeric scale (0-3, 1-5, etc.)
-  YES_NO // Boolean
-  SINGLE_CHOICE // Single selection
-  MULTIPLE_CHOICE // Multiple selections
-  TEXT // Free text
-  DATE // Date value
-  NUMBER // Numeric value
+  TEXT_SHORT // Single line text input
+  TEXT_LONG // Multi-line text area
+  NUMBER // Numeric input with optional threshold alerts
+  YES_NO // Simple yes or no toggle
+  SINGLE_CHOICE // Select one option from a list
+  MULTIPLE_CHOICE // Select multiple options from a list
+  DATE // Date picker
+  TIME // Time picker
+  DATETIME // Combined date and time picker
+  SIGNATURE // Digital signature capture
+  PHOTO // Photo upload
+  RATING_SCALE // Star or number rating (replaces SCALE)
+  BODY_MAP // Interactive body diagram
+  ICD10_DIAGNOSIS // Search and select ICD-10 diagnosis codes
+  // Legacy types (kept for backward compatibility)
+  SCALE // Numeric scale (0-3, 1-5, etc.) - deprecated, use RATING_SCALE
+  TEXT // Free text - deprecated, use TEXT_SHORT or TEXT_LONG
 }
 
 enum ScoringMethod {
@@ -1838,8 +1894,8 @@ enum CarePlanQAStatus {
 // QA Status for Assessments and Visit Notes
 enum QAStatus {
   PENDING_REVIEW // Submitted for QA review
-  APPROVED       // Approved by QA manager
-  REJECTED       // Rejected/requires changes
+  APPROVED // Approved by QA manager
+  REJECTED // Rejected/requires changes
 }
 
 enum DiagnosisType {
@@ -2088,11 +2144,11 @@ model Assessment {
   notes          String? // Assessor notes
 
   // QA Workflow
-  qaStatus      QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
-  qaComment     String?   @db.Text // QA reviewer comments
-  qaReviewedAt  DateTime? // When QA review was completed
-  qaReviewedById String?  // Who performed the QA review
-  qaReviewedBy  User?     @relation("AssessmentQAReviewer", fields: [qaReviewedById], references: [id])
+  qaStatus         QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
+  qaComment        String?   @db.Text // QA reviewer comments
+  qaReviewedAt     DateTime? // When QA review was completed
+  qaReviewedById   String? // Who performed the QA review
+  qaReviewedBy     User?     @relation("AssessmentQAReviewer", fields: [qaReviewedById], references: [id])
   submittedForQAAt DateTime? // When submitted for QA
 
   createdAt DateTime @default(now())
@@ -2505,9 +2561,9 @@ model CarePlan {
   physicianFax   String?
 
   // 485 Certification Fields
-  isCert485      Boolean @default(false) // Indicates this is a CMS-485 form
-  cert485Orders  String? @db.Text // Specific 485 orders (discipline, treatment, supplies)
-  cert485Goals   String? @db.Text // 485 goals and rehabilitation potential
+  isCert485     Boolean @default(false) // Indicates this is a CMS-485 form
+  cert485Orders String? @db.Text // Specific 485 orders (discipline, treatment, supplies)
+  cert485Goals  String? @db.Text // 485 goals and rehabilitation potential
 
   // QA Workflow
   qaStatus CarePlanQAStatus?
@@ -2610,13 +2666,6 @@ model CarePlanTemplate {
   status      FormTemplateStatus @default(DRAFT)
   version     Int                @default(1)
   isEnabled   Boolean            @default(false)
-
-  // Template configuration
-  includesDiagnoses     Boolean @default(true)
-  includesGoals         Boolean @default(true)
-  includesInterventions Boolean @default(true)
-  includesMedications   Boolean @default(true)
-  includesOrders        Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2897,12 +2946,12 @@ model FaxRecord {
   direction  FaxDirection @default(OUTBOUND)
 
   // Fax details
-  toNumber   String    // Recipient fax number (E.164 format)
-  fromNumber String    // Sender fax number (E.164 format)
+  toNumber   String // Recipient fax number (E.164 format)
+  fromNumber String // Sender fax number (E.164 format)
   status     FaxStatus @default(QUEUED)
 
   // Document info
-  documentType  String  // e.g., "CARE_PLAN", "INBOUND_FAX"
+  documentType  String // e.g., "CARE_PLAN", "INBOUND_FAX"
   documentId    String? // ID of the related document (e.g., carePlanId)
   documentName  String? // Human-readable document name
   documentUrl   String? // URL to stored document (for inbound faxes)
@@ -2919,11 +2968,11 @@ model FaxRecord {
 
   // Inbound fax processing
   processedAt  DateTime? // When inbound fax was reviewed/processed
-  assignedToId String?   // User assigned to handle inbound fax
+  assignedToId String? // User assigned to handle inbound fax
   assignedTo   User?     @relation("AssignedFaxes", fields: [assignedToId], references: [id])
-  clientId     String?   // Client the inbound fax relates to
+  clientId     String? // Client the inbound fax relates to
   client       Client?   @relation(fields: [clientId], references: [id])
-  notes        String?   // Notes about the fax
+  notes        String? // Notes about the fax
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -2953,12 +3002,12 @@ model FaxRecord {
 // ============================================
 
 model NotificationPreference {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Which event and channel
   eventType NotificationEventType
   channel   NotificationChannel
-  enabled   Boolean  @default(true)
+  enabled   Boolean               @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2984,12 +3033,12 @@ model NotificationLog {
   // What notification
   eventType NotificationEventType
   channel   NotificationChannel
-  status    NotificationStatus   @default(PENDING)
+  status    NotificationStatus    @default(PENDING)
 
   // Content
   subject  String? // For email
   body     String  @db.Text
-  metadata Json?   // Additional data (messageId, error, etc.)
+  metadata Json? // Additional data (messageId, error, etc.)
 
   // Timing
   scheduledFor DateTime? // For scheduled notifications
@@ -2998,9 +3047,9 @@ model NotificationLog {
   failedAt     DateTime?
 
   // Retry tracking
-  retryCount   Int     @default(0)
-  maxRetries   Int     @default(3)
-  lastError    String?
+  retryCount Int     @default(0)
+  maxRetries Int     @default(3)
+  lastError  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3034,11 +3083,11 @@ model NotificationTemplate {
   channel   NotificationChannel
 
   // Template content
-  name        String  // Friendly name
-  subject     String? // For email (supports {{variables}})
-  body        String  @db.Text // Template body (supports {{variables}})
-  isActive    Boolean @default(true)
-  isDefault   Boolean @default(false) // System default template
+  name      String // Friendly name
+  subject   String? // For email (supports {{variables}})
+  body      String  @db.Text // Template body (supports {{variables}})
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false) // System default template
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3052,4 +3101,765 @@ model NotificationTemplate {
   @@index([eventType])
   @@index([channel])
   @@index([isActive])
+}
+
+// ============================================
+// HR COMPLIANCE - COMPETENCY MANAGEMENT
+// ============================================
+
+enum CompetencyCategory {
+  CLINICAL_SKILLS
+  MEDICATION_MANAGEMENT
+  INFECTION_CONTROL
+  SAFETY_PROCEDURES
+  DOCUMENTATION
+  COMMUNICATION
+  EQUIPMENT_OPERATION
+  EMERGENCY_RESPONSE
+  PATIENT_RIGHTS
+  REGULATORY_COMPLIANCE
+  SPECIALIZED_CARE
+}
+
+enum CompetencyAssessmentMethod {
+  DIRECT_OBSERVATION
+  SKILLS_DEMONSTRATION
+  WRITTEN_TEST
+  VERBAL_ASSESSMENT
+  SIMULATION
+  CASE_STUDY
+  PEER_REVIEW
+  SUPERVISOR_EVALUATION
+  SELF_ASSESSMENT_WITH_VALIDATION
+}
+
+enum CompetencyStatus {
+  COMPETENT
+  NOT_COMPETENT
+  NEEDS_IMPROVEMENT
+  IN_PROGRESS
+  EXPIRED
+  WAIVED
+}
+
+enum RemediationActivityType {
+  TRAINING_COURSE
+  SUPERVISED_PRACTICE
+  SKILLS_LAB
+  READING_ASSIGNMENT
+  MENTORING_SESSION
+  REASSESSMENT
+  OBSERVATION_HOURS
+  CASE_REVIEW
+}
+
+enum RemediationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED_PENDING_VERIFICATION
+  VERIFIED_COMPLETE
+  EXTENDED
+  FAILED
+}
+
+model Competency {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  category    CompetencyCategory
+
+  // Assessment
+  assessmentMethod CompetencyAssessmentMethod
+  passingScore     Float? // For scored assessments
+
+  // Validity
+  validityMonths       Int     @default(12)
+  requiresRevalidation Boolean @default(true)
+
+  // Requirements
+  prerequisiteIds     String[] // Competency IDs that must be completed first
+  requiredForRoles    UserRole[]
+  requiredForServices String[] // Service type IDs
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  staffCompetencies StaffCompetency[]
+  taskCompetencies  TaskCompetencyRequirement[]
+
+  @@unique([name, companyId])
+  @@index([companyId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model StaffCompetency {
+  id String @id @default(cuid())
+
+  // Staff member
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Competency
+  competencyId String
+  competency   Competency @relation(fields: [competencyId], references: [id])
+
+  // Assessment
+  assessedAt   DateTime
+  assessedById String
+  assessedBy   User     @relation("CompetencyAssessor", fields: [assessedById], references: [id])
+
+  // Results
+  status              CompetencyStatus
+  score               Float?
+  observations        String?
+  strengths           String?
+  areasForImprovement String?
+
+  // Documentation
+  documentUrls String[]
+
+  // Validity
+  validUntil DateTime
+  isExpired  Boolean  @default(false)
+
+  // Remediation
+  requiresRemediation Boolean          @default(false)
+  remediationPlanId   String?
+  remediationPlan     RemediationPlan? @relation(fields: [remediationPlanId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([userId, competencyId, assessedAt])
+  @@index([userId])
+  @@index([competencyId])
+  @@index([status])
+  @@index([validUntil])
+  @@index([companyId])
+}
+
+model TaskCompetencyRequirement {
+  id String @id @default(cuid())
+
+  // What requires this competency
+  serviceTypeId   String?
+  serviceType     ServiceType? @relation(fields: [serviceTypeId], references: [id])
+  taskDescription String? // For ad-hoc tasks
+
+  // Competency required
+  competencyId String
+  competency   Competency @relation(fields: [competencyId], references: [id])
+
+  isRequired Boolean @default(true) // vs preferred
+
+  createdAt DateTime @default(now())
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([serviceTypeId, competencyId])
+  @@index([companyId])
+}
+
+model RemediationPlan {
+  id String @id @default(cuid())
+
+  // Staff member
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Gap identification
+  competencyGaps String[] // Competency IDs
+  identifiedAt   DateTime @default(now())
+  identifiedById String
+  identifiedBy   User     @relation("GapIdentifier", fields: [identifiedById], references: [id])
+
+  // Plan
+  planDescription      String
+  targetCompletionDate DateTime
+
+  // Status
+  status      RemediationStatus
+  completedAt DateTime?
+
+  // Verification
+  verifiedById      String?
+  verifiedBy        User?   @relation("RemediationVerifier", fields: [verifiedById], references: [id])
+  verificationNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  activities        RemediationActivity[]
+  staffCompetencies StaffCompetency[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model RemediationActivity {
+  id String @id @default(cuid())
+
+  // Plan
+  remediationPlanId String
+  remediationPlan   RemediationPlan @relation(fields: [remediationPlanId], references: [id], onDelete: Cascade)
+
+  // Activity details
+  activityType RemediationActivityType
+  description  String
+  dueDate      DateTime
+
+  // Completion
+  completedAt     DateTime?
+  completedById   String?
+  completedBy     User?     @relation("ActivityCompleter", fields: [completedById], references: [id])
+  completionNotes String?
+  documentUrls    String[]
+
+  // Training link (if applicable)
+  trainingSessionId String?
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([remediationPlanId])
+  @@index([dueDate])
+}
+
+// ============================================
+// HR COMPLIANCE - TRAINING & EDUCATION
+// ============================================
+
+enum TrainingCategory {
+  ORIENTATION
+  CLINICAL_SKILLS
+  SAFETY
+  COMPLIANCE
+  INFECTION_CONTROL
+  PATIENT_RIGHTS
+  DOCUMENTATION
+  EMERGENCY_PROCEDURES
+  SPECIALTY_CARE
+  PROFESSIONAL_DEVELOPMENT
+  LEADERSHIP
+  TECHNOLOGY
+}
+
+enum TrainingFormat {
+  IN_PERSON
+  ONLINE_SELF_PACED
+  ONLINE_LIVE
+  HYBRID
+  ON_THE_JOB
+  SIMULATION
+}
+
+enum TrainingSessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum TrainingAttendanceStatus {
+  REGISTERED
+  CONFIRMED
+  ATTENDED
+  PARTIALLY_ATTENDED
+  ABSENT
+  EXCUSED
+  CANCELLED
+}
+
+enum TrainingAssignmentReason {
+  NEW_HIRE
+  ANNUAL_REQUIREMENT
+  COMPETENCY_GAP
+  POLICY_CHANGE
+  NEW_EQUIPMENT
+  REGULATORY_REQUIREMENT
+  PERFORMANCE_IMPROVEMENT
+  VOLUNTARY
+}
+
+enum TrainingAssignmentStatus {
+  ASSIGNED
+  REGISTERED_FOR_SESSION
+  COMPLETED
+  OVERDUE
+  WAIVED
+  EXTENDED
+}
+
+model TrainingCourse {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  category    TrainingCategory
+
+  // Format
+  format          TrainingFormat
+  durationMinutes Int
+
+  // Credits
+  ceuCredits   Float @default(0)
+  contactHours Float @default(0)
+
+  // Content
+  learningObjectives String[]
+  materials          String[] // URLs
+
+  // Assessment
+  requiresAssessment Boolean @default(false)
+  passingScore       Float?
+
+  // Recurrence
+  isRecurring      Boolean @default(false)
+  recurrenceMonths Int?
+
+  // Requirements
+  prerequisites       String[] // Course IDs
+  requiredForRoles    UserRole[]
+  requiredForNewHires Boolean    @default(false)
+  newHireDueDays      Int? // Days after hire to complete
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  sessions    TrainingSession[]
+  assignments TrainingAssignment[]
+
+  @@index([companyId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model TrainingSession {
+  id String @id @default(cuid())
+
+  // Course
+  courseId String
+  course   TrainingCourse @relation(fields: [courseId], references: [id])
+
+  // Scheduling
+  scheduledDate DateTime
+  startTime     String // "09:00"
+  endTime       String // "12:00"
+  timezone      String   @default("America/New_York")
+
+  // Location
+  location          String?
+  isVirtual         Boolean @default(false)
+  virtualMeetingUrl String?
+
+  // Instructor
+  instructorId       String?
+  instructor         User?   @relation("TrainingInstructor", fields: [instructorId], references: [id])
+  externalInstructor String?
+
+  // Capacity
+  capacity        Int?
+  registeredCount Int  @default(0)
+
+  // Status
+  status          TrainingSessionStatus
+  cancelledReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  attendances           TrainingAttendance[]
+  remediationActivities RemediationActivity[]
+
+  @@index([courseId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@index([companyId])
+}
+
+model TrainingAttendance {
+  id String @id @default(cuid())
+
+  // Session
+  sessionId String
+  session   TrainingSession @relation(fields: [sessionId], references: [id])
+
+  // Attendee
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Attendance
+  status          TrainingAttendanceStatus
+  checkInTime     DateTime?
+  checkOutTime    DateTime?
+  minutesAttended Int?
+
+  // Completion
+  completedSuccessfully Boolean   @default(false)
+  assessmentScore       Float?
+  certificateUrl        String?
+  certificateIssuedAt   DateTime?
+
+  // Makeup
+  requiresMakeup    Boolean   @default(false)
+  makeupSessionId   String?
+  makeupCompletedAt DateTime?
+
+  // Feedback
+  feedbackRating   Int? // 1-5
+  feedbackComments String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model TrainingAssignment {
+  id String @id @default(cuid())
+
+  // Assignee
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Course
+  courseId String
+  course   TrainingCourse @relation(fields: [courseId], references: [id])
+
+  // Assignment
+  assignedAt   DateTime                 @default(now())
+  assignedById String
+  assignedBy   User                     @relation("TrainingAssigner", fields: [assignedById], references: [id])
+  reason       TrainingAssignmentReason
+
+  // Due date
+  dueDate DateTime
+
+  // Completion
+  status             TrainingAssignmentStatus
+  completedAt        DateTime?
+  completedSessionId String?
+
+  // Extensions
+  extensionGranted      Boolean   @default(false)
+  extensionDate         DateTime?
+  extensionReason       String?
+  extensionApprovedById String?
+  extensionApprovedBy   User?     @relation("ExtensionApprover", fields: [extensionApprovedById], references: [id])
+
+  // Notifications
+  remindersSent  Int       @default(0)
+  lastReminderAt DateTime?
+  escalatedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([userId, courseId, assignedAt])
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([companyId])
+}
+
+// ============================================
+// HR COMPLIANCE - SUPERVISION
+// ============================================
+
+enum SupervisorType {
+  PRIMARY
+  SECONDARY
+  CLINICAL
+  ADMINISTRATIVE
+  PRECEPTOR
+  MENTOR
+}
+
+enum SupervisionFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  AS_NEEDED
+}
+
+enum SupervisionVisitType {
+  IN_PERSON_OBSERVATION
+  JOINT_VISIT
+  CHART_REVIEW
+  PHONE_CONFERENCE
+  VIDEO_CONFERENCE
+  CASE_CONFERENCE
+  SKILLS_VALIDATION
+  PERFORMANCE_REVIEW
+}
+
+enum SupervisionVisitStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED_BY_SUPERVISOR
+  MISSED_BY_SUPERVISEE
+  RESCHEDULED
+  CANCELLED
+}
+
+enum PerformanceRating {
+  EXCEEDS_EXPECTATIONS
+  MEETS_EXPECTATIONS
+  NEEDS_IMPROVEMENT
+  UNSATISFACTORY
+  NOT_OBSERVED
+}
+
+enum DevelopmentPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  EXTENDED
+  CANCELLED
+}
+
+enum GoalCategory {
+  CLINICAL_COMPETENCY
+  PROFESSIONAL_DEVELOPMENT
+  LEADERSHIP
+  COMMUNICATION
+  TECHNICAL_SKILLS
+  REGULATORY_COMPLIANCE
+  PERSONAL_GROWTH
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  PARTIALLY_MET
+  NOT_MET
+  DEFERRED
+}
+
+model SupervisoryRelationship {
+  id String @id @default(cuid())
+
+  // Supervisor
+  supervisorId String
+  supervisor   User   @relation("Supervisor", fields: [supervisorId], references: [id])
+
+  // Supervisee
+  superviseeId String
+  supervisee   User   @relation("Supervisee", fields: [superviseeId], references: [id])
+
+  // Relationship
+  relationshipType SupervisorType
+  discipline       String? // "RN", "PT", "OT", etc.
+
+  // Status
+  isActive  Boolean   @default(true)
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+
+  // Requirements
+  requiredVisitFrequency SupervisionFrequency
+  requiredHoursPerPeriod Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  supervisionVisits SupervisionVisit[]
+
+  @@unique([supervisorId, superviseeId, discipline])
+  @@index([supervisorId])
+  @@index([superviseeId])
+  @@index([isActive])
+  @@index([companyId])
+}
+
+model SupervisionVisit {
+  id String @id @default(cuid())
+
+  // Relationship
+  relationshipId String
+  relationship   SupervisoryRelationship @relation(fields: [relationshipId], references: [id])
+
+  // Scheduling
+  scheduledDate     DateTime
+  scheduledDuration Int // minutes
+
+  // Actual visit
+  visitDate      DateTime?
+  actualDuration Int?
+  visitType      SupervisionVisitType
+
+  // Location
+  clientId String? // If observing with client
+  client   Client? @relation(fields: [clientId], references: [id])
+  location String?
+
+  // Status
+  status SupervisionVisitStatus
+
+  // Observation
+  clinicalObservations String?
+  technicalSkills      String?
+  communicationSkills  String?
+  documentationReview  String?
+
+  // Assessment
+  overallRating       PerformanceRating?
+  strengths           String?
+  areasForImprovement String?
+
+  // Feedback
+  feedbackProvided   String?
+  superviseeResponse String?
+
+  // Goals
+  goalsReviewed String[]
+  newGoalsSet   String[]
+
+  // Follow-up
+  followUpRequired Boolean   @default(false)
+  followUpItems    String[]
+  nextVisitDate    DateTime?
+
+  // Signatures
+  supervisorSignature    String?
+  supervisorSignedAt     DateTime?
+  superviseeSignature    String?
+  superviseeSignedAt     DateTime?
+  superviseeAcknowledged Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([relationshipId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@index([companyId])
+}
+
+model StaffDevelopmentPlan {
+  id String @id @default(cuid())
+
+  // Staff member
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Plan period
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Status
+  status DevelopmentPlanStatus
+
+  // Reviews
+  midPeriodReviewDate  DateTime?
+  midPeriodReviewNotes String?
+  finalReviewDate      DateTime?
+  finalReviewNotes     String?
+  overallRating        PerformanceRating?
+
+  // Signatures
+  employeeSignedAt   DateTime?
+  supervisorSignedAt DateTime?
+
+  // Supervisor
+  supervisorId String
+  supervisor   User   @relation("DevelopmentSupervisor", fields: [supervisorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  goals DevelopmentGoal[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([companyId])
+}
+
+model DevelopmentGoal {
+  id String @id @default(cuid())
+
+  // Plan
+  planId String
+  plan   StaffDevelopmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  // Goal definition
+  category          GoalCategory
+  description       String
+  measurableOutcome String
+  targetDate        DateTime
+
+  // Progress
+  status        GoalStatus
+  progressNotes String?
+  completedAt   DateTime?
+
+  // Evidence
+  evidenceUrls String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId])
+  @@index([status])
 }

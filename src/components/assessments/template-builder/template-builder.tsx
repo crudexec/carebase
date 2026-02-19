@@ -387,7 +387,7 @@ export function TemplateBuilder({ template, onChange }: TemplateBuilderProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Add Question</h3>
+              <h3 className="text-lg font-semibold">Add Field</h3>
               <button
                 type="button"
                 onClick={() => setShowItemSelector(null)}

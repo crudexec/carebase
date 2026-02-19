@@ -43,6 +43,9 @@ import {
   Award,
   PanelLeftClose,
   PanelLeft,
+  GraduationCap,
+  Users2,
+  BookCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -83,7 +86,13 @@ const navigation: NavEntry[] = [
     defaultOpen: true,
     items: [
       {
-        label: "Referrals",
+        label: "Clients",
+        href: "/clients",
+        icon: Users,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR"],
+      },
+      {
+        label: "Referral Pipeline",
         href: "/referrals",
         icon: UserPlus,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
@@ -93,12 +102,6 @@ const navigation: NavEntry[] = [
         href: "/intake",
         icon: ClipboardCheck,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
-      },
-      {
-        label: "Clients",
-        href: "/clients",
-        icon: UserCheck,
-        roles: ["ADMIN", "OPS_MANAGER", "STAFF", "SUPERVISOR"],
       },
       {
         label: "Onboarding",
@@ -137,7 +140,7 @@ const navigation: NavEntry[] = [
   {
     label: "Staff Management",
     icon: UserCog,
-    roles: ["ADMIN", "OPS_MANAGER", "CARER"],
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR", "CARER"],
     items: [
       {
         label: "Staff Directory",
@@ -150,6 +153,24 @@ const navigation: NavEntry[] = [
         href: "/credentials",
         icon: Award,
         roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "Training",
+        href: "/training",
+        icon: GraduationCap,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
+      },
+      {
+        label: "Supervision",
+        href: "/supervision",
+        icon: Users2,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
+      },
+      {
+        label: "Competencies",
+        href: "/settings/competencies",
+        icon: BookCheck,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"],
       },
       {
         label: "My Credentials",

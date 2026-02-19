@@ -14,7 +14,9 @@ import {
   Input,
   Label,
   Select,
+  ConfirmActionModal,
 } from "@/components/ui";
+import { toast } from "sonner";
 import {
   Plus,
   RefreshCw,
@@ -83,6 +85,7 @@ export default function StaffPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("");
+  const [statusFilter, setStatusFilter] = React.useState<string>("active"); // Default to active
   const [sortField, setSortField] = React.useState<SortField>("name");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
@@ -91,6 +94,15 @@ export default function StaffPage() {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedStaff, setSelectedStaff] = React.useState<StaffMember | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Deactivate confirmation modal
+  const [deactivateModal, setDeactivateModal] = React.useState<{
+    isOpen: boolean;
+    member: StaffMember | null;
+  }>({ isOpen: false, member: null });
+
+  // Track which member is being deactivated for fade animation
+  const [deactivatingId, setDeactivatingId] = React.useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = React.useState({
@@ -199,21 +211,69 @@ export default function StaffPage() {
     }
   };
 
-  const handleToggleActive = async (member: StaffMember) => {
+  const handleDeactivateClick = (member: StaffMember) => {
+    if (member.isActive) {
+      // Show confirmation for deactivation
+      setDeactivateModal({ isOpen: true, member });
+    } else {
+      // Reactivate without confirmation
+      handleReactivate(member);
+    }
+  };
+
+  const handleDeactivateConfirm = async () => {
+    if (!deactivateModal.member) return;
+
+    const member = deactivateModal.member;
+
     try {
       const response = await fetch(`/api/staff/${member.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !member.isActive }),
+        body: JSON.stringify({ isActive: false }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update status");
+        throw new Error("Failed to deactivate staff member");
       }
 
-      await fetchStaff();
+      // Start fade-out animation
+      setDeactivatingId(member.id);
+      // Wait for animation, then update state
+      setTimeout(() => {
+        setStaff((prev) =>
+          prev.map((s) => (s.id === member.id ? { ...s, isActive: false } : s))
+        );
+        setDeactivatingId(null);
+      }, 300);
+      toast.success(`${member.firstName} ${member.lastName} has been deactivated`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update status");
+      setError(err instanceof Error ? err.message : "Failed to deactivate staff member");
+      toast.error("Failed to deactivate staff member");
+      throw err;
+    }
+  };
+
+  const handleReactivate = async (member: StaffMember) => {
+    try {
+      const response = await fetch(`/api/staff/${member.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reactivate staff member");
+      }
+
+      // Update state optimistically
+      setStaff((prev) =>
+        prev.map((s) => (s.id === member.id ? { ...s, isActive: true } : s))
+      );
+      toast.success(`${member.firstName} ${member.lastName} has been reactivated`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reactivate staff member");
+      toast.error("Failed to reactivate staff member");
     }
   };
 
@@ -265,7 +325,11 @@ export default function StaffPage() {
         `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRole = !roleFilter || member.role === roleFilter;
-      return matchesSearch && matchesRole;
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === "active" && member.isActive) ||
+        (statusFilter === "inactive" && !member.isActive);
+      return matchesSearch && matchesRole && matchesStatus;
     });
 
     result.sort((a, b) => {
@@ -294,7 +358,7 @@ export default function StaffPage() {
     });
 
     return result;
-  }, [staff, searchQuery, roleFilter, sortField, sortDirection]);
+  }, [staff, searchQuery, roleFilter, statusFilter, sortField, sortDirection]);
 
   return (
     <div className="space-y-6">
@@ -334,7 +398,7 @@ export default function StaffPage() {
             <Select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full sm:w-48"
+              className="w-full sm:w-40"
             >
               <option value="">All Roles</option>
               {STAFF_ROLES.map((role) => (
@@ -342,6 +406,15 @@ export default function StaffPage() {
                   {ROLE_LABELS[role]}
                 </option>
               ))}
+            </Select>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-36"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </Select>
           </div>
         </CardContent>
@@ -420,9 +493,9 @@ export default function StaffPage() {
                 {filteredAndSortedStaff.map((member) => (
                   <tr
                     key={member.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-colors ${
+                    className={`border-b border-border hover:bg-background-secondary/50 transition-all duration-300 ${
                       !member.isActive ? "opacity-60" : ""
-                    }`}
+                    } ${deactivatingId === member.id ? "opacity-0 scale-95" : ""}`}
                   >
                     <td className="p-4">
                       <div
@@ -466,7 +539,7 @@ export default function StaffPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleToggleActive(member)}
+                          onClick={() => handleDeactivateClick(member)}
                           title={member.isActive ? "Deactivate" : "Reactivate"}
                         >
                           {member.isActive ? (
@@ -770,6 +843,18 @@ export default function StaffPage() {
           </Card>
         </div>
       )}
+
+      {/* Deactivate Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={deactivateModal.isOpen}
+        onClose={() => setDeactivateModal({ isOpen: false, member: null })}
+        onConfirm={handleDeactivateConfirm}
+        variant="warning"
+        title="Deactivate Staff Member"
+        description="Are you sure you want to deactivate this staff member? They will no longer be able to log in."
+        itemName={deactivateModal.member ? `${deactivateModal.member.firstName} ${deactivateModal.member.lastName}` : undefined}
+        confirmText="Deactivate"
+      />
     </div>
   );
 }

@@ -117,27 +117,6 @@ function TableSkeleton() {
   );
 }
 
-// Skeleton loader for stats cards
-function StatsSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-4">
-      {[...Array(4)].map((_, i) => (
-        <Card key={i}>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4 animate-pulse">
-              <div className="p-3 rounded-full bg-background-secondary w-12 h-12" />
-              <div>
-                <div className="h-7 bg-background-secondary rounded w-12 mb-2" />
-                <div className="h-4 bg-background-secondary rounded w-24" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 export default function QAManagerPage() {
   const [items, setItems] = React.useState<QAItem[]>([]);
   const [stats, setStats] = React.useState<QAStats>({
@@ -328,65 +307,39 @@ export default function QAManagerPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats - Compact inline */}
       {isStatsLoading ? (
-        <StatsSkeleton />
+        <div className="flex items-center gap-6 text-sm animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded bg-background-secondary" />
+              <div className="h-4 w-8 rounded bg-background-secondary" />
+              <div className="h-4 w-16 rounded bg-background-secondary" />
+            </div>
+          ))}
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-warning/10">
-                  <Clock className="h-6 w-6 text-warning" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {stats.pendingAssessments + stats.pendingVisitNotes}
-                  </p>
-                  <p className="text-sm text-foreground-secondary">Pending Review</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <ClipboardCheck className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.pendingAssessments}</p>
-                  <p className="text-sm text-foreground-secondary">Assessments</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-secondary/10">
-                  <FileText className="h-6 w-6 text-secondary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.pendingVisitNotes}</p>
-                  <p className="text-sm text-foreground-secondary">Visit Notes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-success/10">
-                  <CheckCircle className="h-6 w-6 text-success" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.approvedToday}</p>
-                  <p className="text-sm text-foreground-secondary">Approved Today</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-6 text-sm flex-wrap">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-warning" />
+            <span className="font-semibold">{stats.pendingAssessments + stats.pendingVisitNotes}</span>
+            <span className="text-foreground-secondary">pending</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-primary" />
+            <span className="font-semibold">{stats.pendingAssessments}</span>
+            <span className="text-foreground-secondary">assessments</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-secondary" />
+            <span className="font-semibold">{stats.pendingVisitNotes}</span>
+            <span className="text-foreground-secondary">visit notes</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <span className="font-semibold">{stats.approvedToday}</span>
+            <span className="text-foreground-secondary">approved today</span>
+          </div>
         </div>
       )}
 

@@ -152,6 +152,16 @@ export interface AssessmentTemplateSnapshot {
 }
 
 // ============================================
+// ICD-10 Diagnosis Value Type
+// ============================================
+
+export interface ICD10DiagnosisValue {
+  code: string;
+  description: string;
+  type?: "PRIMARY" | "SECONDARY" | "ADMITTING" | "PRINCIPAL";
+}
+
+// ============================================
 // Assessment Response Types
 // ============================================
 
@@ -161,6 +171,7 @@ export type ResponseValue =
   | boolean // YES_NO
   | string[] // MULTIPLE_CHOICE
   | Date // DATE
+  | ICD10DiagnosisValue[] // ICD10_DIAGNOSIS
   | null;
 
 export interface AssessmentResponseData {
@@ -273,24 +284,62 @@ export interface AssessmentDetail extends AssessmentInstanceData {
 // ============================================
 
 export const RESPONSE_TYPE_LABELS: Record<AssessmentResponseType, string> = {
-  SCALE: "Scale",
+  TEXT_SHORT: "Short Text",
+  TEXT_LONG: "Long Text",
+  NUMBER: "Number",
   YES_NO: "Yes/No",
   SINGLE_CHOICE: "Single Choice",
   MULTIPLE_CHOICE: "Multiple Choice",
-  TEXT: "Free Text",
   DATE: "Date",
-  NUMBER: "Number",
+  TIME: "Time",
+  DATETIME: "Date & Time",
+  SIGNATURE: "Signature",
+  PHOTO: "Photo",
+  RATING_SCALE: "Rating Scale",
+  BODY_MAP: "Body Map",
+  ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
+  // Legacy types
+  SCALE: "Scale",
+  TEXT: "Free Text",
 };
 
 export const RESPONSE_TYPE_DESCRIPTIONS: Record<AssessmentResponseType, string> = {
-  SCALE: "Numeric scale with defined min/max values (e.g., 0-3 for ADL scoring)",
+  TEXT_SHORT: "Single line text input",
+  TEXT_LONG: "Multi-line text area",
+  NUMBER: "Numeric input with optional threshold alerts",
   YES_NO: "Simple yes or no toggle",
   SINGLE_CHOICE: "Select one option from a list",
   MULTIPLE_CHOICE: "Select multiple options from a list",
-  TEXT: "Free text response",
   DATE: "Date picker",
-  NUMBER: "Numeric input",
+  TIME: "Time picker",
+  DATETIME: "Combined date and time picker",
+  SIGNATURE: "Digital signature capture",
+  PHOTO: "Photo upload",
+  RATING_SCALE: "Star or number rating",
+  BODY_MAP: "Interactive body diagram for documenting pain and wounds",
+  ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
+  // Legacy types
+  SCALE: "Numeric scale with defined min/max values (e.g., 0-3 for ADL scoring)",
+  TEXT: "Free text response",
 };
+
+// Field types to show in the selector (excludes legacy types)
+export const VISIBLE_RESPONSE_TYPES: AssessmentResponseType[] = [
+  "TEXT_SHORT",
+  "TEXT_LONG",
+  "NUMBER",
+  "YES_NO",
+  "SINGLE_CHOICE",
+  "MULTIPLE_CHOICE",
+  "DATE",
+  "TIME",
+  "DATETIME",
+  "SIGNATURE",
+  "PHOTO",
+  "RATING_SCALE",
+  "BODY_MAP",
+  "ICD10_DIAGNOSIS",
+];
 
 // ============================================
 // Section Type Metadata
@@ -401,13 +450,14 @@ export const SCORING_METHOD_DESCRIPTIONS: Record<ScoringMethod, string> = {
 // ============================================
 
 export function responseTypeRequiresConfig(type: AssessmentResponseType): boolean {
-  return ["SCALE", "SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(type);
+  return ["SCALE", "RATING_SCALE", "SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(type);
 }
 
 export function getDefaultResponseConfig(type: AssessmentResponseType): ResponseConfig {
   switch (type) {
     case "SCALE":
-      return { minValue: 0, maxValue: 3 };
+    case "RATING_SCALE":
+      return { minValue: 0, maxValue: 5 };
     case "SINGLE_CHOICE":
     case "MULTIPLE_CHOICE":
       return {
@@ -419,7 +469,10 @@ export function getDefaultResponseConfig(type: AssessmentResponseType): Response
     case "NUMBER":
       return { minValue: 0, maxValue: 100 };
     case "TEXT":
+    case "TEXT_LONG":
       return { maxLength: 2000 };
+    case "TEXT_SHORT":
+      return { maxLength: 100 };
     default:
       return null;
   }

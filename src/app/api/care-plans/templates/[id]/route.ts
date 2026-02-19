@@ -30,11 +30,6 @@ const updateTemplateSchema = z.object({
   description: z.string().max(1000).optional().nullable(),
   status: z.nativeEnum(FormTemplateStatus).optional(),
   isEnabled: z.boolean().optional(),
-  includesDiagnoses: z.boolean().optional(),
-  includesGoals: z.boolean().optional(),
-  includesInterventions: z.boolean().optional(),
-  includesMedications: z.boolean().optional(),
-  includesOrders: z.boolean().optional(),
   sections: z.array(sectionSchema).optional(),
 });
 
@@ -173,11 +168,6 @@ export async function PATCH(
       description,
       status,
       isEnabled,
-      includesDiagnoses,
-      includesGoals,
-      includesInterventions,
-      includesMedications,
-      includesOrders,
       sections,
     } = validation.data;
 
@@ -185,7 +175,7 @@ export async function PATCH(
     const shouldIncrementVersion =
       sections !== undefined && existingTemplate.status === "ACTIVE";
 
-    // Update template in a transaction
+    // Update template in a transaction (extended timeout for large templates)
     const template = await prisma.$transaction(async (tx) => {
       // If sections are provided, delete existing and create new ones
       if (sections !== undefined) {
@@ -224,11 +214,6 @@ export async function PATCH(
           ...(description !== undefined && { description }),
           ...(status !== undefined && { status }),
           ...(isEnabled !== undefined && { isEnabled }),
-          ...(includesDiagnoses !== undefined && { includesDiagnoses }),
-          ...(includesGoals !== undefined && { includesGoals }),
-          ...(includesInterventions !== undefined && { includesInterventions }),
-          ...(includesMedications !== undefined && { includesMedications }),
-          ...(includesOrders !== undefined && { includesOrders }),
           ...(shouldIncrementVersion && { version: { increment: 1 } }),
         },
         include: {
@@ -268,6 +253,8 @@ export async function PATCH(
       });
 
       return updatedTemplate;
+    }, {
+      timeout: 30000, // 30 seconds for large templates
     });
 
     return NextResponse.json({

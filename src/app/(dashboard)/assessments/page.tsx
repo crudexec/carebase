@@ -2,16 +2,21 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Select,
   Badge,
   Breadcrumb,
+  DataTable,
+  StatusCell,
+  DateCell,
+  UserCell,
+  type ColumnDef,
+  type SortDirection,
 } from "@/components/ui";
 import {
   Plus,
@@ -19,9 +24,12 @@ import {
   ClipboardList,
   Clock,
   CheckCircle,
-  XCircle,
-  User,
-  Calendar,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  FileText,
+  Trash2,
+  Copy,
 } from "lucide-react";
 
 interface Assessment {
@@ -50,30 +58,65 @@ interface Assessment {
   };
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  IN_PROGRESS: { label: "In Progress", color: "bg-warning/10 text-warning", icon: Clock },
-  COMPLETED: { label: "Completed", color: "bg-success/10 text-success", icon: CheckCircle },
-  CANCELLED: { label: "Cancelled", color: "bg-error/10 text-error", icon: XCircle },
+const STATUS_VARIANTS: Record<string, "success" | "warning" | "error" | "default"> = {
+  IN_PROGRESS: "warning",
+  COMPLETED: "success",
+  CANCELLED: "error",
 };
 
-const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  INITIAL: { label: "Initial", color: "bg-primary/10 text-primary" },
-  REASSESSMENT: { label: "Reassessment", color: "bg-secondary/10 text-secondary" },
-  DISCHARGE: { label: "Discharge", color: "bg-foreground/10 text-foreground" },
+const TYPE_VARIANTS: Record<string, "primary" | "default"> = {
+  INITIAL: "primary",
+  REASSESSMENT: "default",
+  DISCHARGE: "default",
 };
+
+// Score Cell with progress visualization
+function ScoreCell({ assessment }: { assessment: Assessment }) {
+  if (assessment.status !== "COMPLETED" || assessment.totalScore === null) {
+    return <span className="text-foreground-tertiary">-</span>;
+  }
+
+  const maxScore = assessment.template.maxScore;
+  const percentage = maxScore ? (assessment.totalScore / maxScore) * 100 : null;
+
+  return (
+    <div className="min-w-[80px]">
+      <span className="font-medium">
+        {assessment.totalScore}
+        {maxScore && <span className="text-foreground-secondary"> / {maxScore}</span>}
+      </span>
+      {percentage !== null && (
+        <div className="mt-1">
+          <div className="h-1.5 w-full bg-background-secondary rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full ${
+                percentage >= 80
+                  ? "bg-success"
+                  : percentage >= 60
+                  ? "bg-warning"
+                  : "bg-error"
+              }`}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AssessmentsPage() {
+  const router = useRouter();
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [total, setTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("");
+  const [sortColumn, setSortColumn] = React.useState<string | null>("startedAt");
+  const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
+  const [actionMenuOpen, setActionMenuOpen] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    fetchAssessments();
-  }, [statusFilter]);
-
-  const fetchAssessments = async () => {
+  const fetchAssessments = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
@@ -92,17 +135,256 @@ export default function AssessmentsPage() {
     } finally {
       setIsLoading(false);
     }
+  }, [statusFilter]);
+
+  React.useEffect(() => {
+    fetchAssessments();
+  }, [fetchAssessments]);
+
+  // Close action menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => setActionMenuOpen(null);
+    if (actionMenuOpen) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [actionMenuOpen]);
+
+  // Filter and sort assessments
+  const processedAssessments = React.useMemo(() => {
+    let filtered = assessments;
+
+    // Apply search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (assessment) =>
+          assessment.client.firstName.toLowerCase().includes(searchLower) ||
+          assessment.client.lastName.toLowerCase().includes(searchLower) ||
+          assessment.template.name.toLowerCase().includes(searchLower) ||
+          assessment.assessor.firstName.toLowerCase().includes(searchLower) ||
+          assessment.assessor.lastName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply sorting
+    if (sortColumn && sortDirection) {
+      filtered = [...filtered].sort((a, b) => {
+        let aVal: string | number | Date;
+        let bVal: string | number | Date;
+
+        switch (sortColumn) {
+          case "template":
+            aVal = a.template.name.toLowerCase();
+            bVal = b.template.name.toLowerCase();
+            break;
+          case "client":
+            aVal = `${a.client.firstName} ${a.client.lastName}`.toLowerCase();
+            bVal = `${b.client.firstName} ${b.client.lastName}`.toLowerCase();
+            break;
+          case "type":
+            aVal = a.assessmentType;
+            bVal = b.assessmentType;
+            break;
+          case "status":
+            aVal = a.status;
+            bVal = b.status;
+            break;
+          case "score":
+            aVal = a.totalScore ?? -1;
+            bVal = b.totalScore ?? -1;
+            break;
+          case "startedAt":
+            aVal = new Date(a.startedAt).getTime();
+            bVal = new Date(b.startedAt).getTime();
+            break;
+          case "assessor":
+            aVal = `${a.assessor.firstName} ${a.assessor.lastName}`.toLowerCase();
+            bVal = `${b.assessor.firstName} ${b.assessor.lastName}`.toLowerCase();
+            break;
+          default:
+            return 0;
+        }
+
+        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [assessments, search, sortColumn, sortDirection]);
+
+  const handleSortChange = (column: string, direction: SortDirection) => {
+    setSortColumn(direction ? column : null);
+    setSortDirection(direction);
   };
 
-  const filteredAssessments = assessments.filter((assessment) => {
-    if (!search) return true;
-    const searchLower = search.toLowerCase();
-    return (
-      assessment.client.firstName.toLowerCase().includes(searchLower) ||
-      assessment.client.lastName.toLowerCase().includes(searchLower) ||
-      assessment.template.name.toLowerCase().includes(searchLower)
-    );
-  });
+  // Stats calculations
+  const stats = React.useMemo(
+    () => ({
+      inProgress: assessments.filter((a) => a.status === "IN_PROGRESS").length,
+      completed: assessments.filter((a) => a.status === "COMPLETED").length,
+      total: total,
+    }),
+    [assessments, total]
+  );
+
+  const columns: ColumnDef<Assessment>[] = [
+    {
+      id: "template",
+      header: "Assessment",
+      sortable: true,
+      minWidth: "200px",
+      cell: (row) => (
+        <div>
+          <p className="font-medium">{row.template.name}</p>
+          {row.template.description && (
+            <p className="text-xs text-foreground-secondary truncate max-w-[200px]">
+              {row.template.description}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "client",
+      header: "Client",
+      sortable: true,
+      minWidth: "160px",
+      cell: (row) => (
+        <UserCell firstName={row.client.firstName} lastName={row.client.lastName} />
+      ),
+    },
+    {
+      id: "type",
+      header: "Type",
+      sortable: true,
+      minWidth: "120px",
+      cell: (row) => (
+        <Badge variant={TYPE_VARIANTS[row.assessmentType] || "default"}>
+          {row.assessmentType.charAt(0) + row.assessmentType.slice(1).toLowerCase()}
+        </Badge>
+      ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      sortable: true,
+      minWidth: "120px",
+      cell: (row) => (
+        <StatusCell
+          status={row.status}
+          label={row.status.replace("_", " ").charAt(0) + row.status.replace("_", " ").slice(1).toLowerCase()}
+          variant={STATUS_VARIANTS[row.status] || "default"}
+        />
+      ),
+    },
+    {
+      id: "score",
+      header: "Score",
+      sortable: true,
+      minWidth: "100px",
+      cell: (row) => <ScoreCell assessment={row} />,
+    },
+    {
+      id: "startedAt",
+      header: "Started",
+      sortable: true,
+      hideOnMobile: true,
+      minWidth: "120px",
+      cell: (row) => <DateCell date={row.startedAt} />,
+    },
+    {
+      id: "assessor",
+      header: "Assessor",
+      sortable: true,
+      hideOnMobile: true,
+      minWidth: "140px",
+      cell: (row) => (
+        <span className="text-sm text-foreground-secondary">
+          {row.assessor.firstName} {row.assessor.lastName}
+        </span>
+      ),
+    },
+  ];
+
+  const rowActions = (row: Assessment) => (
+    <div className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setActionMenuOpen(actionMenuOpen === row.id ? null : row.id);
+        }}
+        className="p-1 rounded hover:bg-background-secondary"
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </button>
+      {actionMenuOpen === row.id && (
+        <div className="absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-background border border-border z-50">
+          <div className="py-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/assessments/${row.id}`);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              View Details
+            </button>
+            {row.status === "IN_PROGRESS" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/assessments/${row.id}`);
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Continue
+              </button>
+            )}
+            {row.status === "COMPLETED" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Generate report
+                  setActionMenuOpen(null);
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Report
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/assessments/new?client=${row.client.id}&template=${row.template.id}`);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Reassess
+            </button>
+            <hr className="my-1 border-border" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Handle delete
+                setActionMenuOpen(null);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-error hover:bg-background-secondary"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -117,189 +399,85 @@ export default function AssessmentsPage() {
             Clinical assessments and evaluations
           </p>
         </div>
-        <Link href="/assessments/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Assessment
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/assessments/templates">
+            <Button variant="secondary">
+              <FileText className="mr-2 h-4 w-4" />
+              Templates
+            </Button>
+          </Link>
+          <Link href="/assessments/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Assessment
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-warning/10">
-                <Clock className="h-6 w-6 text-warning" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {assessments.filter((a) => a.status === "IN_PROGRESS").length}
-                </p>
-                <p className="text-sm text-foreground-secondary">In Progress</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-success/10">
-                <CheckCircle className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {assessments.filter((a) => a.status === "COMPLETED").length}
-                </p>
-                <p className="text-sm text-foreground-secondary">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <ClipboardList className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{total}</p>
-                <p className="text-sm text-foreground-secondary">Total Assessments</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats - Compact inline */}
+      <div className="flex items-center gap-6 text-sm flex-wrap">
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-warning" />
+          <span className="font-semibold">{stats.inProgress}</span>
+          <span className="text-foreground-secondary">in progress</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-success" />
+          <span className="font-semibold">{stats.completed}</span>
+          <span className="text-foreground-secondary">completed</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ClipboardList className="h-4 w-4 text-primary" />
+          <span className="font-semibold">{stats.total}</span>
+          <span className="text-foreground-secondary">total</span>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-secondary" />
-                <Input
-                  placeholder="Search by client or template..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-[180px]"
-            >
-              <option value="">All Statuses</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
+      <div className="flex gap-4 flex-wrap">
+        <div className="flex-1 min-w-[200px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-secondary" />
+            <Input
+              placeholder="Search by client, template, or assessor..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-[180px]"
+        >
+          <option value="">All Statuses</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </Select>
+      </div>
 
-      {/* Assessment List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Assessments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          ) : filteredAssessments.length === 0 ? (
-            <div className="text-center py-12">
-              <ClipboardList className="mx-auto h-12 w-12 text-foreground-secondary/50" />
-              <h3 className="mt-4 text-lg font-medium">No assessments found</h3>
-              <p className="mt-2 text-sm text-foreground-secondary">
-                {search || statusFilter
-                  ? "Try adjusting your filters"
-                  : "Get started by creating a new assessment"}
-              </p>
-              {!search && !statusFilter && (
-                <Link href="/assessments/new">
-                  <Button className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Assessment
-                  </Button>
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredAssessments.map((assessment) => {
-                const statusConfig = STATUS_CONFIG[assessment.status] || STATUS_CONFIG.IN_PROGRESS;
-                const typeConfig = TYPE_CONFIG[assessment.assessmentType] || TYPE_CONFIG.INITIAL;
-                const StatusIcon = statusConfig.icon;
-
-                return (
-                  <Link
-                    key={assessment.id}
-                    href={`/assessments/${assessment.id}`}
-                    className="block"
-                  >
-                    <div className="p-4 rounded-lg border hover:border-primary/50 transition-colors">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg ${statusConfig.color}`}>
-                            <StatusIcon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium">
-                              {assessment.template.name}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-foreground-secondary">
-                              <User className="h-4 w-4" />
-                              <span>
-                                {assessment.client.firstName} {assessment.client.lastName}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <div className="flex gap-2">
-                            <Badge className={typeConfig.color}>
-                              {typeConfig.label}
-                            </Badge>
-                            <Badge className={statusConfig.color}>
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-                          {assessment.status === "COMPLETED" && assessment.totalScore !== null && (
-                            <span className="text-sm font-medium">
-                              Score: {assessment.totalScore}
-                              {assessment.template.maxScore && ` / ${assessment.template.maxScore}`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 mt-3 text-xs text-foreground-secondary">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Started: {new Date(assessment.startedAt).toLocaleDateString()}
-                        </span>
-                        {assessment.completedAt && (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            Completed: {new Date(assessment.completedAt).toLocaleDateString()}
-                          </span>
-                        )}
-                        <span>
-                          Assessor: {assessment.assessor.firstName} {assessment.assessor.lastName}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Assessments Table */}
+      <DataTable
+        data={processedAssessments}
+        columns={columns}
+        isLoading={isLoading}
+        getRowKey={(row) => row.id}
+        onRowClick={(row) => router.push(`/assessments/${row.id}`)}
+        emptyIcon={<ClipboardList className="h-12 w-12" />}
+        emptyMessage={
+          search || statusFilter
+            ? "No assessments match your filters"
+            : "No assessments found. Create one to get started."
+        }
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
+        rowActions={rowActions}
+        stickyHeader
+      />
     </div>
   );
 }

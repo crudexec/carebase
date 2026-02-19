@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { ShiftStatus } from "@prisma/client";
 import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,9 +102,12 @@ export function ShiftFormModal({
       }
 
       await onSubmit(formData);
+      toast.success(shift ? "Shift updated" : "Shift created");
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save shift");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save shift";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

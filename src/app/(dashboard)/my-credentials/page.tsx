@@ -11,6 +11,7 @@ import {
   CardTitle,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
 } from "@/components/ui";
@@ -471,37 +472,27 @@ export default function MyCredentialsPage() {
                     <Label htmlFor="issueDate" required>
                       Issue Date
                     </Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-                      <Input
-                        id="issueDate"
-                        type="date"
-                        value={formData.issueDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, issueDate: e.target.value }))
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                    <DateInput
+                      id="issueDate"
+                      value={formData.issueDate}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, issueDate: e.target.value }))
+                      }
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="expirationDate" required>
                       Expiration Date
                     </Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-                      <Input
-                        id="expirationDate"
-                        type="date"
-                        value={formData.expirationDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))
-                        }
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                    <DateInput
+                      id="expirationDate"
+                      value={formData.expirationDate}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))
+                      }
+                      required
+                    />
                   </div>
                 </div>
 

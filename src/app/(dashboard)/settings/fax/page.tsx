@@ -295,60 +295,23 @@ export default function FaxHistoryPage() {
         </Button>
       </div>
 
-      {/* Stats Summary */}
+      {/* Stats - Compact inline */}
       {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          {/* Inbound Stats */}
-          <Card className="col-span-1 md:col-span-2 lg:col-span-2">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <ArrowDownLeft className="w-5 h-5 text-primary" />
-                <span className="font-semibold">Received</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-2xl font-bold">{stats.inbound.total}</p>
-                  <p className="text-xs text-foreground-secondary">Total</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-warning">{stats.inbound.unprocessed}</p>
-                  <p className="text-xs text-foreground-secondary">Unprocessed</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-success">{stats.inbound.completed}</p>
-                  <p className="text-xs text-foreground-secondary">Completed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Outbound Stats */}
-          <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <ArrowUpRight className="w-5 h-5 text-secondary" />
-                <span className="font-semibold">Sent</span>
-              </div>
-              <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <p className="text-2xl font-bold">{stats.outbound.total}</p>
-                  <p className="text-xs text-foreground-secondary">Total</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-warning">{stats.outbound.queued + stats.outbound.inProgress}</p>
-                  <p className="text-xs text-foreground-secondary">Pending</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-success">{stats.outbound.completed}</p>
-                  <p className="text-xs text-foreground-secondary">Delivered</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-error">{stats.outbound.failed}</p>
-                  <p className="text-xs text-foreground-secondary">Failed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-8 text-sm flex-wrap">
+          <div className="flex items-center gap-4">
+            <ArrowDownLeft className="h-4 w-4 text-primary" />
+            <span className="text-foreground-secondary">Received:</span>
+            <span className="font-semibold">{stats.inbound.total}</span>
+            <span className="text-warning font-semibold">{stats.inbound.unprocessed} unprocessed</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <ArrowUpRight className="h-4 w-4 text-secondary" />
+            <span className="text-foreground-secondary">Sent:</span>
+            <span className="font-semibold">{stats.outbound.total}</span>
+            <span className="text-warning font-semibold">{stats.outbound.queued + stats.outbound.inProgress} pending</span>
+            <span className="text-success font-semibold">{stats.outbound.completed} delivered</span>
+            {stats.outbound.failed > 0 && <span className="text-error font-semibold">{stats.outbound.failed} failed</span>}
+          </div>
         </div>
       )}
 

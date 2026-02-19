@@ -9,19 +9,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
   Input,
   Label,
   Select,
   Textarea,
 } from "@/components/ui";
+import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import { ArrowLeft, AlertTriangle, Save } from "lucide-react";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
-
-interface ClientOption {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
 
 const INCIDENT_CATEGORIES = [
   "Fall",
@@ -46,8 +42,6 @@ const SEVERITY_OPTIONS = [
 export default function NewIncidentPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [clients, setClients] = React.useState<ClientOption[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -69,28 +63,9 @@ export default function NewIncidentPage() {
       hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL)
     : false;
 
-  // Fetch clients
-  React.useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const response = await fetch("/api/clients?limit=100");
-        if (response.ok) {
-          const data = await response.json();
-          setClients(data.clients);
-        }
-      } catch {
-        // Ignore errors
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (canCreate) {
-      fetchClients();
-    } else {
-      setIsLoading(false);
-    }
-  }, [canCreate]);
+  const handleClientChange = (clientId: string) => {
+    setFormData((prev) => ({ ...prev, clientId }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,34 +148,29 @@ export default function NewIncidentPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Client Selection Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Client Involved</CardTitle>
+                <CardDescription>
+                  Search and select the client involved in this incident
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ClientSearchSelect
+                  value={formData.clientId}
+                  onChange={handleClientChange}
+                  required
+                />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Incident Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="clientId" required>
-                      Client Involved
-                    </Label>
-                    <Select
-                      id="clientId"
-                      value={formData.clientId}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, clientId: e.target.value }))
-                      }
-                      required
-                      disabled={isLoading}
-                    >
-                      <option value="">Select a client</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.firstName} {client.lastName}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="incidentDate" required>
                       Date & Time
@@ -212,6 +182,21 @@ export default function NewIncidentPage() {
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, incidentDate: e.target.value }))
                       }
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location" required>
+                      Location
+                    </Label>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, location: e.target.value }))
+                      }
+                      placeholder="Where did the incident occur?"
                       required
                     />
                   </div>
@@ -240,42 +225,27 @@ export default function NewIncidentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="location" required>
-                      Location
+                    <Label htmlFor="severity" required>
+                      Severity
                     </Label>
-                    <Input
-                      id="location"
-                      value={formData.location}
+                    <Select
+                      id="severity"
+                      value={formData.severity}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, location: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          severity: e.target.value as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+                        }))
                       }
-                      placeholder="Where did the incident occur?"
                       required
-                    />
+                    >
+                      {SEVERITY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="severity" required>
-                    Severity
-                  </Label>
-                  <Select
-                    id="severity"
-                    value={formData.severity}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        severity: e.target.value as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-                      }))
-                    }
-                    required
-                  >
-                    {SEVERITY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -391,7 +361,7 @@ export default function NewIncidentPage() {
           <Button type="button" variant="ghost" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || !formData.clientId}>
             <Save className="w-4 h-4 mr-2" />
             {isSubmitting ? "Submitting..." : "Submit Report"}
           </Button>

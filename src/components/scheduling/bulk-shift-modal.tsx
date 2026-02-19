@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DateInput } from "@/components/ui/date-input";
 import { cn } from "@/lib/utils";
 import {
   X,
@@ -327,17 +328,12 @@ export function BulkShiftModal({
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   Start Date <span className="text-error">*</span>
                 </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-secondary" />
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    required
-                  />
-                </div>
+                <DateInput
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
               </div>
 
               {/* Number of Weeks */}

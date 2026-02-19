@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import {
   Button,
   Input,
+  DateInput,
   Label,
   Textarea,
 } from "@/components/ui";
@@ -73,9 +75,12 @@ export function InvoicePaymentModal({
         throw new Error(data.error || "Failed to record payment");
       }
 
+      toast.success("Payment recorded successfully");
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -168,9 +173,8 @@ export function InvoicePaymentModal({
 
           <div>
             <Label htmlFor="paidAt">Payment Date *</Label>
-            <Input
+            <DateInput
               id="paidAt"
-              type="date"
               value={paidAt}
               onChange={(e) => setPaidAt(e.target.value)}
               required

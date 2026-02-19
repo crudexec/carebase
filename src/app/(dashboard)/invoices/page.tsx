@@ -65,19 +65,6 @@ const STATUS_CONFIG: Record<string, { variant: "default" | "warning" | "success"
   CANCELLED: { variant: "default", icon: XCircle },
 };
 
-interface Client {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface Sponsor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-}
-
 export default function InvoicesPage() {
   const [invoices, setInvoices] = React.useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -87,8 +74,6 @@ export default function InvoicesPage() {
 
   // Generate modal state
   const [showGenerateModal, setShowGenerateModal] = React.useState(false);
-  const [clients, setClients] = React.useState<Client[]>([]);
-  const [sponsors, setSponsors] = React.useState<Sponsor[]>([]);
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -116,32 +101,6 @@ export default function InvoicesPage() {
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // Fetch clients and sponsors for generate modal
-  React.useEffect(() => {
-    async function fetchClientsAndSponsors() {
-      try {
-        const [clientsRes, sponsorsRes] = await Promise.all([
-          fetch("/api/clients?limit=1000"),
-          fetch("/api/sponsors?limit=1000"),
-        ]);
-
-        if (clientsRes.ok) {
-          const data = await clientsRes.json();
-          setClients(data.clients || []);
-        }
-
-        if (sponsorsRes.ok) {
-          const data = await sponsorsRes.json();
-          setSponsors(data.sponsors || []);
-        }
-      } catch (err) {
-        console.error("Error fetching clients/sponsors:", err);
-      }
-    }
-
-    fetchClientsAndSponsors();
-  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -388,8 +347,6 @@ export default function InvoicesPage() {
           setShowGenerateModal(false);
           fetchData();
         }}
-        clients={clients}
-        sponsors={sponsors}
       />
     </div>
   );

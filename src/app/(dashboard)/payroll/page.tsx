@@ -194,65 +194,28 @@ export default function PayrollPage() {
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Total Records</p>
-                <p className="text-2xl font-semibold">{totals.count}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <FileCheck className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Total Amount</p>
-                <p className="text-2xl font-semibold">{formatCurrency(totals.amount)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Total Hours</p>
-                <p className="text-2xl font-semibold">{totals.hours.toFixed(1)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground-secondary">Pending</p>
-                <p className="text-2xl font-semibold">
-                  {(summary.PENDING?.count || 0) + (summary.SUPERVISOR_APPROVED?.count || 0)}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-warning" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats - Compact inline */}
+      <div className="flex items-center gap-6 text-sm flex-wrap">
+        <div className="flex items-center gap-2">
+          <FileCheck className="h-4 w-4 text-primary" />
+          <span className="font-semibold">{totals.count}</span>
+          <span className="text-foreground-secondary">records</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-success" />
+          <span className="font-semibold">{formatCurrency(totals.amount)}</span>
+          <span className="text-foreground-secondary">total</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-primary" />
+          <span className="font-semibold">{totals.hours.toFixed(1)}</span>
+          <span className="text-foreground-secondary">hours</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-warning" />
+          <span className="font-semibold">{(summary.PENDING?.count || 0) + (summary.SUPERVISOR_APPROVED?.count || 0)}</span>
+          <span className="text-foreground-secondary">pending</span>
+        </div>
       </div>
 
       {/* Status Summary */}

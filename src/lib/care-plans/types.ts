@@ -79,11 +79,6 @@ export interface CarePlanTemplateData {
   status: FormTemplateStatus;
   version: number;
   isEnabled: boolean;
-  includesDiagnoses: boolean;
-  includesGoals: boolean;
-  includesInterventions: boolean;
-  includesMedications: boolean;
-  includesOrders: boolean;
   sections: CarePlanTemplateSectionData[];
 }
 
@@ -93,11 +88,6 @@ export interface CarePlanFormSchemaSnapshot {
   templateName: string;
   version: number;
   sections: CarePlanTemplateSectionData[];
-  includesDiagnoses: boolean;
-  includesGoals: boolean;
-  includesInterventions: boolean;
-  includesMedications: boolean;
-  includesOrders: boolean;
 }
 
 // Care plan form data (field values)
@@ -136,6 +126,8 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature",
   PHOTO: "Photo",
   RATING_SCALE: "Rating Scale",
+  BODY_MAP: "Body Map",
+  ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
 };
 
 // Field type descriptions for UI
@@ -152,6 +144,8 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature capture",
   PHOTO: "Photo upload",
   RATING_SCALE: "Numeric scale (e.g., 1-5)",
+  BODY_MAP: "Interactive body diagram for documenting pain and wounds",
+  ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
 };
 
 // Default field configs by type

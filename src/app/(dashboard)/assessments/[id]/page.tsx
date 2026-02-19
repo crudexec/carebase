@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   Breadcrumb,
 } from "@/components/ui";
 import { AssessmentRenderer } from "@/components/assessments/assessment-renderer";
-import { AssessmentScoreDisplay } from "@/components/assessments/assessment-score-display";
 import {
   Loader2,
   User,
@@ -179,11 +179,14 @@ export default function AssessmentDetailPage() {
 
       setAssessment(data.assessment);
       setSuccess("Progress saved successfully");
+      toast.success("Progress saved successfully");
 
       // Auto-dismiss success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save assessment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save assessment";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -208,6 +211,8 @@ export default function AssessmentDetailPage() {
         throw new Error(data.error || "Failed to complete assessment");
       }
 
+      toast.success("Assessment completed successfully");
+
       // If this assessment is part of an intake, redirect back to intake
       if (assessment?.intake?.id) {
         router.push(`/intake/${assessment.intake.id}`);
@@ -215,7 +220,9 @@ export default function AssessmentDetailPage() {
         setAssessment(data.assessment);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to complete assessment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to complete assessment";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsCompleting(false);
     }
@@ -236,9 +243,12 @@ export default function AssessmentDetailPage() {
         throw new Error(data.error || "Failed to delete assessment");
       }
 
+      toast.success("Assessment deleted successfully");
       router.push("/assessments");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete assessment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete assessment";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -430,21 +440,6 @@ export default function AssessmentDetailPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Completed Assessment Score - only show if template has items */}
-      {isCompleted &&
-       assessment.totalScore !== null &&
-       assessment.template.sections?.some(s => s.items?.length > 0) && (
-        <AssessmentScoreDisplay
-          templateName={assessment.template.name}
-          templateCode={assessment.template.code || ""}
-          totalScore={assessment.totalScore}
-          maxScore={assessment.template.maxScore}
-          percentageScore={assessment.percentageScore}
-          interpretation={assessment.interpretation}
-          completedAt={assessment.completedAt!}
-        />
-      )}
 
       {/* Assessment Form */}
       <Card>

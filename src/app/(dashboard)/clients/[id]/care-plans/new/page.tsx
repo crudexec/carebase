@@ -2,8 +2,17 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { RefreshCw, ClipboardList, CheckCircle, FileText, ArrowLeft } from "lucide-react";
-import { CarePlanForm } from "@/components/care-plan";
+import { toast } from "sonner";
+import {
+  RefreshCw,
+  ClipboardList,
+  CheckCircle,
+  FileText,
+  ArrowLeft,
+  Loader2,
+  Save,
+} from "lucide-react";
+import { CarePlanRenderer } from "@/components/care-plans/care-plan-renderer";
 import {
   Button,
   Card,
@@ -12,7 +21,11 @@ import {
   CardTitle,
   CardDescription,
   Breadcrumb,
+  Badge,
 } from "@/components/ui";
+import { FormFieldType } from "@prisma/client";
+import { ICD10DiagnosisValue, BodyMapMarker } from "@/lib/visit-notes/types";
+import { STANDARD_CARE_PLAN_TEMPLATE } from "@/lib/care-plans/standard-template";
 
 interface Client {
   id: string;
@@ -20,18 +33,48 @@ interface Client {
   lastName: string;
 }
 
-interface CarePlanTemplate {
+interface TemplateField {
+  id: string;
+  label: string;
+  type: FormFieldType;
+  required: boolean;
+  order: number;
+  config: Record<string, unknown> | null;
+}
+
+interface TemplateSection {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  fields: TemplateField[];
+}
+
+interface CarePlanTemplateListItem {
   id: string;
   name: string;
   description: string | null;
   version: number;
-  sectionCount: number;
-  includesDiagnoses: boolean;
-  includesGoals: boolean;
-  includesInterventions: boolean;
-  includesMedications: boolean;
-  includesOrders: boolean;
+  sectionCount?: number;
 }
+
+interface CarePlanTemplateDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  version: number;
+  sections: TemplateSection[];
+}
+
+type FieldValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | ICD10DiagnosisValue[]
+  | BodyMapMarker[]
+  | { fileUrl: string; fileName: string; fileType: string; fileSize: number }
+  | null;
 
 export default function NewCarePlanPage() {
   const params = useParams();
@@ -39,11 +82,17 @@ export default function NewCarePlanPage() {
   const clientId = params.id as string;
 
   const [client, setClient] = React.useState<Client | null>(null);
-  const [templates, setTemplates] = React.useState<CarePlanTemplate[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState<string | null>(null);
+  const [templates, setTemplates] = React.useState<CarePlanTemplateListItem[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = React.useState<CarePlanTemplateDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoadingTemplate, setIsLoadingTemplate] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [step, setStep] = React.useState<"select-template" | "fill-form">("select-template");
+
+  // Form data for care plans
+  const [formData, setFormData] = React.useState<Record<string, FieldValue>>({});
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -79,12 +128,158 @@ export default function NewCarePlanPage() {
     fetchData();
   }, [clientId]);
 
-  const handleContinue = () => {
-    setStep("fill-form");
+  const handleSelectTemplate = async (templateId: string | null) => {
+    if (!templateId) {
+      // Use standard template
+      setSelectedTemplate(STANDARD_CARE_PLAN_TEMPLATE as CarePlanTemplateDetail);
+      setFormData({});
+      setStep("fill-form");
+      return;
+    }
+
+    // Fetch custom template with sections
+    setIsLoadingTemplate(true);
+    try {
+      const response = await fetch(`/api/care-plans/templates/${templateId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch template");
+      }
+      const data = await response.json();
+      setSelectedTemplate(data.template);
+      setFormData({});
+      setStep("fill-form");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load template");
+    } finally {
+      setIsLoadingTemplate(false);
+    }
+  };
+
+  const handleFieldChange = (fieldId: string, value: FieldValue) => {
+    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!selectedTemplate || !client) return;
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      // For standard template, we need to also save to the regular care plan fields
+      const isStandardTemplate = selectedTemplate.id === "standard-care-plan";
+
+      const payload: Record<string, unknown> = {
+        clientId,
+        status: "DRAFT",
+        formData,
+        formSchemaSnapshot: {
+          templateId: selectedTemplate.id,
+          templateName: selectedTemplate.name,
+          version: selectedTemplate.version,
+          sections: selectedTemplate.sections,
+        },
+      };
+
+      // For standard template, also map form data to regular fields
+      if (isStandardTemplate) {
+        Object.assign(payload, formData);
+        // Convert diagnoses back to the API format
+        if (formData.diagnoses && Array.isArray(formData.diagnoses)) {
+          payload.diagnoses = (formData.diagnoses as ICD10DiagnosisValue[]).map((d) => ({
+            icdCode: d.code,
+            icdDescription: d.description,
+            diagnosisType: d.type || "SECONDARY",
+          }));
+        }
+      } else {
+        payload.templateId = selectedTemplate.id;
+      }
+
+      const response = await fetch("/api/care-plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to save care plan");
+      }
+
+      const { carePlan } = await response.json();
+      toast.success("Care plan saved as draft");
+      router.push(`/clients/${clientId}/care-plans/${carePlan.id}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to save care plan";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedTemplate || !client) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const isStandardTemplate = selectedTemplate.id === "standard-care-plan";
+
+      const payload: Record<string, unknown> = {
+        clientId,
+        status: "PENDING_CLINICAL_REVIEW",
+        formData,
+        formSchemaSnapshot: {
+          templateId: selectedTemplate.id,
+          templateName: selectedTemplate.name,
+          version: selectedTemplate.version,
+          sections: selectedTemplate.sections,
+        },
+      };
+
+      if (isStandardTemplate) {
+        Object.assign(payload, formData);
+        if (formData.diagnoses && Array.isArray(formData.diagnoses)) {
+          payload.diagnoses = (formData.diagnoses as ICD10DiagnosisValue[]).map((d) => ({
+            icdCode: d.code,
+            icdDescription: d.description,
+            diagnosisType: d.type || "SECONDARY",
+          }));
+        }
+      } else {
+        payload.templateId = selectedTemplate.id;
+      }
+
+      const response = await fetch("/api/care-plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit care plan");
+      }
+
+      const { carePlan } = await response.json();
+      toast.success("Care plan submitted for review");
+      router.push(`/clients/${clientId}/care-plans/${carePlan.id}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to submit care plan";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
     setStep("select-template");
+    setSelectedTemplate(null);
+    setFormData({});
   };
 
   if (isLoading) {
@@ -95,7 +290,7 @@ export default function NewCarePlanPage() {
     );
   }
 
-  if (error || !client) {
+  if (error && !client) {
     return (
       <div className="p-8 text-center">
         <p className="text-foreground-secondary">{error || "Client not found"}</p>
@@ -103,15 +298,73 @@ export default function NewCarePlanPage() {
     );
   }
 
+  if (!client) return null;
+
   // Step 2: Fill out the care plan form
-  if (step === "fill-form") {
+  if (step === "fill-form" && selectedTemplate) {
     return (
-      <CarePlanForm
-        clientId={clientId}
-        clientName={`${client.firstName} ${client.lastName}`}
-        templateId={selectedTemplateId}
-        onBack={handleBack}
-      />
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Clients", href: "/clients" },
+            { label: `${client.firstName} ${client.lastName}`, href: `/clients/${clientId}` },
+            { label: "New Care Plan" },
+          ]}
+        />
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold">New Plan of Care</h1>
+              <Badge variant="default">Draft</Badge>
+            </div>
+            <p className="text-foreground-secondary mt-1">
+              {client.firstName} {client.lastName} • {selectedTemplate.name}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <Button variant="secondary" onClick={handleSave} disabled={isSaving || isSubmitting}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Draft
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="p-4 rounded-md bg-error/10 text-error text-sm">
+            {error}
+            <button onClick={() => setError(null)} className="ml-2 underline">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Care Plan Renderer */}
+        <CarePlanRenderer
+          template={selectedTemplate}
+          formData={formData}
+          onFieldChange={handleFieldChange}
+          onSave={handleSave}
+          onComplete={handleSubmit}
+          isSaving={isSaving}
+          isCompleting={isSubmitting}
+        />
+      </div>
     );
   }
 
@@ -129,113 +382,115 @@ export default function NewCarePlanPage() {
       <div>
         <h1 className="text-2xl font-bold">New Plan of Care</h1>
         <p className="text-foreground-secondary mt-1">
-          Select a template or start with a blank care plan
+          Select a template to get started
         </p>
       </div>
 
-      {/* Option: No template */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Standard Care Plan</CardTitle>
-          <CardDescription>
-            Create a care plan using the standard form without a custom template
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <button
-            onClick={() => {
-              setSelectedTemplateId(null);
-              handleContinue();
-            }}
-            className={`w-full p-4 rounded-lg border text-left transition-colors ${
-              selectedTemplateId === null
-                ? "bg-primary/10 border-primary"
-                : "bg-background border-border hover:border-primary/50"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-background-secondary flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-foreground-secondary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Blank Care Plan</h3>
-                  <p className="text-sm text-foreground-secondary mt-1">
-                    Use the standard care plan form with all sections
-                  </p>
-                </div>
-              </div>
-              <CheckCircle className={`h-5 w-5 flex-shrink-0 ${
-                selectedTemplateId === null ? "text-primary" : "text-transparent"
-              }`} />
-            </div>
-          </button>
-        </CardContent>
-      </Card>
+      {/* Loading Template */}
+      {isLoadingTemplate && (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      )}
 
-      {/* Templates */}
-      {templates.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Custom Templates</CardTitle>
-            <CardDescription>
-              Use a pre-configured template with custom sections
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {templates.map((template) => (
+      {/* Error */}
+      {error && (
+        <div className="p-4 rounded-md bg-error/10 text-error text-sm">
+          {error}
+          <button onClick={() => setError(null)} className="ml-2 underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Standard template */}
+      {!isLoadingTemplate && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Standard Care Plan</CardTitle>
+              <CardDescription>
+                Comprehensive care plan with all standard sections
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <button
-                key={template.id}
-                onClick={() => {
-                  setSelectedTemplateId(template.id);
-                  handleContinue();
-                }}
-                className={`w-full p-4 rounded-lg border text-left transition-colors ${
-                  selectedTemplateId === template.id
-                    ? "bg-primary/10 border-primary"
-                    : "bg-background border-border hover:border-primary/50"
-                }`}
+                onClick={() => handleSelectTemplate(null)}
+                className="w-full p-4 rounded-lg border text-left transition-colors bg-background border-border hover:border-primary/50 hover:bg-primary/5"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <ClipboardList className="w-5 h-5 text-primary" />
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-medium">{template.name}</h3>
-                      {template.description && (
-                        <p className="text-sm text-foreground-secondary mt-1">
-                          {template.description}
-                        </p>
-                      )}
+                      <h3 className="font-medium">Standard Plan of Care</h3>
+                      <p className="text-sm text-foreground-secondary mt-1">
+                        Includes diagnoses, medications, functional status, clinical narratives, and signatures
+                      </p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-foreground-tertiary">
-                        <span>v{template.version}</span>
-                        <span>{template.sectionCount} custom sections</span>
-                        {template.includesDiagnoses && <span>+ Diagnoses</span>}
-                        {template.includesOrders && <span>+ Orders</span>}
+                        <span>9 sections</span>
+                        <span>CMS-485 compatible</span>
                       </div>
                     </div>
                   </div>
-                  <CheckCircle className={`h-5 w-5 flex-shrink-0 ${
-                    selectedTemplateId === template.id ? "text-primary" : "text-transparent"
-                  }`} />
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-transparent" />
                 </div>
               </button>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="secondary"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Cancel
-        </Button>
-      </div>
+          {/* Custom Templates */}
+          {templates.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Custom Templates</CardTitle>
+                <CardDescription>
+                  Pre-configured templates with custom sections
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => handleSelectTemplate(template.id)}
+                    className="w-full p-4 rounded-lg border text-left transition-colors bg-background border-border hover:border-primary/50 hover:bg-primary/5"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <ClipboardList className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{template.name}</h3>
+                          {template.description && (
+                            <p className="text-sm text-foreground-secondary mt-1">
+                              {template.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-foreground-tertiary">
+                            <span>v{template.version}</span>
+                            <span>{template.sectionCount} sections</span>
+                          </div>
+                        </div>
+                      </div>
+                      <CheckCircle className="h-5 w-5 flex-shrink-0 text-transparent" />
+                    </div>
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => router.back()}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

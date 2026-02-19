@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { FormTemplateData } from "@/lib/visit-notes/types";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
@@ -67,9 +68,12 @@ export default function NewTemplatePage() {
         throw new Error(data.error || "Failed to save template");
       }
 
+      toast.success(publish ? "Template created and published" : "Template created successfully");
       router.push(`/visit-notes/templates/${data.template.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save template");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save template";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }

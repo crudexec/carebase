@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ScoringMethod } from "@prisma/client";
 import { AssessmentTemplateData } from "@/lib/assessments/types";
 import { TemplateBuilder } from "@/components/assessments/template-builder";
@@ -80,9 +81,12 @@ export default function NewAssessmentTemplatePage() {
         });
       }
 
+      toast.success(publish ? "Template created and published" : "Template created successfully");
       router.push(`/assessments/templates/${data.template.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save template");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save template";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }

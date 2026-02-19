@@ -271,11 +271,6 @@ export async function POST(request: Request) {
         templateId: template.id,
         templateName: template.name,
         version: template.version,
-        includesDiagnoses: template.includesDiagnoses,
-        includesGoals: template.includesGoals,
-        includesInterventions: template.includesInterventions,
-        includesMedications: template.includesMedications,
-        includesOrders: template.includesOrders,
         sections: template.sections.map((section) => ({
           id: section.id,
           title: section.title,

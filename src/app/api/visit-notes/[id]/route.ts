@@ -317,3 +317,100 @@ export async function PATCH(
     );
   }
 }
+
+// DELETE /api/visit-notes/[id] - Delete a visit note
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getAuthUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Get the visit note
+    const visitNote = await prisma.visitNote.findFirst({
+      where: {
+        id,
+        companyId: user.companyId,
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        carer: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!visitNote) {
+      return NextResponse.json(
+        { error: "Visit note not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check permissions - only admins/managers can delete
+    const canDelete = hasPermission(user.role, PERMISSIONS.VISIT_NOTE_VIEW_ALL);
+    if (!canDelete) {
+      return NextResponse.json(
+        { error: "You do not have permission to delete visit notes" },
+        { status: 403 }
+      );
+    }
+
+    // Delete related records first (cascade not set up in schema)
+    await prisma.$transaction([
+      // Delete threshold breaches
+      prisma.thresholdBreach.deleteMany({
+        where: { visitNoteId: id },
+      }),
+      // Delete visit note files
+      prisma.visitNoteFile.deleteMany({
+        where: { visitNoteId: id },
+      }),
+      // Delete visit note comments
+      prisma.visitNoteComment.deleteMany({
+        where: { visitNoteId: id },
+      }),
+      // Delete the visit note
+      prisma.visitNote.delete({
+        where: { id },
+      }),
+    ]);
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        companyId: user.companyId,
+        userId: user.id,
+        action: "VISIT_NOTE_DELETED",
+        entityType: "VisitNote",
+        entityId: id,
+        changes: {
+          clientName: `${visitNote.client.firstName} ${visitNote.client.lastName}`,
+          carerName: `${visitNote.carer.firstName} ${visitNote.carer.lastName}`,
+          submittedAt: visitNote.submittedAt.toISOString(),
+        },
+      },
+    });
+
+    return NextResponse.json({ message: "Visit note deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting visit note:", error);
+    return NextResponse.json(
+      { error: "Failed to delete visit note" },
+      { status: 500 }
+    );
+  }
+}

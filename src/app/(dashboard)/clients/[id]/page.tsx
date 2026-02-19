@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ClientStatus } from "@prisma/client";
 import {
   Button,
@@ -11,6 +12,7 @@ import {
   CardTitle,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
   Textarea,
@@ -40,6 +42,8 @@ import {
   Stethoscope,
   FileCheck,
 } from "lucide-react";
+import { StaffSearchSelect } from "@/components/staff";
+import { SponsorSearchSelect } from "@/components/sponsors";
 
 interface ClientDetails {
   id: string;
@@ -140,10 +144,20 @@ interface Authorization {
   isNearingLimit: boolean;
 }
 
-interface CarerOption {
+interface CarerData {
   id: string;
   firstName: string;
   lastName: string;
+  email?: string;
+  role?: string;
+}
+
+interface SponsorData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  relationship?: string;
 }
 
 const STATUS_LABELS: Record<ClientStatus, string> = {
@@ -180,8 +194,8 @@ export default function ClientDetailPage() {
   const [visitNotes, setVisitNotes] = React.useState<VisitNote[]>([]);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [authorizations, setAuthorizations] = React.useState<Authorization[]>([]);
-  const [carers, setCarers] = React.useState<CarerOption[]>([]);
-  const [sponsors, setSponsors] = React.useState<CarerOption[]>([]);
+  const [selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
+  const [selectedSponsor, setSelectedSponsor] = React.useState<SponsorData | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<TabType>("details");
@@ -217,6 +231,27 @@ export default function ClientDetailPage() {
       }
       const data = await response.json();
       setClient(data.client);
+      // Set selected carer/sponsor for search select components
+      if (data.client.assignedCarer) {
+        setSelectedCarer({
+          id: data.client.assignedCarer.id,
+          firstName: data.client.assignedCarer.firstName,
+          lastName: data.client.assignedCarer.lastName,
+          email: data.client.assignedCarer.email,
+        });
+      } else {
+        setSelectedCarer(null);
+      }
+      if (data.client.sponsor) {
+        setSelectedSponsor({
+          id: data.client.sponsor.id,
+          firstName: data.client.sponsor.firstName,
+          lastName: data.client.sponsor.lastName,
+          email: data.client.sponsor.email,
+        });
+      } else {
+        setSelectedSponsor(null);
+      }
       setFormData({
         firstName: data.client.firstName,
         lastName: data.client.lastName,
@@ -288,29 +323,15 @@ export default function ClientDetailPage() {
     }
   }, [clientId]);
 
-  const fetchCarers = React.useCallback(async () => {
-    try {
-      const response = await fetch("/api/staff?role=CARER&limit=100");
-      if (response.ok) {
-        const data = await response.json();
-        setCarers(data.staff);
-      }
-    } catch {
-      // Ignore errors
-    }
-  }, []);
+  const handleCarerChange = (carerId: string, carer: CarerData | null) => {
+    setSelectedCarer(carer);
+    setFormData((prev) => ({ ...prev, assignedCarerId: carerId }));
+  };
 
-  const fetchSponsors = React.useCallback(async () => {
-    try {
-      const response = await fetch("/api/sponsors?limit=100");
-      if (response.ok) {
-        const data = await response.json();
-        setSponsors(data.sponsors);
-      }
-    } catch {
-      // Ignore errors
-    }
-  }, []);
+  const handleSponsorChange = (sponsorId: string, sponsor: SponsorData | null) => {
+    setSelectedSponsor(sponsor);
+    setFormData((prev) => ({ ...prev, sponsorId: sponsorId }));
+  };
 
   React.useEffect(() => {
     fetchClient();
@@ -318,9 +339,7 @@ export default function ClientDetailPage() {
     fetchVisitNotes();
     fetchAssessments();
     fetchAuthorizations();
-    fetchCarers();
-    fetchSponsors();
-  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchAuthorizations, fetchCarers, fetchSponsors]);
+  }, [fetchClient, fetchActivities, fetchVisitNotes, fetchAssessments, fetchAuthorizations]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -353,8 +372,11 @@ export default function ClientDetailPage() {
       await fetchClient();
       await fetchActivities();
       setIsEditing(false);
+      toast.success("Client updated successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update client");
+      const errorMessage = err instanceof Error ? err.message : "Failed to update client";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -362,6 +384,27 @@ export default function ClientDetailPage() {
 
   const cancelEdit = () => {
     if (client) {
+      // Reset selected carer/sponsor
+      if (client.assignedCarer) {
+        setSelectedCarer({
+          id: client.assignedCarer.id,
+          firstName: client.assignedCarer.firstName,
+          lastName: client.assignedCarer.lastName,
+          email: client.assignedCarer.email,
+        });
+      } else {
+        setSelectedCarer(null);
+      }
+      if (client.sponsor) {
+        setSelectedSponsor({
+          id: client.sponsor.id,
+          firstName: client.sponsor.firstName,
+          lastName: client.sponsor.lastName,
+          email: client.sponsor.email,
+        });
+      } else {
+        setSelectedSponsor(null);
+      }
       setFormData({
         firstName: client.firstName,
         lastName: client.lastName,
@@ -709,9 +752,8 @@ export default function ClientDetailPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                      <Input
+                      <DateInput
                         id="dateOfBirth"
-                        type="date"
                         value={formData.dateOfBirth}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
@@ -845,22 +887,13 @@ export default function ClientDetailPage() {
               </CardHeader>
               <CardContent>
                 {isEditing ? (
-                  <Select
+                  <StaffSearchSelect
                     value={formData.assignedCarerId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        assignedCarerId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">No Carer Assigned</option>
-                    {carers.map((carer) => (
-                      <option key={carer.id} value={carer.id}>
-                        {carer.firstName} {carer.lastName}
-                      </option>
-                    ))}
-                  </Select>
+                    onChange={handleCarerChange}
+                    label=""
+                    placeholder="Search for carer..."
+                    role="CARER"
+                  />
                 ) : client.assignedCarer ? (
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -898,22 +931,12 @@ export default function ClientDetailPage() {
               </CardHeader>
               <CardContent>
                 {isEditing ? (
-                  <Select
+                  <SponsorSearchSelect
                     value={formData.sponsorId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        sponsorId: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">No Sponsor Assigned</option>
-                    {sponsors.map((sponsor) => (
-                      <option key={sponsor.id} value={sponsor.id}>
-                        {sponsor.firstName} {sponsor.lastName}
-                      </option>
-                    ))}
-                  </Select>
+                    onChange={handleSponsorChange}
+                    label=""
+                    placeholder="Search for sponsor..."
+                  />
                 ) : client.sponsor ? (
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">

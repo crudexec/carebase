@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { AssessmentTemplateData } from "@/lib/assessments/types";
 import { TemplateBuilder } from "@/components/assessments/template-builder";
 import { Button, Badge } from "@/components/ui";
@@ -150,8 +151,11 @@ export default function EditAssessmentTemplatePage() {
       );
       setIsActive(data.template.isActive);
       setHasChanges(false);
+      toast.success(publish ? "Template saved and published" : "Template saved successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save template");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save template";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -169,13 +173,16 @@ export default function EditAssessmentTemplatePage() {
       });
 
       if (response.ok) {
-        setIsActive(!isActive);
+        const newIsActive = !isActive;
+        setIsActive(newIsActive);
         setTemplate((prev) =>
-          prev ? { ...prev, status: !isActive ? "ACTIVE" : "DRAFT" } : null
+          prev ? { ...prev, status: newIsActive ? "ACTIVE" : "DRAFT" } : null
         );
+        toast.success(newIsActive ? "Template activated" : "Template deactivated");
       }
     } catch (err) {
       console.error("Failed to toggle active:", err);
+      toast.error("Failed to toggle template status");
     } finally {
       setIsSaving(false);
     }

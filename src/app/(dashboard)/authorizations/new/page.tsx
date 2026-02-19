@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -11,18 +12,20 @@ import {
   CardDescription,
   Button,
   Input,
+  DateInput,
   Select,
   Label,
   Textarea,
   Breadcrumb,
 } from "@/components/ui";
-import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
+import { ClientSearchSelect } from "@/components/clients/client-search-select";
+import { Loader2, ShieldCheck } from "lucide-react";
 
 interface Client {
   id: string;
   firstName: string;
   lastName: string;
-  medicaidId: string | null;
+  dateOfBirth?: string | null;
 }
 
 const SERVICE_CODES = [
@@ -40,8 +43,7 @@ export default function NewAuthorizationPage() {
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [clients, setClients] = React.useState<Client[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedClient, setSelectedClient] = React.useState<Client | null>(null);
 
   const [formData, setFormData] = React.useState({
     clientId: preselectedClientId || "",
@@ -55,31 +57,16 @@ export default function NewAuthorizationPage() {
     notes: "",
   });
 
-  React.useEffect(() => {
-    fetchClients();
-  }, []);
-
-  const fetchClients = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/clients?limit=100");
-      const data = await response.json();
-
-      if (response.ok) {
-        setClients(data.clients || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch clients:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleClientChange = (clientId: string, client: Client | null) => {
+    setSelectedClient(client);
+    setFormData((prev) => ({ ...prev, clientId }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,35 +93,25 @@ export default function NewAuthorizationPage() {
         throw new Error(data.error || "Failed to create authorization");
       }
 
+      toast.success("Authorization created successfully");
       router.push(`/authorizations/${data.authorization.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create authorization");
+      const errorMessage = err instanceof Error ? err.message : "Failed to create authorization";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setIsSubmitting(false);
     }
   };
 
-  // Find preselected client for breadcrumb
-  const preselectedClient = preselectedClientId
-    ? clients.find((c) => c.id === preselectedClientId)
-    : null;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      {/* Breadcrumb - different path if coming from client */}
+      {/* Breadcrumb - different path if client is selected */}
       <Breadcrumb
         items={
-          preselectedClient
+          selectedClient
             ? [
                 { label: "Clients", href: "/clients" },
-                { label: `${preselectedClient.firstName} ${preselectedClient.lastName}`, href: `/clients/${preselectedClient.id}` },
+                { label: `${selectedClient.firstName} ${selectedClient.lastName}`, href: `/clients/${selectedClient.id}` },
                 { label: "New Authorization" },
               ]
             : [
@@ -163,29 +140,17 @@ export default function NewAuthorizationPage() {
         {/* Client Selection */}
         <Card>
           <CardHeader>
-            <CardTitle>Client</CardTitle>
+            <CardTitle>Select Client</CardTitle>
+            <CardDescription>
+              Search and select the client for this authorization
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="clientId" required>
-                Select Client
-              </Label>
-              <Select
-                id="clientId"
-                name="clientId"
-                value={formData.clientId}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select a client...</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.firstName} {client.lastName}
-                    {client.medicaidId && ` (${client.medicaidId})`}
-                  </option>
-                ))}
-              </Select>
-            </div>
+          <CardContent>
+            <ClientSearchSelect
+              value={formData.clientId}
+              onChange={handleClientChange}
+              required
+            />
           </CardContent>
         </Card>
 
@@ -254,10 +219,9 @@ export default function NewAuthorizationPage() {
                 <Label htmlFor="startDate" required>
                   Start Date
                 </Label>
-                <Input
+                <DateInput
                   id="startDate"
                   name="startDate"
-                  type="date"
                   value={formData.startDate}
                   onChange={handleChange}
                   required
@@ -267,10 +231,9 @@ export default function NewAuthorizationPage() {
                 <Label htmlFor="endDate" required>
                   End Date
                 </Label>
-                <Input
+                <DateInput
                   id="endDate"
                   name="endDate"
-                  type="date"
                   value={formData.endDate}
                   onChange={handleChange}
                   required

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Button,
   Card,
@@ -16,12 +17,14 @@ import {
   Textarea,
   Breadcrumb,
   Input,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   FieldValue,
   VisitNoteDetailWithBreaches,
 } from "@/lib/visit-notes/types";
 import { ThresholdAlertBanner } from "@/components/visit-notes/threshold-alert-banner";
+import { BodyMapViewer } from "@/components/visit-notes/body-map-viewer";
 import { FormFieldType, UserRole } from "@prisma/client";
 import {
   Loader2,
@@ -108,6 +111,18 @@ export default function ViewVisitNotePage() {
   const [isSendingFax, setIsSendingFax] = React.useState(false);
   const [faxSuccess, setFaxSuccess] = React.useState<string | null>(null);
   const [faxError, setFaxError] = React.useState<string | null>(null);
+
+  // Delete comment modal state
+  const [deleteCommentModal, setDeleteCommentModal] = React.useState<{
+    isOpen: boolean;
+    commentId: string | null;
+  }>({ isOpen: false, commentId: null });
+
+  // Track which comment is being deleted for fade animation
+  const [deletingCommentId, setDeletingCommentId] = React.useState<string | null>(null);
+
+  // Resubmit modal state
+  const [showResubmitModal, setShowResubmitModal] = React.useState(false);
 
   // Check if user can review QA
   const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"].includes(session.user.role);
@@ -215,8 +230,11 @@ export default function ViewVisitNotePage() {
 
       setNewComment("");
       await fetchComments();
+      toast.success("Comment added");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add comment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to add comment";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -244,15 +262,24 @@ export default function ViewVisitNotePage() {
       setEditingCommentId(null);
       setEditContent("");
       await fetchComments();
+      toast.success("Comment updated");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update comment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to update comment";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
+  const handleDeleteCommentClick = (commentId: string) => {
+    setDeleteCommentModal({ isOpen: true, commentId });
+  };
+
+  const handleDeleteCommentConfirm = async () => {
+    if (!deleteCommentModal.commentId) return;
+
+    const commentId = deleteCommentModal.commentId;
 
     try {
       const response = await fetch(
@@ -265,9 +292,19 @@ export default function ViewVisitNotePage() {
         throw new Error(data.error || "Failed to delete comment");
       }
 
-      await fetchComments();
+      // Start fade-out animation
+      setDeletingCommentId(commentId);
+      // Wait for animation to complete, then remove from state
+      setTimeout(() => {
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
+        setDeletingCommentId(null);
+      }, 300);
+      toast.success("Comment deleted");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete comment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete comment";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
     }
   };
 
@@ -301,16 +338,21 @@ export default function ViewVisitNotePage() {
       setShowQaModal(null);
       setQaComment("");
       await fetchVisitNote();
+      toast.success(status === "APPROVED" ? "Visit note approved" : "Visit note rejected");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit review");
+      const errorMessage = err instanceof Error ? err.message : "Failed to submit review";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsQaSubmitting(false);
     }
   };
 
-  const handleResubmit = async () => {
-    if (!confirm("Are you sure you want to resubmit this visit note for review?")) return;
+  const handleResubmitClick = () => {
+    setShowResubmitModal(true);
+  };
 
+  const handleResubmitConfirm = async () => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/visit-notes/${noteId}`, {
@@ -325,8 +367,12 @@ export default function ViewVisitNotePage() {
       }
 
       await fetchVisitNote();
+      toast.success("Visit note resubmitted for review");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resubmit");
+      const errorMessage = err instanceof Error ? err.message : "Failed to resubmit";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -349,8 +395,11 @@ export default function ViewVisitNotePage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast.success("PDF downloaded");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to download PDF");
+      const errorMessage = err instanceof Error ? err.message : "Failed to download PDF";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -384,6 +433,7 @@ export default function ViewVisitNotePage() {
       }
 
       setFaxSuccess("Fax queued successfully!");
+      toast.success("Fax queued successfully");
       setTimeout(() => {
         setShowFaxModal(false);
         setFaxNumber("");
@@ -391,7 +441,9 @@ export default function ViewVisitNotePage() {
         setFaxSuccess(null);
       }, 2000);
     } catch (err) {
-      setFaxError(err instanceof Error ? err.message : "Failed to send fax");
+      const errorMessage = err instanceof Error ? err.message : "Failed to send fax";
+      setFaxError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSendingFax(false);
     }
@@ -536,6 +588,15 @@ export default function ViewVisitNotePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Edit button - only for non-approved notes */}
+          {visitNote.qaStatus !== "APPROVED" && (
+            <Link href={`/visit-notes/${noteId}/edit`}>
+              <Button variant="secondary">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            </Link>
+          )}
           <Button
             variant="secondary"
             onClick={handleDownloadPdf}
@@ -713,7 +774,7 @@ export default function ViewVisitNotePage() {
                   {canResubmit && (
                     <div className="mt-4">
                       <Button
-                        onClick={handleResubmit}
+                        onClick={handleResubmitClick}
                         disabled={isSubmitting}
                         variant="default"
                       >
@@ -938,7 +999,9 @@ export default function ViewVisitNotePage() {
               {comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="flex gap-3 p-3 rounded-lg bg-background-secondary"
+                  className={`flex gap-3 p-3 rounded-lg bg-background-secondary transition-all duration-300 ${
+                    deletingCommentId === comment.id ? "opacity-0 scale-95" : ""
+                  }`}
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-medium text-primary">
@@ -1003,7 +1066,7 @@ export default function ViewVisitNotePage() {
                           <Edit2 className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => handleDeleteComment(comment.id)}
+                          onClick={() => handleDeleteCommentClick(comment.id)}
                           className="p-1 text-foreground-tertiary hover:text-error rounded"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -1072,6 +1135,28 @@ export default function ViewVisitNotePage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Delete Comment Modal */}
+      <ConfirmActionModal
+        isOpen={deleteCommentModal.isOpen}
+        onClose={() => setDeleteCommentModal({ isOpen: false, commentId: null })}
+        onConfirm={handleDeleteCommentConfirm}
+        variant="danger"
+        title="Delete Comment"
+        description="Are you sure you want to delete this comment?"
+        confirmText="Delete"
+      />
+
+      {/* Resubmit Modal */}
+      <ConfirmActionModal
+        isOpen={showResubmitModal}
+        onClose={() => setShowResubmitModal(false)}
+        onConfirm={handleResubmitConfirm}
+        variant="info"
+        title="Resubmit for Review"
+        description="Are you sure you want to resubmit this visit note for QA review?"
+        confirmText="Resubmit"
+      />
 
       {/* Fax Modal */}
       {showFaxModal && (
@@ -1278,6 +1363,21 @@ function FieldValueDisplay({
           className="max-w-sm rounded-lg border border-border"
         />
       );
+    }
+
+    case "BODY_MAP": {
+      const markers = Array.isArray(value) ? (value as Array<{
+        id: string;
+        regionId: string;
+        regionLabel: string;
+        type: "pain" | "wound" | "bruise" | "rash" | "swelling" | "other";
+        severity: "mild" | "moderate" | "severe";
+        woundType?: string;
+        size?: string;
+        notes?: string;
+        photo?: { fileUrl: string; fileName: string; fileType: string; fileSize: number };
+      }>) : [];
+      return <BodyMapViewer markers={markers} />;
     }
 
     default:

@@ -2,26 +2,44 @@
 
 import * as React from "react";
 import { AssessmentResponseType } from "@prisma/client";
-import { RESPONSE_TYPE_LABELS, RESPONSE_TYPE_DESCRIPTIONS } from "@/lib/assessments/types";
+import { RESPONSE_TYPE_LABELS, RESPONSE_TYPE_DESCRIPTIONS, VISIBLE_RESPONSE_TYPES } from "@/lib/assessments/types";
 import { cn } from "@/lib/utils";
 import {
-  SlidersHorizontal,
+  Type,
+  AlignLeft,
+  Hash,
   ToggleLeft,
   CircleDot,
   CheckSquare,
-  AlignLeft,
   Calendar,
-  Hash,
+  Clock,
+  CalendarClock,
+  PenTool,
+  Camera,
+  Star,
+  User,
+  Stethoscope,
+  SlidersHorizontal,
 } from "lucide-react";
 
 const RESPONSE_TYPE_ICONS: Record<AssessmentResponseType, React.ComponentType<{ className?: string }>> = {
-  SCALE: SlidersHorizontal,
+  TEXT_SHORT: Type,
+  TEXT_LONG: AlignLeft,
+  NUMBER: Hash,
   YES_NO: ToggleLeft,
   SINGLE_CHOICE: CircleDot,
   MULTIPLE_CHOICE: CheckSquare,
-  TEXT: AlignLeft,
   DATE: Calendar,
-  NUMBER: Hash,
+  TIME: Clock,
+  DATETIME: CalendarClock,
+  SIGNATURE: PenTool,
+  PHOTO: Camera,
+  RATING_SCALE: Star,
+  BODY_MAP: User,
+  ICD10_DIAGNOSIS: Stethoscope,
+  // Legacy types
+  SCALE: SlidersHorizontal,
+  TEXT: AlignLeft,
 };
 
 interface ResponseTypeSelectorProps {
@@ -30,11 +48,9 @@ interface ResponseTypeSelectorProps {
 }
 
 export function ResponseTypeSelector({ onSelect, className }: ResponseTypeSelectorProps) {
-  const responseTypes = Object.values(AssessmentResponseType) as AssessmentResponseType[];
-
   return (
     <div className={cn("grid grid-cols-2 gap-2", className)}>
-      {responseTypes.map((type) => {
+      {VISIBLE_RESPONSE_TYPES.map((type) => {
         const Icon = RESPONSE_TYPE_ICONS[type];
         return (
           <button

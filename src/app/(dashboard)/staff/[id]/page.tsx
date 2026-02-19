@@ -11,8 +11,10 @@ import {
   CardTitle,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -203,6 +205,16 @@ export default function StaffDetailPage() {
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
+  // Delete credential modal state
+  const [deleteCredentialModal, setDeleteCredentialModal] = React.useState<{
+    isOpen: boolean;
+    credentialId: string | null;
+    credentialName: string;
+  }>({ isOpen: false, credentialId: null, credentialName: "" });
+
+  // Track which credential is being deleted for fade animation
+  const [deletingCredentialId, setDeletingCredentialId] = React.useState<string | null>(null);
+
   // Form state for editing
   const [formData, setFormData] = React.useState({
     firstName: "",
@@ -392,23 +404,38 @@ export default function StaffDetailPage() {
     }
   };
 
-  const handleCredentialDelete = async (credentialId: string) => {
-    if (!confirm("Are you sure you want to delete this credential?")) return;
+  const handleCredentialDeleteClick = (credentialId: string, credentialName: string) => {
+    setDeleteCredentialModal({ isOpen: true, credentialId, credentialName });
+  };
 
-    try {
-      const response = await fetch(`/api/credentials/${credentialId}`, {
-        method: "DELETE",
-      });
+  const handleCredentialDeleteConfirm = async () => {
+    if (!deleteCredentialModal.credentialId) return;
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete credential");
-      }
+    const credentialId = deleteCredentialModal.credentialId;
 
-      await fetchStaff();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete credential");
+    const response = await fetch(`/api/credentials/${credentialId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Failed to delete credential");
     }
+
+    // Start fade-out animation
+    setDeletingCredentialId(credentialId);
+    // Wait for animation to complete, then remove from state
+    setTimeout(() => {
+      setStaff((prev) =>
+        prev
+          ? {
+              ...prev,
+              credentials: prev.credentials.filter((c) => c.id !== credentialId),
+            }
+          : null
+      );
+      setDeletingCredentialId(null);
+    }, 300);
   };
 
   const handleSave = async () => {
@@ -572,61 +599,29 @@ export default function StaffDetailPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats - Compact inline */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-100">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold">{stats.totalShifts}</p>
-                  <p className="text-xs text-foreground-secondary">Total Shifts</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-100">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold">{stats.completionRate}%</p>
-                  <p className="text-xs text-foreground-secondary">Completion Rate</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-100">
-                  <ClipboardList className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold">{stats.totalVisitNotes}</p>
-                  <p className="text-xs text-foreground-secondary">Visit Notes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-100">
-                  <Users className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold">{stats.assignedClients}</p>
-                  <p className="text-xs text-foreground-secondary">Assigned Clients</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-6 text-sm flex-wrap">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-blue-600" />
+            <span className="font-semibold">{stats.totalShifts}</span>
+            <span className="text-foreground-secondary">shifts</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <span className="font-semibold">{stats.completionRate}%</span>
+            <span className="text-foreground-secondary">completion</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-purple-600" />
+            <span className="font-semibold">{stats.totalVisitNotes}</span>
+            <span className="text-foreground-secondary">notes</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-orange-600" />
+            <span className="font-semibold">{stats.assignedClients}</span>
+            <span className="text-foreground-secondary">clients</span>
+          </div>
         </div>
       )}
 
@@ -1064,13 +1059,13 @@ export default function StaffDetailPage() {
                     return (
                       <div
                         key={credential.id}
-                        className={`p-4 rounded-lg border ${
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
                           isExpired
                             ? "border-error/30 bg-error/5"
                             : isExpiringSoon
                             ? "border-warning/30 bg-warning/5"
                             : "border-border"
-                        }`}
+                        } ${deletingCredentialId === credential.id ? "opacity-0 scale-95" : ""}`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4">
@@ -1155,7 +1150,7 @@ export default function StaffDetailPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleCredentialDelete(credential.id)}
+                              onClick={() => handleCredentialDeleteClick(credential.id, credential.credentialType.name)}
                             >
                               <Trash2 className="w-4 h-4 text-error" />
                             </Button>
@@ -1242,9 +1237,8 @@ export default function StaffDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="issuedDate">Issue Date</Label>
-                    <Input
+                    <DateInput
                       id="issuedDate"
-                      type="date"
                       value={credentialForm.issuedDate}
                       onChange={(e) =>
                         setCredentialForm((prev) => ({
@@ -1256,9 +1250,8 @@ export default function StaffDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="expirationDate">Expiration Date</Label>
-                    <Input
+                    <DateInput
                       id="expirationDate"
-                      type="date"
                       value={credentialForm.expirationDate}
                       onChange={(e) =>
                         setCredentialForm((prev) => ({
@@ -1351,6 +1344,19 @@ export default function StaffDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Credential Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={deleteCredentialModal.isOpen}
+        onClose={() => setDeleteCredentialModal({ isOpen: false, credentialId: null, credentialName: "" })}
+        onConfirm={handleCredentialDeleteConfirm}
+        variant="danger"
+        title="Delete Credential"
+        description="Are you sure you want to delete this credential?"
+        itemName={deleteCredentialModal.credentialName}
+        warningText="This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }

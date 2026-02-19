@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import {
   Button,
   Badge,
   Breadcrumb,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   ArrowRight,
@@ -143,6 +145,7 @@ export default function IntakeWizardPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isGeneratingCarePlan, setIsGeneratingCarePlan] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
 
   React.useEffect(() => {
     fetchIntake();
@@ -212,10 +215,12 @@ export default function IntakeWizardPage() {
       const data = await response.json();
 
       if (response.ok) {
+        toast.success("Assessment started");
         router.push(`/assessments/${data.assessment.id}`);
       }
     } catch (err) {
       console.error("Failed to start assessment:", err);
+      toast.error("Failed to start assessment");
     }
   };
 
@@ -230,10 +235,12 @@ export default function IntakeWizardPage() {
       const data = await response.json();
 
       if (response.ok) {
+        toast.success("Consent form created");
         router.push(`/consents/${data.consent.id}`);
       }
     } catch (err) {
       console.error("Failed to create consent:", err);
+      toast.error("Failed to create consent");
     }
   };
 
@@ -256,12 +263,16 @@ export default function IntakeWizardPage() {
       if (response.ok) {
         // Refresh intake to get the new care plan
         fetchIntake();
+        toast.success("Care plan generated successfully");
       } else {
-        setError(data.error || "Failed to generate care plan");
+        const errorMessage = data.error || "Failed to generate care plan";
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
       console.error("Failed to generate care plan:", err);
       setError("Failed to generate care plan");
+      toast.error("Failed to generate care plan");
     } finally {
       setIsGeneratingCarePlan(false);
     }
@@ -278,19 +289,21 @@ export default function IntakeWizardPage() {
 
       if (response.ok) {
         fetchIntake();
+        toast.success("Submitted for approval");
       }
     } catch (err) {
       console.error("Failed to submit for approval:", err);
+      toast.error("Failed to submit for approval");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const deleteIntake = async () => {
-    if (!confirm("Are you sure you want to delete this intake? This action cannot be undone.")) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/intake/${intakeId}`, {
@@ -298,14 +311,20 @@ export default function IntakeWizardPage() {
       });
 
       if (response.ok) {
+        toast.success("Intake deleted");
         router.push("/intake");
       } else {
         const data = await response.json();
-        setError(data.error || "Failed to delete intake");
+        const errorMessage = data.error || "Failed to delete intake";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (err) {
       console.error("Failed to delete intake:", err);
       setError("Failed to delete intake");
+      toast.error("Failed to delete intake");
+      throw err;
     } finally {
       setIsDeleting(false);
     }
@@ -826,7 +845,7 @@ export default function IntakeWizardPage() {
         </div>
         <Button
           variant="secondary"
-          onClick={deleteIntake}
+          onClick={handleDeleteClick}
           disabled={isDeleting}
           className="text-error hover:bg-error/10"
         >
@@ -934,6 +953,19 @@ export default function IntakeWizardPage() {
           </Button>
         )}
       </div>
+
+      {/* Delete Intake Modal */}
+      <ConfirmActionModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        variant="danger"
+        title="Delete Intake"
+        description="Are you sure you want to delete this intake?"
+        itemName={intake ? `${intake.client.firstName} ${intake.client.lastName}` : undefined}
+        warningText="This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }

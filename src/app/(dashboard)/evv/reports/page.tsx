@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
@@ -233,8 +234,7 @@ export default function EVVReportsPage() {
           <div className="flex flex-wrap gap-4 items-end">
             <div className="space-y-1">
               <Label>Start Date</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={filters.startDate}
                 onChange={(e) =>
                   setFilters((f) => ({ ...f, startDate: e.target.value }))
@@ -243,8 +243,7 @@ export default function EVVReportsPage() {
             </div>
             <div className="space-y-1">
               <Label>End Date</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={filters.endDate}
                 onChange={(e) =>
                   setFilters((f) => ({ ...f, endDate: e.target.value }))

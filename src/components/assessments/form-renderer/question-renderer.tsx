@@ -5,9 +5,11 @@ import {
   AssessmentItemData,
   ResponseValue,
   ChoiceOption,
+  ICD10DiagnosisValue,
 } from "@/lib/assessments/types";
-import { Input, Textarea, Label } from "@/components/ui";
+import { Input, DateInput, Textarea, Label } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { ICD10DiagnosisField } from "@/components/visit-notes/form-renderer/icd10-diagnosis-field";
 
 interface QuestionRendererProps {
   item: AssessmentItemData;
@@ -50,12 +52,13 @@ function renderQuestionInput(
 ) {
   switch (item.responseType) {
     case "SCALE":
+    case "RATING_SCALE":
       return (
         <ScaleInput
           value={value as number | null}
           onChange={onChange}
           minValue={item.minValue ?? 0}
-          maxValue={item.maxValue ?? 3}
+          maxValue={item.maxValue ?? 5}
           scoreMapping={item.scoreMapping}
           disabled={disabled}
           error={!!error}
@@ -95,6 +98,7 @@ function renderQuestionInput(
       );
 
     case "TEXT":
+    case "TEXT_LONG":
       return (
         <Textarea
           id={item.id}
@@ -107,11 +111,47 @@ function renderQuestionInput(
         />
       );
 
-    case "DATE":
+    case "TEXT_SHORT":
       return (
         <Input
           id={item.id}
-          type="date"
+          type="text"
+          value={(value as string) || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Enter your response..."
+          disabled={disabled}
+          error={!!error}
+        />
+      );
+
+    case "DATE":
+      return (
+        <DateInput
+          id={item.id}
+          value={(value as string) || ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          error={!!error}
+        />
+      );
+
+    case "TIME":
+      return (
+        <Input
+          id={item.id}
+          type="time"
+          value={(value as string) || ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          error={!!error}
+        />
+      );
+
+    case "DATETIME":
+      return (
+        <Input
+          id={item.id}
+          type="datetime-local"
           value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
@@ -133,6 +173,36 @@ function renderQuestionInput(
           disabled={disabled}
           error={!!error}
         />
+      );
+
+    case "ICD10_DIAGNOSIS":
+      return (
+        <ICD10DiagnosisField
+          value={(value as ICD10DiagnosisValue[]) || []}
+          onChange={(v) => onChange(v)}
+          disabled={disabled}
+        />
+      );
+
+    case "SIGNATURE":
+      return (
+        <div className="rounded-lg border border-border p-4 text-center text-sm text-foreground-tertiary">
+          Signature capture will be available when filling out the assessment
+        </div>
+      );
+
+    case "PHOTO":
+      return (
+        <div className="rounded-lg border border-border p-4 text-center text-sm text-foreground-tertiary">
+          Photo upload will be available when filling out the assessment
+        </div>
+      );
+
+    case "BODY_MAP":
+      return (
+        <div className="rounded-lg border border-border p-4 text-center text-sm text-foreground-tertiary">
+          Body map will be available when filling out the assessment
+        </div>
       );
 
     default:

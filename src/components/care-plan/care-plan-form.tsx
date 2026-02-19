@@ -24,6 +24,7 @@ import generatePDF, { Options } from "react-to-pdf";
 import {
   Button,
   Input,
+  DateInput,
   Label,
   Textarea,
   Select,
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui";
 import { ICD10Search, DiagnosisItem } from "./icd10-search";
 import { CarePlanPrint } from "./care-plan-print";
+import { StaffSearchSelect } from "@/components/staff";
 
 // Types
 interface Physician {
@@ -47,7 +49,7 @@ interface Physician {
   fax?: string | null;
 }
 
-interface CaseManager {
+interface CaseManagerData {
   id: string;
   firstName: string;
   lastName: string;
@@ -135,7 +137,7 @@ interface CarePlanData {
   clientSignerName?: string | null;
   clientSignerRelation?: string | null;
   physician?: Physician | null;
-  caseManager?: CaseManager | null;
+  caseManager?: CaseManagerData | null;
   diagnoses?: Diagnosis[];
   orders?: Order[];
   // Template fields
@@ -164,11 +166,6 @@ interface TemplateSchema {
   templateId: string;
   templateName: string;
   version: number;
-  includesDiagnoses: boolean;
-  includesGoals: boolean;
-  includesInterventions: boolean;
-  includesMedications: boolean;
-  includesOrders: boolean;
   sections: TemplateSection[];
 }
 
@@ -269,7 +266,9 @@ export function CarePlanForm({
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [caseManagers, setCaseManagers] = React.useState<CaseManager[]>([]);
+  const [selectedCaseManager, setSelectedCaseManager] = React.useState<CaseManagerData | null>(
+    initialData?.caseManager || null
+  );
   const [isExporting, setIsExporting] = React.useState(false);
   const [isSendingFax, setIsSendingFax] = React.useState(false);
   const [faxSuccess, setFaxSuccess] = React.useState<string | null>(null);
@@ -474,21 +473,11 @@ export function CarePlanForm({
     }
   };
 
-  // Fetch case managers
-  React.useEffect(() => {
-    const fetchCaseManagers = async () => {
-      try {
-        const response = await fetch("/api/staff?role=STAFF&limit=100");
-        if (response.ok) {
-          const data = await response.json();
-          setCaseManagers(data.staff || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch case managers:", error);
-      }
-    };
-    fetchCaseManagers();
-  }, []);
+  // Handle case manager selection
+  const handleCaseManagerChange = (staffId: string, staff: CaseManagerData | null) => {
+    setSelectedCaseManager(staff);
+    updateField("caseManagerId", staffId || null);
+  };
 
   // Fetch template if templateId is provided and we don't already have the schema
   React.useEffect(() => {
@@ -504,11 +493,6 @@ export function CarePlanForm({
               templateId: template.id,
               templateName: template.name,
               version: template.version,
-              includesDiagnoses: template.includesDiagnoses,
-              includesGoals: template.includesGoals,
-              includesInterventions: template.includesInterventions,
-              includesMedications: template.includesMedications,
-              includesOrders: template.includesOrders,
               sections: template.sections,
             };
             setTemplateSchema(schema);
@@ -666,9 +650,8 @@ export function CarePlanForm({
             <Label htmlFor={field.id} required={field.required}>
               {field.label}
             </Label>
-            <Input
+            <DateInput
               id={field.id}
-              type="date"
               value={value as string}
               onChange={(e) => updateTemplateField(field.id, e.target.value)}
             />
@@ -1162,9 +1145,8 @@ export function CarePlanForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="effectiveDate">Effective Date</Label>
-              <Input
+              <DateInput
                 id="effectiveDate"
-                type="date"
                 value={formData.effectiveDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("effectiveDate", e.target.value || null)
@@ -1173,9 +1155,8 @@ export function CarePlanForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="endDate">End Date</Label>
-              <Input
+              <DateInput
                 id="endDate"
-                type="date"
                 value={formData.endDate?.split("T")[0] || ""}
                 onChange={(e) => updateField("endDate", e.target.value || null)}
               />
@@ -1186,9 +1167,8 @@ export function CarePlanForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="certStartDate">Certification Start</Label>
-              <Input
+              <DateInput
                 id="certStartDate"
-                type="date"
                 value={formData.certStartDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("certStartDate", e.target.value || null)
@@ -1197,9 +1177,8 @@ export function CarePlanForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="certEndDate">Certification End</Label>
-              <Input
+              <DateInput
                 id="certEndDate"
-                type="date"
                 value={formData.certEndDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("certEndDate", e.target.value || null)
@@ -1210,30 +1189,21 @@ export function CarePlanForm({
 
           {/* Case Manager */}
           <div className="space-y-2">
-            <Label htmlFor="caseManagerId">Case Manager</Label>
-            <Select
-              id="caseManagerId"
+            <StaffSearchSelect
               value={formData.caseManagerId || ""}
-              onChange={(e) =>
-                updateField("caseManagerId", e.target.value || null)
-              }
-            >
-              <option value="">Select case manager</option>
-              {caseManagers.map((cm) => (
-                <option key={cm.id} value={cm.id}>
-                  {cm.firstName} {cm.lastName}
-                </option>
-              ))}
-            </Select>
+              onChange={handleCaseManagerChange}
+              label="Case Manager"
+              placeholder="Search for case manager..."
+              role="STAFF"
+            />
           </div>
 
           {/* Signature Tracking */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="verbalSOCDate">Verbal SOC Date</Label>
-              <Input
+              <DateInput
                 id="verbalSOCDate"
-                type="date"
                 value={formData.verbalSOCDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("verbalSOCDate", e.target.value || null)
@@ -1242,9 +1212,8 @@ export function CarePlanForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="signatureSentDate">Signature Sent</Label>
-              <Input
+              <DateInput
                 id="signatureSentDate"
-                type="date"
                 value={formData.signatureSentDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("signatureSentDate", e.target.value || null)
@@ -1253,9 +1222,8 @@ export function CarePlanForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="signatureReceivedDate">Signature Received</Label>
-              <Input
+              <DateInput
                 id="signatureReceivedDate"
-                type="date"
                 value={formData.signatureReceivedDate?.split("T")[0] || ""}
                 onChange={(e) =>
                   updateField("signatureReceivedDate", e.target.value || null)
@@ -1952,7 +1920,7 @@ export function CarePlanForm({
           diagnoses,
           orders,
           physician: selectedPhysician,
-          caseManager: caseManagers.find((cm) => cm.id === formData.caseManagerId),
+          caseManager: selectedCaseManager,
         }}
       />
     </div>

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -96,9 +97,12 @@ export default function NewAssessmentPage() {
         throw new Error(data.error || "Failed to create assessment");
       }
 
+      toast.success("Assessment created successfully");
       router.push(`/assessments/${data.assessment.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create assessment");
+      const errorMessage = err instanceof Error ? err.message : "Failed to create assessment";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setIsSubmitting(false);
     }
   };

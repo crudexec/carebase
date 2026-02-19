@@ -10,6 +10,7 @@ import {
   Button,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
 } from "@/components/ui";
@@ -439,9 +440,8 @@ export default function BillingRatesPage() {
                     <Label htmlFor="effectiveDate" required>
                       Effective Date
                     </Label>
-                    <Input
+                    <DateInput
                       id="effectiveDate"
-                      type="date"
                       value={formData.effectiveDate}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -455,9 +455,8 @@ export default function BillingRatesPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="endDate">End Date</Label>
-                    <Input
+                    <DateInput
                       id="endDate"
-                      type="date"
                       value={formData.endDate}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, endDate: e.target.value }))

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
 import { FormTemplateData, FormTemplateDetail } from "@/lib/visit-notes/types";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
@@ -106,8 +107,11 @@ export default function EditTemplatePage() {
           : null
       );
       setHasChanges(false);
+      toast.success(publish ? "Template saved and published" : "Template saved successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save template");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save template";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -125,12 +129,15 @@ export default function EditTemplatePage() {
       });
 
       if (response.ok) {
+        const newEnabled = !template.isEnabled;
         setTemplate((prev) =>
-          prev ? { ...prev, isEnabled: !prev.isEnabled } : null
+          prev ? { ...prev, isEnabled: newEnabled } : null
         );
+        toast.success(newEnabled ? "Template enabled" : "Template disabled");
       }
     } catch (err) {
       console.error("Failed to toggle enabled:", err);
+      toast.error("Failed to toggle template status");
     } finally {
       setIsSaving(false);
     }

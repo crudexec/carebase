@@ -11,7 +11,9 @@ import {
   Button,
   Badge,
   Breadcrumb,
+  ConfirmActionModal,
 } from "@/components/ui";
+import { toast } from "sonner";
 import {
   RefreshCw,
   Receipt,
@@ -126,6 +128,8 @@ export default function InvoiceDetailPage() {
   const [isSending, setIsSending] = React.useState(false);
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const [showActionsMenu, setShowActionsMenu] = React.useState(false);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [showSendModal, setShowSendModal] = React.useState(false);
 
   const fetchInvoice = React.useCallback(async () => {
     try {
@@ -151,12 +155,13 @@ export default function InvoiceDetailPage() {
     }
   }, [invoiceId, fetchInvoice]);
 
-  const handleDelete = async () => {
-    if (!invoice || invoice.status !== "DRAFT") return;
+  const handleDeleteClick = () => {
+    setShowActionsMenu(false);
+    setShowDeleteModal(true);
+  };
 
-    if (!confirm("Are you sure you want to delete this draft invoice?")) {
-      return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!invoice || invoice.status !== "DRAFT") return;
 
     try {
       setIsDeleting(true);
@@ -169,31 +174,37 @@ export default function InvoiceDetailPage() {
         throw new Error(data.error || "Failed to delete invoice");
       }
 
+      toast.success("Invoice deleted");
       router.push("/invoices");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete invoice");
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete invoice";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const handleSend = async () => {
+  const handleSendClick = () => {
     if (!invoice) return;
 
     // Check if there's an email to send to
     if (!invoice.sponsor) {
-      alert("Cannot send invoice: No sponsor email address available. Invoices can only be emailed to sponsors.");
+      toast.error("Cannot send invoice: No sponsor email address available. Invoices can only be emailed to sponsors.");
       return;
     }
 
-    if (!confirm(`Send invoice to ${invoice.sponsor.firstName} ${invoice.sponsor.lastName} (${invoice.sponsor.email})?`)) {
-      return;
-    }
+    setShowActionsMenu(false);
+    setShowSendModal(true);
+  };
+
+  const handleSendConfirm = async () => {
+    if (!invoice || !invoice.sponsor) return;
 
     try {
       setIsSending(true);
-      setShowActionsMenu(false);
 
       const response = await fetch(`/api/invoices/${invoiceId}/send`, {
         method: "POST",
@@ -205,10 +216,13 @@ export default function InvoiceDetailPage() {
       }
 
       const data = await response.json();
-      alert(`Invoice sent successfully to ${data.sentTo}`);
+      toast.success(`Invoice sent successfully to ${data.sentTo}`);
       fetchInvoice(); // Refresh to show updated status
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send invoice");
+      const errorMessage = err instanceof Error ? err.message : "Failed to send invoice";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
     } finally {
       setIsSending(false);
     }
@@ -324,7 +338,7 @@ export default function InvoiceDetailPage() {
                   </a>
                   <button
                     className="w-full px-4 py-2 text-left text-sm hover:bg-background-secondary flex items-center gap-2 disabled:opacity-50"
-                    onClick={handleSend}
+                    onClick={handleSendClick}
                     disabled={isSending}
                   >
                     <Send className="w-4 h-4" />
@@ -333,10 +347,7 @@ export default function InvoiceDetailPage() {
                   {canDelete && (
                     <button
                       className="w-full px-4 py-2 text-left text-sm text-error hover:bg-error/10 flex items-center gap-2"
-                      onClick={() => {
-                        setShowActionsMenu(false);
-                        handleDelete();
-                      }}
+                      onClick={handleDeleteClick}
                       disabled={isDeleting}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -618,6 +629,30 @@ export default function InvoiceDetailPage() {
           setShowPaymentModal(false);
           fetchInvoice();
         }}
+      />
+
+      {/* Delete Invoice Modal */}
+      <ConfirmActionModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        variant="danger"
+        title="Delete Invoice"
+        description="Are you sure you want to delete this draft invoice?"
+        itemName={invoice.invoiceNumber}
+        confirmText="Delete"
+      />
+
+      {/* Send Invoice Modal */}
+      <ConfirmActionModal
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        onConfirm={handleSendConfirm}
+        variant="info"
+        title="Send Invoice"
+        description={`Send invoice to ${invoice.sponsor?.firstName || ""} ${invoice.sponsor?.lastName || ""} (${invoice.sponsor?.email || ""})?`}
+        itemName={invoice.invoiceNumber}
+        confirmText="Send Invoice"
       />
     </div>
   );

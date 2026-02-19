@@ -11,6 +11,7 @@ import {
   Button,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
 } from "@/components/ui";
@@ -299,9 +300,8 @@ export default function BillingPeriodsPage() {
                     <Label htmlFor="startDate" required>
                       Start Date
                     </Label>
-                    <Input
+                    <DateInput
                       id="startDate"
-                      type="date"
                       value={formData.startDate}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -317,9 +317,8 @@ export default function BillingPeriodsPage() {
                     <Label htmlFor="endDate" required>
                       End Date
                     </Label>
-                    <Input
+                    <DateInput
                       id="endDate"
-                      type="date"
                       value={formData.endDate}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, endDate: e.target.value }))

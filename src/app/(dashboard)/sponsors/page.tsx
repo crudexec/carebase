@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import {
   Button,
   Card,
@@ -294,8 +295,7 @@ export default function SponsorsPage() {
       setShowInviteModal(false);
       resetInviteForm();
       setError(null);
-      // Show success message
-      alert("Invitation sent successfully!");
+      toast.success("Invitation sent successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send invite");
     } finally {

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Save,
   X,
@@ -16,6 +17,7 @@ import {
 import {
   Button,
   Input,
+  DateInput,
   Label,
   Textarea,
   Select,
@@ -23,15 +25,11 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui";
+import { ClientSearchSelect } from "@/components/clients/client-search-select";
 
 // Types
-interface Client {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
-
 interface Sponsor {
   id: string;
   firstName: string;
@@ -97,13 +95,6 @@ export function InvoiceForm({
     initialData?.lineItems?.length ? initialData.lineItems : [{ ...defaultLineItem }]
   );
 
-  // Client autocomplete state
-  const [clientSearch, setClientSearch] = React.useState("");
-  const [clientSuggestions, setClientSuggestions] = React.useState<Client[]>([]);
-  const [selectedClientName, setSelectedClientName] = React.useState(initialData?.clientName || "");
-  const [showClientDropdown, setShowClientDropdown] = React.useState(false);
-  const clientDropdownRef = React.useRef<HTMLDivElement>(null);
-
   // Sponsor autocomplete state
   const [sponsorSearch, setSponsorSearch] = React.useState("");
   const [sponsorSuggestions, setSponsorSuggestions] = React.useState<Sponsor[]>([]);
@@ -111,22 +102,10 @@ export function InvoiceForm({
   const [showSponsorDropdown, setShowSponsorDropdown] = React.useState(false);
   const sponsorDropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Search clients for autocomplete
-  const searchClients = React.useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
-      setClientSuggestions([]);
-      return;
-    }
-    try {
-      const response = await fetch(`/api/clients?search=${encodeURIComponent(query)}&status=ACTIVE&limit=10`);
-      if (response.ok) {
-        const data = await response.json();
-        setClientSuggestions(data.clients || []);
-      }
-    } catch {
-      // Ignore errors
-    }
-  }, []);
+  // Handle client selection
+  const handleClientChange = (newClientId: string) => {
+    setClientId(newClientId);
+  };
 
   // Search sponsors for autocomplete
   const searchSponsors = React.useCallback(async (query: string) => {
@@ -145,18 +124,6 @@ export function InvoiceForm({
     }
   }, []);
 
-  // Debounced client search
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (clientSearch) {
-        searchClients(clientSearch);
-      } else {
-        setClientSuggestions([]);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [clientSearch, searchClients]);
-
   // Debounced sponsor search
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -169,12 +136,9 @@ export function InvoiceForm({
     return () => clearTimeout(timer);
   }, [sponsorSearch, searchSponsors]);
 
-  // Click outside handler for dropdowns
+  // Click outside handler for sponsor dropdown
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clientDropdownRef.current && !clientDropdownRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
-      }
       if (sponsorDropdownRef.current && !sponsorDropdownRef.current.contains(event.target as Node)) {
         setShowSponsorDropdown(false);
       }
@@ -272,10 +236,18 @@ export function InvoiceForm({
       }
 
       const data = await response.json();
+      const successMessage = initialData?.id
+        ? "Invoice updated successfully"
+        : status === "DRAFT"
+          ? "Invoice saved as draft"
+          : "Invoice created successfully";
+      toast.success(successMessage);
       router.push(`/invoices/${data.invoice.id}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -289,133 +261,91 @@ export function InvoiceForm({
         </div>
       )}
 
-      {/* Client & Billing Info */}
+      {/* Client Selection */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <User className="w-5 h-5" />
-            Client & Billing Information
+            Client
           </CardTitle>
+          <CardDescription>
+            Search and select the client for this invoice
+          </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="clientId">Client *</Label>
-            <div className="relative" ref={clientDropdownRef}>
-              <Input
-                id="clientId"
-                placeholder="Start typing to search clients..."
-                value={selectedClientName || clientSearch}
-                onChange={(e) => {
-                  setClientSearch(e.target.value);
-                  setSelectedClientName("");
-                  setClientId("");
-                  setShowClientDropdown(true);
-                }}
-                onFocus={() => setShowClientDropdown(true)}
-                autoComplete="off"
-                disabled={!!initialData?.id}
-              />
-              {selectedClientName && !initialData?.id && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-tertiary hover:text-foreground"
-                  onClick={() => {
-                    setSelectedClientName("");
-                    setClientSearch("");
-                    setClientId("");
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-              {showClientDropdown && clientSuggestions.length > 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {clientSuggestions.map((client) => (
-                    <button
-                      key={client.id}
-                      type="button"
-                      className="w-full px-3 py-2 text-left hover:bg-background-secondary text-sm"
-                      onClick={() => {
-                        setClientId(client.id);
-                        setSelectedClientName(`${client.firstName} ${client.lastName}`);
-                        setClientSearch("");
-                        setShowClientDropdown(false);
-                      }}
-                    >
-                      {client.firstName} {client.lastName}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {showClientDropdown && clientSearch.length >= 2 && clientSuggestions.length === 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg p-3 text-sm text-foreground-tertiary">
-                  No clients found
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-foreground-tertiary mt-1">
-              Type at least 2 characters to search
-            </p>
-          </div>
+        <CardContent>
+          <ClientSearchSelect
+            value={clientId}
+            onChange={handleClientChange}
+            disabled={!!initialData?.id}
+            required
+          />
+        </CardContent>
+      </Card>
 
-          <div>
-            <Label htmlFor="sponsorId">Bill To (Sponsor)</Label>
-            <div className="relative" ref={sponsorDropdownRef}>
-              <Input
-                id="sponsorId"
-                placeholder="Start typing to search sponsors..."
-                value={selectedSponsorName || sponsorSearch}
-                onChange={(e) => {
-                  setSponsorSearch(e.target.value);
+      {/* Sponsor / Bill To */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Bill To (Sponsor)</CardTitle>
+          <CardDescription>
+            Optionally select a sponsor to bill. Leave empty to bill the client directly.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative" ref={sponsorDropdownRef}>
+            <Input
+              id="sponsorId"
+              placeholder="Search sponsors by name or email..."
+              value={selectedSponsorName || sponsorSearch}
+              onChange={(e) => {
+                setSponsorSearch(e.target.value);
+                setSelectedSponsorName("");
+                setSponsorId("");
+                setShowSponsorDropdown(true);
+              }}
+              onFocus={() => setShowSponsorDropdown(true)}
+              autoComplete="off"
+            />
+            {selectedSponsorName && (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-tertiary hover:text-foreground"
+                onClick={() => {
                   setSelectedSponsorName("");
+                  setSponsorSearch("");
                   setSponsorId("");
-                  setShowSponsorDropdown(true);
                 }}
-                onFocus={() => setShowSponsorDropdown(true)}
-                autoComplete="off"
-              />
-              {selectedSponsorName && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-tertiary hover:text-foreground"
-                  onClick={() => {
-                    setSelectedSponsorName("");
-                    setSponsorSearch("");
-                    setSponsorId("");
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-              {showSponsorDropdown && sponsorSuggestions.length > 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {sponsorSuggestions.map((sponsor) => (
-                    <button
-                      key={sponsor.id}
-                      type="button"
-                      className="w-full px-3 py-2 text-left hover:bg-background-secondary text-sm"
-                      onClick={() => {
-                        setSponsorId(sponsor.id);
-                        setSelectedSponsorName(`${sponsor.firstName} ${sponsor.lastName} (${sponsor.email})`);
-                        setSponsorSearch("");
-                        setShowSponsorDropdown(false);
-                      }}
-                    >
-                      {sponsor.firstName} {sponsor.lastName} ({sponsor.email})
-                    </button>
-                  ))}
-                </div>
-              )}
-              {showSponsorDropdown && sponsorSearch.length >= 2 && sponsorSuggestions.length === 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg p-3 text-sm text-foreground-tertiary">
-                  No sponsors found
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-foreground-tertiary mt-1">
-              Leave empty to bill the client directly. Type at least 2 characters to search.
-            </p>
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            {showSponsorDropdown && sponsorSuggestions.length > 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                {sponsorSuggestions.map((sponsor) => (
+                  <button
+                    key={sponsor.id}
+                    type="button"
+                    className="w-full px-3 py-2 text-left hover:bg-background-secondary text-sm"
+                    onClick={() => {
+                      setSponsorId(sponsor.id);
+                      setSelectedSponsorName(`${sponsor.firstName} ${sponsor.lastName} (${sponsor.email})`);
+                      setSponsorSearch("");
+                      setShowSponsorDropdown(false);
+                    }}
+                  >
+                    {sponsor.firstName} {sponsor.lastName} ({sponsor.email})
+                  </button>
+                ))}
+              </div>
+            )}
+            {showSponsorDropdown && sponsorSearch.length >= 2 && sponsorSuggestions.length === 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-background border border-border rounded-md shadow-lg p-3 text-sm text-foreground-tertiary">
+                No sponsors found
+              </div>
+            )}
           </div>
+          <p className="text-xs text-foreground-tertiary mt-1">
+            Type at least 2 characters to search
+          </p>
         </CardContent>
       </Card>
 
@@ -430,9 +360,8 @@ export function InvoiceForm({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="periodStart">Period Start *</Label>
-            <Input
+            <DateInput
               id="periodStart"
-              type="date"
               value={periodStart}
               onChange={(e) => setPeriodStart(e.target.value)}
             />
@@ -440,9 +369,8 @@ export function InvoiceForm({
 
           <div>
             <Label htmlFor="periodEnd">Period End *</Label>
-            <Input
+            <DateInput
               id="periodEnd"
-              type="date"
               value={periodEnd}
               onChange={(e) => setPeriodEnd(e.target.value)}
             />
@@ -450,9 +378,8 @@ export function InvoiceForm({
 
           <div>
             <Label htmlFor="dueDate">Due Date</Label>
-            <Input
+            <DateInput
               id="dueDate"
-              type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />

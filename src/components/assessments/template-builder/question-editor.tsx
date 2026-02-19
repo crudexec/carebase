@@ -96,6 +96,7 @@ function renderConfigEditor(
 ) {
   switch (item.responseType) {
     case "SCALE":
+    case "RATING_SCALE":
       return <ScaleConfigEditor item={item} onChange={onChange} />;
 
     case "SINGLE_CHOICE":
@@ -106,11 +107,102 @@ function renderConfigEditor(
       return <NumberConfigEditor item={item} onChange={onChange} />;
 
     case "TEXT":
+    case "TEXT_SHORT":
       return (
         <div className="space-y-4 pt-4 border-t border-border">
-          <h4 className="text-sm font-medium">Text Options</h4>
+          <h4 className="text-sm font-medium">Short Text Options</h4>
           <p className="text-sm text-foreground-tertiary">
-            Free text response with no specific configuration.
+            Single line text input with no specific configuration.
+          </p>
+        </div>
+      );
+
+    case "TEXT_LONG":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Long Text Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Multi-line text area for longer responses.
+          </p>
+        </div>
+      );
+
+    case "YES_NO":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Yes/No Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Simple toggle between yes and no. Yes = 1 point, No = 0 points by default.
+          </p>
+        </div>
+      );
+
+    case "DATE":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Date Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Date picker for selecting a specific date.
+          </p>
+        </div>
+      );
+
+    case "TIME":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Time Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Time picker for selecting a specific time.
+          </p>
+        </div>
+      );
+
+    case "DATETIME":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Date & Time Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Combined date and time picker.
+          </p>
+        </div>
+      );
+
+    case "SIGNATURE":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Signature Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Digital signature capture field.
+          </p>
+        </div>
+      );
+
+    case "PHOTO":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Photo Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Photo upload field for capturing images.
+          </p>
+        </div>
+      );
+
+    case "BODY_MAP":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">Body Map Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Interactive body diagram for documenting pain, wounds, or other body-related observations.
+          </p>
+        </div>
+      );
+
+    case "ICD10_DIAGNOSIS":
+      return (
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium">ICD-10 Diagnosis Options</h4>
+          <p className="text-sm text-foreground-tertiary">
+            Searchable ICD-10 diagnosis code selector.
           </p>
         </div>
       );

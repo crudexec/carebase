@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Button,
   Input,
+  DateInput,
   Label,
   Textarea,
   Select,
@@ -354,8 +355,7 @@ export function AssessmentRenderer({
 
       case "DATE":
         return (
-          <Input
-            type="date"
+          <DateInput
             value={value as string}
             onChange={(e) => onResponseChange?.(item.id, e.target.value)}
             disabled={isReadOnly}

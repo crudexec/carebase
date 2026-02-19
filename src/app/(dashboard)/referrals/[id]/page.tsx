@@ -14,6 +14,7 @@ import {
   Label,
   Textarea,
   Input,
+  DateInput,
   Breadcrumb,
 } from "@/components/ui";
 import {
@@ -114,7 +115,6 @@ export default function ReferralDetailPage() {
   const [referral, setReferral] = React.useState<Referral | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isUpdating, setIsUpdating] = React.useState(false);
-  const [isConverting, setIsConverting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   // Edit mode states
@@ -211,32 +211,10 @@ export default function ReferralDetailPage() {
     }
   };
 
-  const handleConvert = async () => {
+  const handleCompleteProfile = () => {
     if (!referral) return;
-
-    if (!confirm("Start intake for this referral? This will create a client record and begin the intake process.")) {
-      return;
-    }
-
-    setIsConverting(true);
-    try {
-      const response = await fetch(`/api/referrals/${referral.id}/convert`, {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Redirect to intake page
-        router.push(`/intake/${data.intake.id}`);
-      } else {
-        setError(data.error || "Failed to convert referral");
-      }
-    } catch (err) {
-      setError("Failed to convert referral");
-    } finally {
-      setIsConverting(false);
-    }
+    // Navigate to unified form with referral data pre-filled
+    router.push(`/clients/new?referralId=${referral.id}`);
   };
 
   if (isLoading) {
@@ -352,18 +330,9 @@ export default function ReferralDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           {canConvert && (
-            <Button onClick={handleConvert} disabled={isConverting}>
-              {isConverting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Starting...
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="mr-2 h-4 w-4" />
-                  Start Intake
-                </>
-              )}
+            <Button onClick={handleCompleteProfile}>
+              <ArrowRight className="mr-2 h-4 w-4" />
+              Complete Profile
             </Button>
           )}
           {referral.intake && (
@@ -537,9 +506,8 @@ export default function ReferralDetailPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="lastContactDate">Last Contact</Label>
-                    <Input
+                    <DateInput
                       id="lastContactDate"
-                      type="date"
                       value={followUpData.lastContactDate}
                       onChange={(e) =>
                         setFollowUpData((prev) => ({
@@ -570,9 +538,8 @@ export default function ReferralDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nextFollowUpDate">Next Follow-up</Label>
-                    <Input
+                    <DateInput
                       id="nextFollowUpDate"
-                      type="date"
                       value={followUpData.nextFollowUpDate}
                       onChange={(e) =>
                         setFollowUpData((prev) => ({

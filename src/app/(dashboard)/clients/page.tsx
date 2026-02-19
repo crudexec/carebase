@@ -11,6 +11,7 @@ import {
   CardTitle,
   Badge,
   Input,
+  DateInput,
   Label,
   Select,
   Textarea,
@@ -33,6 +34,7 @@ import {
   CreditCard,
   FileText,
 } from "lucide-react";
+import { StaffSearchSelect } from "@/components/staff";
 
 interface ClientData {
   id: string;
@@ -75,10 +77,12 @@ interface ClientData {
   } | null;
 }
 
-interface CarerOption {
+interface CarerData {
   id: string;
   firstName: string;
   lastName: string;
+  email?: string;
+  role?: string;
 }
 
 const STATUS_LABELS: Record<ClientStatus, string> = {
@@ -101,7 +105,6 @@ type SortDirection = "asc" | "desc";
 export default function ClientsPage() {
   const router = useRouter();
   const [clients, setClients] = React.useState<ClientData[]>([]);
-  const [carers, setCarers] = React.useState<CarerOption[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -112,6 +115,7 @@ export default function ClientsPage() {
   // Modal states
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<ClientData | null>(null);
+  const [selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Form state
@@ -164,22 +168,9 @@ export default function ClientsPage() {
     }
   }, [searchQuery, statusFilter]);
 
-  const fetchCarers = React.useCallback(async () => {
-    try {
-      const response = await fetch("/api/staff?role=CARER&limit=100");
-      if (response.ok) {
-        const data = await response.json();
-        setCarers(data.staff);
-      }
-    } catch {
-      // Ignore errors for carers list
-    }
-  }, []);
-
   React.useEffect(() => {
     fetchClients();
-    fetchCarers();
-  }, [fetchClients, fetchCarers]);
+  }, [fetchClients]);
 
   const resetForm = () => {
     setFormData({
@@ -290,6 +281,11 @@ export default function ClientsPage() {
 
   const openEditModal = (client: ClientData) => {
     setSelectedClient(client);
+    setSelectedCarer(client.assignedCarer ? {
+      id: client.assignedCarer.id,
+      firstName: client.assignedCarer.firstName,
+      lastName: client.assignedCarer.lastName,
+    } : null);
     setFormData({
       firstName: client.firstName,
       lastName: client.lastName,
@@ -320,6 +316,11 @@ export default function ClientsPage() {
       referralNotes: client.referralNotes || "",
     });
     setShowEditModal(true);
+  };
+
+  const handleCarerChange = (carerId: string, carer: CarerData | null) => {
+    setSelectedCarer(carer);
+    setFormData((prev) => ({ ...prev, assignedCarerId: carerId }));
   };
 
   const formatDate = (dateString: string | null) => {
@@ -622,6 +623,7 @@ export default function ClientsPage() {
                 onClick={() => {
                   setShowEditModal(false);
                   setSelectedClient(null);
+                  setSelectedCarer(null);
                   resetForm();
                 }}
                 className="text-foreground-secondary hover:text-foreground"
@@ -667,9 +669,8 @@ export default function ClientsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="editDateOfBirth">Date of Birth</Label>
-                    <Input
+                    <DateInput
                       id="editDateOfBirth"
-                      type="date"
                       value={formData.dateOfBirth}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
@@ -735,25 +736,14 @@ export default function ClientsPage() {
                         ))}
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="editAssignedCarerId">Assigned Carer</Label>
-                      <Select
-                        id="editAssignedCarerId"
+                    <div className="space-y-2 col-span-2">
+                      <StaffSearchSelect
                         value={formData.assignedCarerId}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            assignedCarerId: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">No Carer Assigned</option>
-                        {carers.map((carer) => (
-                          <option key={carer.id} value={carer.id}>
-                            {carer.firstName} {carer.lastName}
-                          </option>
-                        ))}
-                      </Select>
+                        onChange={handleCarerChange}
+                        label="Assigned Carer"
+                        placeholder="Search for carer..."
+                        role="CARER"
+                      />
                     </div>
                   </div>
                 </div>
@@ -924,9 +914,8 @@ export default function ClientsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="editReferralDate">Referral Date</Label>
-                      <Input
+                      <DateInput
                         id="editReferralDate"
-                        type="date"
                         value={formData.referralDate}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, referralDate: e.target.value }))
@@ -1006,6 +995,7 @@ export default function ClientsPage() {
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedClient(null);
+                      setSelectedCarer(null);
                       resetForm();
                     }}
                   >

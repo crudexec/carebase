@@ -30,12 +30,7 @@ const createTemplateSchema = z.object({
   description: z.string().max(1000).optional().nullable(),
   status: z.nativeEnum(FormTemplateStatus).default("DRAFT"),
   isEnabled: z.boolean().default(false),
-  includesDiagnoses: z.boolean().default(true),
-  includesGoals: z.boolean().default(true),
-  includesInterventions: z.boolean().default(true),
-  includesMedications: z.boolean().default(true),
-  includesOrders: z.boolean().default(true),
-  sections: z.array(sectionSchema),
+  sections: z.array(sectionSchema).default([]),
 });
 
 const querySchema = z.object({
@@ -118,11 +113,6 @@ export async function GET(request: Request) {
           status: true,
           version: true,
           isEnabled: true,
-          includesDiagnoses: true,
-          includesGoals: true,
-          includesInterventions: true,
-          includesMedications: true,
-          includesOrders: true,
           createdAt: true,
           updatedAt: true,
           createdBy: {
@@ -202,15 +192,10 @@ export async function POST(request: Request) {
       description,
       status,
       isEnabled,
-      includesDiagnoses,
-      includesGoals,
-      includesInterventions,
-      includesMedications,
-      includesOrders,
       sections,
     } = validation.data;
 
-    // Create template with sections and fields in a transaction
+    // Create template with sections and fields in a transaction (extended timeout for large templates)
     const template = await prisma.$transaction(async (tx) => {
       // Create the template
       const newTemplate = await tx.carePlanTemplate.create({
@@ -219,11 +204,6 @@ export async function POST(request: Request) {
           description,
           status,
           isEnabled,
-          includesDiagnoses,
-          includesGoals,
-          includesInterventions,
-          includesMedications,
-          includesOrders,
           companyId,
           createdById: userId,
           sections: {
@@ -279,6 +259,8 @@ export async function POST(request: Request) {
       });
 
       return newTemplate;
+    }, {
+      timeout: 30000, // 30 seconds for large templates
     });
 
     return NextResponse.json(
@@ -294,7 +276,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating care plan template:", error);
     return NextResponse.json(
-      { error: "Failed to create care plan template" },
+      { error: "Failed to create care plan template", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldData, FieldValue } from "@/lib/visit-notes/types";
+import { FormFieldData, FieldValue, BodyMapMarker, ICD10DiagnosisValue } from "@/lib/visit-notes/types";
 import {
   Input,
+  DateInput,
   Textarea,
   Label,
   FileUpload,
@@ -11,6 +12,8 @@ import {
   Rating,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { BodyMapField } from "./body-map-field";
+import { ICD10DiagnosisField } from "./icd10-diagnosis-field";
 
 interface FieldRendererProps {
   field: FormFieldData;
@@ -134,9 +137,8 @@ function renderFieldInput(
 
     case "DATE":
       return (
-        <Input
+        <DateInput
           id={field.id}
-          type="date"
           value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
@@ -198,6 +200,24 @@ function renderFieldInput(
           labels={config?.labels as Record<number, string>}
           disabled={disabled}
           error={!!error}
+        />
+      );
+
+    case "BODY_MAP":
+      return (
+        <BodyMapField
+          value={(value as BodyMapMarker[]) || []}
+          onChange={(v) => onChange(v)}
+          disabled={disabled}
+        />
+      );
+
+    case "ICD10_DIAGNOSIS":
+      return (
+        <ICD10DiagnosisField
+          value={(value as ICD10DiagnosisValue[]) || []}
+          onChange={(v) => onChange(v)}
+          disabled={disabled}
         />
       );
 

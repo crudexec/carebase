@@ -29,5 +29,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "alto"]
+  "exclude": ["node_modules", "alto", "carebase-mobile"]
 }

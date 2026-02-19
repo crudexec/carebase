@@ -11,6 +11,7 @@ import {
   Badge,
   Label,
   Input,
+  DateInput,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -401,8 +402,7 @@ export default function VisitNoteFieldReportsPage() {
                 <div className="flex items-end gap-2">
                   <div>
                     <Label className="text-xs">Start Date</Label>
-                    <Input
-                      type="date"
+                    <DateInput
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       className="w-40"
@@ -410,8 +410,7 @@ export default function VisitNoteFieldReportsPage() {
                   </div>
                   <div>
                     <Label className="text-xs">End Date</Label>
-                    <Input
-                      type="date"
+                    <DateInput
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       className="w-40"

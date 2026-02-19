@@ -10,6 +10,7 @@ import {
   CardTitle,
   Button,
   Badge,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -97,6 +98,7 @@ export default function BillingPeriodDetailPage() {
     claimsSkipped: number;
     errors: string[];
   } | null>(null);
+  const [showCloseModal, setShowCloseModal] = React.useState(false);
 
   const fetchPeriod = React.useCallback(async () => {
     try {
@@ -150,11 +152,11 @@ export default function BillingPeriodDetailPage() {
     }
   };
 
-  const handleClosePeriod = async () => {
-    if (!confirm("Are you sure you want to close this billing period? This cannot be undone.")) {
-      return;
-    }
+  const handleCloseClick = () => {
+    setShowCloseModal(true);
+  };
 
+  const handleCloseConfirm = async () => {
     setIsClosing(true);
     setError(null);
 
@@ -171,6 +173,7 @@ export default function BillingPeriodDetailPage() {
       await fetchPeriod();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to close period");
+      throw err;
     } finally {
       setIsClosing(false);
     }
@@ -262,7 +265,7 @@ export default function BillingPeriodDetailPage() {
               </Button>
               <Button
                 variant="secondary"
-                onClick={handleClosePeriod}
+                onClick={handleCloseClick}
                 disabled={isClosing || draftCount > 0}
                 title={draftCount > 0 ? "Cannot close with draft claims" : "Close period"}
               >
@@ -465,6 +468,19 @@ export default function BillingPeriodDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Close Period Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        onConfirm={handleCloseConfirm}
+        variant="warning"
+        title="Close Billing Period"
+        description="Are you sure you want to close this billing period?"
+        itemName={period?.name}
+        warningText="This action cannot be undone. All claims must be finalized before closing."
+        confirmText="Close Period"
+      />
     </div>
   );
 }

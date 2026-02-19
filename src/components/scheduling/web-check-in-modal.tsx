@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -100,6 +101,7 @@ export function WebCheckInModal({
       if (response.ok && data.success) {
         setEvvResult(data);
         setStatus("success");
+        toast.success(`${actionLabel} successful`);
 
         // Auto-close after 2 seconds on success
         setTimeout(() => {
@@ -113,14 +115,15 @@ export function WebCheckInModal({
       }
     } catch (err) {
       console.error(`${actionLabel} error:`, err);
+      let errorMessage: string;
       if ((err as LocationError).code !== undefined) {
-        setError((err as LocationError).message);
+        errorMessage = (err as LocationError).message;
       } else {
-        setError(
-          err instanceof Error ? err.message : `Failed to ${action}`
-        );
+        errorMessage = err instanceof Error ? err.message : `Failed to ${action}`;
       }
+      setError(errorMessage);
       setStatus("error");
+      toast.error(errorMessage);
     }
   };
 

@@ -13,6 +13,7 @@ import {
   Label,
   Select,
   Textarea,
+  ConfirmActionModal,
 } from "@/components/ui";
 import {
   ArrowLeft,
@@ -67,6 +68,18 @@ export default function ServiceTypesPage() {
     created: number;
     skipped: number;
   } | null>(null);
+
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = React.useState<{
+    isOpen: boolean;
+    serviceType: ServiceType | null;
+  }>({ isOpen: false, serviceType: null });
+
+  // Track which item is being deleted for fade animation
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  // Import confirmation modal
+  const [showImportModal, setShowImportModal] = React.useState(false);
 
   const fetchServiceTypes = React.useCallback(async () => {
     try {
@@ -164,32 +177,38 @@ export default function ServiceTypesPage() {
     }
   };
 
-  const handleDelete = async (serviceType: ServiceType) => {
-    if (!confirm(`Are you sure you want to delete "${serviceType.name}"?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/billing/service-types/${serviceType.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete service type");
-      }
-
-      await fetchServiceTypes();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete");
-    }
+  const handleDeleteClick = (serviceType: ServiceType) => {
+    setDeleteModal({ isOpen: true, serviceType });
   };
 
-  const handleImportCodes = async () => {
-    if (!confirm("This will import 50+ standard HCPCS codes for home care services. Continue?")) {
-      return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.serviceType) return;
+
+    const serviceTypeId = deleteModal.serviceType.id;
+
+    const response = await fetch(`/api/billing/service-types/${serviceTypeId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Failed to delete service type");
     }
 
+    // Start fade-out animation
+    setDeletingId(serviceTypeId);
+    // Wait for animation to complete, then remove from state
+    setTimeout(() => {
+      setServiceTypes((prev) => prev.filter((s) => s.id !== serviceTypeId));
+      setDeletingId(null);
+    }, 300);
+  };
+
+  const handleImportClick = () => {
+    setShowImportModal(true);
+  };
+
+  const handleImportConfirm = async () => {
     setIsImporting(true);
     setError(null);
     setImportResult(null);
@@ -245,7 +264,7 @@ export default function ServiceTypesPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={handleImportCodes} disabled={isImporting}>
+          <Button variant="secondary" onClick={handleImportClick} disabled={isImporting}>
             {isImporting ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
@@ -300,7 +319,7 @@ export default function ServiceTypesPage() {
               Import standard HCPCS codes or add them manually
             </p>
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Button onClick={handleImportCodes} disabled={isImporting}>
+              <Button onClick={handleImportClick} disabled={isImporting}>
                 {isImporting ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
@@ -350,9 +369,9 @@ export default function ServiceTypesPage() {
                 {serviceTypes.map((serviceType) => (
                   <tr
                     key={serviceType.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-colors ${
+                    className={`border-b border-border hover:bg-background-secondary/50 transition-all duration-300 ${
                       !serviceType.isActive ? "opacity-60" : ""
-                    }`}
+                    } ${deletingId === serviceType.id ? "opacity-0 scale-95" : ""}`}
                   >
                     <td className="p-4">
                       <span className="font-mono font-medium">{serviceType.code}</span>
@@ -522,6 +541,29 @@ export default function ServiceTypesPage() {
           </Card>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, serviceType: null })}
+        onConfirm={handleDeleteConfirm}
+        variant="danger"
+        title="Delete Service Type"
+        description="Are you sure you want to delete this service type?"
+        itemName={deleteModal.serviceType?.name}
+        confirmText="Delete"
+      />
+
+      {/* Import Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onConfirm={handleImportConfirm}
+        variant="info"
+        title="Import HCPCS Codes"
+        description="This will import 50+ standard HCPCS codes for home care services."
+        confirmText="Import"
+      />
     </div>
   );
 }
