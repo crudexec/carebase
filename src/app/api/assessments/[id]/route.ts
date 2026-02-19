@@ -71,7 +71,18 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    return NextResponse.json({ assessment });
+    // Transform responses to use frontend field names
+    const transformedAssessment = {
+      ...assessment,
+      responses: assessment.responses.map((r) => ({
+        itemId: r.itemId,
+        numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,
+        textValue: r.valueText,
+        notes: r.notes,
+      })),
+    };
+
+    return NextResponse.json({ assessment: transformedAssessment });
   } catch (error) {
     console.error("Error fetching assessment:", error);
     return NextResponse.json(
@@ -243,7 +254,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       },
     });
 
-    return NextResponse.json({ assessment: updatedAssessment });
+    // Transform responses to use frontend field names
+    const transformedAssessment = updatedAssessment ? {
+      ...updatedAssessment,
+      responses: updatedAssessment.responses.map((r) => ({
+        itemId: r.itemId,
+        numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,
+        textValue: r.valueText,
+        notes: r.notes,
+      })),
+    } : null;
+
+    return NextResponse.json({ assessment: transformedAssessment });
   } catch (error) {
     console.error("Error updating assessment:", error);
     return NextResponse.json(
@@ -282,20 +304,28 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Delete assessment (cascades to responses)
-    await prisma.assessment.delete({
-      where: { id },
-    });
+    // Delete assessment and create audit log in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete assessment (cascades to responses)
+      await tx.assessment.delete({
+        where: { id },
+      });
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        companyId: session.user.companyId,
-        userId: session.user.id,
-        action: "ASSESSMENT_DELETED",
-        entityType: "Assessment",
-        entityId: id,
-      },
+      // Create audit log
+      try {
+        await tx.auditLog.create({
+          data: {
+            companyId: session.user.companyId,
+            userId: session.user.id,
+            action: "ASSESSMENT_DELETED",
+            entityType: "Assessment",
+            entityId: id,
+          },
+        });
+      } catch (auditError) {
+        // Log but don't fail if audit log fails
+        console.error("Failed to create audit log:", auditError);
+      }
     });
 
     return NextResponse.json({ success: true });

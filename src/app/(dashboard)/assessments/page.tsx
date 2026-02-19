@@ -30,7 +30,9 @@ import {
   FileText,
   Trash2,
   Copy,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Assessment {
   id: string;
@@ -115,6 +117,33 @@ export default function AssessmentsPage() {
   const [sortColumn, setSortColumn] = React.useState<string | null>("startedAt");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
   const [actionMenuOpen, setActionMenuOpen] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<Assessment | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/assessments/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete assessment");
+      }
+
+      toast.success("Assessment deleted successfully");
+      setDeleteTarget(null);
+      fetchAssessments();
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete assessment");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const fetchAssessments = React.useCallback(async () => {
     setIsLoading(true);
@@ -372,7 +401,7 @@ export default function AssessmentsPage() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Handle delete
+                setDeleteTarget(row);
                 setActionMenuOpen(null);
               }}
               className="flex items-center w-full px-4 py-2 text-sm text-error hover:bg-background-secondary"
@@ -478,6 +507,46 @@ export default function AssessmentsPage() {
         rowActions={rowActions}
         stickyHeader
       />
+
+      {/* Delete Confirmation Dialog */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Delete Assessment</h3>
+            <p className="text-foreground-secondary mb-4">
+              Are you sure you want to delete the assessment &quot;{deleteTarget.template.name}&quot; for {deleteTarget.client.firstName} {deleteTarget.client.lastName}? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="error"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

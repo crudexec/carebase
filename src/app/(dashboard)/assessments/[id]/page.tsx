@@ -237,15 +237,23 @@ export default function AssessmentDetailPage() {
         method: "DELETE",
       });
 
-      const data = await response.json();
+      // Handle non-JSON responses
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        data = { error: "Unexpected response format" };
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete assessment");
+        throw new Error(data.error || `Failed to delete assessment (${response.status})`);
       }
 
       toast.success("Assessment deleted successfully");
       router.push("/assessments");
     } catch (err) {
+      console.error("Delete error:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to delete assessment";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -319,12 +327,13 @@ export default function AssessmentDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           {isCompleted && (
-            <Button variant="secondary" onClick={() => window.print()}>
+            <Button type="button" variant="secondary" onClick={() => window.print()}>
               <Printer className="mr-2 h-4 w-4" />
               Print
             </Button>
           )}
           <Button
+            type="button"
             variant="ghost"
             onClick={() => setShowDeleteConfirm(true)}
             className="text-error hover:bg-error/10"
@@ -344,6 +353,7 @@ export default function AssessmentDetailPage() {
             </p>
             <div className="flex justify-end gap-3">
               <Button
+                type="button"
                 variant="secondary"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
@@ -351,6 +361,7 @@ export default function AssessmentDetailPage() {
                 Cancel
               </Button>
               <Button
+                type="button"
                 variant="error"
                 onClick={handleDelete}
                 disabled={isDeleting}
