@@ -1,9 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { AssessmentItemData, RESPONSE_TYPE_LABELS, ChoiceOption } from "@/lib/assessments/types";
-import { Input, Label, Textarea, Checkbox, Button } from "@/components/ui";
-import { X, Plus, Trash2 } from "lucide-react";
+import {
+  AssessmentItemData,
+  RESPONSE_TYPE_LABELS,
+  ChoiceOption,
+  ListResponseConfig,
+  RepeaterResponseConfig,
+  RepeaterSubField,
+} from "@/lib/assessments/types";
+import { Input, Label, Textarea, Checkbox, Button, Select } from "@/components/ui";
+import { X, Plus, Trash2, GripVertical } from "lucide-react";
 import { ResponseTypeIcon } from "./response-type-selector";
 
 interface QuestionEditorProps {
@@ -206,6 +213,12 @@ function renderConfigEditor(
           </p>
         </div>
       );
+
+    case "LIST":
+      return <ListConfigEditor item={item} onChange={onChange} />;
+
+    case "REPEATER":
+      return <RepeaterConfigEditor item={item} onChange={onChange} />;
 
     default:
       return null;
@@ -424,6 +437,282 @@ function NumberConfigEditor({
       <p className="text-sm text-foreground-tertiary">
         For number fields, the entered value is typically used directly as the score.
       </p>
+    </div>
+  );
+}
+
+function ListConfigEditor({
+  item,
+  onChange,
+}: {
+  item: AssessmentItemData;
+  onChange: (updates: Partial<AssessmentItemData>) => void;
+}) {
+  const config: ListResponseConfig = item.listConfig || {
+    itemType: "TEXT",
+    itemLabel: "Item",
+    minItems: 0,
+    maxItems: 20,
+  };
+
+  const updateConfig = (updates: Partial<ListResponseConfig>) => {
+    onChange({ listConfig: { ...config, ...updates } });
+  };
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-border">
+      <h4 className="text-sm font-medium">List Options</h4>
+      <p className="text-xs text-foreground-tertiary">
+        Allow users to add multiple items of the same type
+      </p>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="list-item-label">Item Label</Label>
+          <Input
+            id="list-item-label"
+            value={config.itemLabel || ""}
+            onChange={(e) => updateConfig({ itemLabel: e.target.value })}
+            placeholder="e.g., Medication, Allergy, Responsibility"
+          />
+          <p className="text-xs text-foreground-tertiary">
+            This appears on the &quot;Add&quot; button (e.g., &quot;Add Medication&quot;)
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="list-item-type">Item Type</Label>
+          <Select
+            id="list-item-type"
+            value={config.itemType}
+            onChange={(e) => updateConfig({ itemType: e.target.value as ListResponseConfig["itemType"] })}
+          >
+            <option value="TEXT">Text</option>
+            <option value="NUMBER">Number</option>
+            <option value="DATE">Date</option>
+            <option value="TIME">Time</option>
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="list-min">Minimum Items</Label>
+            <Input
+              id="list-min"
+              type="number"
+              min={0}
+              value={config.minItems ?? 0}
+              onChange={(e) => updateConfig({ minItems: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="list-max">Maximum Items</Label>
+            <Input
+              id="list-max"
+              type="number"
+              min={1}
+              value={config.maxItems ?? 20}
+              onChange={(e) => updateConfig({ maxItems: parseInt(e.target.value) || 20 })}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="list-placeholder">Placeholder Text</Label>
+          <Input
+            id="list-placeholder"
+            value={config.placeholder || ""}
+            onChange={(e) => updateConfig({ placeholder: e.target.value })}
+            placeholder="e.g., Enter medication name"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RepeaterConfigEditor({
+  item,
+  onChange,
+}: {
+  item: AssessmentItemData;
+  onChange: (updates: Partial<AssessmentItemData>) => void;
+}) {
+  const config: RepeaterResponseConfig = item.repeaterConfig || {
+    itemLabel: "Item",
+    addButtonLabel: "Add Item",
+    minItems: 0,
+    maxItems: 20,
+    subFields: [
+      { id: "field1", label: "Field 1", type: "TEXT", required: true, width: "full" },
+    ],
+  };
+
+  const updateConfig = (updates: Partial<RepeaterResponseConfig>) => {
+    onChange({ repeaterConfig: { ...config, ...updates } });
+  };
+
+  const addSubField = () => {
+    const newField: RepeaterSubField = {
+      id: `field_${Date.now()}`,
+      label: `Field ${config.subFields.length + 1}`,
+      type: "TEXT",
+      required: false,
+      width: "full",
+    };
+    updateConfig({ subFields: [...config.subFields, newField] });
+  };
+
+  const updateSubField = (index: number, updates: Partial<RepeaterSubField>) => {
+    const newFields = [...config.subFields];
+    newFields[index] = { ...newFields[index], ...updates };
+    updateConfig({ subFields: newFields });
+  };
+
+  const removeSubField = (index: number) => {
+    const newFields = config.subFields.filter((_, i) => i !== index);
+    updateConfig({ subFields: newFields });
+  };
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-border">
+      <h4 className="text-sm font-medium">Repeater Options</h4>
+      <p className="text-xs text-foreground-tertiary">
+        Allow users to add multiple items, each with multiple fields
+      </p>
+
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="repeater-item-label">Item Label</Label>
+            <Input
+              id="repeater-item-label"
+              value={config.itemLabel || ""}
+              onChange={(e) => updateConfig({ itemLabel: e.target.value })}
+              placeholder="e.g., Medication"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="repeater-button-label">Add Button Label</Label>
+            <Input
+              id="repeater-button-label"
+              value={config.addButtonLabel || ""}
+              onChange={(e) => updateConfig({ addButtonLabel: e.target.value })}
+              placeholder="e.g., Add Medication"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="repeater-min">Minimum Items</Label>
+            <Input
+              id="repeater-min"
+              type="number"
+              min={0}
+              value={config.minItems ?? 0}
+              onChange={(e) => updateConfig({ minItems: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="repeater-max">Maximum Items</Label>
+            <Input
+              id="repeater-max"
+              type="number"
+              min={1}
+              value={config.maxItems ?? 20}
+              onChange={(e) => updateConfig({ maxItems: parseInt(e.target.value) || 20 })}
+            />
+          </div>
+        </div>
+
+        {/* Sub-fields */}
+        <div className="space-y-2">
+          <Label>Sub-fields</Label>
+          <p className="text-xs text-foreground-tertiary">
+            Define the fields for each item
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {config.subFields.map((field, index) => (
+            <div key={field.id} className="rounded-lg border border-border p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <GripVertical className="h-4 w-4 text-foreground-tertiary cursor-move" />
+                <Input
+                  value={field.label}
+                  onChange={(e) => updateSubField(index, { label: e.target.value })}
+                  placeholder="Field label"
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeSubField(index)}
+                  disabled={config.subFields.length <= 1}
+                  className="rounded p-1 text-foreground-tertiary hover:bg-background-secondary hover:text-error disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Type</Label>
+                  <Select
+                    value={field.type}
+                    onChange={(e) => updateSubField(index, { type: e.target.value as RepeaterSubField["type"] })}
+                  >
+                    <option value="TEXT">Text</option>
+                    <option value="NUMBER">Number</option>
+                    <option value="DATE">Date</option>
+                    <option value="TIME">Time</option>
+                    <option value="SINGLE_CHOICE">Dropdown</option>
+                    <option value="YES_NO">Yes/No</option>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Width</Label>
+                  <Select
+                    value={field.width || "full"}
+                    onChange={(e) => updateSubField(index, { width: e.target.value as RepeaterSubField["width"] })}
+                  >
+                    <option value="full">Full</option>
+                    <option value="half">Half</option>
+                    <option value="third">Third</option>
+                  </Select>
+                </div>
+                <div className="space-y-1 flex items-end">
+                  <label className="flex items-center gap-2 text-xs">
+                    <Checkbox
+                      checked={field.required || false}
+                      onChange={(e) => updateSubField(index, { required: e.target.checked })}
+                    />
+                    Required
+                  </label>
+                </div>
+              </div>
+
+              {field.type === "SINGLE_CHOICE" && (
+                <div className="space-y-1">
+                  <Label className="text-xs">Options (comma-separated)</Label>
+                  <Input
+                    value={field.options?.join(", ") || ""}
+                    onChange={(e) => updateSubField(index, {
+                      options: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                    })}
+                    placeholder="Option 1, Option 2, Option 3"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Button type="button" variant="ghost" size="sm" onClick={addSubField}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add sub-field
+        </Button>
+      </div>
     </div>
   );
 }

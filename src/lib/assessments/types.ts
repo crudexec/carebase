@@ -31,11 +31,42 @@ export interface TextResponseConfig {
   placeholder?: string;
 }
 
+// List field config - for simple lists of single values
+export interface ListResponseConfig {
+  itemType: "TEXT" | "NUMBER" | "DATE" | "TIME"; // Type of each item in the list
+  itemLabel?: string; // Label for each item (e.g., "Medication", "Responsibility")
+  minItems?: number;
+  maxItems?: number;
+  placeholder?: string;
+}
+
+// Repeater sub-field definition
+export interface RepeaterSubField {
+  id: string;
+  label: string;
+  type: "TEXT" | "NUMBER" | "DATE" | "TIME" | "SINGLE_CHOICE" | "YES_NO";
+  required?: boolean;
+  placeholder?: string;
+  options?: string[]; // For SINGLE_CHOICE type
+  width?: "full" | "half" | "third"; // Layout width
+}
+
+// Repeater field config - for complex multi-field items
+export interface RepeaterResponseConfig {
+  itemLabel?: string; // Label for each item group (e.g., "Medication", "Contact")
+  addButtonLabel?: string; // Label for add button (e.g., "Add Medication")
+  minItems?: number;
+  maxItems?: number;
+  subFields: RepeaterSubField[];
+}
+
 export type ResponseConfig =
   | ScaleResponseConfig
   | ChoiceResponseConfig
   | NumberResponseConfig
   | TextResponseConfig
+  | ListResponseConfig
+  | RepeaterResponseConfig
   | null;
 
 // ============================================
@@ -73,6 +104,10 @@ export interface AssessmentItemData {
   maxValue?: number;
   scoreMapping?: Record<string, number>; // Map response values to scores
   showIf?: ConditionalLogic;
+  // Config for LIST type
+  listConfig?: ListResponseConfig;
+  // Config for REPEATER type
+  repeaterConfig?: RepeaterResponseConfig;
 }
 
 export interface ConditionalLogic {
@@ -165,6 +200,12 @@ export interface ICD10DiagnosisValue {
 // Assessment Response Types
 // ============================================
 
+// List item value - simple single values
+export type ListItemValue = string | number;
+
+// Repeater item value - object with sub-field values
+export type RepeaterItemValue = Record<string, string | number | boolean | null>;
+
 export type ResponseValue =
   | string // TEXT
   | number // NUMBER, SCALE
@@ -172,6 +213,8 @@ export type ResponseValue =
   | string[] // MULTIPLE_CHOICE
   | Date // DATE
   | ICD10DiagnosisValue[] // ICD10_DIAGNOSIS
+  | ListItemValue[] // LIST
+  | RepeaterItemValue[] // REPEATER
   | null;
 
 export interface AssessmentResponseData {
@@ -298,6 +341,8 @@ export const RESPONSE_TYPE_LABELS: Record<AssessmentResponseType, string> = {
   RATING_SCALE: "Rating Scale",
   BODY_MAP: "Body Map",
   ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
+  LIST: "List",
+  REPEATER: "Repeater",
   // Legacy types
   SCALE: "Scale",
   TEXT: "Free Text",
@@ -318,6 +363,8 @@ export const RESPONSE_TYPE_DESCRIPTIONS: Record<AssessmentResponseType, string> 
   RATING_SCALE: "Star or number rating",
   BODY_MAP: "Interactive body diagram for documenting pain and wounds",
   ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
+  LIST: "Add multiple items of the same type (e.g., list of allergies)",
+  REPEATER: "Add multiple items with sub-fields (e.g., medications with name, dose, frequency)",
   // Legacy types
   SCALE: "Numeric scale with defined min/max values (e.g., 0-3 for ADL scoring)",
   TEXT: "Free text response",
@@ -339,6 +386,8 @@ export const VISIBLE_RESPONSE_TYPES: AssessmentResponseType[] = [
   "RATING_SCALE",
   "BODY_MAP",
   "ICD10_DIAGNOSIS",
+  "LIST",
+  "REPEATER",
 ];
 
 // ============================================
@@ -450,7 +499,7 @@ export const SCORING_METHOD_DESCRIPTIONS: Record<ScoringMethod, string> = {
 // ============================================
 
 export function responseTypeRequiresConfig(type: AssessmentResponseType): boolean {
-  return ["SCALE", "RATING_SCALE", "SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(type);
+  return ["SCALE", "RATING_SCALE", "SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIST", "REPEATER"].includes(type);
 }
 
 export function getDefaultResponseConfig(type: AssessmentResponseType): ResponseConfig {
@@ -473,6 +522,23 @@ export function getDefaultResponseConfig(type: AssessmentResponseType): Response
       return { maxLength: 2000 };
     case "TEXT_SHORT":
       return { maxLength: 100 };
+    case "LIST":
+      return {
+        itemType: "TEXT",
+        itemLabel: "Item",
+        minItems: 0,
+        maxItems: 20,
+      };
+    case "REPEATER":
+      return {
+        itemLabel: "Item",
+        addButtonLabel: "Add Item",
+        minItems: 0,
+        maxItems: 20,
+        subFields: [
+          { id: "field1", label: "Field 1", type: "TEXT", required: true, width: "full" },
+        ],
+      };
     default:
       return null;
   }

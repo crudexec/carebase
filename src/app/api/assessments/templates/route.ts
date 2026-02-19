@@ -106,6 +106,9 @@ const itemSchema = z.object({
   maxValue: z.number().nullable().optional(),
   scoreMapping: z.any().nullable().optional(),
   showIf: z.any().nullable().optional(),
+  // Config for LIST and REPEATER field types
+  listConfig: z.any().nullable().optional(),
+  repeaterConfig: z.any().nullable().optional(),
 });
 
 const sectionSchema = z.object({
@@ -141,9 +144,22 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    // DEBUG: Log raw request body
+    console.log("=== ASSESSMENT TEMPLATE CREATE ===");
+    console.log("Raw request body sections count:", body.sections?.length);
+    body.sections?.forEach((section: any, sIdx: number) => {
+      console.log(`Section ${sIdx}: "${section.title}" - ${section.items?.length} items`);
+      section.items?.forEach((item: any, iIdx: number) => {
+        console.log(`  Item ${iIdx}: code="${item.code}", type="${item.responseType}", question="${item.questionText?.substring(0, 50)}..."`);
+      });
+    });
+
     const validation = createTemplateSchema.safeParse(body);
 
     if (!validation.success) {
+      console.log("=== VALIDATION FAILED ===");
+      console.log("Validation errors:", JSON.stringify(validation.error.issues, null, 2));
       return NextResponse.json(
         { error: "Invalid input", details: validation.error.issues },
         { status: 400 }
@@ -151,6 +167,16 @@ export async function POST(request: Request) {
     }
 
     const { name, description, isRequired, scoringConfig, sections } = validation.data;
+
+    // DEBUG: Log validated data
+    console.log("=== AFTER VALIDATION ===");
+    console.log("Validated sections count:", sections.length);
+    sections.forEach((section, sIdx) => {
+      console.log(`Section ${sIdx}: "${section.title}" - ${section.items.length} items`);
+      section.items.forEach((item, iIdx) => {
+        console.log(`  Item ${iIdx}: code="${item.code}", type="${item.responseType}"`);
+      });
+    });
 
     // Create template with sections and items in a transaction
     const template = await prisma.$transaction(async (tx) => {
@@ -188,6 +214,17 @@ export async function POST(request: Request) {
         for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
           const item = section.items[itemIndex];
 
+          // Combine all config into responseOptions for storage
+          // This includes choice options, listConfig, and repeaterConfig
+          let responseOptions = item.responseOptions || null;
+          if (item.listConfig || item.repeaterConfig) {
+            responseOptions = {
+              ...(item.responseOptions ? { options: item.responseOptions } : {}),
+              ...(item.listConfig ? { listConfig: item.listConfig } : {}),
+              ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
+            };
+          }
+
           await tx.assessmentTemplateItem.create({
             data: {
               sectionId: newSection.id,
@@ -197,7 +234,7 @@ export async function POST(request: Request) {
               responseType: item.responseType as AssessmentResponseType,
               isRequired: item.required ?? true,
               displayOrder: item.order ?? itemIndex,
-              responseOptions: item.responseOptions || null,
+              responseOptions,
               minValue: item.minValue ?? null,
               maxValue: item.maxValue ?? null,
               scoreMapping: item.scoreMapping || null,
@@ -222,6 +259,18 @@ export async function POST(request: Request) {
         },
       });
     });
+
+    // DEBUG: Log what was saved
+    console.log("=== AFTER DATABASE SAVE ===");
+    console.log("Saved template ID:", template?.id);
+    console.log("Saved sections count:", template?.sections?.length);
+    template?.sections?.forEach((section: any, sIdx: number) => {
+      console.log(`Section ${sIdx}: "${section.title}" - ${section.items?.length} items`);
+      section.items?.forEach((item: any, iIdx: number) => {
+        console.log(`  Item ${iIdx}: id="${item.id}", code="${item.code}", type="${item.responseType}"`);
+      });
+    });
+    console.log("=== END ASSESSMENT TEMPLATE CREATE ===\n");
 
     return NextResponse.json({ template }, { status: 201 });
   } catch (error) {

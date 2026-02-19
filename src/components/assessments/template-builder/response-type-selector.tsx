@@ -20,6 +20,8 @@ import {
   User,
   Stethoscope,
   SlidersHorizontal,
+  List,
+  Layers,
 } from "lucide-react";
 
 const RESPONSE_TYPE_ICONS: Record<AssessmentResponseType, React.ComponentType<{ className?: string }>> = {
@@ -37,6 +39,8 @@ const RESPONSE_TYPE_ICONS: Record<AssessmentResponseType, React.ComponentType<{ 
   RATING_SCALE: Star,
   BODY_MAP: User,
   ICD10_DIAGNOSIS: Stethoscope,
+  LIST: List,
+  REPEATER: Layers,
   // Legacy types
   SCALE: SlidersHorizontal,
   TEXT: AlignLeft,

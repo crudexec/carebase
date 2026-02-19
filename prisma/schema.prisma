@@ -1862,6 +1862,8 @@ enum AssessmentResponseType {
   RATING_SCALE // Star or number rating (replaces SCALE)
   BODY_MAP // Interactive body diagram
   ICD10_DIAGNOSIS // Search and select ICD-10 diagnosis codes
+  LIST // Simple list - add multiple single-value items
+  REPEATER // Complex repeater - add multiple items with sub-fields
   // Legacy types (kept for backward compatibility)
   SCALE // Numeric scale (0-3, 1-5, etc.) - deprecated, use RATING_SCALE
   TEXT // Free text - deprecated, use TEXT_SHORT or TEXT_LONG

@@ -29,6 +29,16 @@ export default function NewAssessmentTemplatePage() {
     setIsSaving(true);
     setError(null);
 
+    // DEBUG: Log template state before building payload
+    console.log("=== FRONTEND: BEFORE SAVE ===");
+    console.log("Template sections count:", template.sections.length);
+    template.sections.forEach((section, sIdx) => {
+      console.log(`Section ${sIdx}: "${section.title}" - ${section.items.length} items`);
+      section.items.forEach((item, iIdx) => {
+        console.log(`  Item ${iIdx}: code="${item.code}", type="${item.responseType}", question="${item.questionText?.substring(0, 50)}..."`);
+      });
+    });
+
     try {
       const payload = {
         name: template.name,
@@ -56,9 +66,22 @@ export default function NewAssessmentTemplatePage() {
             maxValue: item.maxValue ?? null,
             scoreMapping: item.scoreMapping || null,
             showIf: item.showIf || null,
+            listConfig: item.listConfig || null,
+            repeaterConfig: item.repeaterConfig || null,
           })),
         })),
       };
+
+      // DEBUG: Log payload being sent
+      console.log("=== FRONTEND: PAYLOAD BEING SENT ===");
+      console.log("Payload sections count:", payload.sections.length);
+      payload.sections.forEach((section, sIdx) => {
+        console.log(`Section ${sIdx}: "${section.title}" - ${section.items.length} items`);
+        section.items.forEach((item, iIdx) => {
+          console.log(`  Item ${iIdx}: code="${item.code}", type="${item.responseType}"`);
+        });
+      });
+      console.log("Full payload:", JSON.stringify(payload, null, 2));
 
       const response = await fetch("/api/assessments/templates", {
         method: "POST",

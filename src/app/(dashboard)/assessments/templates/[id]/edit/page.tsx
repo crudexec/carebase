@@ -55,20 +55,41 @@ export default function EditAssessmentTemplatePage() {
             maxScore: section.maxScore ? parseFloat(section.maxScore) : undefined,
             weight: section.weight ? parseFloat(section.weight) : undefined,
           } : undefined,
-          items: section.items.map((item: any) => ({
-            id: item.id,
-            code: item.code,
-            questionText: item.question,
-            description: item.description,
-            responseType: item.responseType,
-            required: item.isRequired,
-            order: item.displayOrder,
-            responseOptions: item.responseOptions,
-            minValue: item.minValue,
-            maxValue: item.maxValue,
-            scoreMapping: item.scoreMapping,
-            showIf: item.showIf,
-          })),
+          items: section.items.map((item: any) => {
+            // Extract listConfig and repeaterConfig from responseOptions if stored there
+            const responseOptions = item.responseOptions;
+            let listConfig = undefined;
+            let repeaterConfig = undefined;
+            let choiceOptions = responseOptions;
+
+            if (responseOptions && typeof responseOptions === 'object') {
+              if (responseOptions.listConfig) {
+                listConfig = responseOptions.listConfig;
+                choiceOptions = responseOptions.options || null;
+              }
+              if (responseOptions.repeaterConfig) {
+                repeaterConfig = responseOptions.repeaterConfig;
+                choiceOptions = responseOptions.options || null;
+              }
+            }
+
+            return {
+              id: item.id,
+              code: item.code,
+              questionText: item.question,
+              description: item.description,
+              responseType: item.responseType,
+              required: item.isRequired,
+              order: item.displayOrder,
+              responseOptions: choiceOptions,
+              minValue: item.minValue,
+              maxValue: item.maxValue,
+              scoreMapping: item.scoreMapping,
+              showIf: item.showIf,
+              listConfig,
+              repeaterConfig,
+            };
+          }),
         })),
       };
 
@@ -124,6 +145,8 @@ export default function EditAssessmentTemplatePage() {
             maxValue: item.maxValue ?? null,
             scoreMapping: item.scoreMapping || null,
             showIf: item.showIf || null,
+            listConfig: item.listConfig || null,
+            repeaterConfig: item.repeaterConfig || null,
           })),
         })),
       };

@@ -132,6 +132,9 @@ export function TemplateBuilder({ template, onChange }: TemplateBuilderProps) {
       responseOptions: config && "options" in config ? config.options : undefined,
       minValue: config && "minValue" in config ? config.minValue : undefined,
       maxValue: config && "maxValue" in config ? config.maxValue : undefined,
+      // Set list/repeater config for those field types
+      listConfig: config && "itemType" in config ? config : undefined,
+      repeaterConfig: config && "subFields" in config ? config : undefined,
     };
 
     updateTemplate({
