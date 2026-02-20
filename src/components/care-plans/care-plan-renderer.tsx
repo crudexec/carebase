@@ -134,8 +134,11 @@ export function CarePlanRenderer({
   };
 
   // Check if section has all required fields completed
+  // Only mark as complete if there ARE required fields and they're all filled
   const isSectionComplete = (section: TemplateSection): boolean => {
     const requiredFields = section.fields.filter((f) => f.required);
+    // If no required fields, section is not considered "complete" (show section number instead)
+    if (requiredFields.length === 0) return false;
     return requiredFields.every((field) => hasValue(field.id));
   };
 

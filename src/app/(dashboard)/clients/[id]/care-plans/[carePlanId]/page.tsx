@@ -21,6 +21,8 @@ interface Client {
   id: string;
   firstName: string;
   lastName: string;
+  physicianName: string | null;
+  physicianFax: string | null;
 }
 
 interface TemplateField {
@@ -183,6 +185,12 @@ export default function CarePlanDetailPage() {
   const [formData, setFormData] = React.useState<Record<string, FieldValue>>({});
   const [isSaving, setIsSaving] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSendingFax, setIsSendingFax] = React.useState(false);
+  const [isExporting, setIsExporting] = React.useState(false);
+  const [showFaxModal, setShowFaxModal] = React.useState(false);
+  const [faxNumber, setFaxNumber] = React.useState("");
+  const [faxRecipientName, setFaxRecipientName] = React.useState("");
+  const printRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const fetchCarePlan = async () => {
@@ -263,6 +271,98 @@ export default function CarePlanDetailPage() {
       toast.error(errorMessage);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Export PDF handler - uses server-side generation
+  const handleExportPDF = async () => {
+    if (!carePlan) return;
+
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/care-plans/${carePlan.id}/export`);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to export PDF");
+      }
+
+      // Download the PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Care Plan - ${carePlan.client.firstName} ${carePlan.client.lastName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Failed to export PDF:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Open fax modal with pre-filled data
+  const openFaxModal = () => {
+    if (!carePlan) return;
+
+    // Pre-fill from client's physician info (priority order)
+    const defaultFax =
+      carePlan.physicianFax ||
+      carePlan.physician?.fax ||
+      carePlan.client.physicianFax ||
+      "";
+
+    const defaultName =
+      carePlan.physicianName ||
+      (carePlan.physician ? `${carePlan.physician.firstName} ${carePlan.physician.lastName}` : null) ||
+      carePlan.client.physicianName ||
+      "";
+
+    setFaxNumber(defaultFax);
+    setFaxRecipientName(defaultName);
+    setShowFaxModal(true);
+  };
+
+  // Send Fax handler (called from modal)
+  const handleSendFax = async () => {
+    if (!carePlan) return;
+
+    if (!faxNumber) {
+      toast.error("Please enter a fax number");
+      return;
+    }
+
+    setIsSendingFax(true);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlan.id}/fax`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toNumber: faxNumber,
+          recipientName: faxRecipientName || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send fax");
+      }
+
+      toast.success("Fax queued successfully!");
+      setShowFaxModal(false);
+      setFaxNumber("");
+      setFaxRecipientName("");
+    } catch (err) {
+      console.error("Failed to send fax:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to send fax");
+    } finally {
+      setIsSendingFax(false);
     }
   };
 
@@ -377,6 +477,40 @@ export default function CarePlanDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportPDF}
+              disabled={isSaving || isSubmitting || isExporting || isSendingFax}
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Export PDF
+                </>
+              )}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={openFaxModal}
+              disabled={isSaving || isSubmitting || isExporting || isSendingFax}
+            >
+              {isSendingFax ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Fax
+                </>
+              )}
+            </Button>
             {!isReadOnly && (
               <Button variant="secondary" onClick={handleSave} disabled={isSaving || isSubmitting}>
                 {isSaving ? (
@@ -406,16 +540,90 @@ export default function CarePlanDetailPage() {
         )}
 
         {/* Care Plan Renderer */}
-        <CarePlanRenderer
-          template={template}
-          formData={formData}
-          isReadOnly={isReadOnly}
-          onFieldChange={handleFieldChange}
-          onSave={handleSave}
-          onComplete={handleSubmit}
-          isSaving={isSaving}
-          isCompleting={isSubmitting}
-        />
+        <div ref={printRef}>
+          <CarePlanRenderer
+            template={template}
+            formData={formData}
+            isReadOnly={isReadOnly}
+            onFieldChange={handleFieldChange}
+            onSave={handleSave}
+            onComplete={handleSubmit}
+            isSaving={isSaving}
+            isCompleting={isSubmitting}
+          />
+        </div>
+
+        {/* Send Fax Modal */}
+        {showFaxModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold mb-2">Send Care Plan as Fax</h3>
+              <p className="text-foreground-secondary mb-4">
+                Enter the recipient&apos;s fax number to send this care plan.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Fax Number <span className="text-error">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={faxNumber}
+                    onChange={(e) => setFaxNumber(e.target.value)}
+                    placeholder="+1234567890"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <p className="text-xs text-foreground-tertiary mt-1">
+                    E.164 format: +[country code][number]
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Recipient Name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={faxRecipientName}
+                    onChange={(e) => setFaxRecipientName(e.target.value)}
+                    placeholder="Dr. Smith"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowFaxModal(false);
+                    setFaxNumber("");
+                    setFaxRecipientName("");
+                  }}
+                  disabled={isSendingFax}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSendFax}
+                  disabled={isSendingFax || !faxNumber}
+                >
+                  {isSendingFax ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send Fax
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -456,6 +664,40 @@ export default function CarePlanDetailPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
+          <Button
+            variant="secondary"
+            onClick={handleExportPDF}
+            disabled={isSaving || isSubmitting || isExporting || isSendingFax}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4 mr-2" />
+                Export PDF
+              </>
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={openFaxModal}
+            disabled={isSaving || isSubmitting || isExporting || isSendingFax}
+          >
+            {isSendingFax ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                Send Fax
+              </>
+            )}
+          </Button>
           {!isReadOnly && (
             <Button variant="secondary" onClick={handleSave} disabled={isSaving || isSubmitting}>
               {isSaving ? (
@@ -485,16 +727,90 @@ export default function CarePlanDetailPage() {
       )}
 
       {/* Care Plan Renderer */}
-      <CarePlanRenderer
-        template={template}
-        formData={formData}
-        isReadOnly={isReadOnly}
-        onFieldChange={handleFieldChange}
-        onSave={handleSave}
-        onComplete={handleSubmit}
-        isSaving={isSaving}
-        isCompleting={isSubmitting}
-      />
+      <div ref={printRef}>
+        <CarePlanRenderer
+          template={template}
+          formData={formData}
+          isReadOnly={isReadOnly}
+          onFieldChange={handleFieldChange}
+          onSave={handleSave}
+          onComplete={handleSubmit}
+          isSaving={isSaving}
+          isCompleting={isSubmitting}
+        />
+      </div>
+
+      {/* Send Fax Modal */}
+      {showFaxModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Send Care Plan as Fax</h3>
+            <p className="text-foreground-secondary mb-4">
+              Enter the recipient&apos;s fax number to send this care plan.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Fax Number <span className="text-error">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={faxNumber}
+                  onChange={(e) => setFaxNumber(e.target.value)}
+                  placeholder="+1234567890"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-foreground-tertiary mt-1">
+                  E.164 format: +[country code][number]
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Recipient Name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={faxRecipientName}
+                  onChange={(e) => setFaxRecipientName(e.target.value)}
+                  placeholder="Dr. Smith"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setShowFaxModal(false);
+                  setFaxNumber("");
+                  setFaxRecipientName("");
+                }}
+                disabled={isSendingFax}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSendFax}
+                disabled={isSendingFax || !faxNumber}
+              >
+                {isSendingFax ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Fax
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -46,6 +46,8 @@ export async function GET(request: Request, { params }: RouteParams) {
             firstName: true,
             lastName: true,
             dateOfBirth: true,
+            physicianName: true,
+            physicianFax: true,
           },
         },
         assessor: {

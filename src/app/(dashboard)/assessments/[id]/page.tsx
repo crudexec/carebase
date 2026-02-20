@@ -21,6 +21,8 @@ import {
   CheckCircle,
   Printer,
   Trash2,
+  Send,
+  FileDown,
 } from "lucide-react";
 
 interface Assessment {
@@ -73,6 +75,8 @@ interface Assessment {
     firstName: string;
     lastName: string;
     dateOfBirth: string | null;
+    physicianName: string | null;
+    physicianFax: string | null;
   };
   assessor: {
     id: string;
@@ -104,6 +108,11 @@ export default function AssessmentDetailPage() {
   const [success, setSuccess] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [isSendingFax, setIsSendingFax] = React.useState(false);
+  const [showFaxModal, setShowFaxModal] = React.useState(false);
+  const [faxNumber, setFaxNumber] = React.useState("");
+  const [faxRecipientName, setFaxRecipientName] = React.useState("");
+  const [isExporting, setIsExporting] = React.useState(false);
 
   // Local responses state for optimistic updates
   const [localResponses, setLocalResponses] = React.useState<
@@ -262,6 +271,70 @@ export default function AssessmentDetailPage() {
     }
   };
 
+  const handleSendFax = async () => {
+    if (!faxNumber) {
+      toast.error("Please enter a fax number");
+      return;
+    }
+
+    setIsSendingFax(true);
+
+    try {
+      const response = await fetch(`/api/assessments/${assessmentId}/fax`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toNumber: faxNumber,
+          recipientName: faxRecipientName || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send fax");
+      }
+
+      toast.success("Fax queued successfully!");
+      setShowFaxModal(false);
+      setFaxNumber("");
+      setFaxRecipientName("");
+    } catch (err) {
+      console.error("Failed to send fax:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to send fax");
+    } finally {
+      setIsSendingFax(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/assessments/${assessmentId}/export`);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to export PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Assessment-${assessment?.template.name.replace(/\s+/g, "-")}-${assessment?.client.firstName}-${assessment?.client.lastName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("PDF exported successfully");
+    } catch (err) {
+      console.error("Failed to export PDF:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -326,12 +399,36 @@ export default function AssessmentDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isCompleted && (
-            <Button type="button" variant="secondary" onClick={() => window.print()}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
-          )}
+          <Button type="button" variant="secondary" onClick={() => window.print()}>
+            <Printer className="mr-2 h-4 w-4" />
+            Print
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleExportPdf}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileDown className="mr-2 h-4 w-4" />
+            )}
+            Export PDF
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              // Pre-fill from client's physician info
+              setFaxNumber(assessment.client.physicianFax || "");
+              setFaxRecipientName(assessment.client.physicianName || "");
+              setShowFaxModal(true);
+            }}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send Fax
+          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -375,6 +472,78 @@ export default function AssessmentDetailPage() {
                   <>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Fax Modal */}
+      {showFaxModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Send Assessment as Fax</h3>
+            <p className="text-foreground-secondary mb-4">
+              Enter the recipient&apos;s fax number to send this assessment.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Fax Number <span className="text-error">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={faxNumber}
+                  onChange={(e) => setFaxNumber(e.target.value)}
+                  placeholder="+1234567890"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-foreground-tertiary mt-1">
+                  E.164 format: +[country code][number]
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Recipient Name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={faxRecipientName}
+                  onChange={(e) => setFaxRecipientName(e.target.value)}
+                  placeholder="Dr. Smith"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setShowFaxModal(false);
+                  setFaxNumber("");
+                  setFaxRecipientName("");
+                }}
+                disabled={isSendingFax}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSendFax}
+                disabled={isSendingFax || !faxNumber}
+              >
+                {isSendingFax ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Fax
                   </>
                 )}
               </Button>

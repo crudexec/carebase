@@ -34,6 +34,8 @@ export async function GET(request: Request, { params }: RouteParams) {
             city: true,
             state: true,
             zipCode: true,
+            physicianName: true,
+            physicianFax: true,
           },
         },
         intake: {
@@ -182,7 +184,18 @@ const updateCarePlanSchema = z.object({
 
   // Care Level
   careLevel: z.string().nullable().optional(),
-  recommendedHours: z.number().nullable().optional(),
+  recommendedHours: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === "") return null;
+      if (typeof val === "number") return val;
+      if (typeof val === "string") {
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? null : parsed;
+      }
+      return null;
+    },
+    z.number().nullable().optional()
+  ),
 
   // Physician / Case Manager
   physicianId: z.string().nullable().optional(),
@@ -264,9 +277,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Helper to process date fields
     const processDate = (value: string | null | undefined) => {
-      if (value === null) return null;
+      if (value === null || value === "") return null;
       if (value === undefined) return undefined;
-      return new Date(value);
+      const date = new Date(value);
+      // Check if date is valid
+      if (isNaN(date.getTime())) return null;
+      return date;
     };
 
     // Status
