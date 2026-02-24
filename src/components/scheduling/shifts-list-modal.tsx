@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
 import { cn } from "@/lib/utils";
 import {
   X,
@@ -16,6 +17,10 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
+  Trash2,
+  CheckSquare,
+  Square,
+  MinusSquare,
 } from "lucide-react";
 import { ShiftData } from "./shift-card";
 import { format } from "date-fns";
@@ -25,6 +30,7 @@ interface ShiftsListModalProps {
   onClose: () => void;
   shifts: ShiftData[];
   onShiftClick: (shift: ShiftData) => void;
+  onDeleteShifts?: (shiftIds: string[]) => Promise<void>;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -60,11 +66,16 @@ export function ShiftsListModal({
   onClose,
   shifts,
   onShiftClick,
+  onDeleteShifts,
 }: ShiftsListModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Multi-select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -124,6 +135,50 @@ export function ShiftsListModal({
 
     return result;
   }, [shifts, searchQuery, statusFilter, sortField, sortDirection]);
+
+  // Compute selection state for "select all" checkbox
+  const selectAllState = useMemo(() => {
+    if (filteredAndSortedShifts.length === 0) return "none";
+    if (selectedIds.size === 0) return "none";
+    if (selectedIds.size === filteredAndSortedShifts.length) return "all";
+    return "partial";
+  }, [selectedIds.size, filteredAndSortedShifts.length]);
+
+  // Selection handlers
+  const toggleSelectShift = (shiftId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row click
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(shiftId)) {
+        newSet.delete(shiftId);
+      } else {
+        newSet.add(shiftId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredAndSortedShifts.length) {
+      // Deselect all
+      setSelectedIds(new Set());
+    } else {
+      // Select all visible shifts
+      setSelectedIds(new Set(filteredAndSortedShifts.map((s) => s.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!onDeleteShifts || selectedIds.size === 0) return;
+
+    await onDeleteShifts(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setShowDeleteConfirm(false);
+  };
 
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -211,6 +266,23 @@ export function ShiftsListModal({
             <table className="w-full">
               <thead className="bg-background-secondary sticky top-0">
                 <tr className="text-left text-xs font-medium text-foreground-secondary uppercase tracking-wider">
+                  {onDeleteShifts && (
+                    <th className="px-4 py-3 w-10">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="flex items-center justify-center hover:text-primary transition-colors"
+                        title={selectAllState === "all" ? "Deselect all" : "Select all"}
+                      >
+                        {selectAllState === "all" ? (
+                          <CheckSquare className="w-4 h-4 text-primary" />
+                        ) : selectAllState === "partial" ? (
+                          <MinusSquare className="w-4 h-4 text-primary" />
+                        ) : (
+                          <Square className="w-4 h-4" />
+                        )}
+                      </button>
+                    </th>
+                  )}
                   <th
                     className="px-4 py-3 cursor-pointer hover:bg-background-tertiary"
                     onClick={() => handleSort("date")}
@@ -261,7 +333,7 @@ export function ShiftsListModal({
               <tbody className="divide-y divide-border">
                 {filteredAndSortedShifts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center">
+                    <td colSpan={onDeleteShifts ? 7 : 6} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center">
                         <Calendar className="w-10 h-10 text-foreground-tertiary mb-2" />
                         <p className="text-foreground-secondary">No shifts found</p>
@@ -274,6 +346,7 @@ export function ShiftsListModal({
                 ) : (
                   filteredAndSortedShifts.map((shift) => {
                     const statusConfig = STATUS_CONFIG[shift.status] || STATUS_CONFIG.SCHEDULED;
+                    const isSelected = selectedIds.has(shift.id);
                     return (
                       <tr
                         key={shift.id}
@@ -281,8 +354,25 @@ export function ShiftsListModal({
                           onShiftClick(shift);
                           onClose();
                         }}
-                        className="hover:bg-background-secondary/50 cursor-pointer transition-colors"
+                        className={cn(
+                          "hover:bg-background-secondary/50 cursor-pointer transition-colors",
+                          isSelected && "bg-primary/5"
+                        )}
                       >
+                        {onDeleteShifts && (
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={(e) => toggleSelectShift(shift.id, e)}
+                              className="flex items-center justify-center hover:text-primary transition-colors"
+                            >
+                              {isSelected ? (
+                                <CheckSquare className="w-4 h-4 text-primary" />
+                              ) : (
+                                <Square className="w-4 h-4" />
+                              )}
+                            </button>
+                          </td>
+                        )}
                         <td className="px-4 py-3">
                           <div>
                             <p className="text-sm font-medium text-foreground">
@@ -333,15 +423,54 @@ export function ShiftsListModal({
 
           {/* Footer */}
           <div className="p-4 border-t border-border bg-background-secondary/50 flex items-center justify-between">
-            <p className="text-sm text-foreground-secondary">
-              Showing {filteredAndSortedShifts.length} of {shifts.length} shifts
-            </p>
-            <Button variant="secondary" onClick={onClose}>
-              Close
-            </Button>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-foreground-secondary">
+                Showing {filteredAndSortedShifts.length} of {shifts.length} shifts
+              </p>
+              {selectedIds.size > 0 && (
+                <p className="text-sm font-medium text-primary">
+                  {selectedIds.size} selected
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedIds.size > 0 && onDeleteShifts && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    Clear Selection
+                  </Button>
+                  <Button
+                    variant="error"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Delete ({selectedIds.size})
+                  </Button>
+                </>
+              )}
+              <Button variant="secondary" onClick={onClose}>
+                Close
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteSelected}
+        title="Delete Selected Shifts"
+        description={`Are you sure you want to delete ${selectedIds.size} shift${selectedIds.size === 1 ? "" : "s"}? This action cannot be undone.`}
+        itemName={`${selectedIds.size} shift${selectedIds.size === 1 ? "" : "s"}`}
+        confirmText="Delete"
+      />
     </div>
   );
 }

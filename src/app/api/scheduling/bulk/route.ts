@@ -427,7 +427,7 @@ export async function GET(request: Request) {
   }
 }
 
-// DELETE /api/scheduling/bulk - Delete all shifts (with optional filters)
+// DELETE /api/scheduling/bulk - Delete shifts (by IDs or with optional filters)
 export async function DELETE(request: Request) {
   try {
     const session = await auth();
@@ -440,6 +440,7 @@ export async function DELETE(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
+    const idsParam = searchParams.get("ids"); // Comma-separated list of shift IDs
     const status = searchParams.get("status"); // Optional: only delete shifts with this status
     const carerId = searchParams.get("carerId"); // Optional: only delete shifts for this carer
     const clientId = searchParams.get("clientId"); // Optional: only delete shifts for this client
@@ -449,25 +450,40 @@ export async function DELETE(request: Request) {
       companyId: session.user.companyId,
     };
 
-    if (status) {
-      where.status = status;
+    // If specific IDs are provided, delete only those shifts
+    if (idsParam) {
+      const ids = idsParam.split(",").filter((id) => id.trim());
+      if (ids.length === 0) {
+        return NextResponse.json({
+          error: "No valid shift IDs provided",
+        }, { status: 400 });
+      }
+      where.id = { in: ids };
     } else {
-      // By default, only delete SCHEDULED shifts (not completed/in-progress)
-      where.status = "SCHEDULED";
+      // Otherwise, apply filters
+      if (status) {
+        where.status = status;
+      } else {
+        // By default, only delete SCHEDULED shifts (not completed/in-progress)
+        where.status = "SCHEDULED";
+      }
+
+      if (carerId) {
+        where.carerId = carerId;
+      }
+
+      if (clientId) {
+        where.clientId = clientId;
+      }
     }
 
-    if (carerId) {
-      where.carerId = carerId;
-    }
+    // Get the shift IDs to be deleted
+    const shiftsToDelete = await prisma.shift.findMany({
+      where,
+      select: { id: true },
+    });
 
-    if (clientId) {
-      where.clientId = clientId;
-    }
-
-    // Count shifts to be deleted
-    const countToDelete = await prisma.shift.count({ where });
-
-    if (countToDelete === 0) {
+    if (shiftsToDelete.length === 0) {
       return NextResponse.json({
         success: true,
         deleted: 0,
@@ -475,8 +491,69 @@ export async function DELETE(request: Request) {
       });
     }
 
-    // Delete the shifts
-    const result = await prisma.shift.deleteMany({ where });
+    const shiftIds = shiftsToDelete.map((s) => s.id);
+
+    // Delete shifts and related records in a transaction
+    // Increase timeout to 30 seconds for bulk operations
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete related records first (in order of dependencies)
+      // Note: ShiftAttendance has onDelete: Cascade so it's automatic
+
+      // Delete VisitNotes and their related records
+      const visitNotes = await tx.visitNote.findMany({
+        where: { shiftId: { in: shiftIds } },
+        select: { id: true },
+      });
+      const visitNoteIds = visitNotes.map((v) => v.id);
+
+      if (visitNoteIds.length > 0) {
+        // Delete visit note files
+        await tx.visitNoteFile.deleteMany({
+          where: { visitNoteId: { in: visitNoteIds } },
+        });
+        // Delete visit note comments
+        await tx.visitNoteComment.deleteMany({
+          where: { visitNoteId: { in: visitNoteIds } },
+        });
+        // Delete visit notes
+        await tx.visitNote.deleteMany({
+          where: { id: { in: visitNoteIds } },
+        });
+      }
+
+      // Delete DailyReports
+      await tx.dailyReport.deleteMany({
+        where: { shiftId: { in: shiftIds } },
+      });
+
+      // Delete PayrollRecords
+      await tx.payrollRecord.deleteMany({
+        where: { shiftId: { in: shiftIds } },
+      });
+
+      // Clear shiftId from nullable foreign key references
+      await tx.invoiceLineItem.updateMany({
+        where: { shiftId: { in: shiftIds } },
+        data: { shiftId: null },
+      });
+
+      await tx.medicationAdministration.updateMany({
+        where: { shiftId: { in: shiftIds } },
+        data: { shiftId: null },
+      });
+
+      await tx.claimLine.updateMany({
+        where: { shiftId: { in: shiftIds } },
+        data: { shiftId: null },
+      });
+
+      // Finally, delete the shifts
+      const deleteResult = await tx.shift.deleteMany({ where: { id: { in: shiftIds } } });
+
+      return deleteResult;
+    }, {
+      timeout: 30000, // 30 seconds for bulk operations
+    });
 
     // Create audit log
     await prisma.auditLog.create({
@@ -488,11 +565,13 @@ export async function DELETE(request: Request) {
         entityId: "bulk",
         changes: {
           deletedCount: result.count,
-          filters: {
-            status: status || "SCHEDULED",
-            carerId: carerId || "all",
-            clientId: clientId || "all",
-          },
+          filters: idsParam
+            ? { ids: idsParam.split(",").length }
+            : {
+                status: status || "SCHEDULED",
+                carerId: carerId || "all",
+                clientId: clientId || "all",
+              },
         },
       },
     });

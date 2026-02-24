@@ -207,6 +207,20 @@ export default function SchedulingPage() {
     await fetchShifts();
   };
 
+  // Handle delete selected shifts (from modal)
+  const handleDeleteSelectedShifts = async (shiftIds: string[]) => {
+    const response = await fetch(`/api/scheduling/bulk?ids=${shiftIds.join(",")}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.error || "Failed to delete shifts");
+    }
+
+    await fetchShifts();
+  };
+
   // Count of scheduled shifts for delete confirmation
   const scheduledShiftsCount = shifts.filter((s) => s.status === "SCHEDULED").length;
 
@@ -428,6 +442,7 @@ export default function SchedulingPage() {
           setSelectedShift(shift);
           setShowDetailModal(true);
         }}
+        onDeleteShifts={handleDeleteSelectedShifts}
       />
 
       {/* Delete All Confirmation Modal */}
