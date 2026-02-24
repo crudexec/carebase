@@ -84,7 +84,7 @@ export async function GET(request: Request) {
     // Carers can only see their own notes
     if (user.role === "CARER") {
       where.carerId = user.id;
-    } else if ((user.role as string) === "GUARDIAN") {
+    } else if (user.role === "SPONSOR") {
       // Sponsors can only see notes for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {
@@ -94,6 +94,13 @@ export async function GET(request: Request) {
         select: { id: true },
       });
       const clientIds = sponsorClients.map((c) => c.id);
+      if (clientIds.length === 0) {
+        // Sponsor has no associated clients - return empty result
+        return NextResponse.json({
+          visitNotes: [],
+          pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+        });
+      }
       where.clientId = { in: clientIds };
     } else {
       // Other roles can filter by carer

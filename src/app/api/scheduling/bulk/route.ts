@@ -20,6 +20,7 @@ const bulkCreateSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
   skipConflicts: z.boolean().optional().default(false),
+  timezoneOffset: z.number().optional(), // Client's timezone offset in minutes (from getTimezoneOffset())
 });
 
 // POST /api/scheduling/bulk - Create multiple shifts at once
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       startTime,
       endTime,
       skipConflicts,
+      timezoneOffset,
     } = validation.data;
 
     // Validate times
@@ -65,20 +67,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate start date is not in the past
+    // Validate start date is not in the past (using UTC to be timezone-agnostic)
     const [year, month, day] = startDate.split("-").map(Number);
-    const startDateObj = new Date(year, month - 1, day, 12, 0, 0, 0);
+    const startDateObj = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (startDateObj < today) {
+    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    if (startDateObj < todayUTC) {
       return NextResponse.json(
         { error: "Start date cannot be in the past" },
         { status: 400 }
       );
     }
 
-    // Generate all dates for the bulk schedule (pass string to avoid timezone issues)
-    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays);
+    // Generate all dates for the bulk schedule (pass timezone offset for correct day-of-week calculation)
+    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays, timezoneOffset);
 
     if (dates.length === 0) {
       return NextResponse.json(
@@ -120,8 +122,8 @@ export async function POST(request: Request) {
       const conflicts: { date: string; existingShiftId: string }[] = [];
 
       for (const date of dates) {
-        const shiftStart = combineDateTime(date, startTime);
-        const shiftEnd = combineDateTime(date, endTime);
+        const shiftStart = combineDateTime(date, startTime, timezoneOffset);
+        const shiftEnd = combineDateTime(date, endTime, timezoneOffset);
 
         // Check for conflicting shifts
         const conflictingShift = await tx.shift.findFirst({
@@ -278,6 +280,9 @@ export async function GET(request: Request) {
       .map(Number) || [];
     const startTime = searchParams.get("startTime") || "09:00";
     const endTime = searchParams.get("endTime") || "17:00";
+    const timezoneOffset = searchParams.get("timezoneOffset")
+      ? parseInt(searchParams.get("timezoneOffset")!, 10)
+      : undefined;
 
     if (!clientId || !carerId || !startDate || selectedDays.length === 0) {
       return NextResponse.json(
@@ -295,8 +300,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Generate dates (pass string directly to avoid timezone issues)
-    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays);
+    // Generate dates (pass timezone offset for correct day-of-week calculation)
+    const dates = generateBulkDates(startDate, numberOfWeeks, selectedDays, timezoneOffset);
 
     // Check for conflicts
     const conflicts: {
@@ -307,8 +312,8 @@ export async function GET(request: Request) {
     }[] = [];
 
     for (const date of dates) {
-      const shiftStart = combineDateTime(date, startTime);
-      const shiftEnd = combineDateTime(date, endTime);
+      const shiftStart = combineDateTime(date, startTime, timezoneOffset);
+      const shiftEnd = combineDateTime(date, endTime, timezoneOffset);
 
       const conflictingShift = await prisma.shift.findFirst({
         where: {
@@ -388,8 +393,8 @@ export async function GET(request: Request) {
       valid: conflicts.length === 0,
       shifts: dates.map((date) => ({
         date: date.toISOString(),
-        scheduledStart: combineDateTime(date, startTime).toISOString(),
-        scheduledEnd: combineDateTime(date, endTime).toISOString(),
+        scheduledStart: combineDateTime(date, startTime, timezoneOffset).toISOString(),
+        scheduledEnd: combineDateTime(date, endTime, timezoneOffset).toISOString(),
         hasConflict: conflicts.some(
           (c) => new Date(c.date).toDateString() === date.toDateString()
         ),
@@ -417,6 +422,92 @@ export async function GET(request: Request) {
     console.error("Error previewing bulk shifts:", error);
     return NextResponse.json(
       { error: "Failed to preview bulk shifts" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/scheduling/bulk - Delete all shifts (with optional filters)
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!canManageSchedule(session.user.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status"); // Optional: only delete shifts with this status
+    const carerId = searchParams.get("carerId"); // Optional: only delete shifts for this carer
+    const clientId = searchParams.get("clientId"); // Optional: only delete shifts for this client
+
+    // Build the where clause
+    const where: Record<string, unknown> = {
+      companyId: session.user.companyId,
+    };
+
+    if (status) {
+      where.status = status;
+    } else {
+      // By default, only delete SCHEDULED shifts (not completed/in-progress)
+      where.status = "SCHEDULED";
+    }
+
+    if (carerId) {
+      where.carerId = carerId;
+    }
+
+    if (clientId) {
+      where.clientId = clientId;
+    }
+
+    // Count shifts to be deleted
+    const countToDelete = await prisma.shift.count({ where });
+
+    if (countToDelete === 0) {
+      return NextResponse.json({
+        success: true,
+        deleted: 0,
+        message: "No shifts found matching the criteria",
+      });
+    }
+
+    // Delete the shifts
+    const result = await prisma.shift.deleteMany({ where });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        companyId: session.user.companyId,
+        userId: session.user.id,
+        action: "BULK_SHIFTS_DELETED",
+        entityType: "Shift",
+        entityId: "bulk",
+        changes: {
+          deletedCount: result.count,
+          filters: {
+            status: status || "SCHEDULED",
+            carerId: carerId || "all",
+            clientId: clientId || "all",
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      deleted: result.count,
+      message: `Successfully deleted ${result.count} shift${result.count !== 1 ? "s" : ""}`,
+    });
+  } catch (error) {
+    console.error("Error deleting bulk shifts:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Failed to delete shifts",
+      },
       { status: 500 }
     );
   }

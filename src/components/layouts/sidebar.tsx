@@ -30,6 +30,7 @@ import {
   ClipboardCheck,
   ShieldCheck,
   ChevronDown,
+  Pill,
   ChevronRight,
   Stethoscope,
   Wallet,
@@ -211,6 +212,12 @@ const navigation: NavEntry[] = [
         href: "/visit-notes",
         icon: ClipboardList,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
+      },
+      {
+        label: "eMAR",
+        href: "/emar",
+        icon: Pill,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER"],
       },
       {
         label: "Incidents",

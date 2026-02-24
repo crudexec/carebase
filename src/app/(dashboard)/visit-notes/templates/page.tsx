@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Button,
   Badge,
@@ -48,6 +49,7 @@ const STATUS_VARIANTS: Record<string, "default" | "success" | "warning" | "error
 
 export default function TemplatesPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [templates, setTemplates] = React.useState<FormTemplateListItem[]>([]);
   const [starterTemplates, setStarterTemplates] = React.useState<StarterTemplate[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -71,6 +73,13 @@ export default function TemplatesPage() {
   // Track which item is being deleted for fade animation
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
+  // Redirect sponsors away from templates page
+  React.useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "SPONSOR") {
+      router.replace("/visit-notes");
+    }
+  }, [session, status, router]);
+
   React.useEffect(() => {
     fetchTemplates();
     fetchStarterTemplates();
@@ -84,6 +93,74 @@ export default function TemplatesPage() {
       return () => document.removeEventListener("click", handleClick);
     }
   }, [openActionId]);
+
+  // Filter and sort templates
+  const processedTemplates = React.useMemo(() => {
+    let result = [...templates];
+
+    // Filter by search
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(searchLower) ||
+          t.description?.toLowerCase().includes(searchLower) ||
+          t.createdBy.firstName.toLowerCase().includes(searchLower) ||
+          t.createdBy.lastName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Sort
+    if (sortColumn && sortDirection) {
+      result.sort((a, b) => {
+        let aVal: string | number | boolean | null = null;
+        let bVal: string | number | boolean | null = null;
+
+        switch (sortColumn) {
+          case "name":
+            aVal = a.name.toLowerCase();
+            bVal = b.name.toLowerCase();
+            break;
+          case "status":
+            aVal = a.isEnabled ? 1 : 0;
+            bVal = b.isEnabled ? 1 : 0;
+            break;
+          case "version":
+            aVal = a.version;
+            bVal = b.version;
+            break;
+          case "sections":
+            aVal = a.sectionsCount;
+            bVal = b.sectionsCount;
+            break;
+          case "fields":
+            aVal = a.fieldsCount;
+            bVal = b.fieldsCount;
+            break;
+          case "createdBy":
+            aVal = `${a.createdBy.firstName} ${a.createdBy.lastName}`.toLowerCase();
+            bVal = `${b.createdBy.firstName} ${b.createdBy.lastName}`.toLowerCase();
+            break;
+          default:
+            return 0;
+        }
+
+        if (aVal === null) return 1;
+        if (bVal === null) return -1;
+
+        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [templates, searchQuery, sortColumn, sortDirection]);
+
+  // Show nothing while checking auth or if sponsor
+  if (status === "loading" || session?.user?.role === "SPONSOR") {
+    return null;
+  }
 
   const fetchTemplates = async () => {
     try {
@@ -199,69 +276,6 @@ export default function TemplatesPage() {
     if (isEnabled) return "success";
     return "default";
   };
-
-  // Filter and sort templates
-  const processedTemplates = React.useMemo(() => {
-    let result = [...templates];
-
-    // Filter by search
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.name.toLowerCase().includes(searchLower) ||
-          t.description?.toLowerCase().includes(searchLower) ||
-          t.createdBy.firstName.toLowerCase().includes(searchLower) ||
-          t.createdBy.lastName.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Sort
-    if (sortColumn && sortDirection) {
-      result.sort((a, b) => {
-        let aVal: string | number | boolean | null = null;
-        let bVal: string | number | boolean | null = null;
-
-        switch (sortColumn) {
-          case "name":
-            aVal = a.name.toLowerCase();
-            bVal = b.name.toLowerCase();
-            break;
-          case "status":
-            aVal = a.isEnabled ? 1 : 0;
-            bVal = b.isEnabled ? 1 : 0;
-            break;
-          case "version":
-            aVal = a.version;
-            bVal = b.version;
-            break;
-          case "sections":
-            aVal = a.sectionsCount;
-            bVal = b.sectionsCount;
-            break;
-          case "fields":
-            aVal = a.fieldsCount;
-            bVal = b.fieldsCount;
-            break;
-          case "createdBy":
-            aVal = `${a.createdBy.firstName} ${a.createdBy.lastName}`.toLowerCase();
-            bVal = `${b.createdBy.firstName} ${b.createdBy.lastName}`.toLowerCase();
-            break;
-          default:
-            return 0;
-        }
-
-        if (aVal === null) return 1;
-        if (bVal === null) return -1;
-
-        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return result;
-  }, [templates, searchQuery, sortColumn, sortDirection]);
 
   const handleSortChange = (column: string, direction: SortDirection) => {
     setSortColumn(direction ? column : null);

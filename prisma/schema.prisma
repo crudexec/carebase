@@ -201,6 +201,91 @@ enum FaxDirection {
 }
 
 // ============================================
+// eMAR (ELECTRONIC MEDICATION ADMINISTRATION RECORD) ENUMS
+// ============================================
+
+enum MedicationStatus {
+  ACTIVE
+  ON_HOLD
+  DISCONTINUED
+  COMPLETED
+}
+
+enum MedicationRoute {
+  ORAL
+  TOPICAL
+  INJECTION_IM
+  INJECTION_SC
+  INJECTION_IV
+  INHALATION
+  SUBLINGUAL
+  RECTAL
+  OPHTHALMIC
+  OTIC
+  NASAL
+  TRANSDERMAL
+  OTHER
+}
+
+enum MedicationFrequency {
+  ONCE_DAILY
+  TWICE_DAILY
+  THREE_TIMES_DAILY
+  FOUR_TIMES_DAILY
+  EVERY_4_HOURS
+  EVERY_6_HOURS
+  EVERY_8_HOURS
+  EVERY_12_HOURS
+  WEEKLY
+  MONTHLY
+  AS_NEEDED_PRN
+  BEFORE_MEALS
+  AFTER_MEALS
+  AT_BEDTIME
+  OTHER
+}
+
+enum ControlledSubstanceSchedule {
+  NOT_CONTROLLED
+  SCHEDULE_II
+  SCHEDULE_III
+  SCHEDULE_IV
+  SCHEDULE_V
+}
+
+enum AdministrationResult {
+  GIVEN
+  HELD
+  REFUSED
+  NOT_AVAILABLE
+  SELF_ADMINISTERED
+  DESTROYED
+  WASTED
+}
+
+enum MedPassStatus {
+  PENDING
+  COMPLETED
+  MISSED
+  LATE
+}
+
+enum NarcoticCountStatus {
+  PENDING
+  VERIFIED
+  DISCREPANCY
+}
+
+enum RefillRequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+// ============================================
 // NOTIFICATION SYSTEM ENUMS
 // ============================================
 
@@ -274,6 +359,22 @@ enum NotificationEventType {
   CREDENTIAL_EXPIRED
   CREDENTIAL_RENEWED
   CREDENTIAL_VERIFICATION_NEEDED
+
+  // eMAR (Medication) alerts
+  MEDICATION_DUE
+  MEDICATION_OVERDUE
+  MEDICATION_MISSED
+  PRN_FOLLOWUP_DUE
+  NARCOTIC_COUNT_REQUIRED
+  NARCOTIC_DISCREPANCY
+  REFILL_NEEDED
+  REFILL_REQUEST_SUBMITTED
+  REFILL_REQUEST_APPROVED
+  REFILL_REQUEST_DENIED
+  DRUG_INTERACTION_ALERT
+  DRUG_ALLERGY_ALERT
+  MEDICATION_LOW_INVENTORY
+  MEDICATION_EXPIRING
 }
 
 // ============================================
@@ -382,6 +483,13 @@ model Company {
   supervisoryRelationships SupervisoryRelationship[]
   supervisionVisits        SupervisionVisit[]
   staffDevelopmentPlans    StaffDevelopmentPlan[]
+
+  // eMAR (Electronic Medication Administration Record)
+  medications               Medication[]
+  medicationAdministrations MedicationAdministration[]
+  medicationInventories     MedicationInventory[]
+  narcoticCountRecords      NarcoticCountRecord[]
+  refillRequests            RefillRequest[]
 
   @@index([isActive])
 }
@@ -515,6 +623,18 @@ model User {
   superviseeRelationships    SupervisoryRelationship[] @relation("Supervisee")
   developmentPlans           StaffDevelopmentPlan[]
   developmentPlansSupervised StaffDevelopmentPlan[]    @relation("DevelopmentSupervisor")
+
+  // eMAR (Electronic Medication Administration Record)
+  medicationsDiscontinued       Medication[]               @relation("MedicationDiscontinuedBy")
+  medicationsAdministered       MedicationAdministration[] @relation("AdministeredByUser")
+  medicationsWitnessed          MedicationAdministration[] @relation("WitnessUser")
+  inventoriesVerified           MedicationInventory[]      @relation("InventoryVerifier")
+  narcoticCountsCounted         NarcoticCountRecord[]      @relation("CountingUser")
+  narcoticCountsVerified        NarcoticCountRecord[]      @relation("VerifyingUser")
+  narcoticDiscrepanciesResolved NarcoticCountRecord[]      @relation("DiscrepancyResolver")
+  refillsRequested              RefillRequest[]            @relation("RefillRequester")
+  refillsResponded              RefillRequest[]            @relation("RefillResponder")
+  refillsReceived               RefillRequest[]            @relation("RefillReceiver")
 
   // Password reset tokens
   passwordResetTokens PasswordResetToken[]
@@ -801,6 +921,11 @@ model Client {
   // HR Compliance - Supervision visits with this client
   supervisionVisits SupervisionVisit[]
 
+  // eMAR (Electronic Medication Administration Record)
+  medications               Medication[]
+  medicationAdministrations MedicationAdministration[]
+  refillRequests            RefillRequest[]
+
   @@index([sponsorId])
   @@index([assignedCarerId])
   @@index([status])
@@ -898,6 +1023,10 @@ model Shift {
   attendanceRecords ShiftAttendance[]
   visitNotes        VisitNote[]
   invoiceLineItems  InvoiceLineItem[]
+
+  // eMAR (Electronic Medication Administration Record)
+  scheduledDoses            ScheduledDose[]
+  medicationAdministrations MedicationAdministration[]
 
   @@index([carerId])
   @@index([clientId])
@@ -2757,6 +2886,9 @@ model Physician {
   // Care plans this physician is associated with
   carePlans CarePlan[]
 
+  // eMAR - Medications prescribed by this physician
+  medications Medication[]
+
   @@index([companyId])
   @@index([npi])
   @@index([isActive])
@@ -2990,6 +3122,9 @@ model FaxRecord {
   // Optional relation to care plan
   carePlanId String?
   carePlan   CarePlan? @relation(fields: [carePlanId], references: [id])
+
+  // eMAR - Refill requests sent via fax
+  refillRequests RefillRequest[]
 
   @@index([companyId])
   @@index([status])
@@ -3864,4 +3999,314 @@ model DevelopmentGoal {
 
   @@index([planId])
   @@index([status])
+}
+
+// ============================================
+// eMAR (ELECTRONIC MEDICATION ADMINISTRATION RECORD)
+// ============================================
+
+model Medication {
+  id        String           @id @default(cuid())
+  name      String // Brand or generic name
+  genericName String?
+  ndc       String? // National Drug Code
+  strength  String // e.g., "500mg", "10mg/5ml"
+  form      String // e.g., "tablet", "capsule", "liquid"
+  route     MedicationRoute
+  status    MedicationStatus @default(ACTIVE)
+
+  // Dosing
+  doseAmount      String // e.g., "1 tablet", "5ml"
+  frequency       MedicationFrequency
+  frequencyOther  String? // If frequency is OTHER
+  scheduledTimes  String[] // ["08:00", "12:00", "18:00"]
+  prnReason       String? // Required if frequency is PRN
+  maxDailyDoses   Int? // For PRN medications
+
+  // Date range
+  startDate DateTime
+  endDate   DateTime? // Null for ongoing
+
+  // Controlled substance tracking
+  controlledSchedule ControlledSubstanceSchedule @default(NOT_CONTROLLED)
+  requiresWitness    Boolean                     @default(false)
+
+  // Prescriber info
+  prescriberId       String?
+  prescriber         Physician? @relation(fields: [prescriberId], references: [id])
+  prescriptionNumber String?
+  lastFillDate       DateTime?
+  refillsRemaining   Int?
+
+  // Clinical info
+  indication          String? // Reason for medication
+  specialInstructions String?   @db.Text
+  interactions        String[] // Drug interaction warnings
+  sideEffects         String[] // Common side effects to watch
+
+  // Audit fields
+  discontinuedAt     DateTime?
+  discontinuedById   String?
+  discontinuedBy     User?     @relation("MedicationDiscontinuedBy", fields: [discontinuedById], references: [id])
+  discontinuedReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Related records
+  scheduledDoses   ScheduledDose[]
+  administrations  MedicationAdministration[]
+  inventoryRecords MedicationInventory[]
+  refillRequests   RefillRequest[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([controlledSchedule])
+  @@index([prescriberId])
+}
+
+model ScheduledDose {
+  id            String        @id @default(cuid())
+  scheduledTime DateTime // Exact date/time for this dose
+  status        MedPassStatus @default(PENDING)
+
+  // Timing tracking
+  windowStart DateTime // Earliest time to give (e.g., 30 min before)
+  windowEnd   DateTime // Latest time to give (e.g., 60 min after)
+
+  // Link to shift for responsibility
+  shiftId String?
+  shift   Shift?  @relation(fields: [shiftId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+
+  administration MedicationAdministration?
+
+  @@index([medicationId])
+  @@index([scheduledTime])
+  @@index([status])
+  @@index([shiftId])
+}
+
+model MedicationAdministration {
+  id String @id @default(cuid())
+
+  // Timing
+  scheduledTime  DateTime // When it was scheduled
+  administeredAt DateTime? // When actually given
+
+  // Result
+  result      AdministrationResult
+  resultNotes String?              @db.Text // Reason for hold/refusal
+
+  // Who administered
+  administeredById String?
+  administeredBy   User?   @relation("AdministeredByUser", fields: [administeredById], references: [id])
+
+  // Witness for controlled substances
+  witnessId        String?
+  witness          User?     @relation("WitnessUser", fields: [witnessId], references: [id])
+  witnessSignature String?   @db.Text // Base64 signature
+  witnessedAt      DateTime?
+
+  // Amount given (may differ from prescribed)
+  amountGiven String? // e.g., "1 tablet", "half dose"
+
+  // PRN effectiveness tracking
+  prnAssessment       String? // e.g., "Pain level before: 7"
+  prnFollowupTime     DateTime? // When to reassess
+  prnFollowupAssessment String? // e.g., "Pain level after: 3"
+  prnEffective        Boolean?
+
+  // Site for injections/topicals
+  administrationSite String?
+
+  // Vital signs if required
+  vitalsBeforeAdmin Json? // {bp, pulse, temp, etc.}
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Medication relation
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id])
+
+  // Scheduled dose relation (optional for PRN)
+  scheduledDoseId String?        @unique
+  scheduledDose   ScheduledDose? @relation(fields: [scheduledDoseId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Shift relation
+  shiftId String?
+  shift   Shift?  @relation(fields: [shiftId], references: [id])
+
+  @@index([companyId])
+  @@index([medicationId])
+  @@index([clientId])
+  @@index([administeredById])
+  @@index([administeredAt])
+  @@index([result])
+  @@index([shiftId])
+}
+
+model MedicationInventory {
+  id String @id @default(cuid())
+
+  // Current count
+  quantityOnHand   Int
+  lastVerifiedAt   DateTime @default(now())
+  lastVerifiedById String
+  lastVerifiedBy   User     @relation("InventoryVerifier", fields: [lastVerifiedById], references: [id])
+
+  // Lot tracking
+  lotNumber      String?
+  expirationDate DateTime?
+
+  // Low inventory threshold
+  lowInventoryThreshold Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Medication relation
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id])
+
+  // History
+  countRecords NarcoticCountRecord[]
+
+  @@index([companyId])
+  @@index([medicationId])
+}
+
+model NarcoticCountRecord {
+  id String @id @default(cuid())
+
+  // Count details
+  countTime DateTime @default(now())
+  shiftType String // "DAY", "EVENING", "NIGHT"
+
+  // Counts
+  previousCount Int
+  currentCount  Int
+  expectedCount Int // Based on administrations
+  discrepancy   Int // currentCount - expectedCount
+
+  // Verification
+  status NarcoticCountStatus @default(PENDING)
+
+  // Two-person verification
+  countedById        String
+  countedBy          User    @relation("CountingUser", fields: [countedById], references: [id])
+  countedBySignature String? @db.Text
+
+  verifiedById        String?
+  verifiedBy          User?     @relation("VerifyingUser", fields: [verifiedById], references: [id])
+  verifiedBySignature String?   @db.Text
+  verifiedAt          DateTime?
+
+  // Discrepancy handling
+  discrepancyNotes      String? @db.Text
+  discrepancyResolution String?
+  resolvedAt            DateTime?
+  resolvedById          String?
+  resolvedBy            User?   @relation("DiscrepancyResolver", fields: [resolvedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Inventory relation
+  inventoryId String
+  inventory   MedicationInventory @relation(fields: [inventoryId], references: [id])
+
+  @@index([companyId])
+  @@index([inventoryId])
+  @@index([countTime])
+  @@index([status])
+}
+
+model RefillRequest {
+  id String @id @default(cuid())
+
+  status RefillRequestStatus @default(PENDING)
+
+  // Request details
+  requestedAt     DateTime @default(now())
+  requestedById   String
+  requestedBy     User     @relation("RefillRequester", fields: [requestedById], references: [id])
+  requestNotes    String?
+  quantityRequested Int?
+
+  // Pharmacy info
+  pharmacyName  String?
+  pharmacyPhone String?
+  pharmacyFax   String?
+
+  // Response tracking
+  respondedAt   DateTime?
+  respondedById String?
+  respondedBy   User?     @relation("RefillResponder", fields: [respondedById], references: [id])
+  responseNotes String?
+
+  // Order tracking
+  orderedAt        DateTime?
+  expectedDelivery DateTime?
+  receivedAt       DateTime?
+  receivedById     String?
+  receivedBy       User?    @relation("RefillReceiver", fields: [receivedById], references: [id])
+  quantityReceived Int?
+
+  // Fax integration
+  faxRecordId String?
+  faxRecord   FaxRecord? @relation(fields: [faxRecordId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Medication relation
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  @@index([companyId])
+  @@index([medicationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([requestedAt])
 }

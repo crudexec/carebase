@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, RefreshCw, Filter, CalendarPlus, List } from "lucide-react";
+import { Plus, RefreshCw, Filter, CalendarPlus, List, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/components/scheduling/calendar-view";
 import { ShiftCard, ShiftData } from "@/components/scheduling/shift-card";
@@ -10,6 +10,7 @@ import { ShiftFormModal, ShiftFormData } from "@/components/scheduling/shift-for
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
 import { BulkShiftModal } from "@/components/scheduling/bulk-shift-modal";
 import { ShiftsListModal } from "@/components/scheduling/shifts-list-modal";
+import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
 import { canManageSchedule } from "@/lib/scheduling";
 
 interface CaregiverOption {
@@ -37,6 +38,7 @@ export default function SchedulingPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [selectedShift, setSelectedShift] = useState<ShiftData | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -191,6 +193,23 @@ export default function SchedulingPage() {
     setShowFormModal(true);
   };
 
+  // Handle delete all scheduled shifts
+  const handleDeleteAllShifts = async () => {
+    const response = await fetch("/api/scheduling/bulk?status=SCHEDULED", {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.error || "Failed to delete shifts");
+    }
+
+    await fetchShifts();
+  };
+
+  // Count of scheduled shifts for delete confirmation
+  const scheduledShiftsCount = shifts.filter((s) => s.status === "SCHEDULED").length;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -228,6 +247,17 @@ export default function SchedulingPage() {
           </Button>
           {canManage && (
             <>
+              {scheduledShiftsCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteAllModal(true)}
+                  className="text-error hover:text-error hover:bg-error/10"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete All ({scheduledShiftsCount})
+                </Button>
+              )}
               <Button variant="secondary" onClick={() => setShowBulkModal(true)}>
                 <CalendarPlus className="w-4 h-4 mr-1" />
                 Bulk Schedule
@@ -398,6 +428,18 @@ export default function SchedulingPage() {
           setSelectedShift(shift);
           setShowDetailModal(true);
         }}
+      />
+
+      {/* Delete All Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteAllModal}
+        onClose={() => setShowDeleteAllModal(false)}
+        onConfirm={handleDeleteAllShifts}
+        title="Delete All Scheduled Shifts"
+        description={`Are you sure you want to delete all ${scheduledShiftsCount} scheduled shift${scheduledShiftsCount !== 1 ? "s" : ""}? This will only delete shifts with "Scheduled" status.`}
+        itemName={`${scheduledShiftsCount} scheduled shift${scheduledShiftsCount !== 1 ? "s" : ""}`}
+        confirmText="Delete All"
+        cancelText="Cancel"
       />
     </div>
   );

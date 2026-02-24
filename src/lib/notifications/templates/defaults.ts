@@ -970,6 +970,248 @@ const DEFAULT_TEMPLATES: Record<NotificationEventType, TemplateMap> = {
       body: "{{carerName}}'s {{credentialName}} needs verification.",
     },
   },
+
+  // -------------------- eMAR (Medication) Alerts --------------------
+  MEDICATION_DUE: {
+    IN_APP: {
+      body: "{{medicationName}} is due for {{clientName}} at {{dueTime}}. Dose: {{doseAmount}}",
+    },
+  },
+
+  MEDICATION_OVERDUE: {
+    EMAIL: {
+      subject: "Medication overdue: {{medicationName}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>{{medicationName}}</strong> for <strong>{{clientName}}</strong> is overdue. It was scheduled for <strong>{{scheduledTime}}</strong> ({{minutesOverdue}} minutes ago).</p>
+
+<p>Please administer this medication as soon as possible or document the reason if unable to administer.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{medicationName}} for {{clientName}} is {{minutesOverdue}} minutes overdue!",
+    },
+  },
+
+  MEDICATION_MISSED: {
+    EMAIL: {
+      subject: "ALERT: Missed medication for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>ALERT:</strong> <strong>{{medicationName}}</strong> was not administered to <strong>{{clientName}}</strong> at the scheduled time of <strong>{{scheduledTime}}</strong>.</p>
+
+<p>This dose has been marked as missed. Please review the care record and follow up as needed.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    SMS: {
+      body: "ALERT: {{medicationName}} missed for {{clientName}} at {{scheduledTime}}. Review required.",
+    },
+    IN_APP: {
+      body: "ALERT: {{medicationName}} missed for {{clientName}} at {{scheduledTime}}.",
+    },
+  },
+
+  PRN_FOLLOWUP_DUE: {
+    IN_APP: {
+      body: "PRN follow-up due: Check effectiveness of {{medicationName}} given to {{clientName}} at {{administeredTime}}.",
+    },
+  },
+
+  NARCOTIC_COUNT_REQUIRED: {
+    IN_APP: {
+      body: "Narcotic count required for {{shiftName}}. Please complete the count by {{countDueTime}}.",
+    },
+  },
+
+  NARCOTIC_DISCREPANCY: {
+    EMAIL: {
+      subject: "CRITICAL: Narcotic count discrepancy - {{medicationName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>CRITICAL ALERT:</strong> A discrepancy has been detected in the narcotic count for <strong>{{medicationName}}</strong>.</p>
+
+<ul>
+  <li><strong>Expected count:</strong> {{expectedCount}}</li>
+  <li><strong>Actual count:</strong> {{actualCount}}</li>
+  <li><strong>Discrepancy:</strong> {{discrepancy}}</li>
+  <li><strong>Reported by:</strong> {{carerName}}</li>
+</ul>
+
+<p>This requires immediate investigation and documentation.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    SMS: {
+      body: "CRITICAL: Narcotic discrepancy for {{medicationName}}. Expected: {{expectedCount}}, Actual: {{actualCount}}. Immediate attention required.",
+    },
+    IN_APP: {
+      body: "CRITICAL: Narcotic count discrepancy for {{medicationName}}. Expected: {{expectedCount}}, Actual: {{actualCount}}.",
+    },
+  },
+
+  REFILL_NEEDED: {
+    EMAIL: {
+      subject: "Medication refill needed: {{medicationName}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>{{medicationName}}</strong> for <strong>{{clientName}}</strong> is running low with only <strong>{{remainingDoses}}</strong> doses remaining.</p>
+
+<p>Last filled: {{lastFillDate}}</p>
+
+<p>Please initiate a refill request to ensure continuity of care.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{medicationName}} for {{clientName}} has {{remainingDoses}} doses remaining. Refill needed.",
+    },
+  },
+
+  REFILL_REQUEST_SUBMITTED: {
+    EMAIL: {
+      subject: "Refill request submitted: {{medicationName}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p>A refill request has been submitted for <strong>{{medicationName}}</strong> for <strong>{{clientName}}</strong>.</p>
+
+<p>Requested by: {{requestedBy}}<br>
+Request date: {{requestDate}}</p>
+
+<p>Please review and approve or deny this request.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Refill request submitted for {{clientName}}'s {{medicationName}} by {{requestedBy}}.",
+    },
+  },
+
+  REFILL_REQUEST_APPROVED: {
+    IN_APP: {
+      body: "Refill approved: {{medicationName}} for {{clientName}} by {{approvedBy}}.",
+    },
+  },
+
+  REFILL_REQUEST_DENIED: {
+    EMAIL: {
+      subject: "Refill request denied: {{medicationName}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p>The refill request for <strong>{{medicationName}}</strong> for <strong>{{clientName}}</strong> has been denied.</p>
+
+<p>Denied by: {{deniedBy}}<br>
+Reason: {{denialReason}}</p>
+
+<p>Please contact your supervisor if you have questions.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Refill denied: {{medicationName}} for {{clientName}}. Reason: {{denialReason}}",
+    },
+  },
+
+  DRUG_INTERACTION_ALERT: {
+    EMAIL: {
+      subject: "Drug interaction alert for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>Drug Interaction Alert:</strong> A potential interaction has been detected for <strong>{{clientName}}</strong>.</p>
+
+<ul>
+  <li><strong>Medication 1:</strong> {{medication1}}</li>
+  <li><strong>Medication 2:</strong> {{medication2}}</li>
+  <li><strong>Severity:</strong> {{interactionSeverity}}</li>
+</ul>
+
+<p>{{description}}</p>
+
+<p>Please review the medication list and consult with the prescriber if needed.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Drug interaction alert: {{medication1}} and {{medication2}} for {{clientName}}. Severity: {{interactionSeverity}}",
+    },
+  },
+
+  DRUG_ALLERGY_ALERT: {
+    EMAIL: {
+      subject: "CRITICAL: Drug allergy alert for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>CRITICAL Drug Allergy Alert:</strong> <strong>{{medicationName}}</strong> has been prescribed to <strong>{{clientName}}</strong>, who has a documented allergy to <strong>{{allergen}}</strong>.</p>
+
+<p>Previous reaction: {{reaction}}</p>
+
+<p><strong>Do not administer</strong> this medication until reviewed by the prescriber.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    SMS: {
+      body: "CRITICAL: {{medicationName}} prescribed to {{clientName}} who is allergic to {{allergen}}. Do not administer.",
+    },
+    IN_APP: {
+      body: "CRITICAL: {{medicationName}} for {{clientName}} - allergy to {{allergen}} documented!",
+    },
+  },
+
+  MEDICATION_EXPIRING: {
+    EMAIL: {
+      subject: "Medication expiring: {{medicationName}} for {{clientName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p><strong>{{medicationName}}</strong> for <strong>{{clientName}}</strong> will expire on <strong>{{expirationDate}}</strong> ({{daysRemaining}} days remaining).</p>
+
+<p>Please arrange for replacement medication before the expiration date.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "{{medicationName}} for {{clientName}} expires in {{daysRemaining}} days.",
+    },
+  },
+
+  MEDICATION_LOW_INVENTORY: {
+    EMAIL: {
+      subject: "Low medication inventory: {{medicationName}}",
+      body: `
+<p>Hi {{recipientName}},</p>
+
+<p>The inventory for <strong>{{medicationName}}</strong> is running low.</p>
+
+<p>Current quantity: {{currentQuantity}}<br>
+Minimum required: {{minimumQuantity}}</p>
+
+<p>Please reorder to maintain adequate stock levels.</p>
+
+<p>{{companyName}}</p>
+      `.trim(),
+    },
+    IN_APP: {
+      body: "Low inventory: {{medicationName}} has {{currentQuantity}} units (minimum: {{minimumQuantity}}).",
+    },
+  },
 };
 
 // ============================================

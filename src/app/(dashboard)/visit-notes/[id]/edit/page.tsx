@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -56,6 +57,7 @@ interface VisitNoteDetail {
 export default function EditVisitNotePage() {
   const router = useRouter();
   const params = useParams();
+  const { data: session, status } = useSession();
   const noteId = params.id as string;
 
   const [visitNote, setVisitNote] = React.useState<VisitNoteDetail | null>(null);
@@ -63,6 +65,13 @@ export default function EditVisitNotePage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [resubmitForReview, setResubmitForReview] = React.useState(false);
+
+  // Redirect sponsors away from edit page
+  React.useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "SPONSOR") {
+      router.replace("/visit-notes");
+    }
+  }, [session, status, router]);
 
   // Fetch visit note
   React.useEffect(() => {
@@ -88,6 +97,11 @@ export default function EditVisitNotePage() {
 
     fetchVisitNote();
   }, [noteId]);
+
+  // Show nothing while checking auth or if sponsor
+  if (status === "loading" || session?.user?.role === "SPONSOR") {
+    return null;
+  }
 
   const handleSubmit = async (data: VisitNoteData) => {
     setIsSubmitting(true);

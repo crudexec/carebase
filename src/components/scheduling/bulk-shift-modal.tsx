@@ -110,6 +110,9 @@ export function BulkShiftModal({
     }
   }, [isOpen, startDate]);
 
+  // Get client's timezone offset (in minutes)
+  const getTimezoneOffset = () => new Date().getTimezoneOffset();
+
   // Fetch preview when form changes
   const fetchPreview = useCallback(async () => {
     if (!clientId || !carerId || !startDate || selectedDays.length === 0) {
@@ -133,6 +136,7 @@ export function BulkShiftModal({
         selectedDays: selectedDays.join(","),
         startTime,
         endTime,
+        timezoneOffset: getTimezoneOffset().toString(),
       });
 
       const response = await fetch(`/api/scheduling/bulk?${params}`);
@@ -180,6 +184,7 @@ export function BulkShiftModal({
           startTime,
           endTime,
           skipConflicts,
+          timezoneOffset: getTimezoneOffset(),
         }),
       });
 

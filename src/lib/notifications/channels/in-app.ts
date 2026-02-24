@@ -61,6 +61,21 @@ const EVENT_TYPE_MAP: Record<NotificationEventType, string> = {
   CREDENTIAL_EXPIRED: "credential_expired",
   CREDENTIAL_RENEWED: "credential_renewed",
   CREDENTIAL_VERIFICATION_NEEDED: "credential_verification",
+  // eMAR
+  MEDICATION_DUE: "medication_due",
+  MEDICATION_OVERDUE: "medication_overdue",
+  MEDICATION_MISSED: "medication_missed",
+  PRN_FOLLOWUP_DUE: "prn_followup",
+  NARCOTIC_COUNT_REQUIRED: "narcotic_count",
+  NARCOTIC_DISCREPANCY: "narcotic_discrepancy",
+  REFILL_NEEDED: "refill_needed",
+  REFILL_REQUEST_SUBMITTED: "refill_request",
+  REFILL_REQUEST_APPROVED: "refill_approved",
+  REFILL_REQUEST_DENIED: "refill_denied",
+  DRUG_INTERACTION_ALERT: "drug_interaction",
+  DRUG_ALLERGY_ALERT: "drug_allergy",
+  MEDICATION_EXPIRING: "medication_expiring",
+  MEDICATION_LOW_INVENTORY: "medication_inventory",
 };
 
 export class InAppChannelProvider implements NotificationChannelProvider {

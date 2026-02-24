@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -66,11 +67,15 @@ const STATUS_CONFIG: Record<string, { variant: "default" | "warning" | "success"
 };
 
 export default function InvoicesPage() {
+  const { data: session } = useSession();
   const [invoices, setInvoices] = React.useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  // Check if user is a sponsor
+  const isSponsor = session?.user?.role === "SPONSOR";
 
   // Generate modal state
   const [showGenerateModal, setShowGenerateModal] = React.useState(false);
@@ -152,16 +157,20 @@ export default function InvoicesPage() {
             <RefreshCw className="w-4 h-4 mr-1" />
             Refresh
           </Button>
-          <Button variant="secondary" onClick={() => setShowGenerateModal(true)}>
-            <Zap className="w-4 h-4 mr-1" />
-            Generate from Shifts
-          </Button>
-          <Link href="/invoices/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-1" />
-              Create Invoice
-            </Button>
-          </Link>
+          {!isSponsor && (
+            <>
+              <Button variant="secondary" onClick={() => setShowGenerateModal(true)}>
+                <Zap className="w-4 h-4 mr-1" />
+                Generate from Shifts
+              </Button>
+              <Link href="/invoices/new">
+                <Button>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Invoice
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -221,15 +230,19 @@ export default function InvoicesPage() {
             <div className="text-center py-12">
               <Receipt className="w-12 h-12 text-foreground-tertiary mx-auto mb-4" />
               <p className="text-foreground-secondary">No invoices found</p>
-              <p className="text-sm text-foreground-tertiary mt-1">
-                Create your first invoice to get started
-              </p>
-              <Link href="/invoices/new">
-                <Button className="mt-4">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Create Invoice
-                </Button>
-              </Link>
+              {!isSponsor && (
+                <>
+                  <p className="text-sm text-foreground-tertiary mt-1">
+                    Create your first invoice to get started
+                  </p>
+                  <Link href="/invoices/new">
+                    <Button className="mt-4">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Create Invoice
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">

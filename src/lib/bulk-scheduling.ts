@@ -9,39 +9,55 @@ export type UnitType = "HOURLY" | "QUARTER_HOURLY" | "DAILY";
  * @param startDate - The first day to consider
  * @param numberOfWeeks - How many weeks to schedule
  * @param selectedDays - Array of day numbers (0 = Sunday, 6 = Saturday)
- * @returns Array of dates that match the pattern
+ * @param timezoneOffsetMinutes - Optional timezone offset to determine which day of week it is in user's timezone
+ * @returns Array of dates that match the pattern (at noon UTC)
  */
 export function generateBulkDates(
   startDate: Date | string,
   numberOfWeeks: number,
-  selectedDays: number[]
+  selectedDays: number[],
+  timezoneOffsetMinutes?: number
 ): Date[] {
   const dates: Date[] = [];
 
-  // Parse the date properly to avoid timezone issues
-  // If it's a string like "2024-02-01", parse it as local date
+  // Parse the date as UTC to avoid server timezone issues
   let start: Date;
   if (typeof startDate === "string") {
     const [year, month, day] = startDate.split("-").map(Number);
-    start = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid DST issues
+    // Create at noon UTC to avoid DST issues
+    start = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
   } else {
-    start = new Date(startDate);
-    start.setHours(12, 0, 0, 0); // Use noon to avoid DST issues
+    start = new Date(Date.UTC(
+      startDate.getUTCFullYear(),
+      startDate.getUTCMonth(),
+      startDate.getUTCDate(),
+      12, 0, 0, 0
+    ));
   }
 
   // Calculate end date (start + numberOfWeeks * 7 days)
   const endDate = new Date(start);
-  endDate.setDate(endDate.getDate() + numberOfWeeks * 7);
+  endDate.setUTCDate(endDate.getUTCDate() + numberOfWeeks * 7);
 
   // Iterate through each day in the range
   const current = new Date(start);
   while (current < endDate) {
-    if (selectedDays.includes(current.getDay())) {
-      // Create a clean date at noon for the result
+    // Get day of week - if timezone offset provided, adjust to get correct day in user's timezone
+    let dayOfWeek: number;
+    if (timezoneOffsetMinutes !== undefined) {
+      // Create a temporary date adjusted to user's timezone to get correct day
+      const userLocalDate = new Date(current.getTime() - timezoneOffsetMinutes * 60 * 1000);
+      dayOfWeek = userLocalDate.getUTCDay();
+    } else {
+      dayOfWeek = current.getUTCDay();
+    }
+
+    if (selectedDays.includes(dayOfWeek)) {
+      // Create a clean date at noon UTC for the result
       const resultDate = new Date(current);
       dates.push(resultDate);
     }
-    current.setDate(current.getDate() + 1);
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return dates;
@@ -51,21 +67,29 @@ export function generateBulkDates(
  * Combine a date with a time string to create a full DateTime
  * @param date - The date (time component will be replaced)
  * @param time - Time in HH:mm format
- * @returns Combined DateTime with the specified time
+ * @param timezoneOffsetMinutes - Optional timezone offset in minutes (from client's getTimezoneOffset())
+ *                                 Positive = behind UTC (e.g., +480 for UTC-8)
+ *                                 Negative = ahead of UTC (e.g., -480 for UTC+8)
+ * @returns Combined DateTime with the specified time in UTC
  */
-export function combineDateTime(date: Date, time: string): Date {
+export function combineDateTime(date: Date, time: string, timezoneOffsetMinutes?: number): Date {
   const [hours, minutes] = time.split(":").map(Number);
-  // Create a new date preserving year, month, day but setting the time
-  const result = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    hours,
-    minutes,
-    0,
-    0
-  );
-  return result;
+
+  // Get the date components in UTC to avoid server timezone issues
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+
+  // Create the date in UTC with the specified time
+  const utcDate = new Date(Date.UTC(year, month, day, hours, minutes, 0, 0));
+
+  // If timezone offset is provided, adjust from user's local time to UTC
+  // getTimezoneOffset() returns positive for behind UTC, so we ADD it to get UTC
+  if (timezoneOffsetMinutes !== undefined) {
+    utcDate.setUTCMinutes(utcDate.getUTCMinutes() + timezoneOffsetMinutes);
+  }
+
+  return utcDate;
 }
 
 /**

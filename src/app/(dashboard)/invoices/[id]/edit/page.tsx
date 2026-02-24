@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Breadcrumb } from "@/components/ui";
 import { InvoiceForm } from "@/components/invoices/invoice-form";
 import { RefreshCw } from "lucide-react";
@@ -46,11 +47,19 @@ interface Invoice {
 export default function EditInvoicePage() {
   const router = useRouter();
   const params = useParams();
+  const { data: session, status } = useSession();
   const invoiceId = params.id as string;
 
   const [invoice, setInvoice] = React.useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Redirect sponsors away from edit invoice page
+  React.useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "SPONSOR") {
+      router.replace("/invoices");
+    }
+  }, [session, status, router]);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -81,6 +90,11 @@ export default function EditInvoicePage() {
       fetchData();
     }
   }, [invoiceId]);
+
+  // Show nothing while checking auth or if sponsor
+  if (status === "loading" || session?.user?.role === "SPONSOR") {
+    return null;
+  }
 
   const breadcrumbItems = [
     { label: "Invoices", href: "/invoices" },

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -77,6 +78,7 @@ const WIZARD_STEPS = [
 export default function NewVisitNotePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
   const preselectedClientId = searchParams.get("clientId");
 
   // Wizard state
@@ -106,6 +108,13 @@ export default function NewVisitNotePage() {
   // Derived state
   const groupedShifts = React.useMemo(() => groupShiftsByDay(shifts), [shifts]);
   const clientDiagnoses = selectedShift?.client?.diagnosisCodes || [];
+
+  // Redirect sponsors away from new note page
+  React.useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "SPONSOR") {
+      router.replace("/visit-notes");
+    }
+  }, [session, status, router]);
 
   // Fetch shifts
   React.useEffect(() => {
@@ -188,6 +197,11 @@ export default function NewVisitNotePage() {
 
     fetchLastVisitNote();
   }, [selectedShift?.client?.id]);
+
+  // Show nothing while checking auth or if sponsor
+  if (status === "loading" || session?.user?.role === "SPONSOR") {
+    return null;
+  }
 
   // Navigation handlers
   const goToStep = (step: WizardStep) => {

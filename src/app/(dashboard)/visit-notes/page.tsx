@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Button,
   Card,
@@ -126,7 +127,11 @@ function TemplateCell({ note }: { note: VisitNoteListItem }) {
 
 export default function VisitNotesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [visitNotes, setVisitNotes] = React.useState<VisitNoteListItem[]>([]);
+
+  // Check if user is a sponsor (GUARDIAN role)
+  const isSponsor = session?.user?.role === "SPONSOR";
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
@@ -379,16 +384,18 @@ export default function VisitNotesPage() {
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/visit-notes/${row.id}/edit`);
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </button>
+            {!isSponsor && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/visit-notes/${row.id}/edit`);
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -401,29 +408,33 @@ export default function VisitNotesPage() {
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Send/Fax
-                setActionMenuOpen(null);
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Send / Fax
-            </button>
-            <hr className="my-1 border-border" />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActionMenuOpen(null);
-                openDeleteModal(row.id, `${row.client.firstName} ${row.client.lastName}`);
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm text-error hover:bg-background-secondary"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </button>
+            {!isSponsor && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Send/Fax
+                    setActionMenuOpen(null);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-background-secondary"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Send / Fax
+                </button>
+                <hr className="my-1 border-border" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActionMenuOpen(null);
+                    openDeleteModal(row.id, `${row.client.firstName} ${row.client.lastName}`);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-error hover:bg-background-secondary"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -447,18 +458,22 @@ export default function VisitNotesPage() {
           <Button variant="ghost" size="sm" onClick={fetchVisitNotes}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <Link href="/visit-notes/templates">
-            <Button variant="secondary" size="sm">
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Templates
-            </Button>
-          </Link>
-          <Link href="/visit-notes/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Note
-            </Button>
-          </Link>
+          {!isSponsor && (
+            <>
+              <Link href="/visit-notes/templates">
+                <Button variant="secondary" size="sm">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  Templates
+                </Button>
+              </Link>
+              <Link href="/visit-notes/new">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Note
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
