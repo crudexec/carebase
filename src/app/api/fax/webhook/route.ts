@@ -166,6 +166,9 @@ async function handleOutboundFaxUpdate(fax: SinchFaxWebhookPayload["fax"]) {
   console.log(`Looking up fax record with sinchFaxId: ${fax.id}`);
   const faxRecord = await prisma.faxRecord.findUnique({
     where: { sinchFaxId: fax.id },
+    include: {
+      conversation: true,
+    },
   });
 
   if (!faxRecord) {
@@ -193,6 +196,38 @@ async function handleOutboundFaxUpdate(fax: SinchFaxWebhookPayload["fax"]) {
       errorMessage: fax.errorMessage,
     },
   });
+
+  // Add status update message to conversation if it exists
+  if (faxRecord.conversationId && faxRecord.sentById) {
+    const newStatus = mapSinchStatus(fax.status);
+    let statusMessage = "";
+
+    if (newStatus === "COMPLETED") {
+      statusMessage = `✅ Fax delivered successfully!\n\nPages sent: ${fax.numberOfPages || "Unknown"}\nCompleted: ${fax.completedTime ? new Date(fax.completedTime).toLocaleString() : "Just now"}`;
+    } else if (newStatus === "FAILED") {
+      statusMessage = `❌ Fax failed to send\n\nError: ${fax.errorMessage || "Unknown error"}\nError code: ${fax.errorCode || "N/A"}`;
+    } else if (newStatus === "IN_PROGRESS") {
+      statusMessage = `⏳ Fax is being transmitted...`;
+    }
+
+    if (statusMessage) {
+      await prisma.inboxMessage.create({
+        data: {
+          conversationId: faxRecord.conversationId,
+          senderId: faxRecord.sentById,
+          content: statusMessage,
+          relatedEntityType: "FAX",
+          relatedEntityId: faxRecord.id,
+        },
+      });
+
+      // Update conversation's updatedAt
+      await prisma.conversation.update({
+        where: { id: faxRecord.conversationId },
+        data: { updatedAt: new Date() },
+      });
+    }
+  }
 
   // Create audit log for status update
   if (faxRecord.sentById) {

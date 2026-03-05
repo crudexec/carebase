@@ -98,6 +98,13 @@ function ClientCell({ note }: { note: VisitNoteListItem }) {
 
 // Shift Time Cell
 function ShiftTimeCell({ note }: { note: VisitNoteListItem }) {
+  if (!note.shift) {
+    return (
+      <div>
+        <span className="text-sm text-foreground-tertiary">Manual Entry</span>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="flex items-center gap-1.5">
@@ -264,9 +271,9 @@ export default function VisitNotesPage() {
             aVal = `${a.carer.firstName} ${a.carer.lastName}`.toLowerCase();
             bVal = `${b.carer.firstName} ${b.carer.lastName}`.toLowerCase();
             break;
-          case "shiftDate":
-            aVal = new Date(a.shift.scheduledStart).getTime();
-            bVal = new Date(b.shift.scheduledStart).getTime();
+          case "visitDate":
+            aVal = new Date(a.visitDate).getTime();
+            bVal = new Date(b.visitDate).getTime();
             break;
           case "submittedAt":
             aVal = new Date(a.submittedAt).getTime();
@@ -324,11 +331,11 @@ export default function VisitNotesPage() {
       cell: (row) => <TemplateCell note={row} />,
     },
     {
-      id: "shiftDate",
-      header: "Shift Date",
+      id: "visitDate",
+      header: "Visit Date",
       sortable: true,
       minWidth: "120px",
-      cell: (row) => <DateCell date={row.shift.scheduledStart} />,
+      cell: (row) => <DateCell date={row.visitDate} />,
     },
     {
       id: "shiftTime",

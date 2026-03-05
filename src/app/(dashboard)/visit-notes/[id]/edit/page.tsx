@@ -33,6 +33,7 @@ interface VisitNoteDetail {
   id: string;
   formSchemaSnapshot: FormSchemaSnapshot;
   data: VisitNoteData;
+  visitDate: string;
   submittedAt: string;
   qaStatus: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
   qaComment: string | null;
@@ -51,7 +52,7 @@ interface VisitNoteDetail {
     id: string;
     scheduledStart: string;
     scheduledEnd: string;
-  };
+  } | null;
 }
 
 export default function EditVisitNotePage() {
@@ -306,11 +307,17 @@ export default function EditVisitNotePage() {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-foreground-tertiary" />
-              <span className="text-foreground-secondary">Shift:</span>
+              <span className="text-foreground-secondary">Visit Date:</span>
               <span className="font-medium">
-                {formatDate(visitNote.shift.scheduledStart)},{" "}
-                {formatTime(visitNote.shift.scheduledStart)} -{" "}
-                {formatTime(visitNote.shift.scheduledEnd)}
+                {formatDate(visitNote.visitDate)}
+                {visitNote.shift && (
+                  <span className="text-foreground-secondary ml-2">
+                    ({formatTime(visitNote.shift.scheduledStart)} - {formatTime(visitNote.shift.scheduledEnd)})
+                  </span>
+                )}
+                {!visitNote.shift && (
+                  <span className="text-foreground-tertiary ml-2">(Manual Entry)</span>
+                )}
               </span>
             </div>
             <div className="flex items-center gap-2">

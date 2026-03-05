@@ -200,20 +200,14 @@ export const administrationsQuerySchema = z.object({
 });
 
 export const refillsQuerySchema = z.object({
-  clientId: z.string().optional(),
-  medicationId: z.string().optional(),
-  status: z.preprocess(
-    (val) => (val === null || val === "" ? undefined : val),
-    z.nativeEnum(RefillRequestStatus).optional()
-  ),
-  page: z.preprocess(
-    (val) => (val === null || val === "" ? 1 : val),
-    z.coerce.number().int().positive().default(1)
-  ),
-  limit: z.preprocess(
-    (val) => (val === null || val === "" ? 20 : val),
-    z.coerce.number().int().positive().max(100).default(20)
-  ),
+  clientId: z.string().nullish().transform(val => val || undefined),
+  medicationId: z.string().nullish().transform(val => val || undefined),
+  status: z.string().nullish().transform(val => {
+    if (!val || val === "") return undefined;
+    return val as RefillRequestStatus;
+  }).pipe(z.nativeEnum(RefillRequestStatus).optional()),
+  page: z.coerce.number().int().positive().default(1).catch(1),
+  limit: z.coerce.number().int().positive().max(100).default(20).catch(20),
 });
 
 // Type exports

@@ -173,12 +173,13 @@ export interface VisitNoteListItem {
   id: string;
   templateName: string;
   templateVersion: number;
+  visitDate: string;
   submittedAt: string;
   shift: {
     id: string;
     scheduledStart: string;
     scheduledEnd: string;
-  };
+  } | null;
   client: {
     id: string;
     firstName: string;
@@ -195,6 +196,7 @@ export interface VisitNoteDetail {
   id: string;
   formSchemaSnapshot: FormSchemaSnapshot;
   data: VisitNoteData;
+  visitDate: string;
   submittedAt: string;
   updatedAt: string;
   templateId: string;
@@ -211,7 +213,7 @@ export interface VisitNoteDetail {
     id: string;
     scheduledStart: string;
     scheduledEnd: string;
-  };
+  } | null;
   client: {
     id: string;
     firstName: string;

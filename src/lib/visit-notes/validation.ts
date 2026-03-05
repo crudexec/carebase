@@ -130,8 +130,9 @@ export const visitNoteDataSchema = z.record(z.string(), z.any());
 
 export const createVisitNoteSchema = z.object({
   templateId: z.string().min(1),
-  shiftId: z.string().min(1),
+  shiftId: z.string().min(1).optional(), // Optional - for shift-based notes
   clientId: z.string().min(1),
+  visitDate: z.string().optional(), // Required if no shiftId (ISO date string)
   data: visitNoteDataSchema,
 });
 

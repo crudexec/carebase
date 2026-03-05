@@ -108,6 +108,7 @@ export async function GET(
       id: visitNote.id,
       formSchemaSnapshot: schemaSnapshot,
       data: visitNote.data as unknown as VisitNoteData,
+      visitDate: visitNote.visitDate?.toISOString() || visitNote.submittedAt.toISOString(),
       submittedAt: visitNote.submittedAt.toISOString(),
       updatedAt: visitNote.updatedAt.toISOString(),
       templateId: visitNote.templateId,
@@ -118,11 +119,11 @@ export async function GET(
       qaComment: visitNote.qaComment,
       qaReviewedAt: visitNote.qaReviewedAt?.toISOString() || null,
       qaReviewedBy: visitNote.qaReviewedBy,
-      shift: {
+      shift: visitNote.shift ? {
         id: visitNote.shift.id,
         scheduledStart: visitNote.shift.scheduledStart.toISOString(),
         scheduledEnd: visitNote.shift.scheduledEnd.toISOString(),
-      },
+      } : null,
       client: visitNote.client,
       carer: visitNote.carer,
       submittedBy: visitNote.submittedBy,

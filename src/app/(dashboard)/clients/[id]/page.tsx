@@ -41,7 +41,9 @@ import {
   CalendarPlus,
   Stethoscope,
   FileCheck,
+  TrendingUp,
 } from "lucide-react";
+import { TrendReportBuilder } from "@/components/reports/trend-report-builder";
 import { StaffSearchSelect } from "@/components/staff";
 import { SponsorSearchSelect } from "@/components/sponsors";
 
@@ -174,7 +176,7 @@ const STATUS_COLORS: Record<ClientStatus, "primary" | "success" | "warning" | "e
   INACTIVE: "error",
 };
 
-type TabType = "details" | "activity" | "notes" | "assessments" | "authorizations" | "care-plans";
+type TabType = "details" | "activity" | "notes" | "assessments" | "authorizations" | "care-plans" | "trends";
 
 const AUTH_STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   PENDING: { label: "Pending", color: "bg-warning/10 text-warning", icon: Clock },
@@ -710,6 +712,17 @@ export default function ClientDetailPage() {
           >
             <HeartPulse className="w-4 h-4 inline mr-2" />
             Plans of Care
+          </button>
+          <button
+            onClick={() => setActiveTab("trends")}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "trends"
+                ? "border-primary text-primary"
+                : "border-transparent text-foreground-secondary hover:text-foreground"
+            }`}
+          >
+            <TrendingUp className="w-4 h-4 inline mr-2" />
+            Trends
           </button>
         </nav>
       </div>
@@ -1365,6 +1378,25 @@ export default function ClientDetailPage() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === "trends" && (
+        <div>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Visit Note Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground-secondary mb-4">
+                Track numeric field values from visit notes over time. Select a template and fields to visualize trends.
+              </p>
+            </CardContent>
+          </Card>
+          <TrendReportBuilder initialClientId={clientId} />
+        </div>
       )}
     </div>
   );

@@ -6,9 +6,8 @@ import { Prisma } from "@prisma/client";
 import {
   createVisitNoteSchema,
   visitNoteListQuerySchema,
-  validateFieldValue,
 } from "@/lib/visit-notes/validation";
-import { FormSchemaSnapshot } from "@/lib/visit-notes/types";
+import { FormSchemaSnapshot, FieldConfig } from "@/lib/visit-notes/types";
 import { processThresholdBreaches } from "@/lib/notifications/threshold-breach";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -135,6 +134,7 @@ export async function GET(request: Request) {
         select: {
           id: true,
           formSchemaSnapshot: true,
+          visitDate: true,
           submittedAt: true,
           shift: {
             select: {
@@ -172,12 +172,13 @@ export async function GET(request: Request) {
         id: note.id,
         templateName: snapshot.templateName,
         templateVersion: snapshot.version,
+        visitDate: (note.visitDate || note.submittedAt).toISOString(),
         submittedAt: note.submittedAt.toISOString(),
-        shift: {
+        shift: note.shift ? {
           id: note.shift.id,
           scheduledStart: note.shift.scheduledStart.toISOString(),
           scheduledEnd: note.shift.scheduledEnd.toISOString(),
-        },
+        } : null,
         client: note.client,
         carer: note.carer,
       };
@@ -227,44 +228,91 @@ export async function POST(request: Request) {
       );
     }
 
-    const { templateId, shiftId, clientId, data } = validation.data;
+    const { templateId, shiftId, clientId, visitDate, data } = validation.data;
 
-    // Get the shift - admins/managers can access any shift in their company
-    const shift = await prisma.shift.findFirst({
-      where: {
-        id: shiftId,
-        companyId: user.companyId,
-        // If user can manage all, don't restrict by carer
-        ...(canManageAll ? {} : { carerId: user.id }),
-      },
-      include: {
-        carer: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
+    // Variables that will be set based on whether we have a shift or not
+    let finalCarerId: string;
+    let carerInfo: { id: string; firstName: string; lastName: string };
+    let shiftInfo: { id: string; scheduledStart: Date; scheduledEnd: Date } | null = null;
+    let isSubmittedOnBehalf = false;
+
+    if (shiftId) {
+      // Shift-based visit note - existing flow
+      const shift = await prisma.shift.findFirst({
+        where: {
+          id: shiftId,
+          companyId: user.companyId,
+          // If user can manage all, don't restrict by carer
+          ...(canManageAll ? {} : { carerId: user.id }),
+        },
+        include: {
+          carer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!shift) {
-      return NextResponse.json(
-        { error: "Shift not found or not accessible" },
-        { status: 404 }
-      );
+      if (!shift) {
+        return NextResponse.json(
+          { error: "Shift not found or not accessible" },
+          { status: 404 }
+        );
+      }
+
+      // Verify the client matches the shift
+      if (shift.clientId !== clientId) {
+        return NextResponse.json(
+          { error: "Client does not match shift assignment" },
+          { status: 400 }
+        );
+      }
+
+      finalCarerId = shift.carerId;
+      carerInfo = shift.carer;
+      shiftInfo = {
+        id: shift.id,
+        scheduledStart: shift.scheduledStart,
+        scheduledEnd: shift.scheduledEnd,
+      };
+      isSubmittedOnBehalf = shift.carerId !== user.id;
+    } else {
+      // Manual entry - no shift required
+      // Validate that visitDate is provided
+      if (!visitDate) {
+        return NextResponse.json(
+          { error: "visitDate is required when no shift is specified" },
+          { status: 400 }
+        );
+      }
+
+      // Verify client access
+      const client = await prisma.client.findFirst({
+        where: {
+          id: clientId,
+          companyId: user.companyId,
+        },
+        select: { id: true },
+      });
+
+      if (!client) {
+        return NextResponse.json(
+          { error: "Client not found or not accessible" },
+          { status: 404 }
+        );
+      }
+
+      // For manual entry, the current user is the carer
+      finalCarerId = user.id;
+      carerInfo = {
+        id: user.id,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+      };
     }
-
-    // Verify the client matches the shift
-    if (shift.clientId !== clientId) {
-      return NextResponse.json(
-        { error: "Client does not match shift assignment" },
-        { status: 400 }
-      );
-    }
-
-    // Determine if this is being submitted on behalf of someone else
-    const isSubmittedOnBehalf = shift.carerId !== user.id;
 
     // Get the template with its full structure
     const template = await prisma.formTemplate.findFirst({
@@ -316,7 +364,7 @@ export async function POST(request: Request) {
           type: field.type,
           required: field.required,
           order: field.order,
-          config: field.config as any,
+          config: field.config as FieldConfig,
         })),
       })),
     };
@@ -364,16 +412,22 @@ export async function POST(request: Request) {
       }
     }
 
+    // Determine the visit date
+    const effectiveVisitDate = shiftInfo
+      ? shiftInfo.scheduledStart
+      : new Date(visitDate as string);
+
     // Create the visit note
     const visitNote = await prisma.visitNote.create({
       data: {
         companyId: user.companyId,
         templateId,
         templateVersion: template.version,
-        shiftId,
+        shiftId: shiftId || null,
         clientId,
-        carerId: shift.carerId, // The carer assigned to the shift
+        carerId: finalCarerId, // The carer (from shift or current user for manual entry)
         submittedById: user.id, // Who actually submitted the note
+        visitDate: effectiveVisitDate,
         formSchemaSnapshot: formSchemaSnapshot as unknown as Prisma.InputJsonValue,
         data: processedData as unknown as Prisma.InputJsonValue,
         // Automatically submit for QA review
@@ -432,26 +486,38 @@ export async function POST(request: Request) {
         changes: {
           templateId,
           templateName: template.name,
-          shiftId,
+          shiftId: shiftId || undefined,
           clientId,
-          carerId: shift.carerId,
-          carerName: `${shift.carer.firstName} ${shift.carer.lastName}`,
+          carerId: finalCarerId,
+          carerName: `${carerInfo.firstName} ${carerInfo.lastName}`,
           submittedById: user.id,
           submittedOnBehalf: isSubmittedOnBehalf,
+          manualEntry: !shiftId,
         },
       },
     });
 
     // Process threshold breaches - detect and send notifications
     try {
+      // Determine visit date: from shift if available, otherwise from visitDate param or submission time
+      const effectiveVisitDate = shiftInfo
+        ? shiftInfo.scheduledStart.toISOString()
+        : visitDate || new Date().toISOString();
+
+      // Get client info for threshold breach notifications
+      const clientInfo = await prisma.client.findUnique({
+        where: { id: clientId },
+        select: { firstName: true, lastName: true },
+      });
+
       await processThresholdBreaches({
         visitNoteId: visitNote.id,
         companyId: user.companyId,
         clientId,
-        carerId: shift.carerId,
-        clientName: `${visitNote.client.firstName} ${visitNote.client.lastName}`,
-        carerName: `${visitNote.carer.firstName} ${visitNote.carer.lastName}`,
-        visitDate: visitNote.shift.scheduledStart.toISOString(),
+        carerId: finalCarerId,
+        clientName: clientInfo ? `${clientInfo.firstName} ${clientInfo.lastName}` : "Unknown",
+        carerName: `${carerInfo.firstName} ${carerInfo.lastName}`,
+        visitDate: effectiveVisitDate,
         formSchemaSnapshot,
         data: processedData,
       });

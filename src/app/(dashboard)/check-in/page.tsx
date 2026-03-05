@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +16,12 @@ import {
   AlertCircle,
   RefreshCw,
   Calendar,
+  StickyNote,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
+import { ShiftData as ShiftDetailData } from "@/components/scheduling/shift-card";
 
 interface TodayAttendance {
   id: string;
@@ -44,10 +49,41 @@ interface ShiftData {
 
 export default function CheckInPage() {
   const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
   const [shifts, setShifts] = useState<ShiftData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedShift, setSelectedShift] = useState<ShiftDetailData | null>(null);
+
+  // Navigate to add note
+  const handleAddNote = (clientId: string) => {
+    router.push(`/visit-notes/new?clientId=${clientId}`);
+  };
+
+  // Open shift detail modal
+  const handleOpenShift = (shift: ShiftData) => {
+    // Convert to ShiftDetailData format
+    setSelectedShift({
+      id: shift.id,
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+      actualStart: shift.actualStart || undefined,
+      actualEnd: shift.actualEnd || undefined,
+      status: shift.status,
+      client: {
+        id: shift.client.id,
+        firstName: shift.client.firstName,
+        lastName: shift.client.lastName,
+        address: shift.client.address || undefined,
+      },
+      carer: {
+        id: session?.user?.id || "",
+        firstName: session?.user?.firstName || "",
+        lastName: session?.user?.lastName || "",
+      },
+    });
+  };
 
   // Fetch shifts
   const fetchShifts = useCallback(async () => {
@@ -85,25 +121,16 @@ export default function CheckInPage() {
     return shiftStart <= todayEnd && shiftEnd >= todayStart;
   };
 
-  // Check if shift can be checked into today
+  // Check if shift can be checked into
   const canCheckIn = (shift: ShiftData) => {
-    // Must be today's shift
-    if (!isShiftToday(shift)) return false;
-
     // Must not be completed or cancelled
     if (shift.status === "COMPLETED" || shift.status === "CANCELLED") return false;
 
     // Check if already checked in today
     if (shift.todayAttendance?.checkInTime) return false;
 
-    const shiftStart = new Date(shift.scheduledStart);
-    const shiftEnd = new Date(shift.scheduledEnd);
-    const now = new Date();
-
-    // Can check in up to 30 minutes before shift starts and before shift ends
-    const thirtyMinsBefore = new Date(shiftStart.getTime() - 30 * 60 * 1000);
-
-    return now >= thirtyMinsBefore && now <= shiftEnd;
+    // Allow check-in for any scheduled or in-progress shift (no time restriction)
+    return true;
   };
 
   // Check if can check out today
@@ -248,21 +275,11 @@ export default function CheckInPage() {
     );
   }
 
-  if (session?.user?.role !== "CARER") {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="w-12 h-12 mx-auto text-error mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Access Denied</h2>
-            <p className="text-sm text-foreground-secondary">
-              Only carers can access the check-in page.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Check if user can manage shifts (for displaying manage options in modal)
+  const canManageShifts = session?.user?.role === "ADMIN" ||
+    session?.user?.role === "OPS_MANAGER" ||
+    session?.user?.role === "SUPERVISOR" ||
+    session?.user?.role === "STAFF";
 
   return (
     <div className="space-y-6">
@@ -441,14 +458,25 @@ export default function CheckInPage() {
                               {multiDay ? "Done for Today" : "Shift Completed"}
                             </div>
                           )}
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleAddNote(shift.client.id)}
+                          >
+                            <StickyNote className="w-4 h-4 mr-2" />
+                            Add Note
+                          </Button>
                         </div>
 
-                        {/* Info message if can't check in yet */}
-                        {!completedToday && !checkOutEnabled && !checkInEnabled && (
-                          <p className="text-xs text-foreground-tertiary text-center">
-                            Check-in available 30 minutes before shift starts
-                          </p>
-                        )}
+                        {/* View Details Button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleOpenShift(shift)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Shift Details
+                        </Button>
                       </CardContent>
                     </Card>
                   );
@@ -497,7 +525,7 @@ export default function CheckInPage() {
                           </span>
                         </div>
                       </CardHeader>
-                      <CardContent className="pt-0">
+                      <CardContent className="pt-0 space-y-3">
                         <div className="space-y-2">
                           {shift.client.address && (
                             <div className="flex items-start gap-2 text-sm">
@@ -506,6 +534,42 @@ export default function CheckInPage() {
                             </div>
                           )}
                         </div>
+                        {/* Action buttons for upcoming shifts */}
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1"
+                            onClick={() => handleCheckIn(shift.id)}
+                            disabled={actionLoading === shift.id || !canCheckIn(shift)}
+                          >
+                            {actionLoading === shift.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Checking In...
+                              </>
+                            ) : (
+                              <>
+                                <LogIn className="w-4 h-4 mr-2" />
+                                Check In
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleAddNote(shift.client.id)}
+                          >
+                            <StickyNote className="w-4 h-4 mr-2" />
+                            Add Note
+                          </Button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleOpenShift(shift)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Shift Details
+                        </Button>
                       </CardContent>
                     </Card>
                   );
@@ -515,6 +579,17 @@ export default function CheckInPage() {
           )}
         </div>
       )}
+
+      {/* Shift Detail Modal */}
+      <ShiftDetailModal
+        isOpen={!!selectedShift}
+        onClose={() => {
+          setSelectedShift(null);
+          fetchShifts(); // Refresh after closing modal in case check-in/out happened
+        }}
+        shift={selectedShift}
+        canManage={canManageShifts}
+      />
     </div>
   );
 }

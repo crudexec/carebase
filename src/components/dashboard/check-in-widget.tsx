@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Clock,
@@ -12,6 +13,7 @@ import {
   CheckCircle,
   AlertCircle,
   ChevronRight,
+  StickyNote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CollapsibleWidget } from "./collapsible-widget";
@@ -40,10 +42,15 @@ interface ShiftData {
 }
 
 export function CheckInWidget() {
+  const router = useRouter();
   const [shifts, setShifts] = useState<ShiftData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handleAddNote = (clientId: string) => {
+    router.push(`/visit-notes/new?clientId=${clientId}`);
+  };
 
   const fetchShifts = useCallback(async () => {
     try {
@@ -252,43 +259,52 @@ export function CheckInWidget() {
                 )}
 
                 {/* Action buttons */}
-                {!completedToday && !checkOutEnabled && checkInEnabled && (
+                <div className="flex gap-2">
+                  {!completedToday && !checkOutEnabled && checkInEnabled && (
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleCheckIn(shift.id)}
+                      disabled={isActionLoading}
+                    >
+                      {isActionLoading ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
+                        <LogIn className="w-4 h-4 mr-1" />
+                      )}
+                      Check In
+                    </Button>
+                  )}
+                  {checkOutEnabled && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => handleCheckOut(shift.id)}
+                      disabled={isActionLoading}
+                    >
+                      {isActionLoading ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
+                        <LogOut className="w-4 h-4 mr-1" />
+                      )}
+                      Check Out
+                    </Button>
+                  )}
+                  {completedToday && (
+                    <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs text-success">
+                      <CheckCircle className="w-4 h-4" />
+                      Done for Today
+                    </div>
+                  )}
                   <Button
                     size="sm"
-                    className="w-full"
-                    onClick={() => handleCheckIn(shift.id)}
-                    disabled={isActionLoading}
+                    variant="ghost"
+                    onClick={() => handleAddNote(shift.client.id)}
                   >
-                    {isActionLoading ? (
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                    ) : (
-                      <LogIn className="w-4 h-4 mr-1" />
-                    )}
-                    Check In
+                    <StickyNote className="w-4 h-4" />
                   </Button>
-                )}
-                {checkOutEnabled && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => handleCheckOut(shift.id)}
-                    disabled={isActionLoading}
-                  >
-                    {isActionLoading ? (
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                    ) : (
-                      <LogOut className="w-4 h-4 mr-1" />
-                    )}
-                    Check Out
-                  </Button>
-                )}
-                {completedToday && (
-                  <div className="flex items-center justify-center gap-1.5 py-1.5 text-xs text-success">
-                    <CheckCircle className="w-4 h-4" />
-                    Done for Today
-                  </div>
-                )}
+                </div>
               </div>
             );
           })

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Clock, User, MapPin, Calendar, AlertTriangle, Loader2, FileText, CheckCircle2, LogIn, LogOut, PenLine, XCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { X, Clock, User, MapPin, Calendar, AlertTriangle, Loader2, FileText, CheckCircle2, LogIn, LogOut, PenLine, XCircle, Plus, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShiftData, VisitNoteData } from "./shift-card";
@@ -31,10 +33,15 @@ export function ShiftDetailModal({
   canManage = false,
   isCancelling = false,
 }: ShiftDetailModalProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [fullShift, setFullShift] = useState<ShiftData | null>(null);
   const [fetchId, setFetchId] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showMissedVisitModal, setShowMissedVisitModal] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkInError, setCheckInError] = useState<string | null>(null);
 
   // Derive loading state from comparing the current shift id with the fetched one
   const isLoadingDetails = isOpen && shift && (!fullShift || fullShift.id !== shift.id);
@@ -112,6 +119,74 @@ export function ShiftDetailModal({
   const isCheckedIn = !!displayShift.actualStart;
   const isCheckedOut = !!displayShift.actualEnd;
   const visitNotes = displayShift.visitNotes || [];
+
+  // Check if current user can perform check-in/check-out
+  // Assigned carer can always check in/out their own shifts
+  // Managers can also check in/out on behalf of carers
+  const isAssignedCarer = session?.user?.id === displayShift.carer.id;
+  const canManageShifts = canManage; // Passed from parent - admins, ops managers, etc.
+  const canPerformCheckActions = isAssignedCarer || canManageShifts;
+
+  // Allow check-in for SCHEDULED shifts (or IN_PROGRESS for multi-day that needs daily check-in)
+  const canCheckIn = canPerformCheckActions &&
+    (displayShift.status === "SCHEDULED" || displayShift.status === "IN_PROGRESS") &&
+    !isCheckedIn;
+
+  // Allow check-out for IN_PROGRESS shifts that are checked in
+  const canCheckOut = canPerformCheckActions &&
+    displayShift.status === "IN_PROGRESS" &&
+    isCheckedIn &&
+    !isCheckedOut;
+
+  // Check-in handler
+  const handleCheckIn = async () => {
+    try {
+      setIsCheckingIn(true);
+      setCheckInError(null);
+      const response = await fetch(`/api/check-in/${displayShift.id}/check-in`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to check in");
+      }
+      // Refetch shift details to update the UI
+      setFetchId(null);
+    } catch (error) {
+      setCheckInError(error instanceof Error ? error.message : "Failed to check in");
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  // Check-out handler
+  const handleCheckOut = async () => {
+    try {
+      setIsCheckingOut(true);
+      setCheckInError(null);
+      const response = await fetch(`/api/check-in/${displayShift.id}/check-out`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to check out");
+      }
+      // Refetch shift details to update the UI
+      setFetchId(null);
+    } catch (error) {
+      setCheckInError(error instanceof Error ? error.message : "Failed to check out");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  // Navigate to add note
+  const handleAddNote = () => {
+    router.push(`/visit-notes/new?clientId=${displayShift.client.id}`);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -377,6 +452,74 @@ export function ShiftDetailModal({
               </div>
             )}
           </div>
+
+          {/* Check-in/Check-out Error */}
+          {checkInError && (
+            <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-sm text-error">
+              {checkInError}
+            </div>
+          )}
+
+          {/* Quick Actions for Check-in/Check-out */}
+          {(canCheckIn || canCheckOut) && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2">
+              <h5 className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Quick Actions
+              </h5>
+              <div className="flex gap-2">
+                {canCheckIn && (
+                  <Button
+                    className="flex-1"
+                    onClick={handleCheckIn}
+                    disabled={isCheckingIn}
+                  >
+                    {isCheckingIn ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Checking In...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Check In
+                      </>
+                    )}
+                  </Button>
+                )}
+                {canCheckOut && (
+                  <Button
+                    className="flex-1"
+                    variant="secondary"
+                    onClick={handleCheckOut}
+                    disabled={isCheckingOut}
+                  >
+                    {isCheckingOut ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Checking Out...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Check Out
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Add Note Button */}
+          <Button
+            variant="secondary"
+            onClick={handleAddNote}
+            className="w-full"
+          >
+            <StickyNote className="w-4 h-4 mr-2" />
+            Add Visit Note
+          </Button>
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t">

@@ -11,8 +11,11 @@ import {
   User,
   MapPin,
   Play,
+  LogIn,
   LogOut,
+  StickyNote,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { format, formatDistanceToNow, isToday, isTomorrow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
@@ -54,6 +57,7 @@ function formatShiftTime(start: string, end: string): string {
 
 export function ShiftsWidget() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [activeShifts, setActiveShifts] = React.useState<Shift[]>([]);
   const [upcomingShifts, setUpcomingShifts] = React.useState<Shift[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -62,6 +66,44 @@ export function ShiftsWidget() {
 
   const isCarer = session?.user?.role === "CARER";
   const userId = session?.user?.id;
+  const [checkingIn, setCheckingIn] = React.useState<string | null>(null);
+
+  const handleAddNote = (e: React.MouseEvent, clientId: string) => {
+    e.stopPropagation();
+    router.push(`/visit-notes/new?clientId=${clientId}`);
+  };
+
+  const handleCheckIn = async (e: React.MouseEvent, shiftId: string) => {
+    e.stopPropagation();
+    try {
+      setCheckingIn(shiftId);
+      const response = await fetch(`/api/check-in/${shiftId}/check-in`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to check in");
+      }
+      // Refresh the shifts list
+      const [activeRes, upcomingRes] = await Promise.all([
+        fetch("/api/shifts?filter=active&limit=5"),
+        fetch("/api/shifts?filter=upcoming&limit=5"),
+      ]);
+      if (activeRes.ok) {
+        const data = await activeRes.json();
+        setActiveShifts(data.shifts || []);
+      }
+      if (upcomingRes.ok) {
+        const data = await upcomingRes.json();
+        setUpcomingShifts(data.shifts || []);
+      }
+    } catch (error) {
+      console.error("Check-in failed:", error);
+    } finally {
+      setCheckingIn(null);
+    }
+  };
 
   const handleCheckOut = async (e: React.MouseEvent, shiftId: string) => {
     e.stopPropagation();
@@ -195,11 +237,11 @@ export function ShiftsWidget() {
             </div>
           </button>
           {isMyShift && (
-            <div className="mt-2 ml-11">
+            <div className="mt-2 ml-11 flex gap-2">
               <Button
                 size="sm"
                 variant="secondary"
-                className="w-full"
+                className="flex-1"
                 onClick={(e) => handleCheckOut(e, shift.id)}
                 disabled={isCheckingOut}
               >
@@ -215,6 +257,13 @@ export function ShiftsWidget() {
                   </>
                 )}
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => handleAddNote(e, shift.client.id)}
+              >
+                <StickyNote className="w-4 h-4" />
+              </Button>
             </div>
           )}
         </div>
@@ -222,46 +271,88 @@ export function ShiftsWidget() {
     );
   };
 
-  const renderUpcomingShift = (shift: Shift) => (
-    <li key={shift.id}>
-      <button
-        onClick={() => handleShiftClick(shift)}
-        className="block w-full text-left px-3 py-2 rounded-md transition-colors hover:bg-background-secondary"
-      >
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Clock className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-foreground truncate">
-                {shift.client.firstName} {shift.client.lastName}
-              </p>
-              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/10 text-primary">
-                Scheduled
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-              <Clock className="w-3 h-3" />
-              <span>{formatShiftTime(shift.scheduledStart, shift.scheduledEnd)}</span>
-            </div>
-            {shift.carer && (
-              <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                <User className="w-3 h-3" />
-                <span>{shift.carer.firstName} {shift.carer.lastName}</span>
+  const renderUpcomingShift = (shift: Shift) => {
+    const isMyShift = isCarer && shift.carer?.id === userId;
+    const isCheckingIn = checkingIn === shift.id;
+    // Allow check-in for any scheduled shift (no time restriction)
+    const canCheckIn = isMyShift && shift.status === "SCHEDULED";
+
+    return (
+      <li key={shift.id}>
+        <div className="px-3 py-2 rounded-md transition-colors hover:bg-background-secondary">
+          <button
+            onClick={() => handleShiftClick(shift)}
+            className="block w-full text-left"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-primary" />
               </div>
-            )}
-            {shift.client.address && (
-              <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
-                <MapPin className="w-3 h-3" />
-                <span className="truncate">{shift.client.address}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {shift.client.firstName} {shift.client.lastName}
+                  </p>
+                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/10 text-primary">
+                    Scheduled
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatShiftTime(shift.scheduledStart, shift.scheduledEnd)}</span>
+                </div>
+                {shift.carer && (
+                  <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
+                    <User className="w-3 h-3" />
+                    <span>{shift.carer.firstName} {shift.carer.lastName}</span>
+                  </div>
+                )}
+                {shift.client.address && (
+                  <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
+                    <MapPin className="w-3 h-3" />
+                    <span className="truncate">{shift.client.address}</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </button>
+          {(canCheckIn || isMyShift) && (
+            <div className="mt-2 ml-11 flex gap-2">
+              {canCheckIn && (
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => handleCheckIn(e, shift.id)}
+                  disabled={isCheckingIn}
+                >
+                  {isCheckingIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Checking In...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 mr-1" />
+                      Check In
+                    </>
+                  )}
+                </Button>
+              )}
+              {isMyShift && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => handleAddNote(e, shift.client.id)}
+                >
+                  <StickyNote className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
-      </button>
-    </li>
-  );
+      </li>
+    );
+  };
 
   const badge = totalShifts > 0 ? (
     <div className="flex items-center gap-1">

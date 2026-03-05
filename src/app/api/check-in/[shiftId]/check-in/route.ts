@@ -53,9 +53,16 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (user.role !== "CARER") {
+    // Allow carers and managers to check in
+    const canCheckIn = user.role === "CARER" ||
+      user.role === "ADMIN" ||
+      user.role === "OPS_MANAGER" ||
+      user.role === "SUPERVISOR" ||
+      user.role === "STAFF";
+
+    if (!canCheckIn) {
       return NextResponse.json(
-        { error: "Only carers can check in" },
+        { error: "You don't have permission to check in" },
         { status: 403 }
       );
     }
@@ -95,8 +102,11 @@ export async function POST(
       return NextResponse.json({ error: "Shift not found" }, { status: 404 });
     }
 
-    // Verify this shift belongs to the carer
-    if (shift.carerId !== user.id) {
+    // Verify this shift belongs to the user (if carer) or user has management permissions
+    const isAssignedCarer = shift.carerId === user.id;
+    const isManager = user.role === "ADMIN" || user.role === "OPS_MANAGER" || user.role === "SUPERVISOR" || user.role === "STAFF";
+
+    if (!isAssignedCarer && !isManager) {
       return NextResponse.json(
         { error: "This shift is not assigned to you" },
         { status: 403 }

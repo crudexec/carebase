@@ -143,7 +143,33 @@ export async function POST(
       ? `${webhookBaseUrl.replace(/\/$/, "")}/api/fax/webhook`
       : undefined;
 
-    // Create fax record
+    // Create inbox conversation for fax tracking
+    const faxSubject = `Fax: Visit Note - ${visitNote.client.firstName} ${visitNote.client.lastName}`;
+    const faxRecipient = recipientName || visitNote.client.physicianName || "Unknown Recipient";
+    const initialMessage = `📠 Sending fax to ${faxRecipient}\n\nFax Number: ${formattedFaxNumber}\nDocument: Visit Note\nClient: ${visitNote.client.firstName} ${visitNote.client.lastName}\n\nStatus: Queued`;
+
+    const conversation = await prisma.conversation.create({
+      data: {
+        subject: faxSubject,
+        companyId,
+        createdById: userId,
+        participants: {
+          create: {
+            userId,
+            lastReadAt: new Date(),
+          },
+        },
+        messages: {
+          create: {
+            content: initialMessage,
+            senderId: userId,
+            relatedEntityType: "FAX",
+          },
+        },
+      },
+    });
+
+    // Create fax record linked to conversation
     const faxRecord = await prisma.faxRecord.create({
       data: {
         direction: "OUTBOUND",
@@ -158,13 +184,25 @@ export async function POST(
         companyId,
         sentById: userId,
         clientId: visitNote.client.id,
+        conversationId: conversation.id,
+      },
+    });
+
+    // Update the message with the fax record ID
+    await prisma.inboxMessage.updateMany({
+      where: {
+        conversationId: conversation.id,
+        relatedEntityType: "FAX",
+      },
+      data: {
+        relatedEntityId: faxRecord.id,
       },
     });
 
     try {
       // Send fax via Sinch
       const clientName = `${visitNote.client.firstName}-${visitNote.client.lastName}`.replace(/\s+/g, "-");
-      const noteDate = new Date(visitNote.shift.scheduledStart).toISOString().split("T")[0];
+      const noteDate = new Date(visitNote.shift?.scheduledStart || visitNote.submittedAt).toISOString().split("T")[0];
 
       const sinchResponse = await sendFax({
         to: formattedFaxNumber,
@@ -265,7 +303,7 @@ async function generateVisitNotePDF(visitNote: {
     physicianFax: string | null;
   };
   carer: { firstName: string; lastName: string };
-  shift: { scheduledStart: Date; scheduledEnd: Date };
+  shift: { scheduledStart: Date; scheduledEnd: Date } | null;
   formSchemaSnapshot: unknown;
   data: unknown;
   submittedAt: Date;
@@ -395,8 +433,10 @@ async function generateVisitNotePDF(visitNote: {
   y += 6;
 
   doc.setFont("helvetica", "normal");
-  const shiftDate = formatDate(visitNote.shift.scheduledStart);
-  const shiftTime = `${formatTime(visitNote.shift.scheduledStart)} - ${formatTime(visitNote.shift.scheduledEnd)}`;
+  const shiftDate = formatDate(visitNote.shift?.scheduledStart || visitNote.submittedAt);
+  const shiftTime = visitNote.shift
+    ? `${formatTime(visitNote.shift.scheduledStart)} - ${formatTime(visitNote.shift.scheduledEnd)}`
+    : "Manual Entry";
   doc.text(`Date: ${shiftDate}`, margin + 5, y);
   doc.text(`Time: ${shiftTime}`, margin + 80, y);
   y += 5;

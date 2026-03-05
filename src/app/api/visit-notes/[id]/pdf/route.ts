@@ -566,8 +566,10 @@ export async function GET(
     y += 6;
 
     doc.setFont("helvetica", "normal");
-    const shiftDate = formatDate(visitNote.shift.scheduledStart);
-    const shiftTime = `${formatTime(visitNote.shift.scheduledStart)} - ${formatTime(visitNote.shift.scheduledEnd)}`;
+    const shiftDate = visitNote.shift ? formatDate(visitNote.shift.scheduledStart) : formatDate(visitNote.submittedAt);
+    const shiftTime = visitNote.shift
+      ? `${formatTime(visitNote.shift.scheduledStart)} - ${formatTime(visitNote.shift.scheduledEnd)}`
+      : "Manual Entry";
     doc.text(`Date: ${shiftDate}`, margin + 5, y);
     doc.text(`Time: ${shiftTime}`, margin + 80, y);
     y += 5;
@@ -738,7 +740,7 @@ export async function GET(
 
     // Create filename
     const clientName = `${visitNote.client.firstName}-${visitNote.client.lastName}`.replace(/\s+/g, "-");
-    const noteDate = formatDate(visitNote.shift.scheduledStart).replace(/[,\s]+/g, "-");
+    const noteDate = formatDate(visitNote.shift?.scheduledStart || visitNote.submittedAt).replace(/[,\s]+/g, "-");
     const filename = `visit-note-${clientName}-${noteDate}.pdf`;
 
     // Return PDF as downloadable file

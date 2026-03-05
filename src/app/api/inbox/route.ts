@@ -84,6 +84,13 @@ export async function GET(request: Request) {
               lastName: true,
             },
           },
+          faxRecords: {
+            take: 1,
+            select: {
+              id: true,
+              status: true,
+            },
+          },
         },
         orderBy: { updatedAt: "desc" },
         skip: (page - 1) * limit,
@@ -110,6 +117,8 @@ export async function GET(request: Request) {
         ? new Date(lastMessage.createdAt) > new Date(userParticipant.lastReadAt)
         : !!lastMessage && !userParticipant?.lastReadAt;
 
+      const faxRecord = conv.faxRecords?.[0];
+
       return {
         id: conv.id,
         subject: conv.subject,
@@ -128,10 +137,13 @@ export async function GET(request: Request) {
               content: lastMessage.content.substring(0, 100),
               createdAt: lastMessage.createdAt.toISOString(),
               sender: lastMessage.sender,
+              relatedEntityType: lastMessage.relatedEntityType,
             }
           : null,
         hasUnread,
         isArchived: userParticipant?.isArchived ?? false,
+        isFaxConversation: !!faxRecord,
+        faxStatus: faxRecord?.status || null,
       };
     });
 

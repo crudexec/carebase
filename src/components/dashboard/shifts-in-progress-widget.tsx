@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Clock, ArrowRight, Loader2, User, MapPin, Play, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Clock, ArrowRight, Loader2, User, MapPin, Play, LogOut, StickyNote } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
@@ -31,6 +32,7 @@ interface Shift {
 
 export function ShiftsInProgressWidget() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [shifts, setShifts] = React.useState<Shift[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedShift, setSelectedShift] = React.useState<ShiftData | null>(null);
@@ -38,6 +40,11 @@ export function ShiftsInProgressWidget() {
 
   const isCarer = session?.user?.role === "CARER";
   const userId = session?.user?.id;
+
+  const handleAddNote = (e: React.MouseEvent, clientId: string) => {
+    e.stopPropagation();
+    router.push(`/visit-notes/new?clientId=${clientId}`);
+  };
 
   const handleCheckOut = async (e: React.MouseEvent, shiftId: string) => {
     e.stopPropagation(); // Prevent opening the modal
@@ -195,13 +202,13 @@ export function ShiftsInProgressWidget() {
                       </div>
                     </button>
 
-                    {/* Check-out button for carers */}
+                    {/* Check-out button and Add Note for carers */}
                     {isMyShift && (
-                      <div className="mt-2 ml-11">
+                      <div className="mt-2 ml-11 flex gap-2">
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="w-full"
+                          className="flex-1"
                           onClick={(e) => handleCheckOut(e, shift.id)}
                           disabled={isCheckingOut}
                         >
@@ -216,6 +223,13 @@ export function ShiftsInProgressWidget() {
                               Check Out
                             </>
                           )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => handleAddNote(e, shift.client.id)}
+                        >
+                          <StickyNote className="w-4 h-4" />
                         </Button>
                       </div>
                     )}

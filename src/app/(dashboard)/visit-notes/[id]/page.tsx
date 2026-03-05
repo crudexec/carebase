@@ -645,22 +645,32 @@ export default function ViewVisitNotePage() {
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-foreground-tertiary" />
               <div>
-                <p className="text-xs text-foreground-tertiary">Shift Date</p>
+                <p className="text-xs text-foreground-tertiary">Visit Date</p>
                 <p className="font-medium">
-                  {formatDate(visitNote.shift.scheduledStart)}
+                  {formatDate(visitNote.visitDate)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-foreground-tertiary" />
-              <div>
-                <p className="text-xs text-foreground-tertiary">Shift Time</p>
-                <p className="font-medium">
-                  {formatTime(visitNote.shift.scheduledStart)} -{" "}
-                  {formatTime(visitNote.shift.scheduledEnd)}
-                </p>
+            {visitNote.shift ? (
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 text-foreground-tertiary" />
+                <div>
+                  <p className="text-xs text-foreground-tertiary">Shift Time</p>
+                  <p className="font-medium">
+                    {formatTime(visitNote.shift.scheduledStart)} -{" "}
+                    {formatTime(visitNote.shift.scheduledEnd)}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 text-foreground-tertiary" />
+                <div>
+                  <p className="text-xs text-foreground-tertiary">Entry Type</p>
+                  <p className="font-medium">Manual Entry</p>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

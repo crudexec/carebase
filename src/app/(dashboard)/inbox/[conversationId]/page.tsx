@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Send, Users, Archive, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Users, Archive, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
@@ -24,6 +24,8 @@ interface Message {
     lastName: string;
   };
   isOwn: boolean;
+  relatedEntityType?: string | null;
+  relatedEntityId?: string | null;
 }
 
 interface Conversation {
@@ -239,36 +241,52 @@ export default function ConversationPage() {
 
             {/* Messages */}
             <div className="space-y-3">
-              {group.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn("flex", message.isOwn ? "justify-end" : "justify-start")}
-                >
+              {group.messages.map((message) => {
+                const isFaxMessage = message.relatedEntityType === "FAX";
+
+                return (
                   <div
-                    className={cn(
-                      "max-w-[70%] rounded-lg px-4 py-2.5",
-                      message.isOwn
-                        ? "bg-primary text-white"
-                        : "bg-background-secondary text-foreground"
-                    )}
+                    key={message.id}
+                    className={cn("flex", message.isOwn ? "justify-end" : "justify-start")}
                   >
-                    {!message.isOwn && (
-                      <p className="text-xs font-medium mb-1 opacity-70">
-                        {message.sender.firstName} {message.sender.lastName}
-                      </p>
-                    )}
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    <p
+                    <div
                       className={cn(
-                        "text-xs mt-1",
-                        message.isOwn ? "text-white/70" : "text-foreground-secondary"
+                        "max-w-[70%] rounded-lg px-4 py-2.5",
+                        isFaxMessage
+                          ? "bg-amber-50 border border-amber-200 text-foreground"
+                          : message.isOwn
+                            ? "bg-primary text-white"
+                            : "bg-background-secondary text-foreground"
                       )}
                     >
-                      {formatMessageDate(message.createdAt)}
-                    </p>
+                      {isFaxMessage && (
+                        <div className="flex items-center gap-1.5 text-amber-700 text-xs font-medium mb-1.5">
+                          <FileText className="w-3.5 h-3.5" />
+                          Fax Update
+                        </div>
+                      )}
+                      {!message.isOwn && !isFaxMessage && (
+                        <p className="text-xs font-medium mb-1 opacity-70">
+                          {message.sender.firstName} {message.sender.lastName}
+                        </p>
+                      )}
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p
+                        className={cn(
+                          "text-xs mt-1",
+                          isFaxMessage
+                            ? "text-amber-600"
+                            : message.isOwn
+                              ? "text-white/70"
+                              : "text-foreground-secondary"
+                        )}
+                      >
+                        {formatMessageDate(message.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}

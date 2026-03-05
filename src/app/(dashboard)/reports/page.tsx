@@ -27,6 +27,7 @@ import {
   Clock,
   CheckCircle,
   BarChart3,
+  LineChart as LineChartIcon,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import {
@@ -290,13 +291,22 @@ export default function ReportsPage() {
             Generate reports on clients, staff, shifts, and visit notes
           </p>
         </div>
-        <Button
-          variant="secondary"
-          onClick={() => router.push("/reports/visit-notes")}
-        >
-          <ClipboardList className="w-4 h-4 mr-2" />
-          Visit Note Field Reports
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/reports/trends")}
+          >
+            <LineChartIcon className="w-4 h-4 mr-2" />
+            Trends Report
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/reports/visit-notes")}
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            Visit Note Field Reports
+          </Button>
+        </div>
       </div>
 
       {/* Entity Selection */}

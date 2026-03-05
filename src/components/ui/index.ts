@@ -11,6 +11,7 @@ export {
 } from "./card";
 export { Input } from "./input";
 export { DateInput } from "./date-input";
+export { DatePicker, DateInput as CalendarDateInput } from "./date-picker";
 export { Label } from "./label";
 export { Textarea } from "./textarea";
 export { Select } from "./select";

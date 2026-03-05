@@ -13,17 +13,21 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const query = refillsQuerySchema.safeParse({
+    const rawParams = {
       clientId: searchParams.get("clientId"),
       medicationId: searchParams.get("medicationId"),
       status: searchParams.get("status"),
       page: searchParams.get("page"),
       limit: searchParams.get("limit"),
-    });
+    };
+    console.log("[Refills API] Raw params:", rawParams);
+
+    const query = refillsQuerySchema.safeParse(rawParams);
 
     if (!query.success) {
+      console.error("[Refills API] Validation error:", query.error.issues);
       return NextResponse.json(
-        { error: "Invalid query parameters", details: query.error.format() },
+        { error: "Invalid query parameters", details: query.error.issues },
         { status: 400 }
       );
     }

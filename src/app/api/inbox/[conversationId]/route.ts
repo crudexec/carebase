@@ -141,6 +141,8 @@ export async function GET(
           createdAt: m.createdAt.toISOString(),
           sender: m.sender,
           isOwn: m.senderId === user.id,
+          relatedEntityType: m.relatedEntityType,
+          relatedEntityId: m.relatedEntityId,
         })),
       },
       pagination: {

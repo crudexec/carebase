@@ -491,6 +491,9 @@ model Company {
   narcoticCountRecords      NarcoticCountRecord[]
   refillRequests            RefillRequest[]
 
+  // Saved reports
+  savedReports SavedReport[]
+
   @@index([isActive])
 }
 
@@ -635,6 +638,9 @@ model User {
   refillsRequested              RefillRequest[]            @relation("RefillRequester")
   refillsResponded              RefillRequest[]            @relation("RefillResponder")
   refillsReceived               RefillRequest[]            @relation("RefillReceiver")
+
+  // Saved reports
+  savedReports SavedReport[] @relation("UserSavedReports")
 
   // Password reset tokens
   passwordResetTokens PasswordResetToken[]
@@ -1304,6 +1310,7 @@ model Conversation {
   // Relations
   participants ConversationParticipant[]
   messages     InboxMessage[]
+  faxRecords   FaxRecord[]
 
   @@index([companyId])
   @@index([createdById])
@@ -1342,9 +1349,14 @@ model InboxMessage {
   senderId String
   sender   User   @relation("InboxMessageSender", fields: [senderId], references: [id])
 
+  // Related entity (for faxes, etc.)
+  relatedEntityType String? // e.g., "FAX", "VISIT_NOTE"
+  relatedEntityId   String? // ID of the related entity
+
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+  @@index([relatedEntityType, relatedEntityId])
 }
 
 model Escalation {
@@ -1423,6 +1435,31 @@ model AuditLog {
   @@index([entityType])
   @@index([createdAt])
   @@index([companyId])
+}
+
+// ============================================
+// SAVED REPORTS
+// ============================================
+
+model SavedReport {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  type        String // "VISIT_NOTE_TRENDS", etc.
+  config      Json // { clientId, templateId, fieldIds, defaultTimeRange, etc. }
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("UserSavedReports", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([createdById])
+  @@index([type])
 }
 
 // ============================================
@@ -1506,7 +1543,8 @@ model VisitNote {
   id                 String   @id @default(cuid())
   formSchemaSnapshot Json // Complete form structure at submission
   data               Json // { [fieldId]: value }
-  submittedAt        DateTime @default(now())
+  visitDate          DateTime? // The actual date of the visit (null for legacy records)
+  submittedAt        DateTime  @default(now())
   updatedAt          DateTime @updatedAt
 
   // Company relation
@@ -1518,9 +1556,9 @@ model VisitNote {
   template        FormTemplate @relation(fields: [templateId], references: [id])
   templateVersion Int
 
-  // Context relations
-  shiftId String
-  shift   Shift  @relation(fields: [shiftId], references: [id])
+  // Context relations (optional - for manual entry without shift)
+  shiftId String?
+  shift   Shift?  @relation(fields: [shiftId], references: [id])
 
   // The carer assigned to the shift
   carerId String
@@ -1554,6 +1592,7 @@ model VisitNote {
   @@index([shiftId])
   @@index([carerId])
   @@index([clientId])
+  @@index([visitDate])
   @@index([submittedAt])
   @@index([submittedById])
   @@index([qaStatus])
@@ -3126,12 +3165,17 @@ model FaxRecord {
   // eMAR - Refill requests sent via fax
   refillRequests RefillRequest[]
 
+  // Inbox conversation for fax tracking
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+
   @@index([companyId])
   @@index([status])
   @@index([direction])
   @@index([createdAt])
   @@index([carePlanId])
   @@index([clientId])
+  @@index([conversationId])
 }
 
 // ============================================

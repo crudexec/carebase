@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Plus, Archive, Users } from "lucide-react";
+import { Mail, Plus, Archive, Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -23,6 +23,7 @@ interface LastMessage {
     firstName: string;
     lastName: string;
   };
+  relatedEntityType?: string | null;
 }
 
 interface Conversation {
@@ -34,6 +35,8 @@ interface Conversation {
   lastMessage: LastMessage | null;
   hasUnread: boolean;
   isArchived: boolean;
+  isFaxConversation?: boolean;
+  faxStatus?: string | null;
 }
 
 export default function InboxPage() {
@@ -153,8 +156,15 @@ export default function InboxPage() {
                   )}
                 >
                   {/* Avatar */}
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium">
-                    {conversation.participants.length > 2 ? (
+                  <div className={cn(
+                    "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-medium",
+                    conversation.isFaxConversation
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-primary/10 text-primary"
+                  )}>
+                    {conversation.isFaxConversation ? (
+                      <FileText className="w-5 h-5" />
+                    ) : conversation.participants.length > 2 ? (
                       <Users className="w-5 h-5" />
                     ) : (
                       getInitials(conversation.participants)
@@ -178,16 +188,31 @@ export default function InboxPage() {
                         </p>
 
                         {/* Subject */}
-                        <p
-                          className={cn(
-                            "text-sm truncate mt-0.5",
-                            conversation.hasUnread
-                              ? "text-foreground font-medium"
-                              : "text-foreground"
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p
+                            className={cn(
+                              "text-sm truncate",
+                              conversation.hasUnread
+                                ? "text-foreground font-medium"
+                                : "text-foreground"
+                            )}
+                          >
+                            {conversation.subject}
+                          </p>
+                          {conversation.isFaxConversation && conversation.faxStatus && (
+                            <span className={cn(
+                              "text-xs px-1.5 py-0.5 rounded-full flex-shrink-0",
+                              conversation.faxStatus === "COMPLETED" && "bg-green-100 text-green-700",
+                              conversation.faxStatus === "FAILED" && "bg-red-100 text-red-700",
+                              conversation.faxStatus === "QUEUED" && "bg-blue-100 text-blue-700",
+                              conversation.faxStatus === "IN_PROGRESS" && "bg-yellow-100 text-yellow-700"
+                            )}>
+                              {conversation.faxStatus === "COMPLETED" ? "Delivered" :
+                               conversation.faxStatus === "FAILED" ? "Failed" :
+                               conversation.faxStatus === "IN_PROGRESS" ? "Sending" : "Queued"}
+                            </span>
                           )}
-                        >
-                          {conversation.subject}
-                        </p>
+                        </div>
 
                         {/* Last message preview */}
                         {conversation.lastMessage && (
