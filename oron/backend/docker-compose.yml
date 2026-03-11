@@ -1,8 +1,0 @@
-services:
-  backend_api:
-    container_name: 'backend'
-    build: .
-    restart: always
-    volumes:
-      - .:/app/
-      - /app/node_modules

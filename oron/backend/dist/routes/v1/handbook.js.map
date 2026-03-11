@@ -1,1 +1,0 @@
-{"version":3,"file":"handbook.js","sourceRoot":"","sources":["../../../src/routes/v1/handbook.ts"],"names":[],"mappings":";;AAAA,qCAAiC;AAEjC,mEAAwF;AACxF,kDAA+C;AAE/C,MAAM,MAAM,GAAG,IAAA,gBAAM,GAAE,CAAC;AAExB,MAAM,CAAC,IAAI,CAAC,QAAQ,EAAE,CAAC,mBAAQ,CAAC,EAAE,gCAAa,CAAC,CAAC;AACjD,MAAM,CAAC,GAAG,CAAC,WAAW,EAAE,CAAC,mBAAQ,CAAC,EAAE,4CAAyB,CAAC,CAAC;AAE/D,kBAAe,MAAM,CAAC"}
