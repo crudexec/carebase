@@ -111,15 +111,15 @@ export function DataTable<T>({
 
   const renderSortIcon = (columnId: string) => {
     if (sortColumn !== columnId) {
-      return <ChevronsUpDown className="w-4 h-4 text-foreground-tertiary" />;
+      return <ChevronsUpDown className="w-3 h-3 text-gray-400" />;
     }
     if (sortDirection === "asc") {
-      return <ChevronUp className="w-4 h-4 text-primary" />;
+      return <ChevronUp className="w-3 h-3 text-blue-600" />;
     }
     if (sortDirection === "desc") {
-      return <ChevronDown className="w-4 h-4 text-primary" />;
+      return <ChevronDown className="w-3 h-3 text-blue-600" />;
     }
-    return <ChevronsUpDown className="w-4 h-4 text-foreground-tertiary" />;
+    return <ChevronsUpDown className="w-3 h-3 text-gray-400" />;
   };
 
   const getCellValue = (row: T, column: ColumnDef<T>): React.ReactNode => {
@@ -128,18 +128,18 @@ export function DataTable<T>({
     }
     if (column.accessorKey) {
       const value = getNestedValue(row, column.accessorKey as string);
-      if (value === null || value === undefined) return "-";
+      if (value === null || value === undefined) return <span className="text-gray-400">-</span>;
       return String(value);
     }
-    return "-";
+    return <span className="text-gray-400">-</span>;
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className={cn("rounded-lg border border-border bg-background", className)}>
+      <div className={cn("bg-white rounded border border-gray-200", className)}>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
         </div>
       </div>
     );
@@ -148,14 +148,14 @@ export function DataTable<T>({
   // Empty state
   if (data.length === 0) {
     return (
-      <div className={cn("rounded-lg border border-border bg-background", className)}>
-        <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className={cn("bg-white rounded border border-gray-200", className)}>
+        <div className="flex flex-col items-center justify-center py-12 px-4">
           {emptyState || (
             <>
               {emptyIcon && (
-                <div className="text-foreground-tertiary mb-4">{emptyIcon}</div>
+                <div className="text-gray-400 mb-3">{emptyIcon}</div>
               )}
-              <p className="text-foreground-secondary text-center">{emptyMessage}</p>
+              <p className="text-gray-500 text-sm text-center">{emptyMessage}</p>
             </>
           )}
         </div>
@@ -164,11 +164,11 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn("rounded-lg border border-border bg-background overflow-hidden", className)}>
+    <div className={cn("bg-white rounded border border-gray-200 overflow-hidden", className)}>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full text-xs">
           <thead className={cn(
-            "bg-background-secondary/50 border-b border-border",
+            "bg-gray-50 border-b border-gray-200",
             stickyHeader && "sticky top-0 z-10"
           )}>
             <tr>
@@ -176,12 +176,11 @@ export function DataTable<T>({
                 <th
                   key={column.id}
                   className={cn(
-                    "text-left text-xs font-semibold text-foreground-secondary uppercase tracking-wider",
-                    compact ? "px-3 py-2" : "px-4 py-3",
+                    "text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wide",
                     column.align === "center" && "text-center",
                     column.align === "right" && "text-right",
                     column.hideOnMobile && "hidden md:table-cell",
-                    column.sortable && onSortChange && "cursor-pointer select-none hover:bg-background-secondary/80 transition-colors",
+                    column.sortable && onSortChange && "cursor-pointer select-none hover:text-gray-900 hover:bg-gray-100 transition-colors",
                     column.className
                   )}
                   style={{
@@ -201,55 +200,51 @@ export function DataTable<T>({
                 </th>
               ))}
               {rowActions && (
-                <th className={cn(
-                  "text-right text-xs font-semibold text-foreground-secondary uppercase tracking-wider",
-                  compact ? "px-3 py-2" : "px-4 py-3",
-                  "w-20"
-                )}>
+                <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wide w-16">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
-            {data.map((row) => (
-              <tr
-                key={getRowKey(row)}
-                className={cn(
-                  "transition-all duration-300",
-                  clickableRows && onRowClick && "cursor-pointer hover:bg-background-secondary/50",
-                  getRowClassName?.(row)
-                )}
-                onClick={() => clickableRows && onRowClick?.(row)}
-              >
-                {columns.map((column) => (
-                  <td
-                    key={column.id}
-                    className={cn(
-                      "text-sm text-foreground",
-                      compact ? "px-3 py-2" : "px-4 py-3",
-                      column.align === "center" && "text-center",
-                      column.align === "right" && "text-right",
-                      column.hideOnMobile && "hidden md:table-cell",
-                      column.className
-                    )}
-                  >
-                    {getCellValue(row, column)}
-                  </td>
-                ))}
-                {rowActions && (
-                  <td
-                    className={cn(
-                      "text-right",
-                      compact ? "px-3 py-2" : "px-4 py-3"
-                    )}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {rowActions(row)}
-                  </td>
-                )}
-              </tr>
-            ))}
+          <tbody>
+            {data.map((row, index) => {
+              const isEven = index % 2 === 0;
+              return (
+                <tr
+                  key={getRowKey(row)}
+                  className={cn(
+                    "border-b border-gray-100 transition-colors",
+                    isEven ? "bg-white" : "bg-gray-50/50",
+                    clickableRows && onRowClick && "cursor-pointer hover:bg-blue-50",
+                    getRowClassName?.(row)
+                  )}
+                  onClick={() => clickableRows && onRowClick?.(row)}
+                >
+                  {columns.map((column) => (
+                    <td
+                      key={column.id}
+                      className={cn(
+                        "px-3 py-1.5 text-[11px] text-gray-700",
+                        column.align === "center" && "text-center",
+                        column.align === "right" && "text-right",
+                        column.hideOnMobile && "hidden md:table-cell",
+                        column.className
+                      )}
+                    >
+                      {getCellValue(row, column)}
+                    </td>
+                  ))}
+                  {rowActions && (
+                    <td
+                      className="px-3 py-1.5 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {rowActions(row)}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -267,16 +262,16 @@ interface StatusCellProps {
 
 export function StatusCell({ status, label, variant = "default" }: StatusCellProps) {
   const variantClasses = {
-    primary: "bg-primary/10 text-primary",
-    success: "bg-success/10 text-success",
-    warning: "bg-warning/10 text-warning",
-    error: "bg-error/10 text-error",
-    default: "bg-foreground-tertiary/10 text-foreground-secondary",
+    primary: "bg-blue-100 text-blue-700",
+    success: "bg-green-100 text-green-700",
+    warning: "bg-yellow-100 text-yellow-700",
+    error: "bg-red-100 text-red-700",
+    default: "bg-gray-100 text-gray-700",
   };
 
   return (
     <span className={cn(
-      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+      "inline-block px-1.5 py-0.5 rounded text-[10px] font-medium",
       variantClasses[variant]
     )}>
       {label || status}
@@ -291,7 +286,7 @@ interface DateCellProps {
 }
 
 export function DateCell({ date, format = "short", showTime = false }: DateCellProps) {
-  if (!date) return <span className="text-foreground-tertiary">-</span>;
+  if (!date) return <span className="text-gray-400">-</span>;
 
   const dateObj = typeof date === "string" ? new Date(date) : date;
 
@@ -303,7 +298,7 @@ export function DateCell({ date, format = "short", showTime = false }: DateCellP
   };
 
   return (
-    <span className="text-foreground-secondary whitespace-nowrap">
+    <span className="text-gray-700 whitespace-nowrap text-[11px]">
       {dateObj.toLocaleDateString("en-US", options)}
     </span>
   );
@@ -321,25 +316,27 @@ export function UserCell({ firstName, lastName, email, avatar, subtitle }: UserC
   const name = [firstName, lastName].filter(Boolean).join(" ");
   const initials = [firstName?.[0], lastName?.[0]].filter(Boolean).join("").toUpperCase();
 
-  if (!name && !email) return <span className="text-foreground-tertiary">-</span>;
+  if (!name && !email) return <span className="text-gray-400">-</span>;
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       {avatar ? (
         <img
           src={avatar}
           alt={name}
-          className="w-8 h-8 rounded-full object-cover"
+          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
-          {initials || "?"}
+        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+          <span className="text-[10px] font-medium text-green-700">
+            {initials || "?"}
+          </span>
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{name || email}</p>
+        <p className="text-xs font-medium text-gray-900 truncate">{name || email}</p>
         {subtitle && (
-          <p className="text-xs text-foreground-secondary truncate">{subtitle}</p>
+          <p className="text-[10px] text-gray-500 truncate">{subtitle}</p>
         )}
       </div>
     </div>
@@ -361,11 +358,11 @@ export function DateRangeCell({ startDate, endDate }: DateRangeCellProps) {
   const start = formatDate(startDate);
   const end = formatDate(endDate);
 
-  if (!start && !end) return <span className="text-foreground-tertiary">-</span>;
-  if (!end) return <span className="text-foreground-secondary">{start} - Present</span>;
+  if (!start && !end) return <span className="text-gray-400">-</span>;
+  if (!end) return <span className="text-gray-700 text-[11px]">{start} - Present</span>;
 
   return (
-    <span className="text-foreground-secondary whitespace-nowrap">
+    <span className="text-gray-700 whitespace-nowrap text-[11px]">
       {start} - {end}
     </span>
   );
