@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createOasisE2Template, OASIS_E2_STATS } from "@/lib/oasis/templates";
+import { OasisSectionCode, OasisTimePoint } from "@prisma/client";
 
 /**
  * POST /api/oasis/templates/seed
@@ -38,7 +39,7 @@ export async function POST() {
         isDefault: templateData.isDefault,
         sections: {
           create: templateData.sections.map(section => ({
-            code: section.code,
+            code: section.code as OasisSectionCode,
             name: section.name,
             description: section.description,
             order: section.order,
@@ -51,10 +52,10 @@ export async function POST() {
                 fieldType: item.fieldType,
                 required: item.required,
                 order: item.order,
-                visibleAt: item.visibleAt,
+                visibleAt: item.visibleAt as OasisTimePoint[],
                 config: item.config as object,
                 skipLogic: item.skipLogic as object[],
-                validationRules: item.validation
+                validationRules: item.validation ?? undefined
               }))
             }
           }))

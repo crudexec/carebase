@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FieldValue } from "@/lib/visit-notes/types";
+import { FieldValue, FormSectionData } from "@/lib/visit-notes/types";
 import { FieldRenderer } from "@/components/visit-notes/form-renderer/field-renderer";
 import { Loader2 } from "lucide-react";
 

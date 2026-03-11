@@ -62,9 +62,7 @@ const SECTION_CODES: { code: OasisSectionCode; name: string }[] = [
   { code: "M", name: "Skin Conditions" },
   { code: "N", name: "Medications" },
   { code: "O", name: "Special Treatments and Procedures" },
-  { code: "P", name: "Restraints" },
   { code: "Q", name: "Participation in Assessment" },
-  { code: "Z", name: "Assessment Administration" },
 ];
 
 const DEFAULT_TEMPLATE: TemplateData = {

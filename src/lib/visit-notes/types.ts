@@ -310,6 +310,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   NUMERIC_COUNTER: "Numeric Counter",
   STRUCTURED_ID: "Structured ID",
   MULTI_DIAGNOSIS: "Multi-Diagnosis",
+  REPEATABLE_GROUP: "Repeatable Group",
 };
 
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
@@ -337,6 +338,7 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   NUMERIC_COUNTER: "Stepper input for counting items (e.g., pressure ulcers)",
   STRUCTURED_ID: "Formatted ID input (e.g., NPI, Medicare number)",
   MULTI_DIAGNOSIS: "Multiple ICD-10 diagnoses with primary/secondary designation",
+  REPEATABLE_GROUP: "Group of fields that can be repeated multiple times",
 };
 
 // Helper to check if field type requires config

@@ -28,6 +28,7 @@ import {
   PlusSquare,
   KeyRound,
   FilePlus2,
+  Layers,
 } from "lucide-react";
 
 const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: string }>> = {
@@ -55,6 +56,7 @@ const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: 
   NUMERIC_COUNTER: PlusSquare,
   STRUCTURED_ID: KeyRound,
   MULTI_DIAGNOSIS: FilePlus2,
+  REPEATABLE_GROUP: Layers,
 };
 
 interface FieldTypeSelectorProps {

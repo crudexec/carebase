@@ -25,7 +25,7 @@ import {
 } from "@/components/ui";
 import { FormFieldType } from "@prisma/client";
 import { ICD10DiagnosisValue, BodyMapMarker } from "@/lib/visit-notes/types";
-import { CascadingSelectValue } from "@/lib/care-plans/types";
+import { CascadingSelectValue, RepeatableGroupItemValue } from "@/lib/care-plans/types";
 import { STANDARD_CARE_PLAN_TEMPLATE } from "@/lib/care-plans/standard-template";
 
 interface Client {
@@ -75,6 +75,7 @@ type FieldValue =
   | ICD10DiagnosisValue[]
   | BodyMapMarker[]
   | CascadingSelectValue
+  | RepeatableGroupItemValue[]
   | { fileUrl: string; fileName: string; fileType: string; fileSize: number }
   | null;
 

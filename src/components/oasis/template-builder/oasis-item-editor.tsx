@@ -5,7 +5,7 @@ import { Button, Input, Textarea, Select, Checkbox, Label } from "@/components/u
 import { Trash2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TemplateItemData } from "./oasis-template-builder";
-import type { OasisTimePoint } from "@/lib/oasis/types";
+import type { OasisTimePoint, OasisAssessorDiscipline } from "@/lib/oasis/types";
 import { FormFieldType } from "@prisma/client";
 import { OasisFieldConfigEditor } from "./oasis-field-config-editor";
 
@@ -29,7 +29,7 @@ const _DISCIPLINES: { value: OasisAssessorDiscipline; label: string }[] = [
   { value: "RN", label: "Registered Nurse" },
   { value: "PT", label: "Physical Therapist" },
   { value: "OT", label: "Occupational Therapist" },
-  { value: "SLP", label: "Speech-Language Pathologist" },
+  { value: "ST", label: "Speech Therapist" },
 ];
 
 const FIELD_TYPES: { value: FormFieldType; label: string; description: string }[] = [
