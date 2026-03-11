@@ -63,6 +63,7 @@ export function ShiftsWidget() {
   const [checkingOut, setCheckingOut] = React.useState<string | null>(null);
 
   const isCarer = session?.user?.role === "CARER";
+  const isAdmin = ["ADMIN", "OPS_MANAGER", "SUPERVISOR", "STAFF"].includes(session?.user?.role || "");
   const userId = session?.user?.id;
   const [checkingIn, setCheckingIn] = React.useState<string | null>(null);
 
@@ -200,6 +201,7 @@ export function ShiftsWidget() {
     const startTime = shift.actualStart || shift.scheduledStart;
     const duration = formatDistanceToNow(new Date(startTime), { addSuffix: false });
     const isMyShift = isCarer && shift.carer?.id === userId;
+    const canCheckOut = isMyShift || isAdmin;
     const isCheckingOut = checkingOut === shift.id;
     const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
     const showCarer = !isCarer;
@@ -228,7 +230,7 @@ export function ShiftsWidget() {
             </span>
           </span>
         </button>
-        {isMyShift && (
+        {canCheckOut && (
           <div className="px-3 pb-2 flex gap-2">
             <Button
               size="sm"
@@ -245,7 +247,7 @@ export function ShiftsWidget() {
               ) : (
                 <>
                   <LogOut className="h-3 w-3 mr-1" />
-                  Check Out
+                  Check Out{isAdmin && !isMyShift ? ` for ${shift.carer?.firstName}` : ""}
                 </>
               )}
             </Button>
@@ -265,7 +267,7 @@ export function ShiftsWidget() {
   const renderUpcomingShiftRow = (shift: Shift, index: number) => {
     const isMyShift = isCarer && shift.carer?.id === userId;
     const isCheckingIn = checkingIn === shift.id;
-    const canCheckIn = isMyShift && shift.status === "SCHEDULED";
+    const canCheckIn = (isMyShift || isAdmin) && shift.status === "SCHEDULED";
     const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
     const showCarer = !isCarer;
 
@@ -292,37 +294,33 @@ export function ShiftsWidget() {
             </span>
           </span>
         </button>
-        {(canCheckIn || isMyShift) && (
+        {canCheckIn && (
           <div className="px-3 pb-2 flex gap-2">
-            {canCheckIn && (
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={(e) => handleCheckIn(e, shift.id)}
-                disabled={isCheckingIn}
-              >
-                {isCheckingIn ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    Checking In...
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="h-3 w-3 mr-1" />
-                    Check In
-                  </>
-                )}
-              </Button>
-            )}
-            {isMyShift && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={(e) => handleAddNote(e, shift.client.id)}
-              >
-                <StickyNote className="h-3 w-3" />
-              </Button>
-            )}
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={(e) => handleCheckIn(e, shift.id)}
+              disabled={isCheckingIn}
+            >
+              {isCheckingIn ? (
+                <>
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  Checking In...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-3 w-3 mr-1" />
+                  Check In{isAdmin && !isMyShift ? ` for ${shift.carer?.firstName}` : ""}
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => handleAddNote(e, shift.client.id)}
+            >
+              <StickyNote className="h-3 w-3" />
+            </Button>
           </div>
         )}
       </div>
@@ -442,6 +440,7 @@ export function ShiftsWidget() {
         isOpen={!!selectedShift}
         onClose={() => setSelectedShift(null)}
         shift={selectedShift}
+        canManage={isAdmin}
       />
     </>
   );
