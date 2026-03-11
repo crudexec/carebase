@@ -10,7 +10,6 @@ import {
   XCircle,
   Pill,
   User,
-  Calendar,
   Clock,
   AlertTriangle,
   FileText,
@@ -140,7 +139,7 @@ export default function MedicationDetailPage({
       setMedication((prev) =>
         prev ? { ...prev, status: data.medication.status } : null
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to hold medication");
     }
   };
@@ -156,7 +155,7 @@ export default function MedicationDetailPage({
       setMedication((prev) =>
         prev ? { ...prev, status: data.medication.status } : null
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to resume medication");
     }
   };
@@ -172,7 +171,7 @@ export default function MedicationDetailPage({
       if (!response.ok) throw new Error("Failed to discontinue medication");
       toast.success("Medication discontinued");
       router.push("/emar/medications");
-    } catch (error) {
+    } catch {
       toast.error("Failed to discontinue medication");
     }
   };

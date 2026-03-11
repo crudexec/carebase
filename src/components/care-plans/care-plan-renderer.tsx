@@ -8,7 +8,6 @@ import {
   Textarea,
   Label,
   Select,
-  Checkbox,
   SignaturePad,
   Rating,
 } from "@/components/ui";
@@ -33,12 +32,25 @@ import {
   User,
   Stethoscope,
   AlignLeft,
+  // OASIS field type icons
+  Binary,
+  Grid3X3,
+  CalendarDays,
+  GitBranch,
+  Calculator,
+  PlusSquare,
+  KeyRound,
+  FilePlus2,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ICD10DiagnosisField } from "@/components/visit-notes/form-renderer/icd10-diagnosis-field";
 import { BodyMapField } from "@/components/visit-notes/form-renderer/body-map-field";
+import { CascadingSelectField } from "@/components/care-plans/form-renderer/cascading-select-field";
+import { RepeatableGroupField } from "@/components/care-plans/form-renderer/repeatable-group-field";
 import { FormFieldType } from "@prisma/client";
 import { ICD10DiagnosisValue, BodyMapMarker } from "@/lib/visit-notes/types";
+import { CascadingSelectValue, RepeatableGroupFieldConfig, RepeatableGroupItemValue } from "@/lib/care-plans/types";
 
 interface TemplateField {
   id: string;
@@ -72,6 +84,8 @@ type FieldValue =
   | string[]
   | ICD10DiagnosisValue[]
   | BodyMapMarker[]
+  | CascadingSelectValue
+  | RepeatableGroupItemValue[]
   | { fileUrl: string; fileName: string; fileType: string; fileSize: number }
   | null;
 
@@ -102,6 +116,17 @@ const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: 
   RATING_SCALE: Star,
   BODY_MAP: User,
   ICD10_DIAGNOSIS: Stethoscope,
+  CASCADING_SELECT: GitBranch,
+  REPEATABLE_GROUP: Layers,
+  // OASIS field types
+  CODE_ENTRY: Binary,
+  MATRIX_GRID: Grid3X3,
+  DATE_PARTS: CalendarDays,
+  HIERARCHICAL_CHECKBOX: GitBranch,
+  CALCULATED_SCORE: Calculator,
+  NUMERIC_COUNTER: PlusSquare,
+  STRUCTURED_ID: KeyRound,
+  MULTI_DIAGNOSIS: FilePlus2,
 };
 
 export function CarePlanRenderer({
@@ -467,6 +492,31 @@ export function CarePlanRenderer({
           <ICD10DiagnosisField
             value={(value as ICD10DiagnosisValue[]) || []}
             onChange={(v) => onFieldChange?.(field.id, v)}
+            disabled={isReadOnly}
+          />
+        );
+
+      case "CASCADING_SELECT":
+        return (
+          <CascadingSelectField
+            value={(value as CascadingSelectValue) || null}
+            onChange={(v) => onFieldChange?.(field.id, v)}
+            config={{
+              hierarchyId: config.hierarchyId as string | undefined,
+              templateType: config.templateType as string | undefined,
+              allowMultipleSteps: config.allowMultipleSteps as boolean | undefined,
+              showSteps: config.showSteps as boolean | undefined,
+            }}
+            disabled={isReadOnly}
+          />
+        );
+
+      case "REPEATABLE_GROUP":
+        return (
+          <RepeatableGroupField
+            value={(value as RepeatableGroupItemValue[]) || null}
+            onChange={(v) => onFieldChange?.(field.id, v)}
+            config={config as unknown as RepeatableGroupFieldConfig}
             disabled={isReadOnly}
           />
         );

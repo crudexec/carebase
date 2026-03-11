@@ -16,7 +16,6 @@ import {
   AlertTriangle,
   User,
   Loader2,
-  ChevronRight,
   LogIn,
   Calendar,
   FileText,
@@ -52,15 +51,15 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  client: "bg-green-100 text-green-600",
-  shift: "bg-blue-100 text-blue-600",
-  "visit-note": "bg-purple-100 text-purple-600",
-  incident: "bg-red-100 text-red-600",
-  staff: "bg-orange-100 text-orange-600",
-  login: "bg-indigo-100 text-indigo-600",
-  "check-in": "bg-emerald-100 text-emerald-600",
-  "check-out": "bg-amber-100 text-amber-600",
-  audit: "bg-gray-100 text-gray-600",
+  client: "bg-green-100 text-green-700",
+  shift: "bg-blue-100 text-blue-700",
+  "visit-note": "bg-purple-100 text-purple-700",
+  incident: "bg-red-100 text-red-700",
+  staff: "bg-orange-100 text-orange-700",
+  login: "bg-indigo-100 text-indigo-700",
+  "check-in": "bg-emerald-100 text-emerald-700",
+  "check-out": "bg-amber-100 text-amber-700",
+  audit: "bg-gray-100 text-gray-700",
 };
 
 export function ActivityFeed() {
@@ -189,52 +188,59 @@ export function ActivityFeed() {
       }
     >
       {activities.length === 0 ? (
-        <div className="text-center py-8">
-          <Activity className="w-10 h-10 mx-auto text-foreground-tertiary mb-2" />
-          <p className="text-sm text-foreground-secondary">No recent activity</p>
+        <div className="px-3 py-4 text-center text-[10px] text-gray-500">
+          <Activity className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+          <p>No recent activity</p>
         </div>
       ) : (
-        <div className="space-y-1">
-          {activities.map((activity) => {
-            const IconComponent = ICON_MAP[activity.icon] || Activity;
-            const colorClass = TYPE_COLORS[activity.type] || "bg-gray-100 text-gray-600";
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
+          {/* Table Header */}
+          <div className="grid grid-cols-[50px_1fr_1fr_65px] bg-gray-50 border-b border-gray-200">
+            <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Type</span>
+            <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Activity</span>
+            <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Description</span>
+            <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-right">Time</span>
+          </div>
 
-            const content = (
-              <div
-                className={`flex items-start gap-3 p-3 rounded-lg hover:bg-background-secondary/50 transition-colors ${
-                  activity.link ? "cursor-pointer" : ""
-                }`}
-              >
-                <div className={`p-2 rounded-lg flex-shrink-0 ${colorClass}`}>
-                  <IconComponent className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {activity.title}
-                    </p>
-                    <span className="text-xs text-foreground-tertiary whitespace-nowrap">
-                      {formatTime(activity.timestamp)}
+          {/* Table Body */}
+          <div>
+            {activities.map((activity, index) => {
+              const IconComponent = ICON_MAP[activity.icon] || Activity;
+              const colorClass = TYPE_COLORS[activity.type] || "bg-gray-100 text-gray-700";
+              const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+
+              const content = (
+                <div
+                  className={`grid grid-cols-[50px_1fr_1fr_65px] items-center border-b border-gray-100 ${rowBg} ${
+                    activity.link ? "cursor-pointer hover:bg-blue-50" : ""
+                  }`}
+                >
+                  <span className="px-3 py-1.5 flex justify-center">
+                    <span className={`p-1 rounded ${colorClass}`}>
+                      <IconComponent className="h-3 w-3" />
                     </span>
-                  </div>
-                  <p className="text-xs text-foreground-secondary mt-0.5 line-clamp-1">
+                  </span>
+                  <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+                    {activity.title}
+                  </span>
+                  <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
                     {activity.description}
-                  </p>
+                  </span>
+                  <span className="px-3 py-1.5 text-[10px] text-gray-500 text-right whitespace-nowrap">
+                    {formatTime(activity.timestamp)}
+                  </span>
                 </div>
-                {activity.link && (
-                  <ChevronRight className="w-4 h-4 text-foreground-tertiary flex-shrink-0 mt-1" />
-                )}
-              </div>
-            );
+              );
 
-            return activity.link ? (
-              <Link key={activity.id} href={activity.link}>
-                {content}
-              </Link>
-            ) : (
-              <div key={activity.id}>{content}</div>
-            );
-          })}
+              return activity.link ? (
+                <Link key={activity.id} href={activity.link}>
+                  {content}
+                </Link>
+              ) : (
+                <div key={activity.id}>{content}</div>
+              );
+            })}
+          </div>
         </div>
       )}
     </CollapsibleWidget>

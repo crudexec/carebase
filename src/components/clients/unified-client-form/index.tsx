@@ -272,10 +272,10 @@ export function UnifiedClientForm({
   };
 
   // Determine which steps to show
-  const visibleSteps = expandedMode ? STEPS : STEPS.slice(0, 3);
+  const _visibleSteps = expandedMode ? STEPS : STEPS.slice(0, 3);
   const isLastStep = currentStep === (expandedMode ? 4 : 3);
   const canSaveAsReferral = currentStep >= 3 || completedSteps.includes(3);
-  const canSaveAsClient = expandedMode && (currentStep === 4 || completedSteps.includes(4));
+  const _canSaveAsClient = expandedMode && (currentStep === 4 || completedSteps.includes(4));
 
   // Loading state for pre-fill
   if (isLoadingReferral) {

@@ -38,12 +38,35 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId } = session.user;
+    const { companyId, id: userId } = session.user;
     const { id } = await params;
 
     const course = await prisma.trainingCourse.findFirst({
       where: { id, companyId },
       include: {
+        lessons: {
+          orderBy: { orderIndex: "asc" },
+          include: {
+            progress: {
+              where: { userId },
+            },
+          },
+        },
+        quizzes: {
+          include: {
+            questions: {
+              orderBy: { orderIndex: "asc" },
+            },
+            attempts: {
+              where: { userId },
+              orderBy: { startedAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+        progress: {
+          where: { userId },
+        },
         sessions: {
           where: {
             scheduledDate: { gte: new Date() },
@@ -63,6 +86,7 @@ export async function GET(
           select: {
             sessions: true,
             assignments: true,
+            lessons: true,
           },
         },
       },

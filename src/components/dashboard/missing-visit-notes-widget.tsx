@@ -7,13 +7,11 @@ import {
   FileText,
   ArrowRight,
   Loader2,
-  Clock,
-  User,
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { Button as _Button } from "@/components/ui/button";
 import { CollapsibleWidget } from "./collapsible-widget";
 
 interface MissingNoteShift {
@@ -79,14 +77,14 @@ export function MissingVisitNotesWidget() {
   };
 
   const getUrgencyColor = (hours: number): string => {
-    if (hours >= 48) return "text-error";
-    if (hours >= 24) return "text-warning";
-    return "text-orange-500";
+    if (hours >= 48) return "text-red-700";
+    if (hours >= 24) return "text-yellow-700";
+    return "text-orange-700";
   };
 
   const getUrgencyBgColor = (hours: number): string => {
-    if (hours >= 48) return "bg-error/10";
-    if (hours >= 24) return "bg-warning/10";
+    if (hours >= 48) return "bg-red-100";
+    if (hours >= 24) return "bg-yellow-100";
     return "bg-orange-100";
   };
 
@@ -168,48 +166,51 @@ export function MissingVisitNotesWidget() {
         </p>
       }
     >
-      <ul className="space-y-1">
-        {shifts.slice(0, 5).map((shift) => (
-          <li key={shift.id}>
-            <div className={`px-3 py-2 rounded-md ${getUrgencyBgColor(shift.hoursSinceCompletion)} border border-orange-200/50`}>
-              <div className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-full ${getUrgencyBgColor(shift.hoursSinceCompletion)} flex items-center justify-center flex-shrink-0`}>
-                  <FileText className={`w-4 h-4 ${getUrgencyColor(shift.hoursSinceCompletion)}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {shift.client.firstName} {shift.client.lastName}
-                    </p>
-                    <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getUrgencyBgColor(shift.hoursSinceCompletion)} ${getUrgencyColor(shift.hoursSinceCompletion)} whitespace-nowrap`}>
-                      {formatHoursSince(shift.hoursSinceCompletion)}
-                    </span>
-                  </div>
-                  {!isCarer && (
-                    <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-                      <User className="w-3 h-3" />
-                      <span>{shift.carer.firstName} {shift.carer.lastName}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                    <Clock className="w-3 h-3" />
-                    <span>{format(new Date(shift.scheduledStart), "MMM d, h:mm a")}</span>
-                  </div>
-                  <Link href={`/visit-notes/new?shiftId=${shift.id}`}>
-                    <Button size="sm" variant="secondary" className="mt-2 w-full text-xs h-7">
-                      <FileText className="w-3 h-3 mr-1" />
-                      Submit Note
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {shifts.length > 5 && (
-        <p className="text-xs text-center text-foreground-tertiary mt-2">
-          +{shifts.length - 5} more missing notes
+      {/* Excel-style Table */}
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
+        {/* Table Header */}
+        <div className={`grid ${isCarer ? "grid-cols-[1fr_90px_70px]" : "grid-cols-[1fr_1fr_90px_70px]"} bg-gray-50 border-b border-gray-200`}>
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Client</span>
+          {!isCarer && <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Carer</span>}
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Overdue</span>
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-right">Date</span>
+        </div>
+
+        {/* Table Body */}
+        <div>
+          {shifts.slice(0, 6).map((shift, index) => {
+            const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+
+            return (
+              <Link
+                key={shift.id}
+                href={`/visit-notes/new?shiftId=${shift.id}&clientId=${shift.client.id}`}
+                className={`grid ${isCarer ? "grid-cols-[1fr_90px_70px]" : "grid-cols-[1fr_1fr_90px_70px]"} items-center border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+              >
+                <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+                  {shift.client.firstName} {shift.client.lastName}
+                </span>
+                {!isCarer && (
+                  <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
+                    {shift.carer.firstName} {shift.carer.lastName}
+                  </span>
+                )}
+                <span className="px-3 py-1.5 text-center">
+                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${getUrgencyBgColor(shift.hoursSinceCompletion)} ${getUrgencyColor(shift.hoursSinceCompletion)}`}>
+                    {formatHoursSince(shift.hoursSinceCompletion)}
+                  </span>
+                </span>
+                <span className="px-3 py-1.5 text-[10px] text-gray-500 text-right">
+                  {format(new Date(shift.scheduledStart), "MMM d")}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+      {shifts.length > 6 && (
+        <p className="px-3 py-1.5 text-[10px] text-center text-gray-500">
+          +{shifts.length - 6} more missing notes
         </p>
       )}
     </CollapsibleWidget>

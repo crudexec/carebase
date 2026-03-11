@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Button } from "./button";
-import { AlertTriangle, Loader2, X, Info, Send, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, X, Info, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ConfirmActionVariant = "danger" | "warning" | "info";

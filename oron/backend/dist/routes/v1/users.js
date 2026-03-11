@@ -1,0 +1,27 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_1 = require("controllers/admin");
+const admin_2 = require("controllers/admin");
+const users_1 = require("controllers/users");
+const checkJwt_1 = require("middleware/checkJwt");
+const checkRole_1 = require("middleware/checkRole");
+const router = (0, express_1.Router)();
+router.get('/', [checkJwt_1.checkJwt], users_1.show);
+router.get('/all', [checkJwt_1.checkJwt], users_1.list);
+router.patch('/', [checkJwt_1.checkJwt], users_1.edit);
+router.delete('/', [checkJwt_1.checkJwt], users_1.destroy);
+router.get('/all/users', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.fetchUsers);
+router.post('/create', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.createUser);
+router.post('/:user_id/reset-password', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.resetUserPassword);
+router.get('/:id/forms', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_1.fetchUserForms);
+router.get('/:id/forms/awaiting-approval', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.fetchUserAwaitingForms);
+router.get('/:id/forms/approved', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.fetchUserApprovedForms);
+router.get('/:id/forms/not-filled', [checkJwt_1.checkJwt, (0, checkRole_1.checkRole)('ADMINISTRATOR,EMPLOYEE_MANAGER')], admin_2.fetchUserNotFilledForms);
+router.post('/upload/document', [checkJwt_1.checkJwt], users_1.uploadUserDocument);
+router.get('/retrieve/documents', [checkJwt_1.checkJwt], users_1.retrieveUserDocuments);
+router.patch('/:document_id/edit/document', [checkJwt_1.checkJwt], users_1.editUserDocument);
+router.patch('/sign/offer-letter', [checkJwt_1.checkJwt], users_1.SignOfferLetter);
+router.get('/retrieve/offer-letter', [checkJwt_1.checkJwt], users_1.RetrieveOfferLetter);
+exports.default = router;
+//# sourceMappingURL=users.js.map

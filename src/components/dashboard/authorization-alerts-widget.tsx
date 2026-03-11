@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -81,7 +80,7 @@ export function AuthorizationAlertsWidget() {
     fetchAlerts();
   }, []);
 
-  const getAlertIcon = (auth: AuthorizationAlert) => {
+  const _getAlertIcon = (auth: AuthorizationAlert) => {
     if (auth.isExpired || auth.status === "EXHAUSTED") {
       return <XCircle className="h-4 w-4 text-error" />;
     }
@@ -94,7 +93,7 @@ export function AuthorizationAlertsWidget() {
     return <Clock className="h-4 w-4 text-foreground-secondary" />;
   };
 
-  const getAlertMessage = (auth: AuthorizationAlert) => {
+  const _getAlertMessage = (auth: AuthorizationAlert) => {
     if (auth.status === "EXHAUSTED" || auth.remainingUnits <= 0) {
       return "Units exhausted";
     }
@@ -112,7 +111,7 @@ export function AuthorizationAlertsWidget() {
     return messages.join(" • ") || "Needs attention";
   };
 
-  const getUnitLabel = (unitType: string) => {
+  const _getUnitLabel = (unitType: string) => {
     switch (unitType) {
       case "QUARTER_HOURLY":
         return "15-min units";
@@ -184,76 +183,70 @@ export function AuthorizationAlertsWidget() {
 
         {/* Alerts List */}
         {alerts.length === 0 ? (
-          <div className="text-center py-6">
-            <ShieldCheck className="h-10 w-10 mx-auto text-success/50 mb-2" />
-            <p className="text-body-sm text-foreground-secondary">
-              All authorizations are in good standing
-            </p>
+          <div className="px-3 py-4 text-center text-[10px] text-gray-500">
+            <ShieldCheck className="h-8 w-8 mx-auto text-green-400 mb-2" />
+            <p>All authorizations are in good standing</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {alerts.map((auth) => (
-              <Link
-                key={auth.id}
-                href={`/authorizations/${auth.id}`}
-                className="block"
-              >
-                <div
-                  className={`p-3 rounded-lg border transition-colors hover:border-primary/50 ${
-                    auth.isExpired || auth.status === "EXHAUSTED"
-                      ? "bg-error/5 border-error/30"
-                      : auth.isNearingLimit && auth.usagePercentage >= 90
-                      ? "bg-error/5 border-error/30"
-                      : "bg-warning/5 border-warning/30"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      {getAlertIcon(auth)}
-                      <div>
-                        <p className="text-body-sm font-medium">
-                          {auth.client.firstName} {auth.client.lastName}
-                        </p>
-                        <p className="text-xs text-foreground-secondary">
-                          {auth.serviceType} • {auth.authNumber}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge
-                      className={
-                        auth.isExpired || auth.status === "EXHAUSTED" || auth.usagePercentage >= 90
-                          ? "bg-error/10 text-error"
-                          : "bg-warning/10 text-warning"
-                      }
-                    >
-                      {getAlertMessage(auth)}
-                    </Badge>
-                  </div>
+          <div className="bg-white rounded border border-gray-200 overflow-hidden">
+            {/* Table Header */}
+            <div className="grid grid-cols-[1fr_1fr_70px_60px] bg-gray-50 border-b border-gray-200">
+              <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Client</span>
+              <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Service</span>
+              <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Usage</span>
+              <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Status</span>
+            </div>
 
-                  {/* Mini progress bar */}
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-[10px] text-foreground-tertiary mb-1">
-                      <span>
-                        {auth.remainingUnits} {getUnitLabel(auth.unitType)} remaining
+            {/* Table Body */}
+            <div>
+              {alerts.map((auth, index) => {
+                const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+                const isUrgent = auth.isExpired || auth.status === "EXHAUSTED" || auth.usagePercentage >= 90;
+
+                return (
+                  <Link
+                    key={auth.id}
+                    href={`/authorizations/${auth.id}`}
+                    className={`grid grid-cols-[1fr_1fr_70px_60px] items-center border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+                  >
+                    <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+                      {auth.client.firstName} {auth.client.lastName}
+                    </span>
+                    <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
+                      {auth.serviceType}
+                    </span>
+                    <span className="px-3 py-1.5 text-center">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[9px] text-gray-500">
+                          {auth.usagePercentage.toFixed(0)}%
+                        </span>
+                        <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              auth.usagePercentage >= 90
+                                ? "bg-red-500"
+                                : auth.usagePercentage >= 80
+                                ? "bg-yellow-500"
+                                : "bg-blue-500"
+                            }`}
+                            style={{ width: `${Math.min(auth.usagePercentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </span>
+                    <span className="px-3 py-1.5 text-center">
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                        isUrgent
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}>
+                        {auth.isExpired ? "Expired" : auth.status === "EXHAUSTED" ? "Exhausted" : `${auth.daysRemaining}d`}
                       </span>
-                      <span>{auth.usagePercentage.toFixed(0)}% used</span>
-                    </div>
-                    <div className="h-1.5 bg-background-secondary rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          auth.usagePercentage >= 90
-                            ? "bg-error"
-                            : auth.usagePercentage >= 80
-                            ? "bg-warning"
-                            : "bg-primary"
-                        }`}
-                        style={{ width: `${Math.min(auth.usagePercentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
 

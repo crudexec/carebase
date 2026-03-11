@@ -78,7 +78,7 @@ type SortField = "name" | "email" | "role" | "lastLogin" | "status";
 type SortDirection = "asc" | "desc";
 
 export default function StaffPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const router = useRouter();
   const [staff, setStaff] = React.useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);

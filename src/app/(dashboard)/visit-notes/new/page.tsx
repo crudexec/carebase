@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { toast } from "sonner";
 import {
   Button,
@@ -36,14 +35,18 @@ import {
   Calendar,
   FileText,
   Sparkles,
-  ClipboardEdit,
   Clock,
+  ChevronDown,
+  ChevronUp,
+  User,
+  X,
 } from "lucide-react";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import {
   validateTaskAlignment,
   TaskAlignmentResult,
 } from "@/lib/visit-notes/diagnosis-task-mapping";
+import { cn as _cn } from "@/lib/utils";
 
 // Types
 interface Shift {
@@ -74,9 +77,9 @@ interface LastVisitNote {
 type WizardStep = "client" | "template" | "form";
 
 const WIZARD_STEPS = [
-  { id: "client", label: "Select Client" },
-  { id: "template", label: "Choose Template" },
-  { id: "form", label: "Complete Note" },
+  { id: "client", label: "Client" },
+  { id: "template", label: "Template" },
+  { id: "form", label: "Complete" },
 ];
 
 interface SelectedClient {
@@ -112,6 +115,9 @@ export default function NewVisitNotePage() {
   const [visitDate, setVisitDate] = React.useState<string>(
     new Date().toISOString().split("T")[0]
   );
+
+  // UI state - auto-expand shift section if client is pre-selected
+  const [showShiftSection, setShowShiftSection] = React.useState(!!preselectedClientId);
 
   // Loading/error state
   const [isLoadingShifts, setIsLoadingShifts] = React.useState(true);
@@ -381,45 +387,25 @@ export default function NewVisitNotePage() {
   // Loading state
   const isLoading = isLoadingShifts || isLoadingTemplates;
 
-  // Format date for section headers
-  const formatSectionDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb
-        items={[
-          { label: "Visit Notes", href: "/visit-notes" },
-          { label: "New Note" },
-        ]}
-      />
-
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">New Visit Note</h1>
-        <p className="text-foreground-secondary">
-          {currentStep === "client" && "Select the client and optionally link to a shift"}
-          {currentStep === "template" && "Choose a form template for your note"}
-          {currentStep === "form" && "Complete the visit note form"}
-        </p>
-      </div>
-
-      {/* Step Indicator */}
-      <Card>
-        <CardContent className="py-6">
-          <StepIndicator
-            steps={WIZARD_STEPS}
-            currentStep={currentStepIndex}
-            onStepClick={handleStepClick}
+    <div className="space-y-4">
+      {/* Compact Header with inline step indicator */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Breadcrumb
+            items={[
+              { label: "Visit Notes", href: "/visit-notes" },
+              { label: "New" },
+            ]}
           />
-        </CardContent>
-      </Card>
+        </div>
+        <StepIndicator
+          steps={WIZARD_STEPS}
+          currentStep={currentStepIndex}
+          onStepClick={handleStepClick}
+          variant="inline"
+        />
+      </div>
 
       {/* Loading State */}
       {isLoading && (
@@ -435,22 +421,22 @@ export default function NewVisitNotePage() {
         </div>
       )}
 
-      {/* Step 1: Client Selection (with optional shift linking) */}
+      {/* Step 1: Client Selection */}
       {!isLoadingTemplates && currentStep === "client" && (
-        <div className="space-y-6">
-          {/* Client Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Select Client</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="max-w-md">
+        <div className="space-y-4">
+          {/* Combined client + date selection */}
+          <div className="rounded-xl border bg-background p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Client
+                </label>
                 <ClientSearchSelect
                   value={selectedClientId}
                   onChange={(clientId, client) => {
                     setSelectedClientId(clientId);
                     setSelectedClient(client as SelectedClient | null);
-                    // Reset shift selection when client changes
                     setSelectedShift(null);
                   }}
                   label=""
@@ -459,8 +445,11 @@ export default function NewVisitNotePage() {
                 />
               </div>
 
-              <div className="max-w-md space-y-2">
-                <label className="text-sm font-medium">Visit Date</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Visit Date
+                </label>
                 <DatePicker
                   value={visitDate ? new Date(visitDate + "T00:00:00") : null}
                   onChange={(date) => {
@@ -474,110 +463,121 @@ export default function NewVisitNotePage() {
                   placeholder="Select visit date"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Optional Shift Linking */}
-          {selectedClientId && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Link to Shift
-                    <Badge variant="default" className="text-xs font-normal">Optional</Badge>
-                  </CardTitle>
-                  {selectedShift && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedShift(null)}
-                      className="text-xs"
-                    >
-                      Clear Selection
-                    </Button>
+            {/* Optional Shift Linking - Collapsible */}
+            {selectedClientId && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setShowShiftSection(!showShiftSection)}
+                  className="flex items-center justify-between w-full text-left group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-foreground-tertiary" />
+                    <span className="text-sm font-medium text-foreground-secondary">
+                      Link to shift
+                    </span>
+                    <Badge variant="default" className="text-xs font-normal">
+                      Optional
+                    </Badge>
+                    {selectedShift && (
+                      <Badge variant="primary" className="text-xs">
+                        {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                      </Badge>
+                    )}
+                  </div>
+                  {showShiftSection ? (
+                    <ChevronUp className="h-4 w-4 text-foreground-tertiary group-hover:text-foreground-secondary transition-colors" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-foreground-tertiary group-hover:text-foreground-secondary transition-colors" />
                   )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoadingShifts ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-foreground-tertiary" />
-                  </div>
-                ) : shifts.length === 0 ? (
-                  <div className="text-center py-6 text-foreground-secondary">
-                    <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No recent shifts found for this client</p>
-                    <p className="text-xs text-foreground-tertiary mt-1">
-                      You can still create a visit note without linking to a shift
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Today's Shifts */}
-                    {groupedShifts.today.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-foreground-secondary mb-2 flex items-center gap-2">
-                          <Badge variant="primary" className="text-xs">Today</Badge>
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {groupedShifts.today.map((shift) => (
-                            <ShiftSelectionCard
-                              key={shift.id}
-                              shift={shift}
-                              isSelected={selectedShift?.id === shift.id}
-                              onSelect={handleShiftSelect}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                </button>
 
-                    {/* Yesterday's Shifts */}
-                    {groupedShifts.yesterday.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-foreground-secondary mb-2 flex items-center gap-2">
-                          <Badge variant="default" className="text-xs">Yesterday</Badge>
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {groupedShifts.yesterday.map((shift) => (
-                            <ShiftSelectionCard
-                              key={shift.id}
-                              shift={shift}
-                              isSelected={selectedShift?.id === shift.id}
-                              onSelect={handleShiftSelect}
-                            />
-                          ))}
-                        </div>
+                {showShiftSection && (
+                  <div className="mt-3">
+                    {isLoadingShifts ? (
+                      <div className="flex items-center justify-center py-6">
+                        <Loader2 className="h-5 w-5 animate-spin text-foreground-tertiary" />
                       </div>
-                    )}
+                    ) : shifts.length === 0 ? (
+                      <div className="text-center py-4 text-foreground-secondary">
+                        <p className="text-sm">No recent shifts found</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {selectedShift && (
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => setSelectedShift(null)}
+                              className="text-xs text-foreground-tertiary hover:text-foreground-secondary flex items-center gap-1"
+                            >
+                              <X className="h-3 w-3" />
+                              Clear selection
+                            </button>
+                          </div>
+                        )}
 
-                    {/* Earlier Shifts */}
-                    {groupedShifts.earlier.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-foreground-secondary mb-2">
-                          Earlier
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {groupedShifts.earlier.map((shift) => (
-                            <ShiftSelectionCard
-                              key={shift.id}
-                              shift={shift}
-                              isSelected={selectedShift?.id === shift.id}
-                              onSelect={handleShiftSelect}
-                            />
-                          ))}
-                        </div>
+                        {/* Today's Shifts */}
+                        {groupedShifts.today.length > 0 && (
+                          <div>
+                            <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wide">Today</span>
+                            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {groupedShifts.today.map((shift) => (
+                                <ShiftSelectionCard
+                                  key={shift.id}
+                                  shift={shift}
+                                  isSelected={selectedShift?.id === shift.id}
+                                  onSelect={handleShiftSelect}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Yesterday's Shifts */}
+                        {groupedShifts.yesterday.length > 0 && (
+                          <div>
+                            <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wide">Yesterday</span>
+                            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {groupedShifts.yesterday.map((shift) => (
+                                <ShiftSelectionCard
+                                  key={shift.id}
+                                  shift={shift}
+                                  isSelected={selectedShift?.id === shift.id}
+                                  onSelect={handleShiftSelect}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Earlier Shifts */}
+                        {groupedShifts.earlier.length > 0 && (
+                          <div>
+                            <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wide">Earlier</span>
+                            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {groupedShifts.earlier.map((shift) => (
+                                <ShiftSelectionCard
+                                  key={shift.id}
+                                  shift={shift}
+                                  isSelected={selectedShift?.id === shift.id}
+                                  onSelect={handleShiftSelect}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
+          </div>
 
           {/* Navigation */}
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end">
             <Button
               onClick={handleNextStep}
               disabled={!selectedClientId}
@@ -591,27 +591,27 @@ export default function NewVisitNotePage() {
 
       {/* Step 2: Template Selection */}
       {!isLoadingTemplates && currentStep === "template" && (
-        <div className="space-y-6">
-          {/* Selected client summary - compact */}
+        <div className="space-y-4">
+          {/* Context bar */}
           {selectedClient && (
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="flex items-center gap-2 text-sm flex-wrap">
+            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-2 text-sm">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white text-xs font-medium">
                   {selectedClient.firstName[0]}{selectedClient.lastName[0]}
                 </span>
                 <span className="font-medium">
                   {selectedClient.firstName} {selectedClient.lastName}
                 </span>
-                <span className="text-foreground-tertiary">•</span>
+                <span className="text-foreground-tertiary">·</span>
                 <span className="text-foreground-secondary">
-                  {new Date(visitDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  {new Date(visitDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </span>
                 {selectedShift && (
                   <>
-                    <span className="text-foreground-tertiary">•</span>
-                    <Badge variant="primary" className="text-xs">
-                      Linked to shift: {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                    </Badge>
+                    <span className="text-foreground-tertiary">·</span>
+                    <span className="text-foreground-secondary text-xs">
+                      Shift: {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </span>
                   </>
                 )}
               </div>
@@ -625,29 +625,25 @@ export default function NewVisitNotePage() {
           )}
 
           {templates.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto text-foreground-tertiary mb-4" />
-                <p className="text-foreground-secondary">
-                  No form templates available.
-                </p>
-                <p className="text-sm text-foreground-tertiary mt-1">
-                  Contact your administrator to set up visit note templates.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl border bg-background p-12 text-center">
+              <FileText className="h-10 w-10 mx-auto text-foreground-tertiary mb-3" />
+              <p className="text-foreground-secondary">No form templates available.</p>
+              <p className="text-sm text-foreground-tertiary mt-1">
+                Contact your administrator to set up templates.
+              </p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Template list */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4">
                 {/* Recommended templates */}
                 {recommendedTemplates.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-foreground-secondary mb-3 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-success" />
-                      Recommended for this client
+                    <h3 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5 text-success" />
+                      Recommended
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {recommendedTemplates.map((template) => (
                         <TemplateSelectionCard
                           key={template.id}
@@ -663,10 +659,10 @@ export default function NewVisitNotePage() {
 
                 {/* All templates */}
                 <div>
-                  <h3 className="text-sm font-medium text-foreground-secondary mb-3">
+                  <h3 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wide mb-2">
                     {recommendedTemplates.length > 0 ? "All Templates" : "Available Templates"}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {(recommendedTemplates.length > 0 ? otherTemplates : templates).map((template) => (
                       <TemplateSelectionCard
                         key={template.id}
@@ -682,17 +678,14 @@ export default function NewVisitNotePage() {
               {/* Preview panel */}
               <div className="hidden lg:block">
                 {selectedTemplate ? (
-                  <div className="sticky top-6">
-                    <h3 className="text-sm font-medium text-foreground-secondary mb-3">
-                      Template Preview
-                    </h3>
+                  <div className="sticky top-4">
                     <TemplatePreview template={selectedTemplate} />
                   </div>
                 ) : (
-                  <div className="sticky top-6 p-6 rounded-lg border border-dashed border-border text-center">
-                    <FileText className="h-8 w-8 mx-auto text-foreground-tertiary mb-2" />
-                    <p className="text-sm text-foreground-tertiary">
-                      Select a template to see preview
+                  <div className="sticky top-4 p-6 rounded-xl border border-dashed border-border text-center bg-background-secondary/50">
+                    <FileText className="h-6 w-6 mx-auto text-foreground-tertiary mb-2" />
+                    <p className="text-xs text-foreground-tertiary">
+                      Select a template to preview
                     </p>
                   </div>
                 )}
@@ -702,7 +695,7 @@ export default function NewVisitNotePage() {
 
           {/* Navigation */}
           {templates.length > 0 && (
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-2">
               <Button variant="ghost" onClick={handlePrevStep}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
@@ -721,12 +714,29 @@ export default function NewVisitNotePage() {
 
       {/* Step 3: Form */}
       {!isLoadingTemplates && currentStep === "form" && selectedTemplate && selectedClientId && (
-        <div className="space-y-6">
-          {/* Back button */}
-          <Button variant="ghost" onClick={handlePrevStep}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Change Template
-          </Button>
+        <div className="space-y-4">
+          {/* Compact header with back + context */}
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={handlePrevStep}>
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+              Back
+            </Button>
+
+            {selectedClient && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white text-xs font-medium">
+                  {selectedClient.firstName[0]}{selectedClient.lastName[0]}
+                </span>
+                <span className="font-medium text-foreground-secondary">
+                  {selectedClient.firstName} {selectedClient.lastName}
+                </span>
+                <span className="text-foreground-tertiary">·</span>
+                <span className="text-foreground-tertiary text-xs">
+                  {new Date(visitDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Client Context Panel - show if we have a shift linked */}
           {selectedShift && (
@@ -736,34 +746,20 @@ export default function NewVisitNotePage() {
             />
           )}
 
-          {/* Client summary - show if no shift linked */}
-          {!selectedShift && selectedClient && (
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-medium">
-                    {selectedClient.firstName[0]}{selectedClient.lastName[0]}
-                  </div>
-                  <div>
-                    <p className="font-medium">{selectedClient.firstName} {selectedClient.lastName}</p>
-                    <p className="text-sm text-foreground-secondary">
-                      Visit Date: {new Date(visitDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {selectedTemplate.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-xl border bg-background">
+            <div className="px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <h2 className="font-semibold">{selectedTemplate.name}</h2>
+              </div>
+              {selectedTemplate.description && (
+                <p className="text-sm text-foreground-secondary mt-1">
+                  {selectedTemplate.description}
+                </p>
+              )}
+            </div>
+            <div className="p-5">
               <FormRenderer
                 template={{
                   name: selectedTemplate.name,
@@ -777,8 +773,8 @@ export default function NewVisitNotePage() {
                 disabled={isSubmitting}
                 submitLabel="Submit Visit Note"
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 

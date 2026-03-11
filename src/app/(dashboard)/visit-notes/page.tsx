@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Button,
-  Card,
-  CardContent,
   Badge,
   Input,
   Breadcrumb,

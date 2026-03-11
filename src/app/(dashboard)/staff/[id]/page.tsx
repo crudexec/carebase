@@ -31,14 +31,11 @@ import {
   X,
   Users,
   CheckCircle,
-  TrendingUp,
   Briefcase,
   Award,
   Plus,
-  AlertTriangle,
   FileText,
   Trash2,
-  Upload,
 } from "lucide-react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { ROLE_LABELS } from "@/lib/permissions";

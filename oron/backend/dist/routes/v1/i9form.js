@@ -1,0 +1,25 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const forms_1 = require("controllers/forms");
+const checkJwt_1 = require("middleware/checkJwt");
+const validateAddDocument_1 = require("middleware/validation/forms/i9Form/validateAddDocument");
+const validateAddSignature_1 = require("middleware/validation/forms/i9Form/validateAddSignature");
+const validateCitizenshipForm_1 = require("middleware/validation/forms/i9Form/validateCitizenshipForm");
+const validatePersonalInformation_1 = require("middleware/validation/forms/i9Form/validatePersonalInformation");
+const router = (0, express_1.Router)();
+router.post('/add/personalInformation', [checkJwt_1.checkJwt, validatePersonalInformation_1.validatorCreatePersonalInformation], forms_1.fillPersonalInformation);
+router.post('/add/citizenshipInformation', [checkJwt_1.checkJwt, validateCitizenshipForm_1.validatorCreateCitizenship], forms_1.fillCitizenshipInformation);
+router.post('/add/document', [checkJwt_1.checkJwt, validateAddDocument_1.validatorAddDocument], forms_1.fillDocument);
+router.post('/add/signature', [checkJwt_1.checkJwt, validateAddSignature_1.validatorAddSignature], forms_1.fillSignature);
+router.patch('/edit/personalInformation', [checkJwt_1.checkJwt], forms_1.editPersonalInformation);
+router.patch('/edit/citizenshipInformation', [checkJwt_1.checkJwt], forms_1.editCitizenshipInformation);
+router.patch('/edit/document', [checkJwt_1.checkJwt], forms_1.editDocument);
+router.patch('/edit/signature', [checkJwt_1.checkJwt], forms_1.editSignature);
+router.get('/retrieve', [checkJwt_1.checkJwt], forms_1.retrieveI9Form);
+router.patch('/submit', [checkJwt_1.checkJwt], forms_1.submitI9Form);
+router.post('/upload/pdf', [checkJwt_1.checkJwt], forms_1.uploadFilledI9Document);
+router.patch('/edit/pdf', [checkJwt_1.checkJwt], forms_1.editFilledI9Document);
+router.get('/retrieveFilled/pdf', [checkJwt_1.checkJwt], forms_1.retrieveFilledI9Document);
+exports.default = router;
+//# sourceMappingURL=i9form.js.map

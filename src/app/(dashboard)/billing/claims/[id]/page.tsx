@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -118,7 +118,6 @@ const STATUS_COLORS: Record<string, "primary" | "success" | "warning" | "error" 
 
 export default function ClaimDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const claimId = params.id as string;
 
   const [claim, setClaim] = React.useState<Claim | null>(null);

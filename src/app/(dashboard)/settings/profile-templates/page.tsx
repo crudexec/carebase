@@ -41,12 +41,12 @@ interface ProfileTemplate {
   };
 }
 
-const TYPE_LABELS = {
+const _TYPE_LABELS = {
   STAFF_PROFILE: "Staff Profile",
   CLIENT_PROFILE: "Client Profile",
 };
 
-const TYPE_ICONS = {
+const _TYPE_ICONS = {
   STAFF_PROFILE: Users,
   CLIENT_PROFILE: User,
 };

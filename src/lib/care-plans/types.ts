@@ -40,7 +40,80 @@ export type FieldConfig =
   | ChoiceFieldConfig
   | RatingFieldConfig
   | DateFieldConfig
+  | CascadingSelectFieldConfig
+  | RepeatableGroupFieldConfig
   | Record<string, unknown>;
+
+// Cascading select field configuration
+export interface CascadingSelectFieldConfig {
+  hierarchyId?: string;
+  templateType?: string;
+  allowMultipleSteps?: boolean;
+  showSteps?: boolean;
+}
+
+// Task analysis step with baseline
+export interface TaskAnalysisStepValue {
+  stepId: string;
+  stepName: string;
+  baseline: string;  // e.g., "Independent", "Verbal Prompt", etc.
+}
+
+// Baseline options for task analysis steps
+export const TASK_ANALYSIS_BASELINE_OPTIONS = [
+  "Not Assessed",
+  "Independent",
+  "Verbal Prompt",
+  "Gestural Prompt",
+  "Modeling",
+  "Partial Physical Prompt",
+  "Full Physical Prompt",
+  "Hand Over Hand",
+  "Not Applicable",
+] as const;
+
+export type TaskAnalysisBaseline = (typeof TASK_ANALYSIS_BASELINE_OPTIONS)[number];
+
+// Cascading select field value
+export interface CascadingSelectValue {
+  hierarchyId?: string;
+  hierarchyName?: string;
+  goalAreaId?: string;
+  goalAreaName?: string;
+  targetSkillId?: string;
+  targetSkillName?: string;
+  objectiveId?: string;
+  objectiveName?: string;
+  selectedStepIds?: string[];
+  selectedStepNames?: string[];
+  // New: task analysis steps with individual baselines
+  taskAnalysisSteps?: TaskAnalysisStepValue[];
+}
+
+// Repeatable group child field definition
+export interface RepeatableGroupChildField {
+  key: string;              // Unique key within the group (e.g., "goalSelection", "baseline")
+  label: string;            // Display label
+  type: FormFieldType;      // Field type (TEXT_SHORT, CASCADING_SELECT, etc.)
+  required?: boolean;       // Whether this field is required within each group
+  config?: Record<string, unknown>;  // Field-specific config (e.g., templateType for cascading select)
+}
+
+// Repeatable group field configuration
+export interface RepeatableGroupFieldConfig {
+  childFields: RepeatableGroupChildField[];  // Fields within each repeatable group
+  minItems?: number;        // Minimum number of groups (default: 0)
+  maxItems?: number;        // Maximum number of groups (default: unlimited)
+  addButtonLabel?: string;  // Custom label for add button (default: "Add Item")
+  itemLabel?: string;       // Label for each item (default: "Item")
+  collapsible?: boolean;    // Whether groups can be collapsed (default: false)
+}
+
+// Single repeatable group instance value
+export type RepeatableGroupItemValue = Record<string, FieldValue | CascadingSelectValue>;
+
+// Repeatable group field value (array of group instances)
+export type RepeatableGroupValue = RepeatableGroupItemValue[];
 
 // Field value types
 export type FieldValue =
@@ -48,6 +121,8 @@ export type FieldValue =
   | number
   | boolean
   | string[]
+  | CascadingSelectValue
+  | RepeatableGroupItemValue[]  // For REPEATABLE_GROUP fields
   | Date
   | null
   | undefined;
@@ -128,6 +203,17 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   RATING_SCALE: "Rating Scale",
   BODY_MAP: "Body Map",
   ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
+  CASCADING_SELECT: "Cascading Select",
+  REPEATABLE_GROUP: "Repeatable Group",
+  // OASIS-specific field types
+  CODE_ENTRY: "Code Entry",
+  MATRIX_GRID: "Matrix Grid",
+  DATE_PARTS: "Date Parts",
+  HIERARCHICAL_CHECKBOX: "Hierarchical Checkbox",
+  CALCULATED_SCORE: "Calculated Score",
+  NUMERIC_COUNTER: "Numeric Counter",
+  STRUCTURED_ID: "Structured ID",
+  MULTI_DIAGNOSIS: "Multi Diagnosis",
 };
 
 // Field type descriptions for UI
@@ -146,6 +232,17 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   RATING_SCALE: "Numeric scale (e.g., 1-5)",
   BODY_MAP: "Interactive body diagram for documenting pain and wounds",
   ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
+  CASCADING_SELECT: "Linked dropdowns for hierarchical selections (Goal Area → Target Skill → Objective → Steps)",
+  REPEATABLE_GROUP: "Dynamic group of fields that can be added/removed (e.g., treatment goals, medications)",
+  // OASIS-specific field types
+  CODE_ENTRY: "Single or multi-digit code selection with button group or dropdown",
+  MATRIX_GRID: "Multi-row/column grid for complex functional assessments",
+  DATE_PARTS: "Separate month, day, year inputs with NA/UK options",
+  HIERARCHICAL_CHECKBOX: "Nested checkbox options with parent-child relationships",
+  CALCULATED_SCORE: "Auto-calculated scores (e.g., BIMS, PHQ-9)",
+  NUMERIC_COUNTER: "Counter with +/- buttons for counting items",
+  STRUCTURED_ID: "Formatted ID input (NPI, Medicare, etc.)",
+  MULTI_DIAGNOSIS: "Multiple ICD-10 diagnoses with primary designation",
 };
 
 // Default field configs by type

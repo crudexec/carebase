@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Check, CheckCheck, MessageSquare, AlertTriangle, Calendar, X } from "lucide-react";
+import { Bell, CheckCheck, MessageSquare, AlertTriangle, Calendar, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";

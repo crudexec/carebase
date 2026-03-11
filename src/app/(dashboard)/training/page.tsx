@@ -2,7 +2,32 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { TrainingCategory, TrainingFormat, TrainingSessionStatus } from "@prisma/client";
+import { TrainingCategory, TrainingFormat } from "@prisma/client";
+import {
+  Plus,
+  Loader2,
+  BookOpen,
+  Clock,
+  Award,
+  ChevronRight,
+  Play,
+  CheckCircle,
+  Circle,
+  GraduationCap,
+  Trophy,
+  Target,
+  FileText,
+} from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Breadcrumb,
+} from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface TrainingCourse {
   id: string;
@@ -20,30 +45,16 @@ interface TrainingCourse {
   _count: {
     sessions: number;
     assignments: number;
+    lessons: number;
   };
-}
-
-interface TrainingSession {
-  id: string;
-  scheduledDate: string;
-  startTime: string;
-  endTime: string;
-  location: string | null;
-  isVirtual: boolean;
-  status: TrainingSessionStatus;
-  capacity: number | null;
-  registeredCount: number;
-  course: {
-    id: string;
-    title: string;
-    category: TrainingCategory;
-  };
-  instructor: {
-    firstName: string;
-    lastName: string;
-  } | null;
-  availableSpots: number | null;
-  isFull: boolean;
+  // E-learning progress
+  totalLessons: number;
+  lessonsCompleted: number;
+  hasQuiz: boolean;
+  quizPassed: boolean;
+  bestQuizScore: number | null;
+  progressPercent: number;
+  status: "not_started" | "in_progress" | "completed";
 }
 
 const CATEGORY_LABELS: Record<TrainingCategory, string> = {
@@ -61,37 +72,26 @@ const CATEGORY_LABELS: Record<TrainingCategory, string> = {
   TECHNOLOGY: "Technology",
 };
 
-const FORMAT_LABELS: Record<TrainingFormat, string> = {
-  IN_PERSON: "In-Person",
-  ONLINE_SELF_PACED: "Online (Self-Paced)",
-  ONLINE_LIVE: "Online (Live)",
-  HYBRID: "Hybrid",
-  ON_THE_JOB: "On-the-Job",
-  SIMULATION: "Simulation",
-};
-
-const STATUS_COLORS: Record<TrainingSessionStatus, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-700",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-700",
-  COMPLETED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-  RESCHEDULED: "bg-orange-100 text-orange-700",
+const CATEGORY_COLORS: Record<TrainingCategory, string> = {
+  ORIENTATION: "bg-blue-100 text-blue-700",
+  CLINICAL_SKILLS: "bg-purple-100 text-purple-700",
+  SAFETY: "bg-orange-100 text-orange-700",
+  COMPLIANCE: "bg-red-100 text-red-700",
+  INFECTION_CONTROL: "bg-green-100 text-green-700",
+  PATIENT_RIGHTS: "bg-pink-100 text-pink-700",
+  DOCUMENTATION: "bg-slate-100 text-slate-700",
+  EMERGENCY_PROCEDURES: "bg-amber-100 text-amber-700",
+  SPECIALTY_CARE: "bg-cyan-100 text-cyan-700",
+  PROFESSIONAL_DEVELOPMENT: "bg-indigo-100 text-indigo-700",
+  LEADERSHIP: "bg-violet-100 text-violet-700",
+  TECHNOLOGY: "bg-teal-100 text-teal-700",
 };
 
 export default function TrainingPage() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "courses" | "sessions">("dashboard");
+  const [activeTab, setActiveTab] = useState<"my-learning" | "all-courses">("my-learning");
   const [courses, setCourses] = useState<TrainingCourse[]>([]);
-  const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Stats
-  const [stats, setStats] = useState({
-    totalCourses: 0,
-    activeCourses: 0,
-    upcomingSessions: 0,
-    overdueAssignments: 0,
-  });
 
   useEffect(() => {
     fetchData();
@@ -100,42 +100,17 @@ export default function TrainingPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [coursesRes, sessionsRes, overdueRes] = await Promise.all([
-        fetch("/api/training/courses?isActive=true"),
-        fetch("/api/training/sessions?upcoming=true"),
-        fetch("/api/training/assignments?overdue=true"),
-      ]);
-
-      if (!coursesRes.ok || !sessionsRes.ok) {
+      const response = await fetch("/api/training/courses?isActive=true");
+      if (!response.ok) {
         throw new Error("Failed to fetch training data");
       }
-
-      const coursesData = await coursesRes.json();
-      const sessionsData = await sessionsRes.json();
-      const overdueData = overdueRes.ok ? await overdueRes.json() : [];
-
-      setCourses(coursesData);
-      setSessions(sessionsData);
-
-      setStats({
-        totalCourses: coursesData.length,
-        activeCourses: coursesData.filter((c: TrainingCourse) => c.isActive).length,
-        upcomingSessions: sessionsData.length,
-        overdueAssignments: overdueData.length,
-      });
+      const data = await response.json();
+      setCourses(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const formatDuration = (minutes: number) => {
@@ -146,76 +121,134 @@ export default function TrainingPage() {
     return `${hours}h ${mins}m`;
   };
 
+  // Calculate stats
+  const stats = {
+    totalCourses: courses.length,
+    inProgress: courses.filter((c) => c.status === "in_progress").length,
+    completed: courses.filter((c) => c.status === "completed").length,
+    totalCEUs: courses
+      .filter((c) => c.status === "completed")
+      .reduce((sum, c) => sum + c.ceuCredits, 0),
+  };
+
+  // Filter courses based on tab
+  const filteredCourses =
+    activeTab === "my-learning"
+      ? courses.filter((c) => c.status === "in_progress" || c.status === "completed")
+      : courses;
+
+  // Sort courses - in progress first, then not started, then completed
+  const sortedCourses = [...filteredCourses].sort((a, b) => {
+    const statusOrder = { in_progress: 0, not_started: 1, completed: 2 };
+    return statusOrder[a.status] - statusOrder[b.status];
+  });
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Training" }]} />
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Training & Education</h1>
-          <p className="text-gray-600 mt-1">
-            Manage training courses, sessions, and staff assignments
+          <h1 className="text-2xl font-bold">Training & Learning</h1>
+          <p className="text-foreground-secondary mt-1">
+            Complete courses and quizzes to earn certifications
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href="/training/courses/new"
-            className="bg-white border px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-          >
+        <Button variant="secondary" asChild>
+          <Link href="/training/courses/new">
+            <Plus className="h-4 w-4 mr-2" />
             Add Course
           </Link>
-          <Link
-            href="/training/sessions/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Schedule Session
-          </Link>
-        </div>
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Active Courses</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.activeCourses}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Upcoming Sessions</div>
-          <div className="text-2xl font-bold text-blue-600">{stats.upcomingSessions}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Overdue Assignments</div>
-          <div className="text-2xl font-bold text-red-600">{stats.overdueAssignments}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Courses</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.totalCourses}</div>
-        </div>
+      {/* Progress Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.totalCourses}</p>
+                <p className="text-sm text-foreground-secondary">Available Courses</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100/50 border-amber-200/50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-100">
+                <Target className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.inProgress}</p>
+                <p className="text-sm text-foreground-secondary">In Progress</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200/50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-green-100">
+                <Trophy className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.completed}</p>
+                <p className="text-sm text-foreground-secondary">Completed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200/50">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-purple-100">
+                <GraduationCap className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.totalCEUs}</p>
+                <p className="text-sm text-foreground-secondary">CEUs Earned</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
-      <div className="border-b mb-6">
-        <nav className="flex gap-4">
+      <div className="border-b">
+        <nav className="flex gap-1">
           {[
-            { id: "dashboard", label: "Dashboard" },
-            { id: "courses", label: "Courses" },
-            { id: "sessions", label: "Sessions" },
+            { id: "my-learning", label: "My Learning", count: stats.inProgress + stats.completed },
+            { id: "all-courses", label: "All Courses", count: stats.totalCourses },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 border-b-2 transition-colors ${
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-foreground-secondary hover:text-foreground"
               }`}
             >
               {tab.label}
+              <Badge variant="default" className="text-xs">
+                {tab.count}
+              </Badge>
             </button>
           ))}
         </nav>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+        <div className="rounded-lg bg-error/10 text-error p-4 text-sm">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
             Dismiss
@@ -224,195 +257,202 @@ export default function TrainingPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12">Loading training data...</div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-foreground-tertiary" />
+        </div>
+      ) : sortedCourses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedCourses.map((course) => (
+            <CourseCard key={course.id} course={course} formatDuration={formatDuration} />
+          ))}
+        </div>
       ) : (
-        <>
-          {/* Dashboard Tab */}
-          {activeTab === "dashboard" && (
-            <div className="grid grid-cols-2 gap-6">
-              {/* Upcoming Sessions */}
-              <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b flex justify-between items-center">
-                  <h2 className="font-semibold text-gray-900">Upcoming Sessions</h2>
-                  <Link href="/training/sessions" className="text-sm text-blue-600 hover:underline">
-                    View All
-                  </Link>
-                </div>
-                <div className="divide-y">
-                  {sessions.slice(0, 5).map((session) => (
-                    <div key={session.id} className="px-6 py-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {session.course.title}
-                          </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            {formatDate(session.scheduledDate)} at {session.startTime}
-                          </div>
-                          {session.instructor && (
-                            <div className="text-sm text-gray-500">
-                              Instructor: {session.instructor.firstName} {session.instructor.lastName}
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <span className={`text-xs px-2 py-1 rounded ${STATUS_COLORS[session.status]}`}>
-                            {session.status}
-                          </span>
-                          {session.capacity && (
-                            <div className="text-sm text-gray-500 mt-1">
-                              {session.registeredCount}/{session.capacity} registered
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {sessions.length === 0 && (
-                    <div className="px-6 py-8 text-center text-gray-500">
-                      No upcoming sessions scheduled
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Course Categories */}
-              <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b">
-                  <h2 className="font-semibold text-gray-900">Courses by Category</h2>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-3">
-                    {Object.entries(CATEGORY_LABELS).map(([category, label]) => {
-                      const count = courses.filter((c) => c.category === category).length;
-                      if (count === 0) return null;
-                      return (
-                        <div key={category} className="flex justify-between items-center">
-                          <span className="text-gray-700">{label}</span>
-                          <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                            {count}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Courses Tab */}
-          {activeTab === "courses" && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="divide-y">
-                {courses.map((course) => (
-                  <div key={course.id} className="px-6 py-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{course.title}</span>
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                            {CATEGORY_LABELS[course.category]}
-                          </span>
-                          {course.requiredForNewHires && (
-                            <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
-                              New Hire Required
-                            </span>
-                          )}
-                        </div>
-                        {course.description && (
-                          <p className="text-sm text-gray-500 mt-1">{course.description}</p>
-                        )}
-                        <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                          <span>{FORMAT_LABELS[course.format]}</span>
-                          <span>{formatDuration(course.durationMinutes)}</span>
-                          {course.ceuCredits > 0 && <span>{course.ceuCredits} CEUs</span>}
-                          <span>{course._count.sessions} sessions</span>
-                          <span>{course._count.assignments} assignments</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/training/courses/${course.id}`}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          View
-                        </Link>
-                        <Link
-                          href={`/training/courses/${course.id}/edit`}
-                          className="text-gray-600 hover:text-gray-800 text-sm"
-                        >
-                          Edit
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {courses.length === 0 && (
-                  <div className="px-6 py-12 text-center text-gray-500">
-                    No courses found. Click "Add Course" to create one.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Sessions Tab */}
-          {activeTab === "sessions" && (
-            <div className="bg-white rounded-lg shadow">
-              <div className="divide-y">
-                {sessions.map((session) => (
-                  <div key={session.id} className="px-6 py-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
-                          {session.course.title}
-                        </div>
-                        <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                          <span>{formatDate(session.scheduledDate)}</span>
-                          <span>{session.startTime} - {session.endTime}</span>
-                          <span>{session.isVirtual ? "Virtual" : session.location || "Location TBD"}</span>
-                        </div>
-                        {session.instructor && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            Instructor: {session.instructor.firstName} {session.instructor.lastName}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-xs px-2 py-1 rounded ${STATUS_COLORS[session.status]}`}>
-                          {session.status}
-                        </span>
-                        {session.capacity && (
-                          <div className="mt-2">
-                            <div className="text-sm">
-                              {session.registeredCount}/{session.capacity}
-                            </div>
-                            {session.isFull && (
-                              <span className="text-xs text-red-600">Full</span>
-                            )}
-                          </div>
-                        )}
-                        <Link
-                          href={`/training/sessions/${session.id}`}
-                          className="text-blue-600 hover:text-blue-800 text-sm block mt-2"
-                        >
-                          Manage
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {sessions.length === 0 && (
-                  <div className="px-6 py-12 text-center text-gray-500">
-                    No upcoming sessions. Click "Schedule Session" to create one.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <BookOpen className="h-12 w-12 mx-auto text-foreground-tertiary mb-4" />
+            {activeTab === "my-learning" ? (
+              <>
+                <p className="text-foreground-secondary">You haven&apos;t started any courses yet</p>
+                <Button
+                  variant="secondary"
+                  className="mt-4"
+                  onClick={() => setActiveTab("all-courses")}
+                >
+                  Browse All Courses
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-foreground-secondary">No courses available</p>
+                <p className="text-sm text-foreground-tertiary mt-1">
+                  Click &quot;Add Course&quot; to create one
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
+  );
+}
+
+function CourseCard({
+  course,
+  formatDuration,
+}: {
+  course: TrainingCourse;
+  formatDuration: (minutes: number) => string;
+}) {
+  const getStatusBadge = () => {
+    switch (course.status) {
+      case "completed":
+        return (
+          <Badge className="bg-green-100 text-green-700">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Completed
+          </Badge>
+        );
+      case "in_progress":
+        return (
+          <Badge className="bg-amber-100 text-amber-700">
+            <Circle className="h-3 w-3 mr-1" />
+            In Progress
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getCTAButton = () => {
+    if (course.totalLessons === 0) {
+      return (
+        <Button variant="secondary" size="sm" disabled>
+          No Content
+        </Button>
+      );
+    }
+
+    switch (course.status) {
+      case "completed":
+        return (
+          <Button variant="secondary" size="sm" asChild>
+            <Link href={`/training/courses/${course.id}`}>
+              Review
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        );
+      case "in_progress":
+        return (
+          <Button size="sm" asChild>
+            <Link href={`/training/courses/${course.id}/learn`}>
+              Continue
+              <Play className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        );
+      default:
+        return (
+          <Button size="sm" asChild>
+            <Link href={`/training/courses/${course.id}/learn`}>
+              Start Learning
+              <Play className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        );
+    }
+  };
+
+  return (
+    <Card className="flex flex-col group hover:shadow-md transition-shadow">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <Badge className={cn("text-xs", CATEGORY_COLORS[course.category])}>
+            {CATEGORY_LABELS[course.category]}
+          </Badge>
+          {getStatusBadge()}
+        </div>
+        <Link href={`/training/courses/${course.id}`} className="block group-hover:text-primary transition-colors">
+          <CardTitle className="text-base mt-2 line-clamp-2">{course.title}</CardTitle>
+        </Link>
+        {course.description && (
+          <p className="text-sm text-foreground-secondary line-clamp-2 mt-1">
+            {course.description}
+          </p>
+        )}
+      </CardHeader>
+
+      <CardContent className="flex-1 flex flex-col justify-end pt-0">
+        {/* Course Info */}
+        <div className="flex items-center gap-3 text-xs text-foreground-tertiary mb-3">
+          <span className="flex items-center gap-1">
+            <FileText className="h-3.5 w-3.5" />
+            {course.totalLessons} lessons
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {formatDuration(course.durationMinutes)}
+          </span>
+          {course.ceuCredits > 0 && (
+            <span className="flex items-center gap-1">
+              <Award className="h-3.5 w-3.5" />
+              {course.ceuCredits} CEUs
+            </span>
+          )}
+        </div>
+
+        {/* Progress Bar */}
+        {course.totalLessons > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span className="text-foreground-secondary">
+                {course.lessonsCompleted}/{course.totalLessons} lessons
+              </span>
+              {course.hasQuiz && (
+                <span
+                  className={cn(
+                    "flex items-center gap-1",
+                    course.quizPassed ? "text-green-600" : "text-foreground-tertiary"
+                  )}
+                >
+                  {course.quizPassed ? (
+                    <>
+                      <CheckCircle className="h-3 w-3" />
+                      Quiz Passed
+                    </>
+                  ) : course.bestQuizScore !== null ? (
+                    `Best: ${course.bestQuizScore}%`
+                  ) : (
+                    "Quiz Required"
+                  )}
+                </span>
+              )}
+            </div>
+            <div className="h-2 bg-background-secondary rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  course.status === "completed" ? "bg-green-500" : "bg-primary"
+                )}
+                style={{ width: `${course.progressPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Required Badge & CTA */}
+        <div className="flex items-center justify-between">
+          {course.requiredForNewHires ? (
+            <Badge variant="warning" className="text-xs">
+              Required
+            </Badge>
+          ) : (
+            <span />
+          )}
+          {getCTAButton()}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

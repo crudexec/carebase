@@ -15,7 +15,7 @@ import {
   Users,
   Filter,
 } from "lucide-react";
-import { Button, Card, CardContent, Select, Label } from "@/components/ui";
+import { Button, Card, CardContent, Select } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { MedPassCard } from "./med-pass-card";
 import { AdministrationModal } from "./administration-modal";

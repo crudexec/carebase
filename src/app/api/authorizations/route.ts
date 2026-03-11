@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       endDate,
       authorizedUnits,
       unitType,
-      diagnosisCodes,
+      diagnosisCodes: _diagnosisCodes,
       notes,
     } = validation.data;
 

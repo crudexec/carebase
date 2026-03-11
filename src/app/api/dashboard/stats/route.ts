@@ -59,7 +59,7 @@ async function getAdminStats(
   weekStart: Date,
   weekEnd: Date,
   monthStart: Date,
-  lastMonthStart: Date
+  _lastMonthStart: Date
 ) {
   const [
     activeClients,
@@ -215,7 +215,7 @@ async function getCarerStats(
   companyId: string,
   carerId: string,
   now: Date,
-  monthStart: Date
+  _monthStart: Date
 ) {
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);

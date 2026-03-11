@@ -1,0 +1,178 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.updatedFcTreatment1735306900237 = void 0;
+class updatedFcTreatment1735306900237 {
+    constructor() {
+        this.name = 'updatedFcTreatment1735306900237';
+    }
+    async up(queryRunner) {
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion" DROP COLUMN "accomplishments_client_made_void_of_family_consultation_treatme"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion" DROP COLUMN "accomplishments_client_family_made_void_of_family_consultation_"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_use_of_augmentative_and_a"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_behavior_intervention_str"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_safety_at_home_and_in_the"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal" DROP COLUMN "parent_or_family_members_challenges_when_implementing_strategie"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal" DROP COLUMN "training_instruction_provided_to_parent_or_family_member_on_how"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_basic_information"
+            ADD "statement_of_family_strength_and_resources" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion"
+            ADD "accomplishments_client_made_void_of_family_consultation_treatment" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion"
+            ADD "accomplishments_client_family_made_void_of_family_consultation_treatment" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_use_of_augmentative_and_alternative_communication" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_behavior_intervention_strategies" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_safety_at_home_and_in_the_community" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "evaluating_progress" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "reinforcers" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "materials" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "progress_monitoring" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "mastery_towards_goal_achievement" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "expected_outcome" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal"
+            ADD "goal_comment" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal"
+            ADD "parent_or_family_members_challenges_when_implementing_strategies" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal"
+            ADD "training_instruction_provided_to_parent_or_family_member_on_how_to_implement_strategies" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "user-bio-data"
+            ALTER COLUMN "status"
+            SET DEFAULT 'not_started'
+        `);
+    }
+    async down(queryRunner) {
+        await queryRunner.query(`
+            ALTER TABLE "user-bio-data"
+            ALTER COLUMN "status"
+            SET DEFAULT 'not_started' - bio - data_status_enum "
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal" DROP COLUMN "training_instruction_provided_to_parent_or_family_member_on_how_to_implement_strategies"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal" DROP COLUMN "parent_or_family_members_challenges_when_implementing_strategies"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "goal_comment"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "expected_outcome"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "mastery_towards_goal_achievement"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "progress_monitoring"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "materials"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "reinforcers"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_goal" DROP COLUMN "evaluating_progress"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_safety_at_home_and_in_the_community"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_behavior_intervention_strategies"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training" DROP COLUMN "training_and_consultation_provided_on_use_of_augmentative_and_alternative_communication"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion" DROP COLUMN "accomplishments_client_family_made_void_of_family_consultation_treatment"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion" DROP COLUMN "accomplishments_client_made_void_of_family_consultation_treatment"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "treatment_basic_information" DROP COLUMN "statement_of_family_strength_and_resources"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal"
+            ADD "training_instruction_provided_to_parent_or_family_member_on_how" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_visit_goal"
+            ADD "parent_or_family_members_challenges_when_implementing_strategie" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_safety_at_home_and_in_the" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_behavior_intervention_str" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_other_training"
+            ADD "training_and_consultation_provided_on_use_of_augmentative_and_a" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion"
+            ADD "accomplishments_client_family_made_void_of_family_consultation_" text
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "fc_family_discussion"
+            ADD "accomplishments_client_made_void_of_family_consultation_treatme" text
+        `);
+    }
+}
+exports.updatedFcTreatment1735306900237 = updatedFcTreatment1735306900237;
+//# sourceMappingURL=1735306900237-updatedFcTreatment.js.map

@@ -9,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Badge,
   Input,
   DateInput,
   Label,
@@ -92,7 +91,7 @@ const STATUS_LABELS: Record<ClientStatus, string> = {
   INACTIVE: "Inactive",
 };
 
-const STATUS_COLORS: Record<ClientStatus, "primary" | "success" | "warning" | "error" | "default"> = {
+const _STATUS_COLORS: Record<ClientStatus, "primary" | "success" | "warning" | "error" | "default"> = {
   PROSPECT: "default",
   ONBOARDING: "warning",
   ACTIVE: "success",
@@ -115,7 +114,7 @@ export default function ClientsPage() {
   // Modal states
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<ClientData | null>(null);
-  const [selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
+  const [_selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Form state
@@ -356,9 +355,9 @@ export default function ClientsPage() {
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
     return sortDirection === "asc" ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" />
+      <ChevronUp className="h-3 w-3 inline ml-0.5" />
     ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" />
+      <ChevronDown className="h-3 w-3 inline ml-0.5" />
     );
   };
 
@@ -408,54 +407,59 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-heading-2 text-foreground">Client Management</h1>
-          <p className="text-body-sm text-foreground-secondary mt-1">
-            Manage your care recipients
-          </p>
+      {/* Header with Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Clients</h1>
+          <span className="text-xs text-gray-500">{clients.length} total</span>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => fetchClients()}>
-            <RefreshCw className="w-4 h-4 mr-1" />
-            Refresh
-          </Button>
-          <Button onClick={() => router.push("/clients/new")}>
-            <Plus className="w-4 h-4 mr-1" />
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-40 border border-gray-300 rounded px-2 py-1 pl-7 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">All Statuses</option>
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+
+          {/* Refresh */}
+          <button
+            onClick={() => fetchClients()}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+
+          {/* Add Client */}
+          <button
+            onClick={() => router.push("/clients/new")}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            <Plus className="h-3 w-3" />
             Add Client
-          </Button>
+          </button>
         </div>
       </div>
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-              <Input
-                placeholder="Search by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-48"
-            >
-              <option value="">All Statuses</option>
-              {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Error Message */}
       {error && (
@@ -487,130 +491,136 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border bg-background-secondary">
+                <tr className="bg-gray-50 border-b border-gray-200">
                   <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
+                    className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:text-gray-900"
                     onClick={() => handleSort("name")}
                   >
                     Name <SortIcon field="name" />
                   </th>
                   <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
+                    className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:text-gray-900"
                     onClick={() => handleSort("dob")}
                   >
                     Age / DOB <SortIcon field="dob" />
                   </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Phone</th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Address</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Phone</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Address</th>
                   <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
+                    className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:text-gray-900"
                     onClick={() => handleSort("carer")}
                   >
                     Assigned Carer <SortIcon field="carer" />
                   </th>
                   <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
+                    className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:text-gray-900"
                     onClick={() => handleSort("status")}
                   >
                     Status <SortIcon field="status" />
                   </th>
-                  <th className="text-right p-4 font-medium text-foreground-secondary">Actions</th>
+                  <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600 w-16">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedClients.map((client) => (
-                  <tr
-                    key={client.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-colors cursor-pointer ${
-                      client.status === "INACTIVE" ? "opacity-60" : ""
-                    }`}
-                    onClick={() => router.push(`/clients/${client.id}`)}
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-medium text-success">
-                            {client.firstName[0]}
-                            {client.lastName[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-medium">
-                            {client.firstName} {client.lastName}
-                          </span>
-                          {client.sponsor && (
-                            <div className="text-xs text-foreground-tertiary">
-                              Sponsor: {client.sponsor.firstName} {client.sponsor.lastName}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">
-                      {client.dateOfBirth ? (
-                        <div>
-                          <span className="font-medium">{calculateAge(client.dateOfBirth)} yrs</span>
-                          <div className="text-xs text-foreground-tertiary">
-                            {formatDate(client.dateOfBirth)}
+                {filteredAndSortedClients.map((client, index) => {
+                  const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+                  return (
+                    <tr
+                      key={client.id}
+                      className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg} ${
+                        client.status === "INACTIVE" ? "opacity-60" : ""
+                      }`}
+                      onClick={() => router.push(`/clients/${client.id}`)}
+                    >
+                      <td className="px-3 py-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-medium text-green-700">
+                              {client.firstName[0]}
+                              {client.lastName[0]}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-900">
+                              {client.firstName} {client.lastName}
+                            </span>
+                            {client.sponsor && (
+                              <div className="text-[10px] text-gray-500">
+                                Sponsor: {client.sponsor.firstName} {client.sponsor.lastName}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{client.phone || "-"}</td>
-                    <td className="p-4 text-foreground-secondary max-w-[200px] truncate" title={client.address || ""}>
-                      {client.address || "-"}
-                    </td>
-                    <td className="p-4 text-foreground-secondary">
-                      {client.assignedCarer ? (
-                        `${client.assignedCarer.firstName} ${client.assignedCarer.lastName}`
-                      ) : (
-                        <span className="text-foreground-tertiary">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <Badge variant={STATUS_COLORS[client.status]}>
-                        {STATUS_LABELS[client.status]}
-                      </Badge>
-                    </td>
-                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(client)}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleStatus(client)}
-                          title={client.status === "INACTIVE" ? "Reactivate" : "Deactivate"}
-                        >
-                          {client.status === "INACTIVE" ? (
-                            <RotateCcw className="w-4 h-4 text-success" />
-                          ) : (
-                            <Trash2 className="w-4 h-4 text-error" />
-                          )}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-3 py-1.5 text-gray-700">
+                        {client.dateOfBirth ? (
+                          <div>
+                            <span className="text-xs font-medium text-gray-900">{calculateAge(client.dateOfBirth)} yrs</span>
+                            <div className="text-[10px] text-gray-500">
+                              {formatDate(client.dateOfBirth)}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-1.5 text-[11px] text-gray-700">{client.phone || <span className="text-gray-400">-</span>}</td>
+                      <td className="px-3 py-1.5 text-[11px] text-gray-700 max-w-[180px] truncate" title={client.address || ""}>
+                        {client.address || <span className="text-gray-400">-</span>}
+                      </td>
+                      <td className="px-3 py-1.5 text-[11px] text-gray-700">
+                        {client.assignedCarer ? (
+                          `${client.assignedCarer.firstName} ${client.assignedCarer.lastName}`
+                        ) : (
+                          <span className="text-gray-400">Unassigned</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-1.5 text-center">
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                          client.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                          client.status === "INACTIVE" ? "bg-red-100 text-red-700" :
+                          client.status === "ONBOARDING" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-gray-100 text-gray-700"
+                        }`}>
+                          {STATUS_LABELS[client.status]}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center gap-0.5">
+                          <button
+                            className="p-0.5 text-gray-400 hover:text-blue-600"
+                            onClick={() => openEditModal(client)}
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </button>
+                          <button
+                            className="p-0.5 text-gray-400 hover:text-red-600"
+                            onClick={() => handleToggleStatus(client)}
+                            title={client.status === "INACTIVE" ? "Reactivate" : "Deactivate"}
+                          >
+                            {client.status === "INACTIVE" ? (
+                              <RotateCcw className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Trash2 className="h-3 w-3" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          <div className="p-4 border-t border-border text-sm text-foreground-secondary">
+          <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-200 text-[10px] text-gray-600">
             Showing {filteredAndSortedClients.length} of {clients.length} clients
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Edit Client Modal */}

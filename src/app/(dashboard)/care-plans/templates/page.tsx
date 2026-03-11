@@ -22,7 +22,6 @@ import {
   Plus,
   Search,
   RefreshCw,
-  Edit2,
   Trash2,
   FileText,
   MoreHorizontal,

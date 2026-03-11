@@ -12,19 +12,16 @@ import {
   CardTitle,
   Badge,
   Label,
-  Textarea,
 } from "@/components/ui";
 import {
   ArrowLeft,
   AlertTriangle,
   RefreshCw,
-  User,
   MapPin,
   Calendar,
   Clock,
   CheckCircle,
   XCircle,
-  Edit2,
   Trash2,
   Bell,
 } from "lucide-react";
@@ -121,7 +118,7 @@ export default function IncidentDetailPage() {
     ? hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL)
     : false;
 
-  const canEdit = session?.user
+  const _canEdit = session?.user
     ? (incident?.reporterId === session.user.id && incident?.status === "PENDING") ||
       hasPermission(session.user.role, PERMISSIONS.INCIDENT_FULL)
     : false;

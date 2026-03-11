@@ -41,7 +41,7 @@ interface StarterTemplate {
   fieldsCount: number;
 }
 
-const STATUS_VARIANTS: Record<string, "default" | "success" | "warning" | "error" | "primary"> = {
+const _STATUS_VARIANTS: Record<string, "default" | "success" | "warning" | "error" | "primary"> = {
   DRAFT: "warning",
   ACTIVE: "success",
   ARCHIVED: "default",

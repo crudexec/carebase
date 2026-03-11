@@ -65,7 +65,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export default function CompetenciesPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const [competencies, setCompetencies] = useState<Competency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

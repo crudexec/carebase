@@ -337,7 +337,7 @@ export async function POST(
 
     // Determine if claim is valid for submission
     const hasErrors = errors.some((e) => e.severity === "error");
-    const hasWarnings = errors.some((e) => e.severity === "warning");
+    const _hasWarnings = errors.some((e) => e.severity === "warning");
 
     return NextResponse.json({
       valid: !hasErrors,

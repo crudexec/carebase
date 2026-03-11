@@ -19,6 +19,15 @@ import {
   Star,
   User,
   Stethoscope,
+  // OASIS field type icons
+  Binary,
+  Grid3X3,
+  CalendarDays,
+  GitBranch,
+  Calculator,
+  PlusSquare,
+  KeyRound,
+  FilePlus2,
 } from "lucide-react";
 
 const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: string }>> = {
@@ -36,6 +45,16 @@ const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: 
   RATING_SCALE: Star,
   BODY_MAP: User,
   ICD10_DIAGNOSIS: Stethoscope,
+  CASCADING_SELECT: GitBranch,
+  // OASIS field types
+  CODE_ENTRY: Binary,
+  MATRIX_GRID: Grid3X3,
+  DATE_PARTS: CalendarDays,
+  HIERARCHICAL_CHECKBOX: GitBranch,
+  CALCULATED_SCORE: Calculator,
+  NUMERIC_COUNTER: PlusSquare,
+  STRUCTURED_ID: KeyRound,
+  MULTI_DIAGNOSIS: FilePlus2,
 };
 
 interface FieldTypeSelectorProps {

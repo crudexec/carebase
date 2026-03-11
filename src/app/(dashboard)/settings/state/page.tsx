@@ -77,7 +77,7 @@ interface CompanyStateConfig {
 export default function StateSettingsPage() {
   const [states, setStates] = React.useState<StateConfig[]>([]);
   const [primaryState, setPrimaryState] = React.useState<StateConfig | null>(null);
-  const [companyStates, setCompanyStates] = React.useState<CompanyStateConfig[]>([]);
+  const [_companyStates, setCompanyStates] = React.useState<CompanyStateConfig[]>([]);
   const [selectedStateDetails, setSelectedStateDetails] = React.useState<StateDetails | null>(null);
   const [selectedStateCode, setSelectedStateCode] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(true);
@@ -112,7 +112,7 @@ export default function StateSettingsPage() {
       } else {
         setError(data.error || "Failed to fetch state configuration");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to load state configuration");
     } finally {
       setIsLoading(false);
@@ -163,7 +163,7 @@ export default function StateSettingsPage() {
       } else {
         setError(data.error || "Failed to update state configuration");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to save state configuration");
     } finally {
       setIsSaving(false);

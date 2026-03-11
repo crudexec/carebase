@@ -108,14 +108,6 @@ export default function SubmissionsPage() {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
       month: "short",

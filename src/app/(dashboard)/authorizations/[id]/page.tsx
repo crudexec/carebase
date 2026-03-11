@@ -21,7 +21,6 @@ import {
   ConfirmActionModal,
 } from "@/components/ui";
 import {
-  ArrowLeft,
   Loader2,
   ShieldCheck,
   Save,

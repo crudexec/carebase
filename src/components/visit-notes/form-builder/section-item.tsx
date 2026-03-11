@@ -31,8 +31,8 @@ export function SectionItem({
   onDeleteSection,
   onSelectField,
   onAddField,
-  onUpdateField,
-  onDeleteField,
+  onUpdateField: _onUpdateField,
+  onDeleteField: _onDeleteField,
 }: SectionItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(section.title);

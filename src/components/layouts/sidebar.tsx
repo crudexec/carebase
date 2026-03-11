@@ -18,7 +18,6 @@ import {
   Settings,
   LogOut,
   Kanban,
-  UserCheck,
   Clock,
   X,
   ClipboardList,
@@ -682,17 +681,19 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
           <button
             onClick={onToggleCollapse}
             className={cn(
-              "flex items-center justify-center gap-2 rounded-lg text-xs text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-all duration-200",
-              isCollapsed ? "w-10 h-10 mx-auto" : "w-full px-2.5 py-2"
+              "flex items-center justify-center gap-2 rounded-lg text-xs transition-all duration-200",
+              isCollapsed
+                ? "w-10 h-10 mx-auto bg-primary/20 text-primary hover:bg-primary/30"
+                : "w-full px-2.5 py-2 bg-sidebar-hover/50 text-white hover:bg-primary/20 hover:text-primary border border-sidebar-hover hover:border-primary/30"
             )}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
           >
             {isCollapsed ? (
               <PanelLeft className="w-5 h-5" />
             ) : (
               <>
                 <PanelLeftClose className="w-4 h-4" />
-                <span className="flex-1 text-left">Collapse menu</span>
+                <span className="flex-1 text-left font-medium">Collapse</span>
               </>
             )}
           </button>

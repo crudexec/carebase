@@ -23,7 +23,6 @@ import {
   Trash2,
   Power,
   PowerOff,
-  Eye,
   RefreshCw,
 } from "lucide-react";
 import { AssessmentTemplateListItem, SCORING_METHOD_LABELS } from "@/lib/assessments/types";

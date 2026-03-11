@@ -184,7 +184,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Update template with sections in a transaction
     const updatedTemplate = await prisma.$transaction(async (tx) => {
       // Update template metadata
-      const template = await tx.assessmentTemplate.update({
+      const _template = await tx.assessmentTemplate.update({
         where: { id },
         data: {
           ...(name !== undefined && { name }),

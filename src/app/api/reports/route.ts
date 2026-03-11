@@ -220,7 +220,7 @@ async function generateShiftsReport(
   dateFilter: { gte?: Date; lte?: Date },
   clientId?: string,
   carerId?: string,
-  groupBy?: "day" | "week" | "month"
+  _groupBy?: "day" | "week" | "month"
 ) {
   const where = {
     companyId,
@@ -309,7 +309,7 @@ async function generateVisitNotesReport(
   templateId?: string,
   clientId?: string,
   carerId?: string,
-  groupBy?: "day" | "week" | "month"
+  _groupBy?: "day" | "week" | "month"
 ) {
   const where = {
     companyId,

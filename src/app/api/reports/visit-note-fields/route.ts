@@ -14,7 +14,7 @@ const fieldReportQuerySchema = z.object({
   carerId: z.string().optional(),
 });
 
-interface FormSchemaSnapshot {
+interface _FormSchemaSnapshot {
   sections: Array<{
     id: string;
     title: string;

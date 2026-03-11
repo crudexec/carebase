@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-import { SupervisionVisitStatus } from "@prisma/client";
+import { SupervisionVisitStatus as _SupervisionVisitStatus } from "@prisma/client";
 
 // Sign visit schema
 const signSchema = z.object({

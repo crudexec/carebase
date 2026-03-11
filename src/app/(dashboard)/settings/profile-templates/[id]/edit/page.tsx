@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { FormTemplateData, FormSectionData } from "@/lib/visit-notes/types";
+import { FormTemplateData } from "@/lib/visit-notes/types";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
 import { ArrowLeft, Save, Eye, Power, PowerOff, Loader2, Users, User } from "lucide-react";
@@ -22,7 +22,7 @@ const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 
 export default function EditProfileTemplatePage() {
   const params = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const templateId = params.id as string;
 
   const [template, setTemplate] = React.useState<FormTemplateData | null>(null);
@@ -70,8 +70,8 @@ export default function EditProfileTemplatePage() {
           })),
         })),
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load template");
+    } catch {
+      setError("Failed to load template");
     } finally {
       setIsLoading(false);
     }

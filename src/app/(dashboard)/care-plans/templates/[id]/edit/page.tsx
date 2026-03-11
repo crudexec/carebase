@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { CarePlanTemplateData } from "@/lib/care-plans/types";
 import { TemplateBuilder } from "@/components/care-plans/template-builder/template-builder";
@@ -10,7 +10,6 @@ import { ArrowLeft, Save, Eye, RefreshCw, Power, PowerOff } from "lucide-react";
 import Link from "next/link";
 
 export default function EditCarePlanTemplatePage() {
-  const router = useRouter();
   const params = useParams();
   const templateId = params.id as string;
 

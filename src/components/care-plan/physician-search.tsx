@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, Plus, User, Phone, Loader2 } from "lucide-react";
+import { Search, Plus, User, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input, Button, Badge } from "@/components/ui";
 

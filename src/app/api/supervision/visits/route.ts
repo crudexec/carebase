@@ -25,7 +25,7 @@ const createSchema = z.object({
 });
 
 // Document visit schema
-const documentSchema = z.object({
+const _documentSchema = z.object({
   visitDate: z.string().transform((s) => new Date(s)),
   actualDuration: z.number().int().min(1),
   clinicalObservations: z.string().optional(),

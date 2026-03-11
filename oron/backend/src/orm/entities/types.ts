@@ -1,0 +1,14 @@
+export enum Role {
+  ADMINISTRATOR = 'ADMINISTRATOR',
+  STANDARD = 'STANDARD',
+  CLIENT_MANAGER = 'CLIENT_MANAGER',
+  EMPLOYEE_MANAGER = 'EMPLOYEE_MANAGER',
+}
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DISENGAGED = 'DISENGAGED',
+}
+
+export type Language = 'en-US' | 'sl-SI';

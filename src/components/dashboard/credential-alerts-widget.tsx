@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Loader2,
   ChevronRight,
-  Calendar,
   Bell,
   CheckCircle,
 } from "lucide-react";
@@ -184,60 +183,62 @@ export function CredentialAlertsWidget() {
       footer={footerContent}
     >
       {/* Summary */}
-      <div className="px-2 mb-3 text-xs text-foreground-secondary">
-        {summary.critical > 0 && <span className="text-error font-medium">{summary.critical} expired</span>}
+      <div className="px-3 py-1.5 text-[11px] text-gray-600">
+        {summary.critical > 0 && <span className="text-red-700 font-medium">{summary.critical} expired</span>}
         {summary.critical > 0 && summary.high > 0 && " · "}
-        {summary.high > 0 && <span className="text-warning font-medium">{summary.high} expiring soon</span>}
+        {summary.high > 0 && <span className="text-yellow-700 font-medium">{summary.high} expiring soon</span>}
         {(summary.critical > 0 || summary.high > 0) && summary.warning > 0 && " · "}
         {summary.warning > 0 && <span>{summary.warning} warnings</span>}
       </div>
 
-      {/* Alerts Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        {alerts.map((alert) => {
-          const daysLeft = getDaysUntilExpiry(alert.credential.expirationDate);
-          const isExpired = daysLeft < 0;
-          const isUrgent = alert.severity === "CRITICAL" || alert.severity === "HIGH";
+      {/* Excel-style Table */}
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
+        {/* Table Header */}
+        <div className="grid grid-cols-[1fr_1fr_70px_80px] bg-gray-50 border-b border-gray-200">
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Staff Member</span>
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Credential</span>
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Status</span>
+          <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-right">Expires</span>
+        </div>
 
-          const cardBg = isExpired
-            ? "bg-error/10 border-error/30 hover:border-error/50"
-            : isUrgent
-            ? "bg-warning/10 border-warning/30 hover:border-warning/50"
-            : "bg-white border-border-light hover:border-primary/50";
+        {/* Table Body */}
+        <div>
+          {alerts.map((alert, index) => {
+            const daysLeft = getDaysUntilExpiry(alert.credential.expirationDate);
+            const isExpired = daysLeft < 0;
+            const isUrgent = alert.severity === "CRITICAL" || alert.severity === "HIGH";
+            const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
 
-          return (
-            <Link
-              key={alert.id}
-              href={`/staff/${alert.credential.caregiverProfile.user.id}?tab=certifications`}
-              className={`block p-3 rounded-lg border transition-all ${cardBg}`}
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <Award className={`h-3.5 w-3.5 flex-shrink-0 ${isExpired ? "text-error" : isUrgent ? "text-warning" : "text-foreground-secondary"}`} />
-                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+            return (
+              <Link
+                key={alert.id}
+                href={`/staff/${alert.credential.caregiverProfile.user.id}?tab=certifications`}
+                className={`grid grid-cols-[1fr_1fr_70px_80px] items-center border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+              >
+                <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+                  {alert.credential.caregiverProfile.user.firstName} {alert.credential.caregiverProfile.user.lastName}
+                </span>
+                <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
+                  {alert.credential.credentialType.name}
+                </span>
+                <span className="px-3 py-1.5 text-center">
+                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
                     isExpired
-                      ? "bg-error/20 text-error"
+                      ? "bg-red-100 text-red-700"
                       : isUrgent
-                      ? "bg-warning/20 text-warning"
-                      : "bg-amber-100 text-amber-700"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-orange-100 text-orange-700"
                   }`}>
                     {getExpiryLabel(alert.credential.expirationDate)}
                   </span>
-                </div>
-              </div>
-              <p className="text-sm font-medium text-foreground truncate">
-                {alert.credential.caregiverProfile.user.firstName} {alert.credential.caregiverProfile.user.lastName}
-              </p>
-              <p className="text-xs text-foreground-secondary truncate mt-0.5">
-                {alert.credential.credentialType.name}
-              </p>
-              <div className="flex items-center gap-1 text-[10px] text-foreground-tertiary mt-1.5">
-                <Calendar className="w-3 h-3" />
-                {new Date(alert.credential.expirationDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-              </div>
-            </Link>
-          );
-        })}
+                </span>
+                <span className="px-3 py-1.5 text-[10px] text-gray-500 text-right">
+                  {new Date(alert.credential.expirationDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </CollapsibleWidget>
   );

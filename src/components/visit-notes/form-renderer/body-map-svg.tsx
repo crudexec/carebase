@@ -309,7 +309,7 @@ export function ViewLegend({ markerCount }: ViewLegendProps) {
 
 // Keep for backwards compatibility
 export type { BodyView as BodyViewType };
-export function ViewSelector({ currentView, onViewChange, markerCounts }: {
+export function ViewSelector({ currentView: _currentView, onViewChange: _onViewChange, markerCounts: _markerCounts }: {
   currentView: string;
   onViewChange: (view: BodyView) => void;
   markerCounts: Record<string, number>;

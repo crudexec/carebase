@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  creed_api:
+    command: /bin/sh -c "echo 'Running API on production!' && npm run build && npm start"
+    ports:
+      - '4002:4002'
+    env_file:
+      - ./config/stage.env

@@ -2,17 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Input,
-  Select,
-  Badge,
-  Breadcrumb,
-} from "@/components/ui";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Search,
@@ -22,9 +12,8 @@ import {
   XCircle,
   Calendar,
   AlertCircle,
-  FileText,
-  User,
-  ChevronRight,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 
 interface Intake {
@@ -67,12 +56,12 @@ interface Intake {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
-  SCHEDULED: { label: "Scheduled", color: "text-primary", bgColor: "bg-primary/10", icon: Calendar },
-  IN_PROGRESS: { label: "In Progress", color: "text-warning", bgColor: "bg-warning/10", icon: Clock },
-  PENDING_APPROVAL: { label: "Pending Approval", color: "text-secondary", bgColor: "bg-secondary/10", icon: AlertCircle },
-  APPROVED: { label: "Approved", color: "text-success", bgColor: "bg-success/10", icon: CheckCircle },
-  REJECTED: { label: "Rejected", color: "text-error", bgColor: "bg-error/10", icon: XCircle },
-  CANCELLED: { label: "Cancelled", color: "text-foreground-secondary", bgColor: "bg-foreground/10", icon: XCircle },
+  SCHEDULED: { label: "Scheduled", color: "text-blue-700", bgColor: "bg-blue-100", icon: Calendar },
+  IN_PROGRESS: { label: "In Progress", color: "text-yellow-700", bgColor: "bg-yellow-100", icon: Clock },
+  PENDING_APPROVAL: { label: "Pending", color: "text-orange-700", bgColor: "bg-orange-100", icon: AlertCircle },
+  APPROVED: { label: "Approved", color: "text-green-700", bgColor: "bg-green-100", icon: CheckCircle },
+  REJECTED: { label: "Rejected", color: "text-red-700", bgColor: "bg-red-100", icon: XCircle },
+  CANCELLED: { label: "Cancelled", color: "text-gray-700", bgColor: "bg-gray-100", icon: XCircle },
 };
 
 // Stage configuration for intake workflow
@@ -98,31 +87,31 @@ function StageIndicator({ currentStage, status }: { currentStage: number; status
         return (
           <React.Fragment key={stage.id}>
             <div
-              className={`relative flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-medium transition-colors ${
+              className={`relative flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-medium transition-colors ${
                 isCancelled
-                  ? "bg-foreground/10 text-foreground-tertiary"
+                  ? "bg-gray-100 text-gray-400"
                   : isDone
-                  ? "bg-success text-white"
+                  ? "bg-green-500 text-white"
                   : isActive
-                  ? "bg-primary text-white"
-                  : "bg-background-secondary text-foreground-tertiary"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-400"
               }`}
               title={stage.name}
             >
               {isDone && !isCancelled ? (
-                <CheckCircle className="w-3.5 h-3.5" />
+                <CheckCircle className="w-3 h-3" />
               ) : (
                 stage.id
               )}
             </div>
             {!isLast && (
               <div
-                className={`w-3 h-0.5 ${
+                className={`w-2 h-0.5 ${
                   isCancelled
-                    ? "bg-foreground/10"
+                    ? "bg-gray-100"
                     : isDone
-                    ? "bg-success"
-                    : "bg-background-secondary"
+                    ? "bg-green-500"
+                    : "bg-gray-200"
                 }`}
               />
             )}
@@ -165,8 +154,9 @@ function getCurrentStage(intake: Intake): number {
 }
 
 export default function IntakePage() {
+  const router = useRouter();
   const [intakes, setIntakes] = React.useState<Intake[]>([]);
-  const [total, setTotal] = React.useState(0);
+  const [_total, setTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("");
@@ -206,238 +196,190 @@ export default function IntakePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Intake" }]} />
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Intake Management</h1>
-          <p className="text-foreground-secondary">
-            Patient intake and onboarding workflow
-          </p>
+    <div className="space-y-4">
+      {/* Header with Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Intake</h1>
+          <span className="text-xs text-gray-500">{filteredIntakes.length} total</span>
         </div>
-        <Link href="/intake/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Intake
-          </Button>
-        </Link>
-      </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-secondary" />
-                <Input
-                  placeholder="Search by client name..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-[180px]"
-            >
-              <option value="">All Statuses</option>
-              <option value="SCHEDULED">Scheduled</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="PENDING_APPROVAL">Pending Approval</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
+        <div className="flex items-center gap-2">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-40 border border-gray-300 rounded px-2 py-1 pl-7 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">All Statuses</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="PENDING_APPROVAL">Pending Approval</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+
+          {/* Refresh */}
+          <button
+            type="button"
+            onClick={() => fetchIntakes()}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+
+          {/* New Intake */}
+          <Link
+            href="/intake/new"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            <Plus className="h-3 w-3" />
+            New Intake
+          </Link>
+        </div>
+      </div>
 
       {/* Intake Table */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Intakes ({total})</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          ) : filteredIntakes.length === 0 ? (
-            <div className="text-center py-12">
-              <ClipboardCheck className="mx-auto h-12 w-12 text-foreground-secondary/50" />
-              <h3 className="mt-4 text-lg font-medium">No intakes found</h3>
-              <p className="mt-2 text-sm text-foreground-secondary">
-                {search || statusFilter
-                  ? "Try adjusting your filters"
-                  : "Get started by creating a new intake"}
-              </p>
-              {!search && !statusFilter && (
-                <Link href="/intake/new">
-                  <Button className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Intake
-                  </Button>
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-background-secondary/50">
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Client
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Stage Progress
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Current Stage
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Status
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Assessments
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Consents
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Care Plan
-                    </th>
-                    <th className="text-left text-xs font-medium text-foreground-secondary px-4 py-3">
-                      Created
-                    </th>
-                    <th className="w-10"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredIntakes.map((intake) => {
-                    const statusConfig = STATUS_CONFIG[intake.status] || STATUS_CONFIG.IN_PROGRESS;
-                    const StatusIcon = statusConfig.icon;
-                    const currentStage = getCurrentStage(intake);
-                    const stageName = getStageName(intake);
-                    const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
-                    const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      ) : filteredIntakes.length === 0 ? (
+        <div className="bg-white rounded border border-gray-200 px-3 py-8 text-center">
+          <ClipboardCheck className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+          <p className="text-xs text-gray-500">
+            {search || statusFilter
+              ? "No intakes match your filters"
+              : "No intakes found"}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Client</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Progress</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Stage</th>
+                  <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600">Status</th>
+                  <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600">Assess</th>
+                  <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600">Consent</th>
+                  <th className="text-center px-3 py-1.5 text-[10px] font-semibold text-gray-600">Plan</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredIntakes.map((intake, index) => {
+                  const statusConfig = STATUS_CONFIG[intake.status] || STATUS_CONFIG.IN_PROGRESS;
+                  const StatusIcon = statusConfig.icon;
+                  const currentStage = getCurrentStage(intake);
+                  const stageName = getStageName(intake);
+                  const assessmentsDone = intake.assessments.filter((a) => a.status === "COMPLETED").length;
+                  const consentsDone = intake.consents.filter((c) => c.status === "SIGNED").length;
+                  const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
 
-                    return (
-                      <tr
-                        key={intake.id}
-                        className="hover:bg-background-secondary/30 transition-colors cursor-pointer group"
-                        onClick={() => window.location.href = `/intake/${intake.id}`}
-                      >
-                        {/* Client */}
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="w-4 h-4 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm">
-                                {intake.client.firstName} {intake.client.lastName}
+                  return (
+                    <tr
+                      key={intake.id}
+                      className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+                      onClick={() => router.push(`/intake/${intake.id}`)}
+                    >
+                      {/* Client */}
+                      <td className="px-3 py-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-medium text-blue-700">
+                              {intake.client.firstName[0]}
+                              {intake.client.lastName[0]}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-900">
+                              {intake.client.firstName} {intake.client.lastName}
+                            </span>
+                            {intake.coordinator && (
+                              <p className="text-[10px] text-gray-500">
+                                {intake.coordinator.firstName} {intake.coordinator.lastName[0]}.
                               </p>
-                              {intake.coordinator && (
-                                <p className="text-xs text-foreground-tertiary">
-                                  {intake.coordinator.firstName} {intake.coordinator.lastName}
-                                </p>
-                              )}
-                            </div>
+                            )}
                           </div>
-                        </td>
+                        </div>
+                      </td>
 
-                        {/* Stage Progress */}
-                        <td className="px-4 py-3">
-                          <StageIndicator currentStage={currentStage} status={intake.status} />
-                        </td>
+                      {/* Stage Progress */}
+                      <td className="px-3 py-1.5">
+                        <StageIndicator currentStage={currentStage} status={intake.status} />
+                      </td>
 
-                        {/* Current Stage */}
-                        <td className="px-4 py-3">
-                          <span className="text-sm font-medium">{stageName}</span>
-                        </td>
+                      {/* Current Stage */}
+                      <td className="px-3 py-1.5">
+                        <span className="text-[11px] text-gray-700">{stageName}</span>
+                      </td>
 
-                        {/* Status */}
-                        <td className="px-4 py-3">
-                          <Badge className={`${statusConfig.bgColor} ${statusConfig.color} gap-1`}>
-                            <StatusIcon className="w-3 h-3" />
-                            {statusConfig.label}
-                          </Badge>
-                        </td>
+                      {/* Status */}
+                      <td className="px-3 py-1.5 text-center">
+                        <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
+                          <StatusIcon className="w-2.5 h-2.5" />
+                          {statusConfig.label}
+                        </span>
+                      </td>
 
-                        {/* Assessments */}
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <ClipboardCheck className="w-3.5 h-3.5 text-foreground-tertiary" />
-                            <span className={`text-sm ${assessmentsDone === intake.assessments.length && intake.assessments.length > 0 ? "text-success font-medium" : ""}`}>
-                              {assessmentsDone}/{intake.assessments.length}
-                            </span>
-                          </div>
-                        </td>
+                      {/* Assessments */}
+                      <td className="px-3 py-1.5 text-center">
+                        <span className={`text-[11px] ${assessmentsDone === intake.assessments.length && intake.assessments.length > 0 ? "text-green-700 font-medium" : "text-gray-700"}`}>
+                          {assessmentsDone}/{intake.assessments.length}
+                        </span>
+                      </td>
 
-                        {/* Consents */}
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-foreground-tertiary" />
-                            <span className={`text-sm ${consentsDone === intake.consents.length && intake.consents.length > 0 ? "text-success font-medium" : ""}`}>
-                              {consentsDone}/{intake.consents.length}
-                            </span>
-                          </div>
-                        </td>
+                      {/* Consents */}
+                      <td className="px-3 py-1.5 text-center">
+                        <span className={`text-[11px] ${consentsDone === intake.consents.length && intake.consents.length > 0 ? "text-green-700 font-medium" : "text-gray-700"}`}>
+                          {consentsDone}/{intake.consents.length}
+                        </span>
+                      </td>
 
-                        {/* Care Plan */}
-                        <td className="px-4 py-3">
-                          {intake.carePlan ? (
-                            <Badge className="bg-success/10 text-success">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Created
-                            </Badge>
-                          ) : (
-                            <span className="text-sm text-foreground-tertiary">-</span>
-                          )}
-                        </td>
+                      {/* Care Plan */}
+                      <td className="px-3 py-1.5 text-center">
+                        {intake.carePlan ? (
+                          <CheckCircle className="w-3.5 h-3.5 text-green-600 mx-auto" />
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
 
-                        {/* Created Date */}
-                        <td className="px-4 py-3">
-                          <span className="text-sm text-foreground-secondary">
-                            {new Date(intake.createdAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </td>
-
-                        {/* Arrow */}
-                        <td className="px-4 py-3">
-                          <ChevronRight className="w-4 h-4 text-foreground-tertiary group-hover:text-primary transition-colors" />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Stage Legend */}
-      <div className="flex items-center justify-center gap-6 text-xs text-foreground-secondary">
-        <span className="font-medium">Stages:</span>
-        {STAGES.map((stage, index) => (
-          <span key={stage.id} className="flex items-center gap-1">
-            <span className="w-4 h-4 rounded-full bg-background-secondary flex items-center justify-center text-[10px] font-medium">
-              {index + 1}
-            </span>
-            {stage.name}
-          </span>
-        ))}
-      </div>
+                      {/* Created Date */}
+                      <td className="px-3 py-1.5 text-[10px] text-gray-500">
+                        {new Date(intake.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-200 text-[10px] text-gray-600">
+            Showing {filteredIntakes.length} intake{filteredIntakes.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

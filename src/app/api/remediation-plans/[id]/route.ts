@@ -13,13 +13,13 @@ const updateSchema = z.object({
 });
 
 // Verify completion schema
-const verifySchema = z.object({
+const _verifySchema = z.object({
   verificationNotes: z.string().optional(),
   isEffective: z.boolean(),
 });
 
 // Add activity schema
-const addActivitySchema = z.object({
+const _addActivitySchema = z.object({
   activityType: z.nativeEnum(RemediationActivityType),
   description: z.string().min(1),
   dueDate: z.string().transform((s) => new Date(s)),

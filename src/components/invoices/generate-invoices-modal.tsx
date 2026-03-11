@@ -8,7 +8,6 @@ import {
   Input,
   DateInput,
   Label,
-  Select,
   Card,
   CardContent,
 } from "@/components/ui";
@@ -30,7 +29,7 @@ interface Client {
   lastName: string;
 }
 
-interface Sponsor {
+interface _Sponsor {
   id: string;
   firstName: string;
   lastName: string;
@@ -64,7 +63,7 @@ interface ClientData {
   status?: string;
 }
 
-interface SponsorData {
+interface _SponsorData {
   id: string;
   firstName: string;
   lastName: string;
@@ -227,7 +226,7 @@ export function GenerateInvoicesModal({
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const _formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",

@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
 
       // For each scheduled time, create a dose entry
       for (const timeStr of scheduledTimes) {
-        const hour = parseTimeToHour(timeStr);
+        const _hour = parseTimeToHour(timeStr);
         const [hourPart, minutePart] = timeStr.split(":").map(Number);
 
         // Create scheduled time for this dose

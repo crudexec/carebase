@@ -61,12 +61,12 @@ export default async function DashboardPage() {
         </>
       )}
 
-      {/* Credential Alerts Panel at top for Admin/Ops Manager */}
+      {/* Credential Alerts and Missing Visit Notes side by side for Admin/Ops Manager */}
       {(user.role === "ADMIN" || user.role === "OPS_MANAGER") && (
-        <>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CredentialAlertsWidget />
           <MissingVisitNotesWidget />
-        </>
+        </div>
       )}
 
       {/* Shifts + Activity Feed side by side for Admin/Ops Manager */}

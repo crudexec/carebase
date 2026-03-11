@@ -11,7 +11,7 @@ const resend = process.env.RESEND_API_KEY
 
 const EMAIL_FROM = process.env.EMAIL_FROM || "invoices@carebasehealth.com";
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || "CareBase";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
+const _APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
 
 // Generate PDF for invoice
 async function generateInvoicePDF(invoice: NonNullable<Awaited<ReturnType<typeof getInvoiceWithDetails>>>): Promise<Buffer> {

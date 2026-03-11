@@ -14,6 +14,9 @@ export default tseslint.config(
       "prisma/migrations/**",
       "orderflow/**",
       "carebase-mobile/**",
+      "oron/**",
+      "scripts/**",
+      "docs/**",
     ],
   },
   {

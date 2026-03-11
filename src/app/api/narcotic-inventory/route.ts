@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { updateInventorySchema } from "@/lib/emar/validation";
+import { updateInventorySchema as _updateInventorySchema } from "@/lib/emar/validation";
 import { z } from "zod";
 
 // GET /api/narcotic-inventory - List controlled substance inventory

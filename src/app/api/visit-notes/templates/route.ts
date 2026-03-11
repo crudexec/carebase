@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
-import { Prisma, FormFieldType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { FieldConfig } from "@/lib/visit-notes/types";
 import {
   createFormTemplateSchema,

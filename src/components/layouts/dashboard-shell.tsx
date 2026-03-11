@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
 import { Menu, HelpCircle, PanelLeft } from "lucide-react";
@@ -53,9 +53,9 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
   const [isCollapsed, setIsCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
 
   // Toggle collapsed state (automatically persisted via useLocalStorage)
-  const toggleCollapsed = () => {
+  const toggleCollapsed = useCallback(() => {
     setIsCollapsed(!isCollapsed);
-  };
+  }, [isCollapsed, setIsCollapsed]);
 
   // Handle responsive detection
   useEffect(() => {
@@ -71,6 +71,21 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Keyboard shortcut to toggle sidebar (Ctrl+B)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+        e.preventDefault();
+        if (!isMobile) {
+          toggleCollapsed();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobile, toggleCollapsed]);
 
   // Close sidebar when clicking outside on mobile
   const handleOverlayClick = () => {

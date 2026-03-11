@@ -30,7 +30,7 @@ interface StaffMember {
   lastName: string;
 }
 
-const REFERRAL_SOURCE_TYPES = [
+const _REFERRAL_SOURCE_TYPES = [
   { value: "PHYSICIAN", label: "Physician" },
   { value: "HOSPITAL", label: "Hospital" },
   { value: "SKILLED_NURSING", label: "Skilled Nursing Facility" },

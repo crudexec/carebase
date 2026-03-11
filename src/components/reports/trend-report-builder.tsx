@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import { TrendChart, CHART_COLORS } from "./trend-chart";
 
-interface Client {
+interface _Client {
   id: string;
   firstName: string;
   lastName: string;

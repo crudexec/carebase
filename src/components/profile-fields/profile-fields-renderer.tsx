@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldData, FormSectionData, FieldValue } from "@/lib/visit-notes/types";
+import { FieldValue } from "@/lib/visit-notes/types";
 import { FieldRenderer } from "@/components/visit-notes/form-renderer/field-renderer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui";
 import { Loader2 } from "lucide-react";
 
 type ProfileTemplateType = "STAFF_PROFILE" | "CLIENT_PROFILE";
@@ -70,7 +69,7 @@ export function ProfileFieldsRenderer({
       }
 
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to load profile fields");
       setTemplate(null);
     } finally {

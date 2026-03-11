@@ -207,7 +207,7 @@ export function CompactStepper({
 }) {
   return (
     <div className="flex items-center justify-center gap-2">
-      {steps.map((step, index) => {
+      {steps.map((step, _index) => {
         const isCompleted = completedSteps.includes(step.id);
         const isCurrent = currentStep === step.id;
 

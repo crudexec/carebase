@@ -23,7 +23,6 @@ import {
   FileText,
   Heart,
   CheckCircle,
-  Clock,
   AlertCircle,
   Plus,
   ExternalLink,

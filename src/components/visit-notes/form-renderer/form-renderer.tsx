@@ -3,11 +3,10 @@
 import * as React from "react";
 import {
   FormTemplateData,
-  FormSectionData,
-  FormFieldData,
   FieldValue,
   VisitNoteData,
 } from "@/lib/visit-notes/types";
+// Note: FormSectionData, FormFieldData are available from types but not directly used here
 import { validateFieldValue } from "@/lib/visit-notes/validation";
 import { Button } from "@/components/ui";
 import { SectionRenderer } from "./section-renderer";

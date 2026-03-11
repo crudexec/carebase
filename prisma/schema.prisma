@@ -125,12 +125,75 @@ enum FormFieldType {
   RATING_SCALE
   BODY_MAP
   ICD10_DIAGNOSIS
+  // OASIS-specific field types
+  CODE_ENTRY            // Single/multi-digit code input (M0100 style)
+  MATRIX_GRID           // Row/column grid selector (M1100)
+  DATE_PARTS            // MM-DD-YYYY boxes
+  HIERARCHICAL_CHECKBOX // Parent/child checkboxes (O0110)
+  CALCULATED_SCORE      // Auto-computed totals (BIMS, PHQ)
+  NUMERIC_COUNTER       // Count entry with bounds
+  STRUCTURED_ID         // Formatted IDs (NPI, SSN)
+  MULTI_DIAGNOSIS       // Multiple ICD-10 with ratings (M1021/M1023)
+  // Cascading dependent select (for treatment plan goals, etc.)
+  CASCADING_SELECT      // Multi-level dependent dropdowns with hierarchical data
+  // Repeatable group for dynamic lists (goals, medications, etc.)
+  REPEATABLE_GROUP      // Group of fields that can be repeated/added dynamically
 }
 
 enum FormTemplateStatus {
   DRAFT
   ACTIVE
   ARCHIVED
+}
+
+// ============================================
+// OASIS ASSESSMENT ENUMS
+// ============================================
+
+enum OasisTimePoint {
+  SOC   // Start of Care
+  ROC   // Resumption of Care
+  FU    // Follow-up/Recertification
+  TRN   // Transfer to inpatient facility
+  DC    // Discharge from agency
+  DAH   // Death at Home
+}
+
+enum OasisStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  SUBMITTED_TO_QA
+  QA_APPROVED
+  QA_REJECTED
+  EXPORTED
+  CORRECTED
+}
+
+enum OasisAssessorDiscipline {
+  RN    // Registered Nurse
+  PT    // Physical Therapist
+  OT    // Occupational Therapist
+  ST    // Speech Therapist
+}
+
+enum OasisSectionCode {
+  A     // Administrative Information
+  B     // Hearing, Speech, and Vision
+  C     // Cognitive Patterns
+  D     // Mood
+  E     // Behavior
+  F     // Preferences for Customary Routine
+  G     // Functional Status
+  GG    // Functional Abilities
+  H     // Bladder and Bowel
+  I     // Active Diagnoses
+  J     // Health Conditions
+  K     // Swallowing/Nutritional Status
+  M     // Skin Conditions
+  N     // Medications
+  O     // Special Treatments
+  Q     // Participation in Assessment
 }
 
 // ============================================
@@ -474,10 +537,15 @@ model Company {
   remediationPlans           RemediationPlan[]
 
   // HR Compliance - Training & Education
-  trainingCourses     TrainingCourse[]
-  trainingSessions    TrainingSession[]
-  trainingAttendances TrainingAttendance[]
-  trainingAssignments TrainingAssignment[]
+  trainingCourses        TrainingCourse[]
+  trainingSessions       TrainingSession[]
+  trainingAttendances    TrainingAttendance[]
+  trainingAssignments    TrainingAssignment[]
+  courseLessons          CourseLesson[]
+  courseLessonProgress   CourseLessonProgress[]
+  courseQuizzes          CourseQuiz[]
+  quizAttempts           QuizAttempt[]
+  courseProgress         CourseProgress[]
 
   // HR Compliance - Supervision
   supervisoryRelationships SupervisoryRelationship[]
@@ -493,6 +561,16 @@ model Company {
 
   // Saved reports
   savedReports SavedReport[]
+
+  // OASIS assessments
+  oasisTemplates   OasisTemplate[]
+  oasisAssessments OasisAssessment[]
+
+  // External signature requests
+  signatureRequests CarePlanSignatureRequest[]
+
+  // Goal hierarchies for cascading selections
+  goalHierarchies GoalHierarchy[]
 
   @@index([isActive])
 }
@@ -620,6 +698,9 @@ model User {
   trainingAssignments        TrainingAssignment[]
   trainingAssignmentsGiven   TrainingAssignment[] @relation("TrainingAssigner")
   trainingExtensionsApproved TrainingAssignment[] @relation("ExtensionApprover")
+  courseLessonProgress       CourseLessonProgress[]
+  quizAttempts               QuizAttempt[]
+  courseProgress             CourseProgress[]
 
   // HR Compliance - Supervision
   supervisorRelationships    SupervisoryRelationship[] @relation("Supervisor")
@@ -644,6 +725,15 @@ model User {
 
   // Password reset tokens
   passwordResetTokens PasswordResetToken[]
+
+  // External signature requests sent
+  signatureRequestsSent CarePlanSignatureRequest[] @relation("SignatureRequestSender")
+
+  // OASIS assessments
+  oasisTemplatesCreated   OasisTemplate[]    @relation("OasisTemplateCreator")
+  oasisAssessmentsGiven   OasisAssessment[]  @relation("OasisAssessor")
+  oasisAssessmentsQAd     OasisAssessment[]  @relation("OasisQAReviewer")
+  oasisResponsesModified  OasisResponse[]    @relation("OasisResponseModifier")
 
   @@index([email])
   @@index([role])
@@ -931,6 +1021,9 @@ model Client {
   medications               Medication[]
   medicationAdministrations MedicationAdministration[]
   refillRequests            RefillRequest[]
+
+  // OASIS assessments
+  oasisAssessments OasisAssessment[]
 
   @@index([sponsorId])
   @@index([assignedCarerId])
@@ -2795,6 +2888,9 @@ model CarePlan {
   // Fax records
   faxRecords FaxRecord[]
 
+  // External signature requests (parents, physicians, etc.)
+  signatureRequests CarePlanSignatureRequest[]
+
   @@index([companyId])
   @@index([clientId])
   @@index([status])
@@ -2823,6 +2919,204 @@ model CarePlanTask {
 
   @@index([carePlanId])
   @@index([category])
+}
+
+// ============================================
+// CARE PLAN SIGNATURE REQUESTS
+// ============================================
+
+// Signer type for external signature requests
+enum SignatureRequestSignerType {
+  PARENT
+  GUARDIAN
+  PHYSICIAN
+  SERVICE_COORDINATOR
+  THERAPIST
+  CASE_MANAGER
+  OTHER
+}
+
+// Status of signature request
+enum SignatureRequestStatus {
+  PENDING
+  VIEWED
+  SIGNED
+  EXPIRED
+  CANCELLED
+}
+
+// External signature request for care plans (parents, physicians, etc.)
+model CarePlanSignatureRequest {
+  id     String                 @id @default(cuid())
+  token  String                 @unique @default(uuid()) // Unique token for public access
+  status SignatureRequestStatus @default(PENDING)
+
+  // Signer information
+  signerType  SignatureRequestSignerType
+  signerName  String
+  signerEmail String
+  signerPhone String?
+
+  // Request tracking
+  sentAt     DateTime  @default(now()) // When the request was sent
+  viewedAt   DateTime? // When the signer first viewed the document
+  signedAt   DateTime? // When the signature was submitted
+  expiresAt  DateTime // When the request expires
+
+  // Signature data (when signed)
+  signatureData     String? @db.Text // Base64 encoded signature image
+  signerRelation    String? // Relationship to client (if applicable)
+  signerCredentials String? // For physicians: license number, NPI, etc.
+  signedIpAddress   String? // IP address when signed (for audit)
+
+  // Optional message to signer
+  customMessage String? @db.Text
+
+  // Reminder tracking
+  reminderSentAt   DateTime?
+  reminderCount    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Care plan relation
+  carePlanId String
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  // Who sent the request
+  sentById String
+  sentBy   User   @relation("SignatureRequestSender", fields: [sentById], references: [id])
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([carePlanId])
+  @@index([token])
+  @@index([status])
+  @@index([signerEmail])
+  @@index([expiresAt])
+  @@index([companyId])
+}
+
+// ============================================
+// GOAL HIERARCHIES (for CASCADING_SELECT fields)
+// ============================================
+
+// A goal hierarchy defines a multi-level cascading structure
+// Used for treatment plan goals: Goal Area → Target Skill → Short Term Objective → Steps
+model GoalHierarchy {
+  id          String   @id @default(cuid())
+  name        String   // "Autism Waiver IISS Goals", "FC Goals", etc.
+  description String?
+
+  // Which template types this hierarchy applies to (for filtering)
+  // e.g., ["IISS", "FC", "ITI", "ALP", "Respite"]
+  templateTypes String[]
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Company relation - each company can have their own hierarchies
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  // Level 1: Goal Areas
+  goalAreas   GoalArea[]
+
+  @@index([companyId])
+  @@index([isActive])
+}
+
+// Level 1: Goal Area (e.g., "Improving Compliance", "Community Safety")
+model GoalArea {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Parent hierarchy
+  hierarchyId  String
+  hierarchy    GoalHierarchy @relation(fields: [hierarchyId], references: [id], onDelete: Cascade)
+
+  // Level 2: Target Skills
+  targetSkills TargetSkill[]
+
+  @@index([hierarchyId])
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+// Level 2: Target Skill (e.g., "Task Engagement", "Self Regulation")
+model TargetSkill {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Parent goal area
+  goalAreaId   String
+  goalArea     GoalArea @relation(fields: [goalAreaId], references: [id], onDelete: Cascade)
+
+  // Level 3: Short Term Objectives
+  objectives   ShortTermObjective[]
+
+  @@index([goalAreaId])
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+// Level 3: Short Term Objective (e.g., "Attend to an activity from 5 to 20 minutes")
+model ShortTermObjective {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Parent target skill
+  targetSkillId String
+  targetSkill   TargetSkill @relation(fields: [targetSkillId], references: [id], onDelete: Cascade)
+
+  // Level 4: Task Analysis Steps
+  steps        TaskAnalysisStep[]
+
+  @@index([targetSkillId])
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+// Level 4: Task Analysis Step (e.g., "Present schedule to technician")
+model TaskAnalysisStep {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Parent objective
+  objectiveId  String
+  objective    ShortTermObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@index([objectiveId])
+  @@index([displayOrder])
+  @@index([isActive])
 }
 
 // ============================================
@@ -3636,6 +3930,9 @@ model TrainingCourse {
   // Relations
   sessions    TrainingSession[]
   assignments TrainingAssignment[]
+  lessons     CourseLesson[]
+  quizzes     CourseQuiz[]
+  progress    CourseProgress[]
 
   @@index([companyId])
   @@index([category])
@@ -3785,6 +4082,158 @@ model TrainingAssignment {
   @@index([courseId])
   @@index([status])
   @@index([dueDate])
+  @@index([companyId])
+}
+
+// Course Lessons/Content
+model CourseLesson {
+  id       String @id @default(cuid())
+  courseId String
+  course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title       String
+  content     String   @db.Text // Rich text/markdown content
+  orderIndex  Int      @default(0)
+
+  // Optional video/media
+  videoUrl    String?
+
+  // Estimated reading time in minutes
+  estimatedMinutes Int @default(5)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  progress CourseLessonProgress[]
+
+  @@index([courseId])
+  @@index([companyId])
+}
+
+// Track user progress through lessons
+model CourseLessonProgress {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User @relation(fields: [userId], references: [id])
+
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([lessonId, userId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+// Course Quiz
+model CourseQuiz {
+  id       String @id @default(cuid())
+  courseId String
+  course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title        String
+  description  String?
+  passingScore Int     @default(70) // Percentage
+  maxAttempts  Int?    // null = unlimited
+  timeLimit    Int?    // Minutes, null = no limit
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Relations
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([courseId])
+  @@index([companyId])
+}
+
+enum QuizQuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  MULTIPLE_SELECT
+}
+
+model QuizQuestion {
+  id     String @id @default(cuid())
+  quizId String
+  quiz   CourseQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  question    String
+  type        QuizQuestionType @default(MULTIPLE_CHOICE)
+  options     Json   // Array of { id: string, text: string }
+  correctIds  String[] // IDs of correct options
+  explanation String? // Explanation shown after answering
+  orderIndex  Int     @default(0)
+  points      Int     @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id     String @id @default(cuid())
+  quizId String
+  quiz   CourseQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  answers   Json // { questionId: string, selectedIds: string[] }[]
+  score     Int  // Percentage score
+  passed    Boolean
+
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([quizId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+// Track overall course progress
+model CourseProgress {
+  id       String @id @default(cuid())
+  courseId String
+  course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User @relation(fields: [userId], references: [id])
+
+  // Progress tracking
+  lessonsCompleted Int @default(0)
+  quizPassed       Boolean @default(false)
+  bestQuizScore    Int?
+
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@unique([courseId, userId])
+  @@index([userId])
   @@index([companyId])
 }
 
@@ -4353,4 +4802,224 @@ model RefillRequest {
   @@index([clientId])
   @@index([status])
   @@index([requestedAt])
+}
+
+// ============================================
+// OASIS ASSESSMENT SYSTEM
+// ============================================
+
+model OasisTemplate {
+  id            String             @id @default(cuid())
+  version       String             // e.g., "E2-2026"
+  name          String             // e.g., "OASIS-E2 All Items"
+  description   String?
+  effectiveDate DateTime           // CMS effective date
+  status        FormTemplateStatus @default(DRAFT)
+  isDefault     Boolean            @default(false)
+
+  // Sections
+  sections OasisSection[]
+
+  // Assessments using this template
+  assessments OasisAssessment[]
+
+  // Company relation (null = global template)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Creator
+  createdById String?
+  createdBy   User?   @relation("OasisTemplateCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([version])
+  @@index([status])
+}
+
+model OasisSection {
+  id         String           @id @default(cuid())
+  templateId String
+  template   OasisTemplate    @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  code        OasisSectionCode // A, B, C, etc.
+  name        String           // Full section name
+  description String?
+  order       Int
+
+  // Section instructions from CMS
+  instructions String? @db.Text
+
+  // Items in this section
+  items OasisItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([templateId, code])
+  @@index([templateId])
+}
+
+model OasisItem {
+  id        String       @id @default(cuid())
+  sectionId String
+  section   OasisSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  // Item identification
+  code  String // e.g., "M0030", "GG0130A", "C0500"
+  label String // Question/item text
+  order Int
+
+  // CMS guidance
+  description String? @db.Text // Detailed description
+  helpText    String? @db.Text // CMS guidance/instructions
+
+  // Field configuration
+  fieldType FormFieldType
+  config    Json          // Type-specific configuration
+  required  Boolean       @default(false)
+
+  // Time point visibility
+  visibleAt  OasisTimePoint[] // Which time points show this item
+  requiredAt OasisTimePoint[] // Which time points require this item
+
+  // Discipline restrictions (empty = all disciplines)
+  allowedDisciplines OasisAssessorDiscipline[]
+
+  // Skip logic rules (JSON array of SkipLogicRule)
+  skipLogic Json?
+
+  // Scoring configuration
+  scoreMapping       Json?   // Value → Score mapping for scored items
+  contributesToScore String? // Code of calculated field this contributes to
+  maxScore           Float?  // Maximum possible score for this item
+
+  // Validation rules
+  validationRules Json? // Additional validation beyond type validation
+
+  // Response options (for choice fields)
+  responseOptions Json? // Array of {value, label, description}
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sectionId, code])
+  @@index([sectionId])
+  @@index([code])
+}
+
+model OasisAssessment {
+  id         String        @id @default(cuid())
+  templateId String
+  template   OasisTemplate @relation(fields: [templateId], references: [id])
+
+  // Assessment identification
+  assessmentNumber String @unique // OAS-YYYYMMDD-XXXXX
+
+  // Patient/Client
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Time point and key dates
+  timePoint          OasisTimePoint
+  m0030SocDate       DateTime?       // Start of Care date
+  m0032RocDate       DateTime?       // Resumption of Care date
+  m0090AssessmentDate DateTime?      // Date assessment completed
+  m0906DischargeDate DateTime?       // Discharge/Transfer/Death date
+
+  // Assessment reason (M0100)
+  assessmentReason String? // Code from M0100
+
+  // Assessor
+  assessorId         String
+  assessor           User                    @relation("OasisAssessor", fields: [assessorId], references: [id])
+  assessorDiscipline OasisAssessorDiscipline
+
+  // Episode linking
+  priorAssessmentId    String?
+  priorAssessment      OasisAssessment?  @relation("AssessmentChain", fields: [priorAssessmentId], references: [id])
+  followingAssessments OasisAssessment[] @relation("AssessmentChain")
+
+  // Status workflow
+  status      OasisStatus @default(DRAFT)
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  lockedAt    DateTime?   // When locked for editing
+
+  // Progress tracking
+  currentSection   String?  // Current section being worked on
+  completedSections String[] // Sections marked complete
+
+  // QA workflow
+  qaStatus       QAStatus?
+  qaComment      String?
+  qaReviewedAt   DateTime?
+  qaReviewedById String?
+  qaReviewedBy   User?     @relation("OasisQAReviewer", fields: [qaReviewedById], references: [id])
+  submittedForQaAt DateTime?
+
+  // Export tracking
+  exportedAt    DateTime?
+  exportFormat  String?   // File format used
+  exportFileUrl String?   // URL to exported file
+
+  // Calculated scores (stored for quick access)
+  scores Json? // { bims: number, phq9: number, etc. }
+
+  // Responses
+  responses OasisResponse[]
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([companyId])
+  @@index([timePoint])
+  @@index([status])
+  @@index([assessorId])
+  @@index([m0090AssessmentDate])
+}
+
+model OasisResponse {
+  id           String          @id @default(cuid())
+  assessmentId String
+  assessment   OasisAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  // Item reference
+  itemCode String // Reference to OasisItem.code
+
+  // Polymorphic value storage
+  valueText    String?   @db.Text
+  valueNumber  Float?
+  valueBoolean Boolean?
+  valueDate    DateTime?
+  valueJson    Json?     // For complex types (matrix, multi-select, hierarchical)
+
+  // Computed score for this response
+  score Float?
+
+  // Skip tracking
+  skipped    Boolean @default(false)
+  skipReason String? // Code or description of why skipped
+
+  // Validation
+  isValid          Boolean @default(true)
+  validationErrors Json?   // Array of validation error messages
+
+  // Audit trail
+  lastModifiedById String?
+  lastModifiedBy   User?   @relation("OasisResponseModifier", fields: [lastModifiedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([assessmentId, itemCode])
+  @@index([assessmentId])
+  @@index([itemCode])
 }

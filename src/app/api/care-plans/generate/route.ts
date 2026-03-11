@@ -33,7 +33,7 @@ function generateTasksFromAssessments(assessments: AssessmentData[]): {
   for (const assessment of assessments) {
     const score = assessment.totalScore ?? 0;
     const maxScore = assessment.maxScore ?? 6;
-    const percentage = (score / maxScore) * 100;
+    const _percentage = (score / maxScore) * 100;
 
     switch (assessment.code) {
       case "KATZ_ADL":

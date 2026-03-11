@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getFaxDocument } from "@/lib/sinch";
+import { getFaxDocument as _getFaxDocument } from "@/lib/sinch";
 
 // Sinch webhook payload structure
 interface SinchFaxWebhookPayload {

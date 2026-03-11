@@ -1,0 +1,24 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const FcVisit_1 = require("controllers/FcVisit");
+const checkJwt_1 = require("middleware/checkJwt");
+const router = (0, express_1.Router)();
+router.post('/add/other-training', [checkJwt_1.checkJwt], FcVisit_1.addFcOtherTraining);
+router.post('/add/session-highlights', [checkJwt_1.checkJwt], FcVisit_1.addFcSessionHighlights);
+router.post('/add/family-discussion', [checkJwt_1.checkJwt], FcVisit_1.addFcFamilyDiscussion);
+router.post('/add/signature', [checkJwt_1.checkJwt], FcVisit_1.addFcSignature);
+router.post('/add/visit-goal', [checkJwt_1.checkJwt], FcVisit_1.addFcVisitGoal);
+router.patch('/edit/family-discussion', [checkJwt_1.checkJwt], FcVisit_1.editFcFamilyDiscussion);
+router.patch('/edit/session-highlights', [checkJwt_1.checkJwt], FcVisit_1.editFcSessionHighlights);
+router.patch('/edit/signature', [checkJwt_1.checkJwt], FcVisit_1.editFcSignature);
+router.patch('/edit/visit-goal', [checkJwt_1.checkJwt], FcVisit_1.editFcVisitGoal);
+router.patch('/edit/other-training', [checkJwt_1.checkJwt], FcVisit_1.editFcOtherTraining);
+router.post('/create', [checkJwt_1.checkJwt], FcVisit_1.createFcVisitLog);
+router.get('/:visit_full_id/retrieve', [checkJwt_1.checkJwt], FcVisit_1.retrieveFcVisitLog);
+router.get('/:intake_full_id/retrieve-all', [checkJwt_1.checkJwt], FcVisit_1.retrieveAllVisitLogs);
+router.post('/submit', [checkJwt_1.checkJwt], FcVisit_1.submitGenericVisit);
+router.delete('/delete', [checkJwt_1.checkJwt], FcVisit_1.deleteGenericVisit);
+router.get('/:id/filter-export', [checkJwt_1.checkJwt], FcVisit_1.filterFcVisitExport);
+exports.default = router;
+//# sourceMappingURL=fcVisit.js.map

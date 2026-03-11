@@ -12,7 +12,6 @@ import {
   Select,
 } from "@/components/ui";
 import {
-  Send,
   Loader2,
   CheckCircle,
   XCircle,

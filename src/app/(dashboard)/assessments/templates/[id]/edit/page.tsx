@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { AssessmentTemplateData } from "@/lib/assessments/types";
 import { TemplateBuilder } from "@/components/assessments/template-builder";
@@ -10,7 +10,6 @@ import { ArrowLeft, Save, Eye, Power, PowerOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function EditAssessmentTemplatePage() {
-  const router = useRouter();
   const params = useParams();
   const templateId = params.id as string;
 

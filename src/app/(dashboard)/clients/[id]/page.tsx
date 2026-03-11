@@ -196,8 +196,8 @@ export default function ClientDetailPage() {
   const [visitNotes, setVisitNotes] = React.useState<VisitNote[]>([]);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [authorizations, setAuthorizations] = React.useState<Authorization[]>([]);
-  const [selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
-  const [selectedSponsor, setSelectedSponsor] = React.useState<SponsorData | null>(null);
+  const [_selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
+  const [_selectedSponsor, setSelectedSponsor] = React.useState<SponsorData | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<TabType>("details");

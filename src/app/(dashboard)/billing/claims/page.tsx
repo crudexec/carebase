@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -18,7 +17,6 @@ import {
   DollarSign,
   CheckCircle,
   XCircle,
-  Clock,
   Send,
   Download,
 } from "lucide-react";

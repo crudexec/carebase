@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate summary statistics
-    const now = new Date();
+    const _now = new Date();
     const summary = {
       total: credentials.length,
       active: credentials.filter(c => c.status === CredentialStatus.ACTIVE).length,

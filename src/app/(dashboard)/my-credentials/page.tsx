@@ -24,7 +24,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Upload,
   FileText,
   X,
 } from "lucide-react";
@@ -74,7 +73,7 @@ const CATEGORY_LABELS: Record<CredentialCategory, string> = {
 };
 
 export default function MyCredentialsPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const [credentials, setCredentials] = React.useState<Credential[]>([]);
   const [credentialTypes, setCredentialTypes] = React.useState<CredentialType[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);

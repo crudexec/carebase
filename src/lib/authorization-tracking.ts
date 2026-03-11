@@ -91,7 +91,7 @@ export async function deductAuthorizationUnits(
     });
 
     // Check if we need to create alerts
-    const daysRemaining = Math.ceil(
+    const _daysRemaining = Math.ceil(
       (new Date(authorization.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
 

@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId } = session.user;
+    const { companyId, id: userId } = session.user;
 
     const { searchParams } = new URL(request.url);
     const queryResult = querySchema.safeParse(Object.fromEntries(searchParams));
@@ -71,12 +71,79 @@ export async function GET(request: NextRequest) {
           select: {
             sessions: true,
             assignments: true,
+            lessons: true,
+          },
+        },
+        lessons: {
+          select: { id: true },
+        },
+        quizzes: {
+          select: {
+            id: true,
+            passingScore: true,
+          },
+        },
+        progress: {
+          where: { userId },
+          select: {
+            lessonsCompleted: true,
+            quizPassed: true,
+            bestQuizScore: true,
+            completedAt: true,
           },
         },
       },
     });
 
-    return NextResponse.json(courses);
+    // Transform courses to include progress summary
+    const coursesWithProgress = courses.map((course) => {
+      const userProgress = course.progress[0];
+      const totalLessons = course._count.lessons;
+      const lessonsCompleted = userProgress?.lessonsCompleted ?? 0;
+      const hasQuiz = course.quizzes.length > 0;
+      const quizPassed = userProgress?.quizPassed ?? false;
+      const bestQuizScore = userProgress?.bestQuizScore ?? null;
+
+      // Calculate overall progress
+      let progressPercent = 0;
+      if (totalLessons > 0) {
+        progressPercent = Math.round((lessonsCompleted / totalLessons) * 100);
+      }
+
+      // Determine status
+      let status: "not_started" | "in_progress" | "completed" = "not_started";
+      if (lessonsCompleted === totalLessons && (!hasQuiz || quizPassed)) {
+        status = "completed";
+      } else if (lessonsCompleted > 0 || bestQuizScore !== null) {
+        status = "in_progress";
+      }
+
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        category: course.category,
+        format: course.format,
+        durationMinutes: course.durationMinutes,
+        ceuCredits: course.ceuCredits,
+        contactHours: course.contactHours,
+        isRecurring: course.isRecurring,
+        recurrenceMonths: course.recurrenceMonths,
+        requiredForNewHires: course.requiredForNewHires,
+        isActive: course.isActive,
+        _count: course._count,
+        // E-learning progress
+        totalLessons,
+        lessonsCompleted,
+        hasQuiz,
+        quizPassed,
+        bestQuizScore,
+        progressPercent,
+        status,
+      };
+    });
+
+    return NextResponse.json(coursesWithProgress);
   } catch (error) {
     console.error("Error fetching training courses:", error);
     return NextResponse.json(

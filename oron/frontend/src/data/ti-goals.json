@@ -1,0 +1,3210 @@
+[
+  {
+    "goalArea": "Test Goal Area",
+    "targetSkills": [
+      {
+        "targetSkill": "Test Target Skill",
+        "shortTermObjectives": [
+          {
+            "sto": "Know what to do when lost",
+            "taskAnalysis": [
+              "Recognize when lost",
+              "Recogize and use \"block home\" when lost",
+              "Locate a phone",
+              "Phone for assistance when lost",
+              "Seek help from appropriate person when lost",
+              "Carry ID/emergency money / valuables safely"
+            ]
+          },
+          {
+            "sto": "Street Crossing Safety",
+            "taskAnalysis": [
+              "Recognize and use appropriate walker safety vocabulary via pictures",
+              "Recognize and demonstrate safe practices near traffic (i.e. walking with an adult, walking on the sidewalk, etc.)",
+              "Cross the street with an adult",
+              "Identify safe steps to crossing the street",
+              "Demonstrate safe steps to crossing the street",
+              "Use care and caution when crossing small, narrow streets",
+              "Demonstrate safe behavior while approaching and crossing an intersection",
+              "Demonstrate safe behaviors for exiting a vehicle",
+              "Demonstrate safe behaviors for walking safely in a parking lot",
+              "Demonstrate safe behaviors for re-entering a vehicle"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Stranger Danger Awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify if a person is a family member, friend or stranger",
+            "taskAnalysis": [
+              "Look at the picture/person",
+              "Look at pictures to identify families, friends and community helpers and strangers",
+              "Identify family",
+              "Identify friend",
+              "Identify community helpers",
+              "Identify community helpers such as Police",
+              "Identify stranger",
+              "Identify 1 example of safe behavior with each person",
+              "Say \"No\" to Strangers",
+              "Move away from a stranger in the community"
+            ]
+          },
+          {
+            "sto": "Identify who it is ok to go with",
+            "taskAnalysis": [
+              "Look at the picture or actual person",
+              "Identify if it is okay to go with that person"
+            ]
+          },
+          {
+            "sto": "Be able to select the safe option when given two pictured responses to stranger encounter",
+            "taskAnalysis": [
+              "Look at the two options",
+              "Think about each option and consider whether it is safe or not",
+              "Select the safest option"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Community Helper Awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify which community service to access to address fictional situations",
+            "taskAnalysis": [
+              "Identify the type of emergency situation (fire, medical, etc.)",
+              "Identify the correct community helper for that type of emergency situation"
+            ]
+          },
+          {
+            "sto": "Identify what to communicate to a community helper to address fictional emergency situations",
+            "taskAnalysis": [
+              "Identify which service to contact",
+              "Communicate what happened to the operator",
+              "Provide any additional information the operator may need such as an address"
+            ]
+          },
+          {
+            "sto": "Properly respond to real and fictional community safety situations",
+            "taskAnalysis": [
+              "Identify where to get help in the community (ex. Go to the police when lost)",
+              "Correctly utilize road signs to navigate when lost (ex. locate signs for police station when lost and follow directional arrows)",
+              "Communicate appropriate information to emergency personnel (ex. Tell police officer that you are lost and give them your name and caregiver contact information)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Personal Information",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify personal information (i.e. name, address, telephone number, birthday, emergency contact)",
+            "taskAnalysis": [
+              "Identify name (first and last)",
+              "Identify address",
+              "Identify telephone number",
+              "Identify birthday",
+              "Identify emergency contact"
+            ]
+          },
+          {
+            "sto": "Write/type personal information",
+            "taskAnalysis": [
+              "Write/type name",
+              "Write/type home address",
+              "Write/type parent(s) name(s)",
+              "Write/type parent(s) phone number(s)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Avoid/Prevent Elopement",
+        "shortTermObjectives": [
+          {
+            "sto": "Ask permission before going to another area",
+            "taskAnalysis": [
+              "Stay with an adult when prompted",
+              "Indicate desire to use bathroom by pointing or gesturing to the bathroom",
+              "Indicate desire of location or object by verbalizing or pointing towards the direction of location or object",
+              "Repeat steps 1 to 3 as needed"
+            ]
+          },
+          {
+            "sto": "Stay within appropriate proximity of caregiver without darting off",
+            "taskAnalysis": [
+              "Hold the hand of accompanying caregiver or stay within 6 feet of the accompanying caregiver",
+              "Communicate the want/need to caregiver when there is a desire to move to a certain object/area",
+              "If given permission, walk calmly with caregiver to desired object/area"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Communty Integration",
+    "targetSkills": [
+      {
+        "targetSkill": "Use of Transportation",
+        "shortTermObjectives": [
+          {
+            "sto": "Use a public bus",
+            "taskAnalysis": [
+              "Choose a desired destination",
+              "Identify means to get to destination (i.e. bus and/or walk)",
+              "Walk to the destination",
+              "Prepare money for fare",
+              "Board transport",
+              "Sit in unoccupied seat",
+              "Remain seated",
+              "Pull on wire to request to get off",
+              "Get off the bus"
+            ]
+          },
+          {
+            "sto": "Learn the Metro rail map",
+            "taskAnalysis": [
+              "Name the major lines on the Metro rail system",
+              "Locate the named Metro station on the map"
+            ]
+          },
+          {
+            "sto": "Verbalize the destination to a transit driver (ie. Cab, Uber, Lyft, etc",
+            "taskAnalysis": [
+              "Choose the location",
+              "Use GPS to set travel directions",
+              "Identify the vehicle that is expected to pick up",
+              "Confirm with the driver",
+              "Provide driver with destination"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Use of Community Resources",
+        "shortTermObjectives": [
+          {
+            "sto": "Visit and use the library",
+            "taskAnalysis": [
+              "Determine location of library",
+              "Prepare to go to library (library card, books to return)",
+              "Travel to and from library",
+              "Request assistance from librarian, as needed",
+              "Respect quiet library atmosphere",
+              "Obtain and carry library card",
+              "Use card catalog at library",
+              "Locate library materials using computer",
+              "Locate sections of the library",
+              "Browse/select library materials",
+              "Check out/return library materials by due date",
+              "Renew library materials",
+              "Operate library copy machine"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Participation in Community Activities",
+        "shortTermObjectives": [
+          {
+            "sto": "Eating out",
+            "taskAnalysis": [
+              "Identify place to eat (fast food, sit down, or cafeteria style restaurant)",
+              "Call restaurant to make reservations",
+              "Transport self to restaurant",
+              "Read menu at fast food, sit down, or cafeteria style restaurant",
+              "Make selections within budget at fast food, sit down, or cafeteria style restaurant",
+              "Order food choices at fast food, sit down, or cafeteria style restaurant",
+              "Obtain tray, silverware, napkin, etc. at onset of traveling through a buffet line",
+              "Travel though a buffet line taking appropriate portions",
+              "Use buffet dispenser at fast food or cafeteria style restaurant",
+              "Create salad from salad bar at fast food, sit down, or cafeteria style restaurant",
+              "Request assistance from restaurant personnel, if needed",
+              "Pay for food at fast food, sit down, or cafeteria style restaurant",
+              "Calculate and leave appropriate amount for tip",
+              "Clear table and empty tray at fast food restaurant",
+              "Locate and use appropriate (men/women) restroom at fast food, sit down, or cafeteria style restaurant",
+              "Demonstrate appropriate behavior in a restaurant setting"
+            ]
+          },
+          {
+            "sto": "Get up from a wheelchair and utilize other seating in the environment such as a park bench, picnic bench or seating at a bowling alley",
+            "taskAnalysis": [
+              "Locate alternative seating in the environment such as a park bench, picnic table, etc.",
+              "Put wheelchair in lock position",
+              "Stand up out of wheelchair",
+              "Steady self by holding onto the wheelchair, another person or solid object",
+              "Seat self on the alternative seating option"
+            ]
+          },
+          {
+            "sto": "Participate in recreational activities with peers",
+            "taskAnalysis": [
+              "Follow the directions involved with the activity",
+              "Participate at correct times",
+              "Remain seated and/or quiet when it is directed"
+            ]
+          },
+          {
+            "sto": "Participate in recreational activities available in the community",
+            "taskAnalysis": [
+              "Engage in activities during outings to the Mall and Movies",
+              "Engage in activities during visits to Pools, Parks, Recreation centers",
+              "Engage in activities during visits to Skating Rinks, Bowling Alleys, Trampoline Parks",
+              "Engage in Hobbies: Riding Bikes, Singing, Dancing, Twirling",
+              "Engage in activities during other Social Events"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Community Awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify and describe in a report and discussion different occupations people have",
+            "taskAnalysis": [
+              "Make a list of occupations you want to research",
+              "Search on the computer for information about the occupations you wrote on your list",
+              "Discuss the information found regarding different occupations with another person",
+              "Write/type a report that includes the information you found about different occupations",
+              "Identify community helpers",
+              "Identify other occupations"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Money management",
+        "shortTermObjectives": [
+          {
+            "sto": "Money Identification",
+            "taskAnalysis": [
+              "State names of coins, e.g., penny, nickel, dime, quarter, half dollar, and Susan B. Anthony dollar",
+              "Match like coins",
+              "Point to correct coin given a pile of coins",
+              "State value of U.S. coins such as penny, nickel, dime, quarter, and half dollar",
+              "Match like bills",
+              "State names of currency",
+              "Point to correct bill given various combinations of currency"
+            ]
+          },
+          {
+            "sto": "Money Computation",
+            "taskAnalysis": [
+              "Point to correct bill given various combinations of currency",
+              "Count coins of 1 denomination for specified amounts up to ______",
+              "Count by 1s, 5s, 10s, 25s to 100",
+              "Count and total assorted coin combinations up to ______",
+              "Count various combinations of currency for specified amounts up to ______",
+              "Match and order by value using U.S. currency",
+              "Count various combinations of coins and currency for specified amounts up to ______",
+              "Count coins to equal a specified amount",
+              "Count currency to equal a specified amount",
+              "Count coin and currency to equal a specified amount"
+            ]
+          },
+          {
+            "sto": "Money Use",
+            "taskAnalysis": [
+              "Keep money in a safe place",
+              "Determine if given amount is sufficient to cover a purchase",
+              "Count coin and/or currency to equal a purchase price",
+              "Determine amount needed when more than one item is purchased",
+              "Count change from a purchase (coins, currency, combination) and determine if correct",
+              "Use a calculator to solve money problems"
+            ]
+          },
+          {
+            "sto": "Check Book Management",
+            "taskAnalysis": [
+              "Read and define date, pay to the order of, $, dollars, signature line, memo",
+              "Fill in date, pay to the order of, money amount, and signature correctly and legibly",
+              "Endorse a check correctly, legibly and in the designated space",
+              "Complete envelopes with own name and address and bill senders name and address written correctly and legibly",
+              "Identify section of bill to return with payment and place it in billing envelope correctly"
+            ]
+          },
+          {
+            "sto": "Budgeting",
+            "taskAnalysis": [
+              "Explain the need for a budget",
+              "Define income and expenses and give examples of each",
+              "Sequence expenses in order of payment priority",
+              "Define needs and wants and give examples of each",
+              "Complete a bills and income record sheet",
+              "Complete a weekly and monthly budget sheet",
+              "Prepare and maintain a personal budget for a specified period of time",
+              "Compose a savings plan for a big ticket item",
+              "Identify realistic prices for common household items/expenses",
+              "Identify when a budget problem occurs, how to prevent one and how to solve one that has already occurred",
+              "Demonstrate the procedures necessary when applying for a credit card"
+            ]
+          },
+          {
+            "sto": "Identify correct amount of money",
+            "taskAnalysis": [
+              "State names of coins, e.g., penny, nickel, dime, quarter, half dollar, and Susan B. Anthony dollar",
+              "Point to correct coin given a pile of coins",
+              "State names of currency",
+              "Point to correct bill given various combinations of currency",
+              "Make a purchase with correct amount of money"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Grocery Shopping",
+        "shortTermObjectives": [
+          {
+            "sto": "Engage in the process of grocery shopping",
+            "taskAnalysis": [
+              "Prepare to shop by creating a list of items needed",
+              "Upon arrival at the store, appropriately choose a basket or cart depending on amount of grocery items needed",
+              "Access the correct sections of the store for items on the list",
+              "Select or measure items as necessary",
+              "Bring items to the cashier",
+              "Hand appropriate amount of money to the cashier",
+              "Bag items as necessary in appropriate bags (i.e. cold items together, non-food items together, etc.)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Task Engagement",
+        "shortTermObjectives": [
+          {
+            "sto": "Sort things according to a given model",
+            "taskAnalysis": [
+              "Sort a set of six items according to two identifying characteristics (i.e. shape, color, type, etc.)",
+              "Indicate items according to a given protocol (i.e. what goes in the kitchen, the bedroom, the yard, etc.)",
+              "Create item sets from a group of objects given a specific protocol (i.e. given a boxed or bagged model set of one",
+              "paper plate and one paper cup, create three identical sets)",
+              "Use letter and number tiles to duplicate given site words, name, numbers, etc."
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Travel Training",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Eating",
+    "targetSkills": [
+      {
+        "targetSkill": "Fundamentals of Eating",
+        "shortTermObjectives": [
+          {
+            "sto": "Scoop appropriate amounts of food to eat",
+            "taskAnalysis": [
+              "Use hand or appropriate utensil to pick food",
+              "Scoop appropriate amount of food onto utensil",
+              "Take appropriate amounts of food into mouth",
+              "Chew food with mouth closed",
+              "Swallow food before taking another bite"
+            ]
+          },
+          {
+            "sto": "Eat food and drink water",
+            "taskAnalysis": [
+              "Eat at least half of the provided snack",
+              "Drink at least 1 full glass of water"
+            ]
+          },
+          {
+            "sto": "Refrain from grabbing food from others",
+            "taskAnalysis": [
+              "Keep hands to self",
+              "Eat own food/snacks",
+              "Ask for more if still hungry"
+            ]
+          },
+          {
+            "sto": "Chew properly before taking another bite or eating more food",
+            "taskAnalysis": [
+              "Put appropriate amount of food in mouth or on utensil",
+              "Chew food thoroughly before eating more",
+              "Add more food to utensil or to mouth after swallowing"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Nutrition",
+        "shortTermObjectives": [
+          {
+            "sto": "Make healthy food choices",
+            "taskAnalysis": [
+              "Identify/name basic food groups",
+              "Identify to which food group a given food item belongs",
+              "Identify healthy and unhealthy food items"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Pragmatic Speech",
+    "targetSkills": [
+      {
+        "targetSkill": "Conversation",
+        "shortTermObjectives": [
+          {
+            "sto": "Initiate and maintain interactive communication",
+            "taskAnalysis": [
+              "Approach an individual and remain in proximity of other",
+              "Maintain appropriate social distance",
+              "Make/maintain eye contact with other",
+              "Identify appropriate and inappropriate times to talk",
+              "Wait for pause in conversation before speaking",
+              "Use volume/rate appropriate to situation",
+              "Identify appropriate and inappropriate words/topics",
+              "Listen and respond alternately with other in conversation",
+              "Listen and respond alternately with other in conversation",
+              "Use words/sign to answer and ask follow-up questions",
+              "Ask/answer/comment and stay on topic",
+              "Make transition statements to signify a change in conversational topic",
+              "Put thoughts on pause so adult/peer can add to, or comment on, the conversation",
+              "Add new, relevant information to previous comments in conversation",
+              "Change style of interaction accordingly when speaking with very young children, peers or adults",
+              "Use names of adults/siblings/peers when addressing them",
+              "Use meaningful inflection with conversational partner",
+              "Limit perseverative speech",
+              "Verbalize about people, objects and events",
+              "Engage in verbal turn-taking on specific topic",
+              "Recognize when a conversation is terminated/ing",
+              "Answer yes/no questions accurately",
+              "Finish/close a conversation",
+              "Engage in a script narrating about his day",
+              "Engage in a script narrating about his weekend experience",
+              "Engage in a script on placing orders at fast food restaurant",
+              "Participate in a mock interview",
+              "Identify occupational interests",
+              "identify occupational aptitude",
+              "Describe how skills developed in school relate to employment"
+            ]
+          },
+          {
+            "sto": "Tell or retell a coherent story using pictures",
+            "taskAnalysis": [
+              "Obtain pictures",
+              "Organize pictures logically so they tell a story"
+            ]
+          },
+          {
+            "sto": "Develop auditory/conversational comprehension",
+            "taskAnalysis": [
+              "Respond logically to the conversation with relevant information",
+              "Keep up with the conversation rather than forgetting what is being discussed"
+            ]
+          },
+          {
+            "sto": "Communicating without prompting",
+            "taskAnalysis": [
+              "When spoken to by others, greet them",
+              "Respond to at least 2-3 questions asked by others without prompting"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Ask/Answer Questions",
+        "shortTermObjectives": [
+          {
+            "sto": "Indicate approval or disapproval when asked a \"yes\" or \"no\" question",
+            "taskAnalysis": [
+              "Look at other person",
+              "Use eye gaze to indicate \"yes\" or \"no\"",
+              "Use gesture, PEC, sign or verbalization to indicate \"yes\" or \"no\""
+            ]
+          },
+          {
+            "sto": "Answer Questions",
+            "taskAnalysis": [
+              "Look at the written material if available",
+              "Read the material if available",
+              "Make/maintain eye contact with other if they asked the question",
+              "Identify appropriate and inappropriate times to respond",
+              "Receptively indicate the answer to the question by pointing or gesturing toward a picture, word, or PEC within a group of choices",
+              "Expressively indicate the answer by use of an intentional gesture, sign, PEC or verbalization",
+              "Use volume/rate appropriate to situation if using verbalizations",
+              "Provide relevant information"
+            ]
+          },
+          {
+            "sto": "Use questions",
+            "taskAnalysis": [
+              "Seek out appropriate reference/person",
+              "Use sign/words/augmentative communication to ask questions",
+              "Use one word utterance with correct inflection to ask a question",
+              "Use phrase or sentence with correct inflection to ask question",
+              "Wait for response"
+            ]
+          },
+          {
+            "sto": "Answer Wh questions",
+            "taskAnalysis": [
+              "Answer \"what\" questions",
+              "Answer \"where\" questions",
+              "Answer \"when\" questions",
+              "Answer \"why\" questions",
+              "Answer \"who\" questions"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Using Greetings",
+        "shortTermObjectives": [
+          {
+            "sto": "Greet others using words",
+            "taskAnalysis": [
+              "Mimic counselor when they say hello",
+              "Mimic counselor when they say bye",
+              "Say hello when entering a room",
+              "say bye when exiting a room"
+            ]
+          },
+          {
+            "sto": "Greet peers and adults by waving or verbalizing",
+            "taskAnalysis": [
+              "Mimic counselor when they say hello or wave when they say hello",
+              "Mimic counselor when they say bye or wave when they say bye",
+              "Say hello or wave when entering a room",
+              "say bye or wave when exiting a room"
+            ]
+          },
+          {
+            "sto": "Greet others with a handshake",
+            "taskAnalysis": [
+              "Watch counselor when they shake hands",
+              "Mimic counselor when they shake hands",
+              "Spontaneously shake hands with others when appropriate"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Use Statements",
+        "shortTermObjectives": [
+          {
+            "sto": "Talk about three topics using 3-4 sentences per topic",
+            "taskAnalysis": [
+              "Approach an individual",
+              "Maintain appropriate social distance",
+              "Make eye contact",
+              "Begin a conversation by making a statement or asking a question",
+              "Use volume/rate appropriate to situation",
+              "Identify appropriate and inappropriate words/topics",
+              "Listen and respond alternately with other in conversation",
+              "Wait for pause in conversation before speaking",
+              "Use words/sign to answer and ask follow-up questions",
+              "Ask/answer/comment and stay on topic",
+              "Make transition statements to signify a change in conversational topic",
+              "Put thoughts on pause so adult/peer can add to, or comment on, the conversation",
+              "Add new, relevant information to previous comments in conversation",
+              "Change style of interaction accordingly when speaking with very young children, peers or adults",
+              "Use names of adults/siblings/peers when addressing them",
+              "Use meaningful inflection with conversational partner",
+              "Limit perseverative speech",
+              "Verbalize about people, objects and events"
+            ]
+          },
+          {
+            "sto": "Share three experiences from the day using 3-4 words",
+            "taskAnalysis": [
+              "Think about your day",
+              "Verbalize or communicate via speech output device one thing that happened",
+              "Give details about the event such as what happened, who was there, how it made you feel, when it occurred, why it occurred, etc.",
+              "Use appropriate inflection, tone and volume",
+              "Repeat for two additional events",
+              "Use 2 or more words in a complete sentence when speaking.",
+              "Communicate via speech device about an event that occurred during the day such as what happened and who was there",
+              "Express emotion and feelings using the communication device",
+              "Verbalize or communicate via speech output device one thing that happened at school"
+            ]
+          },
+          {
+            "sto": "Use statements to direct the behaviors of others",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to identify/label objects, actions, events",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to describe objects, actions, events",
+            "taskAnalysis": [
+              "Think about your day",
+              "Verbalize one thing that happened",
+              "Give details about the event such as what happened, who was there, how it made you feel, when it occurred, why it occurred, etc.",
+              "Use appropriate inflection, tone and volume",
+              "Repeat for two additional events"
+            ]
+          },
+          {
+            "sto": "Use statements to compare objects, actions, events",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to discuss incongruities",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to discuss cause & effect",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to discuss solutions",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to list alternatives",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to predict an outcome",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to describe anticipated reactions of others",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to create a context",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to pretend",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use statements to speculate",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Talk about one topic using 3-4 sentences",
+            "taskAnalysis": [
+              "Select a topic appropriate to context",
+              "Introduce a topic using a complete sentence",
+              "Maintain a topic using 1-3 sentences",
+              "Close a topic using a complete sentence"
+            ]
+          },
+          {
+            "sto": "Use grammatically correct complete sentences when speaking",
+            "taskAnalysis": [
+              "Use a complete sentence",
+              "Use the correct verb tense for the situation (ex. I go to the store yesterday versus I went to the store yesterday)",
+              "Use correct subject verb agreement (ex. My mom and Dad is coming to get me versus My mom and dad are coming to get me)",
+              "Use the correct point of view (ex. I versus stating their own name)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Time awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Use time relationship such as, (days, weeks, months, year, seasons, holidays, times of day) in structured conversations",
+            "taskAnalysis": [
+              "Identify correct time relationship",
+              "Utilize time relationship in conversation"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Texting",
+        "shortTermObjectives": [
+          {
+            "sto": "Text family members as a form of communication",
+            "taskAnalysis": [
+              "Get cell phone",
+              "Assign recipient of text message",
+              "Compose text message",
+              "Send text message to recipient",
+              "Respond to an incoming text message"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Expressive Language Skills",
+    "targetSkills": [
+      {
+        "targetSkill": "Verbal Self-Expression",
+        "shortTermObjectives": [
+          {
+            "sto": "Develop Verbal Speech",
+            "taskAnalysis": [
+              "produce speech sounds",
+              "pronounce one syllable words",
+              "pronounce two syllable words",
+              "pronounce three syllable words",
+              "use two word combinations",
+              "use multiple word combinations",
+              "produce intelligible utterances In",
+              "produce intelligible 3- to 4-word utterances containing prepositions such as",
+              "produce short grammatical utterances to make comments and requests using carrier phrases (e.g,"
+            ]
+          },
+          {
+            "sto": "Express self using words",
+            "taskAnalysis": [
+              "Receptively identify words/pictures from an array of words/pictures (ex Point to the cow)",
+              "Verbally identify words/pictures (Ex \"What is this\" and hold up a card or point to an object)",
+              "Pick from an array of words/pictures what you want or need (ex Do you need to use the toilet, eat or are you tired?)",
+              "Spontaneously utilize words or verbalizations to express wants and needs",
+              "Use two-word combinations",
+              "Use \"MY\" to indicate ownership",
+              "Use pronouns I, ME, MINE and YOU",
+              "Use prepositions IN, ON and UNDER describe objects according to size, color and shape (4-5 yrs) use pronouns HE, SHE, THEY, HIS, HER, OUR and THEIR use the following delctic terms: HERE, THERE, THIS, THAT ask meaning of new words retell a brief story",
+              "Use pronouns \"himself and \"herself",
+              "Talk about the future using \"will\"",
+              "Compare objects using \"-er\" and \"-est\" endings"
+            ]
+          },
+          {
+            "sto": "Verbalize feelings",
+            "taskAnalysis": [
+              "Look at PCS of different emotions",
+              "Verbalize the emotion that best explains how you feel",
+              "Verbalize the emotion that best explains how others feel"
+            ]
+          },
+          {
+            "sto": "Protest/Reject/Refuse appropriately",
+            "taskAnalysis": [
+              "Avert gaze",
+              "Turn head away",
+              "Exhibit negative facial expression (frown)",
+              "Push item/person away in a socially appropriate way",
+              "Sign/gesture/point to picture of \"no\" or \"stop\"",
+              "Say \"no\" or \"stop\"",
+              "Increase length of utterance to protest/refuse",
+              "Give reason for refusal"
+            ]
+          },
+          {
+            "sto": "Request Attention/Assistance Appropriately",
+            "taskAnalysis": [
+              "Make/maintain eye contact",
+              "Wait for a pause in conversation before attempting to gain attention",
+              "Gain attention in a socially appropriate manner",
+              "Use verb/noun phrase (want play)",
+              "Increase vocabulary used in request",
+              "Increase length of utterance",
+              "Use sentence (I want to play with you)",
+              "Use polite phrases, e.g., thank you, excuse me",
+              "State reason for need of attention or indicate what type of assistance is needed",
+              "Wait appropriately for others attention/assistance",
+              "Accept appropriate level of assistance"
+            ]
+          },
+          {
+            "sto": "Label Objects, People or Activities",
+            "taskAnalysis": [
+              "Say one word utterance (\"finished\")",
+              "Repeat stereotyped phrase (\"all gone\")",
+              "Use increased length of utterance to comment on events or topic",
+              "Focus gaze/point/reach toward chosen object",
+              "Point eye/gaze at picture representing choice",
+              "Indicate affirmation or negation to questions",
+              "Name objects",
+              "Name people",
+              "Name activities",
+              "Describe objects, people or activities using a variety of words so another will recognize what is being described",
+              "Increase relevant, spontaneous verbalizations as related to an activity or person"
+            ]
+          },
+          {
+            "sto": "Utilize appropriate volume (whispering in a library, speaking up outside, etc.)",
+            "taskAnalysis": [
+              "Assess the situation and determine what the appropriate volume would be",
+              "Utilize appropriate volume"
+            ]
+          },
+          {
+            "sto": "Express self using complete sentences",
+            "taskAnalysis": [
+              "Speak in a complete sentence",
+              "Refer to self and others appropriately (ex. saying I versus stating their own name)",
+              "Utilize correct verb tense (ex. past, present, future)"
+            ]
+          },
+          {
+            "sto": "Expand requests using sentence patterns (i.e. I want/I need, I want/I need to)",
+            "taskAnalysis": [
+              "Indicate desire for food/drink using a full length sentence",
+              "Indicate desire for an activity using a full length sentence",
+              "Indicate desire to use the bathroom using a full length sentence",
+              "Indicate desire for a break from an activity using a full length sentence",
+              "Indicate desire for other item/activity not listed above using a full length sentence",
+              "Indicate request for help using a full length sentence"
+            ]
+          },
+          {
+            "sto": "Reduce response latency",
+            "taskAnalysis": [
+              "Correctly respond to a question within the predetermined amount of time"
+            ]
+          },
+          {
+            "sto": "Verbalize personal contacts and other activities",
+            "taskAnalysis": [
+              "Verbalize Mom's phone number when asked",
+              "Verbalize Dad's phone number when asked",
+              "Verbalize home address and phone number",
+              "Call Mom or Dad to inform on his location in the community",
+              "Call Mom or Dad while returning from community outings",
+              "Dial Mom's/Dad's number to inform them he is returning home",
+              "Dial Mom's/Dad's number to inform them of his location in the community"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reducing repetitive speech",
+        "shortTermObjectives": [
+          {
+            "sto": "Reduce repetitive questions, statements or requests",
+            "taskAnalysis": [
+              "Return to previous activity",
+              "Refrain from repeating the statement, question or request more than 1x per hour",
+              "Refrain from repeating the statement, question or request more than 1x per 2 hours"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reducing echolalia",
+        "shortTermObjectives": [
+          {
+            "sto": "Reduce reciting passages from books, videos, TV and/or radio (aka scripting)",
+            "taskAnalysis": [
+              "Make statements only that are relevant to the situation or conversation",
+              "Have 0 instances of repeating statements unnecessarily"
+            ]
+          },
+          {
+            "sto": "Refrain from repeating the speech of others",
+            "taskAnalysis": [
+              "Listen quietly when another person is speaking",
+              "Refrain from repeating the command, question, statement, etc.",
+              "Respond appropriately (ex. if a counselor says Hi, Jim, the child should say Hi, Miss Robin rather than Hi, Jim)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Non-verbal Self-Expression",
+        "shortTermObjectives": [
+          {
+            "sto": "Make requests via an \"I want/need\" Board and PCS",
+            "taskAnalysis": [
+              "Indicate desire for food/drink using \"I want/need\" Board and PCS",
+              "Indicate desire for an activity using \"I want/need\" Board and PCS",
+              "Indicate desire to use the bathroom using word, \"I want/need\" Board and PCS",
+              "Indicate desire for a break from an activity using \"I want/need\" Board and PCS",
+              "Indicate desire for other item/activity not listed above using \"I want/need\" Board and PCS"
+            ]
+          },
+          {
+            "sto": "Express self using a communication system",
+            "taskAnalysis": [
+              "Receptively identify a specific picture from an array of pictures/choices (ex Point to which snack you want)",
+              "Utilize PEC, gesture, sign or other communication system to indicate what it is you wish to express (ex. Student independently produces PEC, sign, etc. Indicating they want a snack)",
+              "Point to break card",
+              "Point to break symbol on communication device",
+              "Sign for break",
+              "Select activity for break",
+              "Express a variety of greetings and closings using device",
+              "Request snacks using device",
+              "Request a break during activity using device",
+              "Request a bathroom break using device",
+              "Express needs and wants using device"
+            ]
+          },
+          {
+            "sto": "Communicate with eye gaze",
+            "taskAnalysis": [
+              "Points to direct someone to look at object or event to share the experience with another",
+              "Continues looking back and forth to make sure adult sees what child sees"
+            ]
+          },
+          {
+            "sto": "Point to the snack PEC",
+            "taskAnalysis": [
+              "Receptively identify snack PEC on PEC chart to ensure comprehension of the PEC (ex Point to the snack)",
+              "Obtain snack PEC",
+              "Show snack PEC to caregiver"
+            ]
+          },
+          {
+            "sto": "Point to the drink PEC",
+            "taskAnalysis": [
+              "Receptively identify drink PEC on PEC chart to ensure comprehension of the PEC (ex Point to the drink)",
+              "Obtain drink PEC",
+              "Show drink PEC to caregiver"
+            ]
+          },
+          {
+            "sto": "Point to the toilet PEC",
+            "taskAnalysis": [
+              "Receptively identify \"bathroom\" or \"toilet\" from an array of words/pictures to ensure comprehension of the PEC (ex Point to the toilet)",
+              "Obtain toilet or bathroom PEC",
+              "Show toilet or bathroom PEC to caregiver"
+            ]
+          },
+          {
+            "sto": "Request snack using iPad, sign or communication device",
+            "taskAnalysis": [
+              "Receptively identify \"snack\" from an array of words/pictures to ensure comprehension of the concept of a snack (ex Point to the snack)",
+              "Obtain Ipad or other communication device",
+              "Sign or press \"snack\" button on Ipad or communication device"
+            ]
+          },
+          {
+            "sto": "Request drink using iPad, sign or communication device",
+            "taskAnalysis": [
+              "Receptively identify \"drink\" from an array of words/pictures to ensure comprehension of the concept of a drink (ex Point to the drink)",
+              "Obtain Ipad or other communication device",
+              "Sign or press \"drink\" button on Ipad or communication device"
+            ]
+          },
+          {
+            "sto": "Request activities using IPad, sign, communication device or PEC",
+            "taskAnalysis": [
+              "Receptively identify different activities from an array of words/pictures to ensure comprehension of the concept of different activities (ex Point to the book, point to the baseball, etc.)",
+              "Obtain Ipad, PEC or other communication device",
+              "Show PEC to caregiver, sign or press the button on Ipad or communication device that represents the activity you chose"
+            ]
+          },
+          {
+            "sto": "Indicate \"all done\" using voice output device (VOD)",
+            "taskAnalysis": [
+              "Complete a routine or activity",
+              "Obtain VOD device",
+              "Locate symbol/button(s) for \"all done\"",
+              "Push symbol/button(s)"
+            ]
+          },
+          {
+            "sto": "Use voice output device (VOD) using sentence patterns to make requests",
+            "taskAnalysis": [
+              "obtain VOD",
+              "program VOD to use sentence patterns",
+              "push appropriate buttons to make requests"
+            ]
+          },
+          {
+            "sto": "Indicate the need for assistance by gesture, PEC or other communication device",
+            "taskAnalysis": [
+              "Get the caregiver's attention by making eye contact or by touching on the arm or shoulder",
+              "Communicate the need for assistance via PEC, communication device, gesture or sign",
+              "Wait patiently for the caregiver to respond",
+              "Communicate thanks by gesture, sign, PEC or communication device"
+            ]
+          },
+          {
+            "sto": "Make all requests (i.e. bathroom, food, drink, activities, etc) with iPad communication device",
+            "taskAnalysis": [
+              "Obtain iPad device when there is a need to make a request",
+              "Turn on device and enter communication app",
+              "Make request using correct communication buttons in iPad app",
+              "Refrain from making requests with gestures"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Transition from Non-verbal to Verbal Self-Expression",
+        "shortTermObjectives": [
+          {
+            "sto": "Express self using a mix of verbal and non-verbal communication",
+            "taskAnalysis": [
+              "Receptively identify a specific picture from an array of pictures/choices (ex Point to which snack you want)",
+              "Utilize PEC, gesture, sign or other communication system to indicate what it is you wish to express (ex. Student independently produces PEC, sign, etc. indicating they want a snack)",
+              "Verbally identify words/pictures (Ex \"What is this\" and hold up a card or point to an object)",
+              "Spontaneously utilize words or verbalizations to express wants and needs",
+              "Use verbalizations, signs, PECs, or communication device together to communicate more complex expressions",
+              "Utilize only verbalizations to self-express"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Receptive Language Skills",
+    "targetSkills": [
+      {
+        "targetSkill": "Object identification",
+        "shortTermObjectives": [
+          {
+            "sto": "Point to eyes, nose and mouth in self and others upon request",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Identify all large body parts upon request",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Point to pictures in a book or familiar objects as they are named",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Identify smaller body parts upon request (ie chin, knee, elbow, fingers, toes)",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate understanding of same/different",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Insist on correct item when mistakenly given wrong item",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Sorting by feature, function and class",
+        "shortTermObjectives": [
+          {
+            "sto": "Group items by colour",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by size",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by shape",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by function",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by texture",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by taste",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by temperature",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Group items by class (i.e. animals, buildings, plants, cars, etc)",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Sort items or pictures by their features (i.e. color, shape, etc), function (i.e. things you eat with, things you clean with, etc) and by class (i.e. fruit, animals vehicles,",
+            "taskAnalysis": [
+              "Sort items or pictures by their features",
+              "Sort items or pictures by their function",
+              "Sort items or pictures by their class"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Understanding quantity",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate understanding of quantity concepts ONE",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate understanding of quantity concepts MORE",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate understanding of quantity concepts ALL",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Eye Gaze",
+        "shortTermObjectives": [
+          {
+            "sto": "Look at person when given something",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Look at person when giving them something",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Follow someone’s point when object is in close proximity and can be touched",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Point to desired object when object is within sight",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Follow someone’s point when object is distant",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Look towards adult to make sense of an ambiguous situation (social referencing)",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Reference adult expression to guide own behavior",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Look at person who is speaking to communicate interest/attention",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Look when name is called",
+            "taskAnalysis": [
+              "Turn head and/or eye gaze toward speaker of the name",
+              "Gesture, sign, use PEC or vocalization to indicate the speaker has your attention"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Follow Directions / Respond to communication",
+        "shortTermObjectives": [
+          {
+            "sto": "Follow two-step directions",
+            "taskAnalysis": [
+              "Listen to the first direction/step",
+              "Watch counselor model the actions necessary to do the task",
+              "move body in response to the first step/direction",
+              "Listen to the second direction/step",
+              "Watch counselor model the actions necessary to do the second task",
+              "move body in response to the second step/direction",
+              "follow directions during Zumba and fitness activities",
+              "follow directions during music therapy",
+              "follow directions during arts and craft"
+            ]
+          },
+          {
+            "sto": "Read and carry out each step of 4 step written directions",
+            "taskAnalysis": [
+              "read the first step",
+              "complete the first step",
+              "read the second step",
+              "complete the second step",
+              "read the third step",
+              "complete the third step",
+              "read the fourth step",
+              "complete the fourth step"
+            ]
+          },
+          {
+            "sto": "Engage in errands around the Center or during Community Outings that would benefit the group",
+            "taskAnalysis": [
+              "Listen to directions for the errand",
+              "Ask any questions you may have regarding the task",
+              "Engage in the task",
+              "Successfully complete the task"
+            ]
+          },
+          {
+            "sto": "Stop action in response to",
+            "taskAnalysis": ["Cease engagement in current activity"]
+          },
+          {
+            "sto": "Appropriately respond to the command,",
+            "taskAnalysis": [
+              "Cease movement / be still",
+              "Wait for adult to give a direction before moving again"
+            ]
+          },
+          {
+            "sto": "Take object to someone when requested",
+            "taskAnalysis": [
+              "Make eye contact with speaker",
+              "Listen to request",
+              "Move body to locate and obtain object requested",
+              "Take object requested to the the person making the request"
+            ]
+          },
+          {
+            "sto": "Appropriately respond to simple and familiar WHERE questions with searching movements",
+            "taskAnalysis": [
+              "Move head and search with eye movements",
+              "Physically move body to explore area in an attempt to find",
+              "Gesture, use PEC, sign or vocalization to indicate the location"
+            ]
+          },
+          {
+            "sto": "Comply with strategically posted STOP signs",
+            "taskAnalysis": ["Cease movement / be still"]
+          },
+          {
+            "sto": "Follow 3-step to 5-step directions",
+            "taskAnalysis": [
+              "Listen to oral directions",
+              "Complete the first step",
+              "Complete the second step",
+              "Complete the third step",
+              "Complete the fourth step",
+              "Complete the fifth step"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Social Emotional",
+    "targetSkills": [
+      {
+        "targetSkill": "Proper Judgment",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate the ability to teach another person how to do something, figuring out just what that other person needs to know",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Seek comfort when hurt",
+            "taskAnalysis": ["Alert adult if hurt or in pain", "Seek help"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of others",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify others emotional states",
+            "taskAnalysis": [
+              "Correctly identify different emotions - happy, angry, sad, frustrated, excited, bored, etc.",
+              "Correctly identify specific emotions of characters in a social story",
+              "Give examples of situations that elicit particular emotions",
+              "Correctly identify the emotional states of people in the natural environment that are similar to the characters in the social story (ex. Sally is happy, just like the girl in the story)"
+            ]
+          },
+          {
+            "sto": "Identify why a person might feel a certain way",
+            "taskAnalysis": [
+              "Identify how the person is feeling",
+              "Identify what happened in the story/situation",
+              "Identify how different events in the story/situation would make you feel",
+              "Correctly match the events in the story to characters emotions"
+            ]
+          },
+          {
+            "sto": "Identify the appropriate response to an emotional state",
+            "taskAnalysis": [
+              "Identify how the person is feeling",
+              "List common responses that emotion (ex. When people are sad they might frown or cry)",
+              "Pick the most appropriate response you would use to that emotional state (ex. In this situation it would be most appropriate to cry)"
+            ]
+          },
+          {
+            "sto": "Acknowledge the comings and goings of familiar people",
+            "taskAnalysis": ["Initiate greetings"]
+          },
+          {
+            "sto": "Offer appropriate assistance to others",
+            "taskAnalysis": [
+              "Identify what the person needs assistance with",
+              "Identify possible ways to assist",
+              "Communicate an offer of the most appropriate assistance"
+            ]
+          },
+          {
+            "sto": "Demonstrate affection towards others",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Become displeased when preferred adult is unresponsive during play for 30 seconds or more",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Spontaneously seek the company of his/her family members when family is not attempting to engage him/her",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Call family members and other familiar people by name",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Compliment peers or adults",
+            "taskAnalysis": [
+              "Identify accomplishments of others",
+              "Make positive statement about qualities of others",
+              "Make positive statement about accomplishment of others"
+            ]
+          },
+          {
+            "sto": "Identify basic emotions",
+            "taskAnalysis": [
+              "Identify pictures of basic emotions (i.e. happy, sad, mad)",
+              "Label own emotions",
+              "Label the emotions of others"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Socialization",
+    "targetSkills": [
+      {
+        "targetSkill": "Interpersonal social skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Joyfully participate in sensory-motor play with a familiar adult",
+            "taskAnalysis": [
+              "Handle materials of various temperatures",
+              "Handle materials of various textures",
+              "Perform motor planning activities"
+            ]
+          },
+          {
+            "sto": "Appropriately look at books with caregivers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Appropriately respond to peers when they make social overtures",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Formulate a friendship with another peer doing a choice of recreational activity",
+            "taskAnalysis": [
+              "Choose a peer",
+              "Pick an activity to do",
+              "Approach the person you choose",
+              "Ask them if they would like to do the activity you choose",
+              "Engage in the activity with the peer if they respond with a yes",
+              "Ask the peer if they would like to choose the activity if they say no",
+              "Agree to the activity and engage in the activity if the peer suggests a different activity",
+              "Greet peer",
+              "Make introductions to peer",
+              "Obtain peer's name and contact information",
+              "Stay with peer during the activity",
+              "Invite peer to the next play date"
+            ]
+          },
+          {
+            "sto": "Not make negative comments about others",
+            "taskAnalysis": [
+              "Remain quiet when first seeing peers and adults",
+              "Remain silent if a negative comment comes to mind"
+            ]
+          },
+          {
+            "sto": "Decline an invitation to play or converse using appropriate communication",
+            "taskAnalysis": [
+              "Listen to the other person's invitation",
+              "Say, sign, gesture, or use communication device to communicate No thank you, if you would like to decline"
+            ]
+          },
+          {
+            "sto": "Use positive words to describe like and dislikes",
+            "taskAnalysis": [
+              "Identify positive words",
+              "Use these positive words to describe likes and dislikes"
+            ]
+          },
+          {
+            "sto": "Apologize if and when he/she hurts someones feelings or body",
+            "taskAnalysis": [
+              "Identify if someone is hurt",
+              "Utilize appropriate affect",
+              "Communicate \"Sorry\" via verbalization, sign, PEC, communication device or gesture"
+            ]
+          },
+          {
+            "sto": "Sustain interaction with peers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "When someone does not want to play, fonnulates a new plan of action",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Successfully negotiate over toys",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate appropriate responses to children who are mean or hurtful",
+            "taskAnalysis": [
+              "Will use a calm voice to ask the peer to stop",
+              "If the peer continues, will not respond to the peer",
+              "Will tell a responsible adult what is happening"
+            ]
+          },
+          {
+            "sto": "Take turns",
+            "taskAnalysis": [
+              "Determine who goes first",
+              "Engage in the task when it is your turn",
+              "Stop and wait for the peer or caregiver to take their turn",
+              "Repeat tasks 1 and 2",
+              "Listen quietly for directions",
+              "Repeat directions and steps to be followed",
+              "Use turn taking wand to show whose turn it is",
+              "Pick the person that will go next after a turn",
+              "Make sure everyone gets a turn"
+            ]
+          },
+          {
+            "sto": "Share items when appropriate with adult/sibling/peer",
+            "taskAnalysis": [
+              "Choose an item related to the activity",
+              "Pick up the item you choose",
+              "Hand the item to a peer or caregiver"
+            ]
+          },
+          {
+            "sto": "Give a compliment",
+            "taskAnalysis": [
+              "Approach someone",
+              "Identify something you like about that person",
+              "Communicate what it is you like about the other person",
+              "Communicate \"You are welcome\" when you are thanked"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Imitation",
+        "shortTermObjectives": [
+          {
+            "sto": "Imitate with object after demonstration of use of object",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Simultaneously imitate with objects",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate hand movements",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate body movements",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate mouth movements",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate sounds",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate words",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Social Norms",
+        "shortTermObjectives": [
+          {
+            "sto": "Use appropriate distance between self and conversational partner",
+            "taskAnalysis": [
+              "Approach others by extending arms out",
+              "Stop when getting close enough to touch others (do not touch them)",
+              "Approach others without arms out but staying arms length away",
+              "Comply with directive to back up"
+            ]
+          },
+          {
+            "sto": "Episodes of aimless behavior will decrease",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "When engaged with a family member/trusted adult, frequency of subvocalizations will diminish",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Refrain from interrupting others",
+            "taskAnalysis": [
+              "When someone else is speaking, wait quietly for a pause in the conversation before speaking",
+              "Say Excuse Me when you must urgently interject",
+              "Respond appropriately to another person’s communication to indicate active listening"
+            ]
+          },
+          {
+            "sto": "Demonstrate an understanding of modesty and/or privacy by being fully clothed when leaving the bathroom in public places",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Refrain from publicly touching private body parts",
+            "taskAnalysis": [
+              "Refrain from touching genitals in public",
+              "Refrain from putting hand down inside of pants",
+              "Refrain from touching belly button"
+            ]
+          },
+          {
+            "sto": "Wipe nose on tissue and throw tissue away",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate an understanding of ownership by refraining from taking someone else’s food or belongings",
+            "taskAnalysis": [
+              "Identify who the food belongs to",
+              "If the food does not belong to you, do not touch it"
+            ]
+          },
+          {
+            "sto": "Decrease playing with toys or objects in atypical/repetitive ways",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Decrease bossy behavior",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate age-appropriate modesty",
+            "taskAnalysis": [
+              "Close and cover mouth when burping",
+              "Pass gas in bathrooms rather than public areas",
+              "Say excuse me when burping or passing gas",
+              "Wipe or blow nose when need"
+            ]
+          },
+          {
+            "sto": "Demonstrate age-appropriate tact",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Refrain from asking embarrassing or intrusive questions of conversational partner",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Walk side by side within an appropriate proximity with Counselor",
+            "taskAnalysis": [
+              "Walk without holding onto the hand or arm of the counselor",
+              "Look in the counselors direction occasionally to check if distance is appropriate",
+              "Self correct distance between counselor and yourself by moving further away or closer when necessary"
+            ]
+          },
+          {
+            "sto": "Use appropriate voice volume in order to be audible",
+            "taskAnalysis": [
+              "Assess the situation to determine the appropriate volume",
+              "Utilize the volume that fits the situation best (If outside, speak louder to compensate for other sound, wind, etc. and when inside speak softer so not to disturb others)",
+              "Adjust volume as needed and based on feedback from others"
+            ]
+          },
+          {
+            "sto": "Demonstrate appropriate play skills and peer relations",
+            "taskAnalysis": [
+              "Join in a game or activity",
+              "Ask a peer to play",
+              "Share materials or equipment willingly",
+              "Wait his turn in games or activities",
+              "Play as a member of any team game",
+              "Engage in rules of good sportsmanship",
+              "Engage in appropriate behavior when confronted with inappropriate behavior"
+            ]
+          },
+          {
+            "sto": "Express excitement appropriately",
+            "taskAnalysis": [
+              "Refrain from inappropriate expression of excitement (jumping, screaming, running, etc.)",
+              "Communicate excitement appropriately (saying yay, telling the counselor that you feel excited, smiling, etc.)"
+            ]
+          },
+          {
+            "sto": "Demonstrate an understanding of appropriate contact with others",
+            "taskAnalysis": [
+              "Stand with about one to two feet between self and others",
+              "Correctly identify appropriate and inappropriate touching as described in stories or videos",
+              "Refrain from physically touching another person unless given permission"
+            ]
+          },
+          {
+            "sto": "Cover mouth with hand or tissue when coughing or sneezing.",
+            "taskAnalysis": [
+              "When feeling the urge to cough, cover mouth with hand or tissue",
+              "If covering mouth with hands, wash hands afterwards"
+            ]
+          },
+          {
+            "sto": "Respect the personal space of others by refraining from coming too close or touching others without permission",
+            "taskAnalysis": [
+              "When walking, do not bump into or push others",
+              "Ask for permission before hugging, sitting on, kissing, etc. someone",
+              "Stay at least one foot away from others when talking or engaging in an activity"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Group Participation",
+        "shortTermObjectives": [
+          {
+            "sto": "Be able to join others already engaged in a play activity (as opposed to having a peer join them in their activity)",
+            "taskAnalysis": [
+              "Greet one to two members of the group by saying \"Hi, my name is _____________.\"",
+              "Join group in Zumba classes.",
+              "Join group in dance sessions.",
+              "Join group in music sessions.",
+              "Join group in other TI Center activities.",
+              "Follow the rules of the group activities."
+            ]
+          },
+          {
+            "sto": "Tolerate and stay engaged in play with peer even when not in charge",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate flexibility and the ability to adapt in social settings by accommodating play suggestions from familiar caregivers or therapists",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate flexibility and the ability to adapt in social settings by accommodating play suggestions from peers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Communicate with peers when ready to change activities",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Participate in songs, finger-plays and rhymes with familiar adults",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Engage in parallel play",
+            "taskAnalysis": [
+              "Listen to the first direction/step",
+              "Watch counselor model the actions necessary to do the task",
+              "Move body in response to the first step/direction",
+              "Listen to the second direction/step",
+              "Watch counselor model the actions necessary to do the second task",
+              "Move body in response to the second step/direction",
+              "Engage in music therapy",
+              "Engage in arts and crafts",
+              "Engage in Zumba and other fitness activities",
+              "Engage in board games"
+            ]
+          },
+          {
+            "sto": "Engage in simple motor games with rules",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Participate in physical games with rules (eg duck, duck, goose)",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Participate in group activities without behavioral interruptions",
+            "taskAnalysis": [
+              "Sit with group in appropriate area",
+              "Listen to group directions",
+              "Follow directions",
+              "Wait your turn",
+              "Share group materials",
+              "Remain quiet when asked",
+              "Engage in task when appropriate"
+            ]
+          },
+          {
+            "sto": "Walk without bumping into others",
+            "taskAnalysis": [
+              "Hold head up",
+              "Look where you are going",
+              "Walk around others"
+            ]
+          },
+          {
+            "sto": "Stay on Task",
+            "taskAnalysis": [
+              "Physically join the group in the appropriate room/area",
+              "Sit quietly",
+              "Listen to group directions",
+              "Follow directions",
+              "Take turns",
+              "Engage in the activity when appropriate",
+              "Stay on task",
+              "Wait patiently"
+            ]
+          },
+          {
+            "sto": "Wait their turn",
+            "taskAnalysis": [
+              "Do not grab materials",
+              "Politely ask to have a turn with materials",
+              "Wait quietly",
+              "Thank others when they give over the materials"
+            ]
+          },
+          {
+            "sto": "Participate with another individual peer in a shared activity",
+            "taskAnalysis": [
+              "Initiate interaction with peer",
+              "Sit with group in appropriate area",
+              "Listen to group directions",
+              "Follow directions",
+              "Wait turn",
+              "Share group materials",
+              "Remain quiet when asked",
+              "Engage in task when appropriate"
+            ]
+          },
+          {
+            "sto": "Increase on task behavior",
+            "taskAnalysis": [
+              "Stay on task for 50% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 5 minutes of the 10 minute activity)",
+              "Stay on task for 60% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 6 minutes of the 10 minute activity)",
+              "Stay on task for 70% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 7 minutes of the 10 minute activity)",
+              "Stay on task for 80% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 8 minutes of the 10 minute activity)",
+              "Stay on task for 90% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 9 minutes of the 10 minute activity)",
+              "Stay on task for 100% of activity time (ex. If activity is 10 minutes, child will stay on task for a minimum of 10 minutes of the 10 minute activity)"
+            ]
+          },
+          {
+            "sto": "Socialize with peers through dance",
+            "taskAnalysis": [
+              "Pick a song with peers",
+              "Learn the choreography with peers",
+              "Dance with peers",
+              "Become aware of body language, gesture, eye contact and vocal inflection that contains social information that may not be conveyed verbally",
+              "Imitate the dance movements being presented to increase the movement vocabulary in them",
+              "Develop movements that are widely required for daily life activities",
+              "Use props like balls, scarf's, Thera-bands etc to promote wider movements",
+              "Make friendly gesture and eye contact during group dance",
+              "Imitate dance movements of other peers"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self-Control",
+        "shortTermObjectives": [
+          {
+            "sto": "Walt without behavioral interruptions",
+            "taskAnalysis": ["Sit or stand still", "Remain quiet"]
+          },
+          {
+            "sto": "Maintain a polite and/or tactful style of communication when letting others know that something is bothering them",
+            "taskAnalysis": [
+              "Gently tap staff to get attention",
+              "Ask for a break using a break card, symbol or device"
+            ]
+          },
+          {
+            "sto": "Tolerate the proximity of other children",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Tolerate changes in routines",
+            "taskAnalysis": [
+              "Point to new activity on the schedule",
+              "Transition willingly to the new activity",
+              "Look at schedule",
+              "Point to the change in routine",
+              "Verbalize change in routine",
+              "Transition to change in routine without resistance"
+            ]
+          },
+          {
+            "sto": "Refrain from taking things without permission",
+            "taskAnalysis": [
+              "If there is a desirable item nearby, refrain from taking it.",
+              "Ask a responsible adult for permission to have the item.",
+              "If told no, accept this and move forward with the task at hand."
+            ]
+          },
+          {
+            "sto": "Walt appropriately",
+            "taskAnalysis": [
+              "Wait for materials rather than grabbing",
+              "Wait in line",
+              "Wait for their turn",
+              "Wait to speak at appropriate times during conversation"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Self-Awareness",
+    "targetSkills": [
+      {
+        "targetSkill": "Awareness of Personal Emotions",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify at least five things that make them happy and five things that upset them",
+            "taskAnalysis": [
+              "Receptively identify pictures or words (ex.point to the school, point to the snack)",
+              "Pick 5 pictures/words that represent things that make them happy",
+              "Pick 5 pictures/words that represent things that make them upset",
+              "Identify emotions (happy, scared, angry, sad) from a set of pictures",
+              "Point to the correct picture to describe feeling",
+              "Verbalize emotion",
+              "Describe emotion depicted in a pictured situation"
+            ]
+          },
+          {
+            "sto": "To express precision and subtlety in the expression of emotion, use qualifiers to describe gradation of emotional experience (eg really disappointed, a little disappointed)",
+            "taskAnalysis": [
+              "Identify via sign, PCS or communication device the basic emotion that the participant is feeling",
+              "Communicate the level of intensity that the feeling is being experienced at (i.e. really, highly, a little, etc.)",
+              "Identify a more appropriate specific alternative emotion as necessary (ex. if the participant indicates at first that he is really mad, he may indicate that he is furious)"
+            ]
+          },
+          {
+            "sto": "Recognize basic emotions",
+            "taskAnalysis": [
+              "describe feelings or moods via words, signs or picture symbols",
+              "identify emotions from a set of pictures",
+              "identify emotions appropriate to given situations"
+            ]
+          },
+          {
+            "sto": "Express feelings or strengths about self",
+            "taskAnalysis": [
+              "State feelings by using affective vocabulary",
+              "Make positive self-affirmations",
+              "Make positive statements about accomplishments of self",
+              "Identify areas of weakness or improvement"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Presentation Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Tolerate negative emotions in literature and play",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of Personal Basic Needs",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify which food one can not eat",
+            "taskAnalysis": [
+              "Point to foods that will cause an allergic reaction",
+              "Identify ingredients on food packages and labels that will cause allergic reaction"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Seeking Help When Appropriate",
+        "shortTermObjectives": [
+          {
+            "sto": "Recover from distress within minutes with help from a familiar adult",
+            "taskAnalysis": [
+              "Get the attention of an adult",
+              "Communicate the need for assistance",
+              "Wait patiently"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Affect",
+        "shortTermObjectives": [
+          {
+            "sto": "Look up to caregiver using smile as a way of securing adult attention",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Show positive emotional expressions in response to praise",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Respond appropriately to emotions in family members/familiar adults/peers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Match spoken expressions of sadness, happiness, anger and surprise with facial expressions of the same emotions",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use pretend play scenarios to explore negative affect and practice appropriate responses",
+            "taskAnalysis": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Confidence/Esteem",
+    "targetSkills": [
+      {
+        "targetSkill": "Appropriate response to failure",
+        "shortTermObjectives": [
+          {
+            "sto": "Be tolerant of own mistakes and performances that were not perfect.",
+            "taskAnalysis": [
+              "Accept the mistake",
+              "Refrain from verbalizing about the mistake",
+              "Move forward with the current activity or task"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Persistence",
+        "shortTermObjectives": [
+          {
+            "sto": "Make an attempt to self-correct after making a mistake",
+            "taskAnalysis": [
+              "Appropriately accept the mistake (Participant should not be overly upset)",
+              "Make an attempt to correct the mistake",
+              "Ask for help if unable to correct the mistake",
+              "Maintain an even mood during self-correction (Participant should not become upset or frustrated)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Willingness to explore",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate interest and pleasure in a range of developmentally appropriate play activities",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Expand repertoire of social play activities",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decision making",
+        "shortTermObjectives": [
+          {
+            "sto": "Choose one of three leisure activities",
+            "taskAnalysis": [
+              "Look at or listen to the three activity choices",
+              "Think about or discuss each option and what your opinion of that option is",
+              "Make a decision by communicating the one activity you would like to do most"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of self-worth",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Self-image/concept",
+    "targetSkills": [
+      {
+        "targetSkill": "Identification of Personal Traits (i.e. Strengths, Weaknesses, Interests and Values)",
+        "shortTermObjectives": [
+          {
+            "sto": "Productively reflect upon the advantages and disadvantage of own behavior",
+            "taskAnalysis": [
+              "discuss his actions and behavior",
+              "discuss positive effects of his behavior",
+              "discuss negative effects of behavior"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of Personal Biological Traits (i.e. age, tall/short, gender, hair/eye color, etc.)",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Motor Skills",
+    "targetSkills": [
+      {
+        "targetSkill": "Fine and Gross Motor Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Draw unmistakable human with body, arms, legs, feet, nose, eyes, and mouth",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Effectively manipulate objects",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Develop Creativity",
+        "shortTermObjectives": [
+          {
+            "sto": "Spontaneously create shapes, items, pictures etc.",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Spatial Concept",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts IN",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts ON",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts UNDER",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate an understanding of the spatial concepts FRONT/BACK by moving his/her body or moving objects",
+            "taskAnalysis": [
+              "Stand in front of the chair",
+              "Stand behind the chair",
+              "Walk around the chair or object (without hitting the object)",
+              "March forward",
+              "Turn left",
+              "Turn right",
+              "March backward"
+            ]
+          },
+          {
+            "sto": "Demonstrate spatial concepts ABOVE/BELOW",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Visual Motor",
+        "shortTermObjectives": [
+          {
+            "sto": "Increase ability to operate a computer to perform a variety of functions",
+            "taskAnalysis": [
+              "Operate on/off switch",
+              "Insert/remove disk, CD or USB",
+              "Open programs",
+              "Open websites",
+              "Save information to disk, hard drive or desktop",
+              "Print hard copy",
+              "Use safety rules for operating equipment",
+              "follow correct formatting to create an email",
+              "Send an email",
+              "Respond to email",
+              "Chat with family, peers or Counselor",
+              "Complete Data Entry Activities",
+              "Type words on the keyboard",
+              "Launch a web browser",
+              "Log into email with username and password",
+              "Check email from mom",
+              "Respond to mom's email",
+              "Complete a fillable form on the computer",
+              "Save completed form on the computer",
+              "Utilize online job search sites as a resource for finding a job",
+              "Create a resume",
+              "Complete a job application",
+              "Create an application letter"
+            ]
+          },
+          {
+            "sto": "Create and bag, bin or place in packaging identical to the given set",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Increase hand-eye coordination",
+            "taskAnalysis": [
+              "Toss ball small distance (less than 3 ft) to another person",
+              "Catch ball tossed a small distance (less than 3 ft)",
+              "Toss ball into a container or hoop a small distance away (less than 3 ft)",
+              "Toss ball to another person a longer distance (3 ft or more)",
+              "Catch ball tossed a longer distance (more than 3 ft)",
+              "Bounce and catch ball bounced (i.e. dribble)",
+              "Toss ball into a container or hoop a long distance away (3 ft or more)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Sensory Motor",
+        "shortTermObjectives": []
+      },
+      {
+        "targetSkill": "Fine Motor Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Scribble with a crayon",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Imitate drawing of vertical line",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use paint brush with paint",
+            "taskAnalysis": [
+              "Pick up paint brush",
+              "Select a paint color",
+              "Use brush strokes to paint"
+            ]
+          },
+          {
+            "sto": "Imitate drawing of circle",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Add 3 parts to incomplete human drawing",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Copy drawing of a square",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Use scissors to snip paper",
+            "taskAnalysis": [
+              "Cut straight lines",
+              "Cut diagonal lines",
+              "Cut zigzag lines",
+              "Cut shapes"
+            ]
+          },
+          {
+            "sto": "Increase ability to manipulate objects",
+            "taskAnalysis": [
+              "Transfer an object from one hand to the other",
+              "Open and close a jar or a container",
+              "Use writing and art tools",
+              "Practice shoe tying",
+              "Practice lacing on a lacing board",
+              "Put and remove pegs on a peg board",
+              "Manipulate clothespins",
+              "Turn pages",
+              "Use scissors",
+              "Use Computer/iPad",
+              "Manipulate locks and latches"
+            ]
+          },
+          {
+            "sto": "Use both hands as appropriate when performing complex fine motor movements",
+            "taskAnalysis": [
+              "Use both hands as appropriate to complete complex fine motor activities",
+              "Rotate use of hands when appropriate"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Music and Dance",
+    "targetSkills": [
+      {
+        "targetSkill": "Fine and gross motor skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Use instruments appropriately",
+            "taskAnalysis": [
+              "Select an Instrument of choice",
+              "Play the instrument appropriately",
+              "Play the instrument along with the music",
+              "Play the Instrument along with peers"
+            ]
+          },
+          {
+            "sto": "Dance",
+            "taskAnalysis": [
+              "Select a music to dance to",
+              "Follow the motions of the on-screen dancer"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self-expression through music, song or dance",
+        "shortTermObjectives": [
+          {
+            "sto": "Sing a song",
+            "taskAnalysis": [
+              "Pick a song from 2 or more options",
+              "Listen to the song",
+              "Learn the lyrics",
+              "Sing along to the song"
+            ]
+          },
+          {
+            "sto": "Dance to a song",
+            "taskAnalysis": [
+              "Pick a song",
+              "Learn the song's choreography",
+              "Dance to the song's choreography"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Spatial concept",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts IN",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts ON",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate knowledge of the spatial concepts UNDER",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Demonstrate spatial concepts TOP/BOTTOM",
+            "taskAnalysis": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Physical Fitness",
+    "targetSkills": [
+      {
+        "targetSkill": "Sports",
+        "shortTermObjectives": [
+          {
+            "sto": "Engage in Swimming",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Badminton",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Basketball",
+            "taskAnalysis": [
+              "Practice dribbling skills",
+              "Practice passing skills",
+              "Practice shooting skills",
+              "Participate in a game situation"
+            ]
+          },
+          {
+            "sto": "Bowling",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Condition Skills",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Cycling",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Ride Exercise Bike",
+            "taskAnalysis": [
+              "Ride bike for 25% of the allotted time",
+              "Ride bike for 50% of the allotted time",
+              "Ride bike for 75% of the allotted time",
+              "Ride bike for 100% of the allotted time"
+            ]
+          },
+          {
+            "sto": "Aerobic Dance",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Folk Dance",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Football",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Frisbee",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Golf",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Gymnastics",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Horseshoes",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Kite Flying",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Low Organized Games",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Skating",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Soccer",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Social Dance",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Soft Ball",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Special Olympics",
+            "taskAnalysis": [
+              "Participate for the entire duration of each event",
+              "Follow the rules of the event (ex. Staying in the running lane, not crossing limit lines, etc.)",
+              "Wait appropriately for your turn between events"
+            ]
+          },
+          {
+            "sto": "Use of Park & Recreation Facilities",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Walking",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Exercise",
+        "shortTermObjectives": [
+          {
+            "sto": "Engage in physical fitness activities for a minimum of 30 minutes",
+            "taskAnalysis": [
+              "Identify exercise options such as going for a walk, riding an exercise bike, etc.",
+              "Pick which type of activity to engage in",
+              "Obtain any necessary materials (weights, stretch bands, etc.)",
+              "Warm up for 5 minutes (i.e. jogging, jumping)",
+              "Engage in the activity for 20 minutes",
+              "Cool down for the last 5 minutes by stretching",
+              "Return any materials to their proper location",
+              "State purpose of exercise equipment or activity",
+              "State safety handling of equipment",
+              "Perform recommended exercise on equipment",
+              "Perform sit-ups",
+              "Walk up the two steps of the stairs and walk back down",
+              "Stretch neck, wrists, arms, waists, legs, and feet",
+              "Participate in active games for 15 mins",
+              "Participate in physical fitness exercise for 15mins",
+              "Participate in Zumba and other dance activities",
+              "Participate in yoga and other stretching exercises"
+            ]
+          },
+          {
+            "sto": "Maintain weight by engaging in various physical activities",
+            "taskAnalysis": [
+              "Participate in swimming",
+              "Engage in walking",
+              "Participate in dance activities",
+              "Participate in other community-related activities"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Self-Management",
+    "targetSkills": [
+      {
+        "targetSkill": "Increase ability to self-soothe",
+        "shortTermObjectives": [
+          {
+            "sto": "Utilize relaxation techniques",
+            "taskAnalysis": [
+              "Watch counselor demonstrate counting to ten and taking deep breaths",
+              "Mimic counselor as they count to ten and take deep breaths",
+              "Practice counting to ten and taking deep breaths",
+              "Count to ten and take deep breaths"
+            ]
+          },
+          {
+            "sto": "Express how you feel to another",
+            "taskAnalysis": [
+              "Receptively identify a specific emotions from an array of pictures (ex. Point to the sad face)",
+              "Pick from an array of pictures to describe feeling (ex. Are you sad or happy?)",
+              "Verbally identify emotions or spontaneously utilize PEC, sign or gesture to communicate emotions"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease Inappropriate Attention Seeking Behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Increase use of appropriate attention-getting techniques",
+            "taskAnalysis": [
+              "Approach caregiver or peer",
+              "Gesture, sign, use PEC or verbalize that you would like their attention",
+              "Tap person gently if they do not notice previous attempts to gain attention",
+              "Wait for the person to respond",
+              "If unable to wait for response or are being ignored, approach someone else who can help"
+            ]
+          },
+          {
+            "sto": "Complete tasks without talking excessively",
+            "taskAnalysis": [
+              "Listen to task directions",
+              "Engage in task",
+              "Remain quiet during the task"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease Escape/Avoidance Behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Ask for a break",
+            "taskAnalysis": [
+              "Identify PEC or word to use to ask for a break",
+              "Hold the \"Break\" PEC up or say, sign or gesture \"break\""
+            ]
+          },
+          {
+            "sto": "Indicate the desire to engage in an alternative activity or use a different item",
+            "taskAnalysis": [
+              "Identify PEC or word to use to ask for a different activity/item",
+              "Hold the PEC up, point to or say the activity you would like to do instead or item you want instead",
+              "Accept conditions that must be met in order to switch activity/item, such as compliance with a first-then statement, to wait or clean up original task first, etc."
+            ]
+          },
+          {
+            "sto": "Express how you feel about a situation",
+            "taskAnalysis": [
+              "Receptively identify a specific emotions from an array of pictures (ex. Point to the sad face)",
+              "Pick from an array of pictures what you feel (ex. Are you sad or happy?)",
+              "Verbally identify emotions or spontaneously utilize PEC, sign or gesture to communicate your emotions"
+            ]
+          },
+          {
+            "sto": "Stay in assigned area or with TI Counselor",
+            "taskAnalysis": [
+              "Refrain from elopement behavior",
+              "Ask TI Counselor for permission to leave the area when applicable",
+              "Request permission (from TI Counselor) to leave the area when applicable using gesture or communication device",
+              "Stay seated when instructed by TI Counselor"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease Inappropriate Seeking of Access to Materials",
+        "shortTermObjectives": [
+          {
+            "sto": "Communicate needs rather than engaging in \"acting-out\" behavior",
+            "taskAnalysis": [
+              "Decrease crying, whining, yelling, inappropriate behavior when denied access or tangible",
+              "Verbally state want/need and/or spontaneously utilize PEC, sign or gesture to communicate your want/need",
+              "Follow expectations to \"earn\" access or tangible item"
+            ]
+          },
+          {
+            "sto": "Tolerate delayed gratification",
+            "taskAnalysis": [
+              "Communicate using PEC, sign, gesture or vocalization what you would like access to",
+              "Listen to the conditions under which you may appropriately obtain the materials",
+              "Comply with the conditions under which you may obtain the materials such as waiting, first-then steps, complying with rules, etc."
+            ]
+          },
+          {
+            "sto": "Refrain from grabbing behavior",
+            "taskAnalysis": [
+              "Refrain from grabbing",
+              "Communicate the request appropriately (verbalize, PCS, gesture)",
+              "Wait for an adult to respond and provide the requested item",
+              "If told no, accept no and request something else"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease Inappropriate Sensory Stimulation Behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Communicate need for sensory stimulation",
+            "taskAnalysis": [
+              "Receptively identify a specific sensory need from an array of pictures (ex. Point to the stress ball)",
+              "Pick from an array of pictures what you need (ex. Do you need head phones or a stress ball?)",
+              "Verbally identify or spontaneously utilize PEC, sign or gesture to communicate your need"
+            ]
+          },
+          {
+            "sto": "Communicate need for sensory break",
+            "taskAnalysis": [
+              "Point to break card",
+              "Point to break symbol on Communication device",
+              "Point to head phone PEC symbol when overwhelmed by sound/noise",
+              "Point to head phone symbol on Communication device when overwhelmed by sound/noise",
+              "Point to a desired activity for sensory break",
+              "Engage in sensory break within the allotted time",
+              "Refrain from engaging in sensory stimulation outside of break time"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease confrontational behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of verbal and physical confrontation",
+            "taskAnalysis": [
+              "Join In a game or activity",
+              "Ask a peer to play",
+              "Share materials or equipment willingly",
+              "Wait for turn in games or activities",
+              "Play as a member of any team game",
+              "Engage in rules of good sportsmanship",
+              "Engage in appropriate behavior when confronted with inappropriate behavior"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Decrease Target Behaviors",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of target behaviors",
+            "taskAnalysis": [
+              "Have no incident of aggression",
+              "Have no incident of elopement",
+              "Have no incident of property destruction",
+              "Have no incident of disruptive behaviors",
+              "Have no incident of self-injury",
+              "Have no incident of tantrum behaviors"
+            ]
+          },
+          {
+            "sto": "Decrease other serious behavior problems",
+            "taskAnalysis": [
+              "Refrain from swiping materials from her desk when upset",
+              "Refrain from throwing materials when upset",
+              "Refrain from hitting self when upset",
+              "Refrain from urinating on herself when anxious",
+              "Refrain from unnecessary crying and laughing for no reason"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Increasing Compliance",
+    "targetSkills": [
+      {
+        "targetSkill": "Task-Engagement",
+        "shortTermObjectives": [
+          {
+            "sto": "Attend to an activity from 5 to 20 minutes",
+            "taskAnalysis": [
+              "Present schedule to Technician",
+              "Point to activity on the visual schedule",
+              "Engage in activity for 5 minutes",
+              "Engage in activity for 10 minutes",
+              "Engage in activity for 15 minutes",
+              "Engage in activity for 20 minutes"
+            ]
+          },
+          {
+            "sto": "Attend to the leisure activity of choise for 5-20 minutes",
+            "taskAnalysis": [
+              "Point or verbally express a leisure activity from 3 picture choices (cutting and pasting, coloring, etc)",
+              "Engage in activity for 5 minutes",
+              "Engage in activity for 15 minutes",
+              "Engage in activity for 10 minutes",
+              "Engage in activity for 20 minutes",
+              "I will attempt a new leisure activity weekly"
+            ]
+          },
+          {
+            "sto": "Comply with adult directives",
+            "taskAnalysis": [
+              "Listen to adult when they give a directive",
+              "Stop any current activity",
+              "Refrain from saying No",
+              "Comply with the directive"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Transition",
+        "shortTermObjectives": [
+          {
+            "sto": "Transition between tasks with assistance of a schedule and without behavioral episodes",
+            "taskAnalysis": [
+              "Look at schedule",
+              "Identify next task",
+              "Determine how much time there is before the transition",
+              "Finish up with current task in the allotted time",
+              "Move to the next task on the schedule when it is time",
+              "Refrain from acting out behaviors",
+              "Continue to follow the schedule"
+            ]
+          },
+          {
+            "sto": "Exit the car to transition to the designated activity/location",
+            "taskAnalysis": [
+              "Look at visual schedule",
+              "Point to the scheduled activity/location",
+              "Go down from vehicle",
+              "Transition to the scheduled activity/location"
+            ]
+          },
+          {
+            "sto": "Accept changes in routine without resistance",
+            "taskAnalysis": [
+              "Look at schedule",
+              "Point to the change in routine",
+              "Verbalize change in routine",
+              "Transition to change in routine without resistance"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self-regulation",
+        "shortTermObjectives": [
+          {
+            "sto": "Keep shoes on while using the bathroom",
+            "taskAnalysis": [
+              "Walk into bathroom",
+              "Pull down underwear and sit on toilet",
+              "Keep shoes on",
+              "Use the bathroom",
+              "Exit the bathroom"
+            ]
+          },
+          {
+            "sto": "Demonstrate impulse control by completing tasks at a time",
+            "taskAnalysis": [
+              "See task through completion within a given time",
+              "Complete tasks one at a time",
+              "Request for a break"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Toileting",
+    "targetSkills": [
+      {
+        "targetSkill": "Habit Training",
+        "shortTermObjectives": [
+          {
+            "sto": "Wash and dry hands after toileting",
+            "taskAnalysis": [
+              "Pump appropriate amount of hand soap on hand",
+              "Rub hands together",
+              "Turn water on",
+              "Put hands under running water",
+              "Rub back and front of hands together",
+              "Rinse hands entirely",
+              "Shake off access water in sink",
+              "Dry hands with towel"
+            ]
+          },
+          {
+            "sto": "Use the bathroom as scheduled",
+            "taskAnalysis": [
+              "Point to bathroom icon",
+              "Enter the bathroom",
+              "Position self in front of the toilet",
+              "Unfasten, unbutton and/or unzip bottom wear",
+              "Pull down pull-up",
+              "Pull down bottom wear",
+              "Sit on toilet bowl",
+              "Void",
+              "Wipe with tissue",
+              "Throw tissue in bowl",
+              "Flush toilet",
+              "Change pull-up if necessary",
+              "Discard soiled pull-up",
+              "Stand up",
+              "Pull bottoms up",
+              "Refasten, rebutton and/or rezip bottom wear",
+              "Keep hands on lap"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "General Toileting",
+        "shortTermObjectives": []
+      },
+      {
+        "targetSkill": "Remaining Dry Fundamental Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Remain dry in a 3-hour period by following a toileting schedule",
+            "taskAnalysis": [
+              "Look at toileting schedule",
+              "Follow each step of the schedule starting with removing pants",
+              "Sit or stand to eliminate",
+              "Wipe if necessary",
+              "Replace pants to proper location",
+              "Zip or button pants if necessary",
+              "Flush toilet",
+              "Wash hands",
+              "Exit bathroom"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Toileting Hygiene",
+        "shortTermObjectives": [
+          {
+            "sto": "Wipe self",
+            "taskAnalysis": [
+              "Get appropriate amount of toilet paper",
+              "Position bottom",
+              "Wipe self from front to bottom",
+              "Repeat steps 1 to 3 if applicable",
+              "Dump toilet paper in toilet/trash",
+              "Flush toilet",
+              "Wash Hands"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Positioning Self",
+        "shortTermObjectives": [
+          {
+            "sto": "Position self correctly on the toilet bowl",
+            "taskAnalysis": [
+              "Enter bathroom",
+              "Position self in front of the toilet bowl",
+              "Unfasten, unbutton, and/or unzip bottom wear",
+              "Pull down pull-up and bottom wear",
+              "Sit on the toilet bowl",
+              "Void (i.e. urinate or defecate)",
+              "Change pull-up when necessary",
+              "Discard soiled pull-up",
+              "Stand up and pull bottoms up",
+              "Refasten, rebutton and/or rezip bottom wear"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Snacking",
+    "targetSkills": [
+      {
+        "targetSkill": "Snack Preparation",
+        "shortTermObjectives": [
+          {
+            "sto": "Wash hands before handling food",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Acquire snack from designated area/location",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Access or ready food for consumption",
+            "taskAnalysis": [
+              "Stir food if required",
+              "Wrap and unwrap food",
+              "Open and close lids/twist ties/ziplock bags/ clothespins"
+            ]
+          },
+          {
+            "sto": "Use a microwave if necessary",
+            "taskAnalysis": [
+              "Identify whether snack requires a microwave",
+              "Put items in microwave",
+              "Punch in words/numbers on microwave as indicated on recipe",
+              "Take items out of microwave"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Post-Snack Clean-up",
+        "shortTermObjectives": [
+          {
+            "sto": "Clean up after snack",
+            "taskAnalysis": [
+              "Carry items between table and sink without tipping, spilling or dropping",
+              "Put used items away or in sink without prompts",
+              "Select appropriate scrubber, water temperature and amount of dish soap",
+              "Thoroughly scrub dishes/utensils",
+              "Thoroughly rinse dishes/utensils",
+              "Wash and dry all work areas including table top/counter",
+              "Wipe off hands and face"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Mobility",
+    "targetSkills": [
+      {
+        "targetSkill": "Walking with a walker",
+        "shortTermObjectives": [
+          {
+            "sto": "Utilize walker when out in the community",
+            "taskAnalysis": [
+              "Place both hands on walker",
+              "Take a step",
+              "Stabilize self by leaning on walker",
+              "Move walker forward a little",
+              "Take another step",
+              "Repeat"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Clean Up",
+    "targetSkills": [
+      {
+        "targetSkill": "Sweeping",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify when the floor needs sweeping",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Assemble materials",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Sweep floor area",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Sweep dirt into a pile",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Sweep dirt into the dust pan and empty pan into basket",
+            "taskAnalysis": [
+              "Hold broom",
+              "Perform sweeping motion",
+              "Sweep dirt into dust pan",
+              "Empty dirt into the trash"
+            ]
+          },
+          {
+            "sto": "Put materials away",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Trash Management",
+        "shortTermObjectives": [
+          {
+            "sto": "Take out trash",
+            "taskAnalysis": [
+              "Identify when trash can/waste basket is full",
+              "Lift out liner and tie it shut",
+              "Take liner to garbage can and place in the can",
+              "Place a fresh liner in the trash can/waste basket"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Shut Down Electronics",
+        "shortTermObjectives": [
+          {
+            "sto": "Turn off computers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Turn off speakers",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Turn off lights",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Turn off projectors",
+            "taskAnalysis": []
+          }
+        ]
+      },
+      {
+        "targetSkill": "Organization",
+        "shortTermObjectives": [
+          {
+            "sto": "Pick up when prompted",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Put items in assigned places",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Identify when items are out of place",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Initiate picking up items without prompting",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Perform a clean up task",
+            "taskAnalysis": [
+              "Locate the objects required for clean up (vacuum, paper towels, trash can, etc.)",
+              "Complete the cleanup task",
+              "Put away cleaning products (ex. Vacuum, spray cleaner, etc.)"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Socially Appropriate Behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Respecting boundaries",
+        "shortTermObjectives": [
+          {
+            "sto": "Appropriately occupy a space",
+            "taskAnalysis": [
+              "Stay at designated area at any given time",
+              "Ask or gesture to move or occupy a desired space",
+              "Knock on the door before entering any closed premise",
+              "Say/sign thank you when request is granted",
+              "Repeat steps 1 to 4 as needed",
+              "Learn concepts of personal space using social stories",
+              "Respect personal space by obtaining permission to hug peers and others",
+              "Respect personal space such as avoiding inappropriate touching of peers and others"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Self-Injurious Behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reducing Various Self-Injurious Behaviors",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of Self-Injurious Behaviors",
+            "taskAnalysis": [
+              "Wear helmet",
+              "Display 0 incidents of head banging",
+              "Display 0 incident of hitting other parts of the body with knee",
+              "Display 0 incident of slapping/hitting self",
+              "Display 0 incident of hand-biting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reduce Inappropriate Behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce Spitting Behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Eliminate inappropriate spitting behavior",
+            "taskAnalysis": [
+              "Refrain from inappropriate spitting",
+              "Stay on task without spitting and anxious behavior",
+              "Express dislike or displeasure by communicating with gesture, PEC, or verbalization rather than spitting"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reduce Disrobing Behavior",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Self-Expression",
+    "targetSkills": [
+      {
+        "targetSkill": "Making Choices",
+        "shortTermObjectives": [
+          {
+            "sto": "Select and access preferred games/ movie on comuter/ iPad",
+            "taskAnalysis": [
+              "Turn Computer/iPad on",
+              "Select preferred game using keyboard/mouse",
+              "Hit/Tap an App (Application) to open it",
+              "Play selected game/watch a movie"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Skill Development Training",
+    "targetSkills": [
+      {
+        "targetSkill": "Acquire Pre-Vocational Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate pre-vocational skill readiness",
+            "taskAnalysis": [
+              "Fold and Hang Cloths for Display",
+              "Shred papers using a shredding machine",
+              "Assemble items such as pizza boxes",
+              "Load items in a shopping cart",
+              "Acquire real life experience through volunteering",
+              "Learn how to work with others through team building activities",
+              "Collate papers to make a set",
+              "File papers and documents",
+              "Make copies on a photocopier",
+              "Purchase inventory items for vending machine",
+              "Restock items in vending machine"
+            ]
+          },
+          {
+            "sto": "Type complete sentences on a computer",
+            "taskAnalysis": [
+              "Turn computer on",
+              "Log on to computer with username and password (if required)",
+              "Open the word processor tool to type on computer",
+              "Launch an online text practice tool",
+              "Obtain a sample document (magazine, letter, book etc.)",
+              "View sentences from sample document",
+              "Type complete sentence"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Feminine Hygiene",
+    "targetSkills": [
+      {
+        "targetSkill": "Menstrual Care",
+        "shortTermObjectives": [
+          {
+            "sto": "Change pad during menses",
+            "taskAnalysis": [
+              "Walk into bathroom",
+              "Pull down underwear & sit on toilet",
+              "Remove soiled pad from underwear",
+              "Wrap up pad in toilet paper & throw away",
+              "Wipe vaginal area with toilet paper",
+              "Open clean pad and put it in underwear sticky side down, press in place",
+              "Pull up pants and underwear",
+              "Flush toilet"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Pre-Vocational and Vocational Skills",
+    "targetSkills": [
+      {
+        "targetSkill": "Menstrual Care",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Pica Behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reducing Pica Behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Reduce instances of pica",
+            "taskAnalysis": [
+              "Refrain from placing an inedible object beyond the plane of the lips",
+              "Refrain from chewing on an inedible object",
+              "Refrain from ingesting and swallowing an inedible object"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Hygiene",
+    "targetSkills": [
+      {
+        "targetSkill": "Hand Washing",
+        "shortTermObjectives": [
+          {
+            "sto": "Wash hands thoroughly",
+            "taskAnalysis": [
+              "Pump appropriate amount of hand soap on hand",
+              "Rub hands together",
+              "Turn water on",
+              "Put hands under running water",
+              "Rub back and front of hands together",
+              "Rinse hand entirely",
+              "Shake off excess water in sink",
+              "Dry hands with towel"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Voice",
+    "targetSkills": [
+      {
+        "targetSkill": "Regulation of Volume",
+        "shortTermObjectives": [
+          {
+            "sto": "Use appropriate volume in accordance with the environment",
+            "taskAnalysis": [
+              "Whisper or use a soft voice in quiet buildings such as libraries, museums, movie theaters, etc.",
+              "Use a normal volume in stores or at the Center",
+              "Shout or speak loudly when outside and your conversational partner indicates that they cannot hear you well"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

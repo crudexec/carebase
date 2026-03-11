@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { FormTemplateData } from "@/lib/visit-notes/types";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
-import { ArrowLeft, Save, Eye, Power, PowerOff } from "lucide-react";
+import { ArrowLeft, Save, Eye } from "lucide-react";
 import Link from "next/link";
 
 export default function NewTemplatePage() {

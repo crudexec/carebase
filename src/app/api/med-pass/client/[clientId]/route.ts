@@ -8,7 +8,7 @@ import {
 import { MedPassStatus } from "@prisma/client";
 
 // Helper to parse time string (HH:mm) to hour number
-function parseTimeToHour(timeStr: string): number {
+function _parseTimeToHour(timeStr: string): number {
   const [hours] = timeStr.split(":").map(Number);
   return hours || 0;
 }

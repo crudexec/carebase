@@ -22,13 +22,11 @@ import {
   CheckCircle,
   XCircle,
   User,
-  Calendar,
   FileText,
   Loader2,
   AlertCircle,
   X,
   ChevronDown,
-  ChevronRight,
   Eye,
 } from "lucide-react";
 

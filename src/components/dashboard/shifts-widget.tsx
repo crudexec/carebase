@@ -8,8 +8,6 @@ import {
   ArrowRight,
   Loader2,
   Clock,
-  User,
-  MapPin,
   Play,
   LogIn,
   LogOut,
@@ -188,169 +186,146 @@ export function ShiftsWidget() {
 
   const totalShifts = activeShifts.length + upcomingShifts.length;
 
-  const renderActiveShift = (shift: Shift) => {
+  // Table header component for reuse
+  const TableHeader = ({ showCarer }: { showCarer: boolean }) => (
+    <div className={`grid ${showCarer ? "grid-cols-[1fr_1fr_90px_70px]" : "grid-cols-[1fr_90px_70px]"} bg-gray-50 border-b border-gray-200`}>
+      <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Client</span>
+      {showCarer && <span className="px-3 py-1 text-[10px] font-semibold text-gray-600">Carer</span>}
+      <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Time</span>
+      <span className="px-3 py-1 text-[10px] font-semibold text-gray-600 text-center">Status</span>
+    </div>
+  );
+
+  const renderActiveShiftRow = (shift: Shift, index: number) => {
     const startTime = shift.actualStart || shift.scheduledStart;
     const duration = formatDistanceToNow(new Date(startTime), { addSuffix: false });
     const isMyShift = isCarer && shift.carer?.id === userId;
     const isCheckingOut = checkingOut === shift.id;
+    const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+    const showCarer = !isCarer;
 
     return (
-      <li key={shift.id}>
-        <div className="px-3 py-2 rounded-md transition-colors hover:bg-background-secondary bg-warning/5 border border-warning/20">
-          <button
-            onClick={() => handleShiftClick(shift)}
-            className="block w-full text-left"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0 relative">
-                <Play className="w-4 h-4 text-warning" />
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-warning rounded-full animate-pulse" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {shift.client.firstName} {shift.client.lastName}
-                  </p>
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning/10 text-warning whitespace-nowrap">
-                    {duration} in
-                  </span>
-                </div>
-                {shift.carer && (
-                  <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-                    <User className="w-3 h-3" />
-                    <span>{shift.carer.firstName} {shift.carer.lastName}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                  <Clock className="w-3 h-3" />
-                  <span>Started {format(new Date(startTime), "h:mm a")}</span>
-                  <span className="text-foreground-tertiary">•</span>
-                  <span>Ends {format(new Date(shift.scheduledEnd), "h:mm a")}</span>
-                </div>
-                {shift.client.address && (
-                  <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
-                    <MapPin className="w-3 h-3" />
-                    <span className="truncate">{shift.client.address}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </button>
-          {isMyShift && (
-            <div className="mt-2 ml-11 flex gap-2">
+      <div key={shift.id} className={`border-b border-gray-100 ${rowBg}`}>
+        <button
+          onClick={() => handleShiftClick(shift)}
+          className={`grid ${showCarer ? "grid-cols-[1fr_1fr_90px_70px]" : "grid-cols-[1fr_90px_70px]"} items-center w-full text-left cursor-pointer hover:bg-blue-50`}
+        >
+          <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+            {shift.client.firstName} {shift.client.lastName}
+          </span>
+          {showCarer && shift.carer && (
+            <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
+              {shift.carer.firstName} {shift.carer.lastName}
+            </span>
+          )}
+          <span className="px-3 py-1.5 text-[10px] text-gray-500 text-center">
+            {format(new Date(startTime), "h:mm a")}
+          </span>
+          <span className="px-3 py-1.5 text-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-700">
+              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
+              {duration}
+            </span>
+          </span>
+        </button>
+        {isMyShift && (
+          <div className="px-3 pb-2 flex gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex-1"
+              onClick={(e) => handleCheckOut(e, shift.id)}
+              disabled={isCheckingOut}
+            >
+              {isCheckingOut ? (
+                <>
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  Checking Out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-3 w-3 mr-1" />
+                  Check Out
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => handleAddNote(e, shift.client.id)}
+            >
+              <StickyNote className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderUpcomingShiftRow = (shift: Shift, index: number) => {
+    const isMyShift = isCarer && shift.carer?.id === userId;
+    const isCheckingIn = checkingIn === shift.id;
+    const canCheckIn = isMyShift && shift.status === "SCHEDULED";
+    const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+    const showCarer = !isCarer;
+
+    return (
+      <div key={shift.id} className={`border-b border-gray-100 ${rowBg}`}>
+        <button
+          onClick={() => handleShiftClick(shift)}
+          className={`grid ${showCarer ? "grid-cols-[1fr_1fr_90px_70px]" : "grid-cols-[1fr_90px_70px]"} items-center w-full text-left cursor-pointer hover:bg-blue-50`}
+        >
+          <span className="px-3 py-1.5 text-xs font-medium text-gray-900 truncate">
+            {shift.client.firstName} {shift.client.lastName}
+          </span>
+          {showCarer && shift.carer && (
+            <span className="px-3 py-1.5 text-[11px] text-gray-700 truncate">
+              {shift.carer.firstName} {shift.carer.lastName}
+            </span>
+          )}
+          <span className="px-3 py-1.5 text-[10px] text-gray-500 text-center">
+            {formatShiftTime(shift.scheduledStart, shift.scheduledEnd)}
+          </span>
+          <span className="px-3 py-1.5 text-center">
+            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700">
+              Scheduled
+            </span>
+          </span>
+        </button>
+        {(canCheckIn || isMyShift) && (
+          <div className="px-3 pb-2 flex gap-2">
+            {canCheckIn && (
               <Button
                 size="sm"
-                variant="secondary"
                 className="flex-1"
-                onClick={(e) => handleCheckOut(e, shift.id)}
-                disabled={isCheckingOut}
+                onClick={(e) => handleCheckIn(e, shift.id)}
+                disabled={isCheckingIn}
               >
-                {isCheckingOut ? (
+                {isCheckingIn ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                    Checking Out...
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Checking In...
                   </>
                 ) : (
                   <>
-                    <LogOut className="w-4 h-4 mr-1" />
-                    Check Out
+                    <LogIn className="h-3 w-3 mr-1" />
+                    Check In
                   </>
                 )}
               </Button>
+            )}
+            {isMyShift && (
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={(e) => handleAddNote(e, shift.client.id)}
               >
-                <StickyNote className="w-4 h-4" />
+                <StickyNote className="h-3 w-3" />
               </Button>
-            </div>
-          )}
-        </div>
-      </li>
-    );
-  };
-
-  const renderUpcomingShift = (shift: Shift) => {
-    const isMyShift = isCarer && shift.carer?.id === userId;
-    const isCheckingIn = checkingIn === shift.id;
-    // Allow check-in for any scheduled shift (no time restriction)
-    const canCheckIn = isMyShift && shift.status === "SCHEDULED";
-
-    return (
-      <li key={shift.id}>
-        <div className="px-3 py-2 rounded-md transition-colors hover:bg-background-secondary">
-          <button
-            onClick={() => handleShiftClick(shift)}
-            className="block w-full text-left"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {shift.client.firstName} {shift.client.lastName}
-                  </p>
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/10 text-primary">
-                    Scheduled
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-foreground-secondary mt-0.5">
-                  <Clock className="w-3 h-3" />
-                  <span>{formatShiftTime(shift.scheduledStart, shift.scheduledEnd)}</span>
-                </div>
-                {shift.carer && (
-                  <div className="flex items-center gap-2 text-xs text-foreground-tertiary mt-0.5">
-                    <User className="w-3 h-3" />
-                    <span>{shift.carer.firstName} {shift.carer.lastName}</span>
-                  </div>
-                )}
-                {shift.client.address && (
-                  <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary mt-0.5">
-                    <MapPin className="w-3 h-3" />
-                    <span className="truncate">{shift.client.address}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </button>
-          {(canCheckIn || isMyShift) && (
-            <div className="mt-2 ml-11 flex gap-2">
-              {canCheckIn && (
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={(e) => handleCheckIn(e, shift.id)}
-                  disabled={isCheckingIn}
-                >
-                  {isCheckingIn ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      Checking In...
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 mr-1" />
-                      Check In
-                    </>
-                  )}
-                </Button>
-              )}
-              {isMyShift && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={(e) => handleAddNote(e, shift.client.id)}
-                >
-                  <StickyNote className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </li>
+            )}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -414,15 +389,17 @@ export function ShiftsWidget() {
             {/* Active Shifts Section */}
             {activeShifts.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-2 mb-2">
-                  <Play className="w-3.5 h-3.5 text-warning" />
-                  <p className="text-xs font-semibold text-warning uppercase tracking-wide">
-                    In Progress
-                  </p>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1">
+                  <Play className="h-3 w-3 text-yellow-600" />
+                  <span className="text-xs font-semibold text-gray-700">In Progress</span>
+                  <span className="text-[10px] text-gray-500">({activeShifts.length})</span>
                 </div>
-                <ul className="space-y-1">
-                  {activeShifts.map(renderActiveShift)}
-                </ul>
+                <div className="bg-white rounded border border-gray-200 overflow-hidden">
+                  <TableHeader showCarer={!isCarer} />
+                  <div>
+                    {activeShifts.map((shift, index) => renderActiveShiftRow(shift, index))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -430,25 +407,29 @@ export function ShiftsWidget() {
             {upcomingShifts.length > 0 && (
               <div>
                 {activeShifts.length > 0 && (
-                  <div className="border-t border-border-light my-3" />
+                  <div className="border-t border-gray-100 my-3" />
                 )}
-                <div className="flex items-center gap-2 px-2 mb-2">
-                  <Clock className="w-3.5 h-3.5 text-primary" />
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wide">
-                    Upcoming
-                  </p>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1">
+                  <Clock className="h-3 w-3 text-blue-600" />
+                  <span className="text-xs font-semibold text-gray-700">Upcoming</span>
+                  <span className="text-[10px] text-gray-500">({upcomingShifts.length})</span>
                 </div>
-                <div className="space-y-3">
-                  {Object.entries(groupedUpcoming).map(([dateLabel, dateShifts]) => (
-                    <div key={dateLabel}>
-                      <p className="text-xs font-medium text-foreground-secondary px-2 mb-1">
-                        {dateLabel}
-                      </p>
-                      <ul className="space-y-1">
-                        {dateShifts.map(renderUpcomingShift)}
-                      </ul>
-                    </div>
-                  ))}
+                <div className="bg-white rounded border border-gray-200 overflow-hidden">
+                  <TableHeader showCarer={!isCarer} />
+                  <div>
+                    {Object.entries(groupedUpcoming).map(([dateLabel, dateShifts]) => (
+                      <div key={dateLabel}>
+                        {/* Date label row */}
+                        <div className="px-3 py-1 bg-gray-100 border-b border-gray-200">
+                          <p className="text-[10px] font-medium text-gray-600">
+                            {dateLabel}
+                          </p>
+                        </div>
+                        {/* Shifts for this date */}
+                        {dateShifts.map((shift, index) => renderUpcomingShiftRow(shift, index))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

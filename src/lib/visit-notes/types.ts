@@ -1,4 +1,14 @@
 import { FormFieldType, FormTemplateStatus } from "@prisma/client";
+import type {
+  CodeEntryFieldConfig,
+  MatrixGridFieldConfig,
+  DatePartsFieldConfig,
+  HierarchicalCheckboxFieldConfig,
+  CalculatedScoreFieldConfig,
+  NumericCounterFieldConfig,
+  StructuredIdFieldConfig,
+  MultiDiagnosisFieldConfig,
+} from "@/lib/oasis/types";
 
 // ============================================
 // Field Configuration Types
@@ -33,6 +43,15 @@ export type FieldConfig =
   | NumberFieldConfig
   | ChoiceFieldConfig
   | RatingFieldConfig
+  // OASIS field configs
+  | CodeEntryFieldConfig
+  | MatrixGridFieldConfig
+  | DatePartsFieldConfig
+  | HierarchicalCheckboxFieldConfig
+  | CalculatedScoreFieldConfig
+  | NumericCounterFieldConfig
+  | StructuredIdFieldConfig
+  | MultiDiagnosisFieldConfig
   | null;
 
 // ============================================
@@ -281,6 +300,16 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   RATING_SCALE: "Rating Scale",
   BODY_MAP: "Body Map",
   ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
+  CASCADING_SELECT: "Cascading Select",
+  // OASIS-specific field types
+  CODE_ENTRY: "Code Entry",
+  MATRIX_GRID: "Matrix Grid",
+  DATE_PARTS: "Date Parts",
+  HIERARCHICAL_CHECKBOX: "Hierarchical Checkbox",
+  CALCULATED_SCORE: "Calculated Score",
+  NUMERIC_COUNTER: "Numeric Counter",
+  STRUCTURED_ID: "Structured ID",
+  MULTI_DIAGNOSIS: "Multi-Diagnosis",
 };
 
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
@@ -298,11 +327,34 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   RATING_SCALE: "Star or number rating",
   BODY_MAP: "Interactive body diagram for documenting pain and wounds",
   ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
+  CASCADING_SELECT: "Linked dropdowns for hierarchical selections (Goal Area → Target Skill → Objective → Steps)",
+  // OASIS-specific field types
+  CODE_ENTRY: "Single or multi-digit code selection (e.g., 0-6 scale)",
+  MATRIX_GRID: "Multi-row/column grid for complex assessments",
+  DATE_PARTS: "Separate month, day, year inputs with NA/UK options",
+  HIERARCHICAL_CHECKBOX: "Nested checkbox options with parent-child relationships",
+  CALCULATED_SCORE: "Auto-calculated score from source items (e.g., BIMS, PHQ-9)",
+  NUMERIC_COUNTER: "Stepper input for counting items (e.g., pressure ulcers)",
+  STRUCTURED_ID: "Formatted ID input (e.g., NPI, Medicare number)",
+  MULTI_DIAGNOSIS: "Multiple ICD-10 diagnoses with primary/secondary designation",
 };
 
 // Helper to check if field type requires config
 export function fieldTypeRequiresConfig(type: FormFieldType): boolean {
-  return ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "RATING_SCALE"].includes(type);
+  return [
+    "SINGLE_CHOICE",
+    "MULTIPLE_CHOICE",
+    "RATING_SCALE",
+    // OASIS field types that require config
+    "CODE_ENTRY",
+    "MATRIX_GRID",
+    "DATE_PARTS",
+    "HIERARCHICAL_CHECKBOX",
+    "CALCULATED_SCORE",
+    "NUMERIC_COUNTER",
+    "STRUCTURED_ID",
+    "MULTI_DIAGNOSIS",
+  ].includes(type);
 }
 
 // Helper to get default config for field type
@@ -319,6 +371,56 @@ export function getDefaultFieldConfig(type: FormFieldType): FieldConfig {
       return { maxLength: 2000 };
     case "NUMBER":
       return { min: 0, max: 100, thresholdEnabled: true };
+    // OASIS field type defaults
+    case "CODE_ENTRY":
+      return {
+        codeLength: 1,
+        inputType: "numeric",
+        showAsDropdown: true,
+        options: [],
+      };
+    case "MATRIX_GRID":
+      return {
+        columns: [],
+        rows: [],
+        allowNA: false,
+      };
+    case "DATE_PARTS":
+      return {
+        allowNA: false,
+        allowUnknown: false,
+      };
+    case "HIERARCHICAL_CHECKBOX":
+      return {
+        options: [],
+        allowMultiple: false,
+        maxSelections: 1,
+      };
+    case "CALCULATED_SCORE":
+      return {
+        sourceItems: [],
+        autoCalculate: true,
+        displayFormat: "score_with_label",
+      };
+    case "NUMERIC_COUNTER":
+      return {
+        min: 0,
+        max: 99,
+        step: 1,
+        showButtons: true,
+      };
+    case "STRUCTURED_ID":
+      return {
+        format: "CUSTOM",
+        segments: [],
+        separator: "",
+      };
+    case "MULTI_DIAGNOSIS":
+      return {
+        maxDiagnoses: 6,
+        requirePrimary: true,
+        allowSequencing: true,
+      };
     default:
       return null;
   }

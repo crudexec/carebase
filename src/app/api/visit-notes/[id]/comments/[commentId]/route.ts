@@ -99,7 +99,7 @@ export async function PATCH(
     const validNewUserIds = validNewUsers.map((u) => u.id);
 
     // Update comment and mentions in a transaction
-    const [comment] = await prisma.$transaction([
+    const [_comment] = await prisma.$transaction([
       prisma.visitNoteComment.update({
         where: { id: commentId },
         data: { content },

@@ -148,10 +148,10 @@ export function BodyMapViewer({ markers, className }: BodyMapViewerProps) {
   const [hoveredMarker, setHoveredMarker] = React.useState<string | null>(null);
 
   // Get all marker region IDs
-  const markerRegionIds = markers.map((m) => m.regionId);
+  const _markerRegionIds = markers.map((m) => m.regionId);
 
   // Find which region a marker belongs to
-  const getMarkerRegion = (regionId: string) => {
+  const _getMarkerRegion = (regionId: string) => {
     for (const [, regions] of Object.entries(BODY_REGIONS)) {
       const region = regions.find((r) => r.id === regionId);
       if (region) return region;

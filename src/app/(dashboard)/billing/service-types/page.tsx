@@ -177,7 +177,7 @@ export default function ServiceTypesPage() {
     }
   };
 
-  const handleDeleteClick = (serviceType: ServiceType) => {
+  const _handleDeleteClick = (serviceType: ServiceType) => {
     setDeleteModal({ isOpen: true, serviceType });
   };
 

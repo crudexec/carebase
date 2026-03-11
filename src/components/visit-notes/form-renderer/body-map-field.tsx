@@ -342,7 +342,7 @@ function MarkerDetailModal({
           fileSize: data.fileSize,
         });
       }
-    } catch (error) {
+    } catch {
       // Fallback to base64 for preview
       const reader = new FileReader();
       reader.onload = () => {

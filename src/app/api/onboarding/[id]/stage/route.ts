@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { canMoveCards, canApproveClinical, stageRequiresApproval } from "@/lib/onboarding";
+import { canMoveCards, stageRequiresApproval } from "@/lib/onboarding";
 import { OnboardingStage } from "@prisma/client";
 
 interface RouteParams {

@@ -114,7 +114,7 @@ export default function NewRelationshipPage() {
     }
   };
 
-  const selectedType = TYPE_OPTIONS.find(t => t.value === formData.relationshipType);
+  const _selectedType = TYPE_OPTIONS.find(t => t.value === formData.relationshipType);
 
   // Filter out selected supervisor from supervisee options and vice versa
   const supervisorOptions = staff.filter(s => s.id !== formData.superviseeId);

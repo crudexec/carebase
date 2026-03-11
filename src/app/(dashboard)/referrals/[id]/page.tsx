@@ -13,7 +13,6 @@ import {
   Select,
   Label,
   Textarea,
-  Input,
   DateInput,
   Breadcrumb,
 } from "@/components/ui";
@@ -149,7 +148,7 @@ export default function ReferralDetailPage() {
       } else {
         setError(data.error || "Failed to fetch referral");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to load referral");
     } finally {
       setIsLoading(false);
@@ -178,7 +177,7 @@ export default function ReferralDetailPage() {
       } else {
         setError(data.error || "Failed to update status");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to update status");
     } finally {
       setIsUpdating(false);
@@ -204,7 +203,7 @@ export default function ReferralDetailPage() {
       } else {
         setError(data.error || "Failed to update follow-up");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to update follow-up");
     } finally {
       setIsUpdating(false);

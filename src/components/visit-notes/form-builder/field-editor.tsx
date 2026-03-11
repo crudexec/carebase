@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldType } from "@prisma/client";
-import { FormFieldData, FIELD_TYPE_LABELS, fieldTypeRequiresConfig } from "@/lib/visit-notes/types";
+import { FormFieldData, FIELD_TYPE_LABELS } from "@/lib/visit-notes/types";
 import { Input, Label, Textarea, Checkbox, Button } from "@/components/ui";
 import { X, Plus, Trash2 } from "lucide-react";
 import { FieldTypeIcon } from "./field-type-selector";

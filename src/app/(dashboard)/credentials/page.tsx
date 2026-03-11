@@ -25,14 +25,12 @@ import {
   AlertTriangle,
   ChevronUp,
   ChevronDown,
-  Calendar,
   User,
   FileText,
   Clock,
   CheckCircle,
   XCircle,
   Settings,
-  Upload,
   Trash2,
   Bell,
 } from "lucide-react";
@@ -208,7 +206,7 @@ export default function CredentialsPage() {
   });
 
   // File upload state
-  const [documentFile, setDocumentFile] = React.useState<File | null>(null);
+  const [_documentFile, setDocumentFile] = React.useState<File | null>(null);
   const [uploadedDocumentUrls, setUploadedDocumentUrls] = React.useState<string[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState<string | null>(null);

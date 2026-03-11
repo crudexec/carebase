@@ -3,14 +3,14 @@
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
-import { FormTemplateData, FormTemplateDetail } from "@/lib/visit-notes/types";
+import { FormTemplateData } from "@/lib/visit-notes/types";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
 import { ArrowLeft, Save, Eye, Power, PowerOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function EditTemplatePage() {
-  const router = useRouter();
+  const _router = useRouter();
   const params = useParams();
   const templateId = params.id as string;
 

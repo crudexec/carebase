@@ -1,0 +1,3770 @@
+[
+  {
+    "goalArea": "Improving Compliance",
+    "targetSkills": [
+      {
+        "targetSkill": "Task Engagement",
+        "shortTermObjectives": [
+          {
+            "sto": "Attend to an activity from 5 to 20 minutes",
+            "taskAnalysis": [
+              "·Present schedule to technician",
+              "·Point to activity of choice on the schedule",
+              "·Engage in activity for 5 minutes",
+              "·Engage in activity for 10 minutes",
+              "·Engage in activity for 15 minutes",
+              "·Engage in activity for 20 minutes"
+            ]
+          },
+          {
+            "sto": "Attend to the activity",
+            "taskAnalysis": [
+              "·Point to each picture icon on visual schedule",
+              "·Choose desired leisure activity",
+              "·Choose desired reward (i.e. computer, iPod, walking break, e.t.c)",
+              "·Place picture of desired reward on token board",
+              "·Engage in activity for 10 minutes",
+              "·Engage in activity for 15 minutes",
+              "·Engage in activity for 20 minutes",
+              "·Engage in activity for 25 minutes",
+              "·Engage in activity for 30 minutes"
+            ]
+          },
+          {
+            "sto": "Stay on task",
+            "taskAnalysis": [
+              "·Engage in activity or routine with less than 5 disruptions or distractions during activity",
+              "·Engage in activity or routine with less than 3 disruptions or distractions during activity",
+              "·Engage in activity or routine with 1 or less disruptions or distractions during activity"
+            ]
+          },
+          {
+            "sto": "Maintain Engagement",
+            "taskAnalysis": [
+              "·Initiate Requests",
+              "·Respond when presented with a task or direction",
+              "·Follow directions",
+              "·Demonstrate joint attention to a routine or structured task",
+              "·Use assigned materials appropriately",
+              "·Stay on a task for a 5 minute period of time with break",
+              "·Stay on a task for a 10 minute period of time with break",
+              "·Stay on a task for a 15 minute period of time with break",
+              "·Stay on a task for a 20 minute period of time with break"
+            ]
+          },
+          {
+            "sto": "Participate in online learning",
+            "taskAnalysis": [
+              "·Follow and stay on schedule",
+              "·Attend session on time",
+              "·Stay attentive during the session",
+              "·Wait one's turn",
+              "·Participate throughout the session"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self Regulation",
+        "shortTermObjectives": [
+          {
+            "sto": "Follow schedule and transition between tasks",
+            "taskAnalysis": [
+              "·Present schedule to technician",
+              "·Point to each picture icon",
+              "·Make transitional statements/gestures when activity is complete",
+              "·Transition to the next activity without resistance",
+              "·Review schedule with technician"
+            ]
+          },
+          {
+            "sto": "Follow picture schedule",
+            "taskAnalysis": [
+              "·Point to each picture icon on schedule",
+              "·Point to next activity when transitioning into a new activity",
+              "·Transition to next activity"
+            ]
+          },
+          {
+            "sto": "Follow schedule and transition between activities within a given time frame",
+            "taskAnalysis": [
+              "·Review schedule with technician",
+              "·Identify timeframe for an activity",
+              "·Set timer to reflect time frame of an activity",
+              "·Perform activity within the given time",
+              "·Transition to the next activity when timer goes off"
+            ]
+          },
+          {
+            "sto": "Follow through with schedules and appointments",
+            "taskAnalysis": [
+              "·Mark events and appointments on a calendar",
+              "·Predict upcoming events and appointments using the calendar",
+              "·Use terms that denote time to describe future appointments (i.e tomorrow, next week, e.t.c)",
+              "·Go willingly to scheduled events or appointments without target behaviours"
+            ]
+          },
+          {
+            "sto": "Accept changes in routine without resistance",
+            "taskAnalysis": [
+              "·Look at schedule",
+              "·Point to the change in routine",
+              "·Verbalize change in routine",
+              "·Transtion to change in routine without resistance",
+              "·Refrain from questioning the reason(s) for the change after giving an explanation"
+            ]
+          },
+          {
+            "sto": "Follow multi-step directions to complete a complex task",
+            "taskAnalysis": [
+              "·Gather necessary tools and materials",
+              "·Review steps and visual diagram",
+              "·Complete each step in the correct order",
+              "·Stay on task throughout the activity"
+            ]
+          },
+          {
+            "sto": "Perform evening routine",
+            "taskAnalysis": ["·Eat dinner", "·Drink medication", "·Take a bath"]
+          },
+          {
+            "sto": "Follow daily routine schedule checklist",
+            "taskAnalysis": [
+              "·Look at schedule",
+              "·Select an activity",
+              "·Complete activity selected",
+              "·Cross the activity off check list",
+              "·Transition to the next activity"
+            ]
+          },
+          {
+            "sto": "Will lower speaking volume to a conversational level when asked",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self Expression",
+        "shortTermObjectives": [
+          {
+            "sto": "State feeling or request for a break",
+            "taskAnalysis": [
+              "·Express feeling/emotion using tactile cards/PCS/speech-generating device",
+              "·Verbaize feeling/emotion",
+              "·Request for a break",
+              "·Identify appropriate response during a crisis",
+              "·Engage in a self-soothing strategy (deep breathing, couting, e.t.c)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Waiting Skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Wait in line",
+            "taskAnalysis": [
+              "·Select or pick out item(s) for purchase",
+              "·Locate cashier and checkout line",
+              "·Wait in line",
+              "·Walk up to available cashier",
+              "·Hand money to cashier",
+              "·Wait for item(s)",
+              "·Wait for receipt",
+              "·Wait for change"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Increasing Compliance",
+        "shortTermObjectives": [
+          {
+            "sto": "Comply with adult directives",
+            "taskAnalysis": [
+              "·Stop any current activity",
+              "·Refrain from saying \"No\"",
+              "·Comply with directive"
+            ]
+          },
+          {
+            "sto": "Comply with written directions",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Transition",
+        "shortTermObjectives": [
+          {
+            "sto": "Exit the car to transition to the designated activity/location",
+            "taskAnalysis": [
+              "·Look at visual schedule",
+              "·Point to the scheduled activity/location",
+              "·Go down from vehicle",
+              "·Transition to the scheduled activity/location"
+            ]
+          },
+          {
+            "sto": "Transition between activities or locations within a given time frame",
+            "taskAnalysis": [
+              "·Review the schedule with technician",
+              "·Transition to the next activity or location within the given time"
+            ]
+          },
+          {
+            "sto": "Tolerate crowds and crowded places in the community",
+            "taskAnalysis": [
+              "·Stay at event ot location for 5 minutes without behaviors",
+              "·Stay at event ot location for 10 minutes without behaviors",
+              "·Stay at event ot location for 15 minutes without behaviors"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Community Safety",
+    "targetSkills": [
+      {
+        "targetSkill": "Posession and understanding of personal and emergency contact information",
+        "shortTermObjectives": [
+          {
+            "sto": "Bring personal identification card to community",
+            "taskAnalysis": [
+              "·Locate ID card",
+              "·Verify name on ID card to technician",
+              "·Verify Home Address on ID card to technician",
+              "·Verify phone number on ID card to technician",
+              "·Wear ID on the body",
+              "·Point to personal information on ID upon request",
+              "·Keep ID card in possession at all times",
+              "·Present ID upon request"
+            ]
+          },
+          {
+            "sto": "Tolerate wearing personal ID card around neck",
+            "taskAnalysis": [
+              "·Get ID from a designated place",
+              "·Wear ID around neck",
+              "·Position ID correctly"
+            ]
+          },
+          {
+            "sto": "Present ID",
+            "taskAnalysis": [
+              "·Remove ID from neck",
+              "·Hand ID to other person",
+              "·Point to name on the ID card",
+              "·Point to informaiton on medical ID bracelet",
+              "·Verbalize information on medical ID bracelet",
+              "·Wear shoe ID name plate",
+              "·Point to informaiton on shoe ID"
+            ]
+          },
+          {
+            "sto": "Identify personal information",
+            "taskAnalysis": [
+              "·Identify name by pointing and/or verbalizing",
+              "·Identify home address by pointing and/or verbalizing",
+              "·Identify parent(s) name by pointing and/or verbalizing",
+              "·Identify parent(s) cell phone number(s) by pointing and/or verbalizing",
+              "·Write name",
+              "·Write address",
+              "·Write parent or guardian name",
+              "·Write emergency contact telephone number",
+              "·Use phone to call emergency contacts/parents",
+              "·Find contact or type in the number of emergency contact/parents on phone",
+              "·Memorize home address by verbalizing and/or writing it down",
+              "·Memorize parents' names by verbalizing and/or writing it down",
+              "·Memorize cell phone number(s) by verbalizing and/or writing it down"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Street Safety",
+        "shortTermObjectives": [
+          {
+            "sto": "Cross the street safely",
+            "taskAnalysis": [
+              "·Approach the curb",
+              "·Wait on the curb",
+              "·Look left",
+              "·Look right",
+              "·Look left again",
+              "·Step onto the road when it is safe",
+              "·Cross the road",
+              "·Step onto the curb"
+            ]
+          },
+          {
+            "sto": "Cross the street in accordance to traffic signals",
+            "taskAnalysis": [
+              "·Identify function of red traffic signal",
+              "·Identify function of yellow traffic signal at crosswalks and intersections",
+              "·Identify function of green traffic signal",
+              "·Checking for moving vehicles at driveways and parking lots",
+              "·Move according to traffic light at crosswalks",
+              "·Move according to traffic light at intersections",
+              "·Move according to pedestrian signal at crosswalks",
+              "·Move according to pedestrian signal at intersections"
+            ]
+          },
+          {
+            "sto": "Entering/exiting parked vehicle",
+            "taskAnalysis": [
+              "·Look front for oncoming pedestrian or moving car",
+              "·Look to the side for oncoming pedestrian or moving car",
+              "·Look back for oncoming pedestrian or moving car",
+              "·Open door when entering vehicles",
+              "·Open door when exiting vehicles",
+              "·Checking for moving vehicles at driveways",
+              "·Checking for moving vehicles at parking lots"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Stranger danger awareness in the community",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify family, friend, or stranger",
+            "taskAnalysis": [
+              "·Identify family",
+              "·Identify friend",
+              "·Identify stranger",
+              "·Identify community helpers"
+            ]
+          },
+          {
+            "sto": "Indicate a correct course of action when in danger",
+            "taskAnalysis": [
+              "·Point t pictures of dangerous situations/scenarios",
+              "·Model moving away",
+              "·Model going to a policeman",
+              "·Model shouting for help"
+            ]
+          },
+          {
+            "sto": "Identify a correct cause of action when presented with a lure by a stranger",
+            "taskAnalysis": [
+              "·Say \"No\" in a loud voice",
+              "·Quickly walk or run away from the stranger, towards a trusted adult",
+              "·Tell staff and/or another trusted adult about the stranger"
+            ]
+          },
+          {
+            "sto": "\nSelect the safe option when given two pictured responses to stranger encounter",
+            "taskAnalysis": [
+              "·Look at the two options",
+              "·Think about each option and whether it is safe",
+              "·Select the safest option"
+            ]
+          },
+          {
+            "sto": "Interact with strangers appropriately",
+            "taskAnalysis": [
+              "·Keep an appropriate distance",
+              "·Greet other person",
+              "·Make introductions",
+              "·Ask for their name",
+              "·Share pleasantries",
+              "·Wave good-bye",
+              "·Shake their hand",
+              "·End conversation appropriately",
+              "·Wave",
+              "·Walk away from stranger"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Travel Training",
+        "shortTermObjectives": [
+          {
+            "sto": "Provide address and directions to home",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Phone use in the community",
+        "shortTermObjectives": [
+          {
+            "sto": "Answer phone call",
+            "taskAnalysis": [
+              "·Carry phone and keep it in a safe place",
+              "·Pick up call when phone rings",
+              "·Engage in a conversation",
+              "·Terminate the phone call"
+            ]
+          },
+          {
+            "sto": "Make phone call",
+            "taskAnalysis": [
+              "·Carry cell phone and keep it in a safe place",
+              "·Pick up paper with phone number",
+              "·Pick up cell phone",
+              "·In the home screen, press phone icon and select contacts",
+              "·Type contact's name in the search bar",
+              "·Select contact's name and press the cellphone number",
+              "·In the Home Screen, press phone icon and select keypad/dial pad",
+              "·Dial numbers into phone",
+              "·Press the call button",
+              "·Put phone to ear and listen to the phone ringing",
+              "·When the person answers the phone, introduce self and engage in a conversation",
+              "·End the call by saying goodbye",
+              "·If no one answers, listen for the voicemail answering machine",
+              "·Once the voicemail beeps, say the following: your name, reason for calling, your phone number, and say have a nice day to end the message",
+              "·Press the end button to end the call"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Community Helper Awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify which community service to access (e.g. fire, hospital, police, ambulance) to address a fictional emergency situation",
+            "taskAnalysis": [
+              "·Read or listen to the fictional emergency situation",
+              "·Evaluate the nature of the emergency (i.e. is someone hurt, is there a threat, etc.)",
+              "·Identify which community helper service should be contacted (i.e. police fireman, hospital, etc.)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self Management",
+        "shortTermObjectives": [
+          {
+            "sto": "State name and address",
+            "taskAnalysis": [
+              "·Verbalize name using a complete sentence",
+              "·Verbalize address using a complete sentence"
+            ]
+          },
+          {
+            "sto": "Write/type personal information",
+            "taskAnalysis": [
+              "·Write/type name",
+              "·Write/type home address",
+              "·Write/type parent(s) name(s)",
+              "·Write/type parent(s) cell phone number(s)",
+              "·Write/type name(s) of medication",
+              "·Write/type dosage of medication",
+              "·Write/type administration times of medication",
+              "·Write/type function of medication"
+            ]
+          },
+          {
+            "sto": "Duplicate personal information (i.e name, address, birthday, phone number, etc) using number and letter tiles",
+            "taskAnalysis": [
+              "·Duplicate name using letter tiles",
+              "·Duplicate address using number and letter tiles",
+              "·Duplicate birthday using number and letter tiles",
+              "·Duplicate parent's name using letter tiles",
+              "·Duplicate contact number using number tiles"
+            ]
+          },
+          {
+            "sto": "Properly respond to real and fictional community safety situations",
+            "taskAnalysis": [
+              "·Identify where to get help in the community (eg. go to the police when lost)",
+              "·Correctly utilize road signs to navigate when lost (ex. locate signs for police station when lost and follow directional arrows)",
+              "·Communicate appropriate information to emergenct personnel (ex. Tell police officer that you are lost and give them your name and caregiver contact information)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reduce Elopement in the Community",
+        "shortTermObjectives": [
+          {
+            "sto": "Stay within appropriate proximity of caregiver without darting off",
+            "taskAnalysis": [
+              "·Hold the hand of accompanying caregiver or stay within 6 feet of the accompaying caregiver",
+              "·Communicate the want/need to caregiver when there is a desire to move to a certain object/area",
+              "·If given permission, walk calmly with caregiver to desired object/area"
+            ]
+          },
+          {
+            "sto": "Ask for permission before going to another area",
+            "taskAnalysis": [
+              "·Stay with an adult when prompted",
+              "·Indicate desire to use bathroom",
+              "·Indicate desire of location or object by verbalizing or pointing towards the direction of location or object",
+              "·Repeat steps 1 to 3 as needed"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Car Safety",
+        "shortTermObjectives": [
+          {
+            "sto": "Remain in seat during transportation",
+            "taskAnalysis": [
+              "·Buckle seat belt",
+              "·Remain in seat until car stops",
+              "·Unbuckle seat belt when instructed"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Locking/Unlocking Doors",
+        "shortTermObjectives": [
+          {
+            "sto": "Unlock door when requested by trusted adult(s)",
+            "taskAnalysis": [
+              "·Ask who is at the door",
+              "·Unlock door for trusted adult"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Bus Safety",
+        "shortTermObjectives": [
+          {
+            "sto": "Enter and exit bus safely",
+            "taskAnalysis": [
+              "·Wait quietly for bus to arrive",
+              "·Walk to bus and wait on the curb until directions are given",
+              "·Walk up to the bus steps when instructed",
+              "·Move to seat",
+              "·Fasten seat belt",
+              "·Remain in seat until bus stops",
+              "·Unbuckle seat belt when instructed",
+              "·Walk down the bus steps when instructed",
+              "·Wait on the curb until directions are given"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Money Management",
+    "targetSkills": [
+      {
+        "targetSkill": "Purchasing",
+        "shortTermObjectives": [
+          {
+            "sto": "Hand correct amount of money to cashier",
+            "taskAnalysis": [
+              "·Select item(s) to purchase",
+              "·Locate item(s) to purchase",
+              "·Identify price of item(s)",
+              "·Use calculator to compute total when purchasing multiple items",
+              "·Locate cashier",
+              "·Locate checkout line",
+              "·Wait in line",
+              "·Walk up to available cahsier",
+              "·Hand appropriate amount to cashier",
+              "·Wait for receipt and change (if applicable)"
+            ]
+          },
+          {
+            "sto": "Complete the fundamental steps of a purchase",
+            "taskAnalysis": [
+              "·Select an item to purchase",
+              "·Identify where the check-out line is and bring item to the line",
+              "·Stand in line without behaviors",
+              "·Hand item to clerk or place conveyor belt",
+              "·Hand method of payment to clerk (i.e. cash, credit card, etc)",
+              "·Take items in bag",
+              "·Thank clerk"
+            ]
+          },
+          {
+            "sto": "Purchase items from a list",
+            "taskAnalysis": [
+              "·Make a list of items to purchase",
+              "·Go to the appropriate store",
+              "·Get items on the list",
+              "·Pay for items"
+            ]
+          },
+          {
+            "sto": "Make purchase(s) based on a budget",
+            "taskAnalysis": [
+              "·Set a spending limit based on expected income or earnings",
+              "·Identify price of item(s)",
+              "·Select item(s) to purchase that are less than or equal to yur budget",
+              "·Use calculator to compute total when purchasing multiple items",
+              "·Hand appropriate amount to cashier",
+              "·Wait for receipt and change (if applicable)"
+            ]
+          },
+          {
+            "sto": "Pay clerk using a debit card",
+            "taskAnalysis": [
+              "·Insert card in chip reader or swipe card",
+              "·Select debit or credit",
+              "·Enter PIN",
+              "·Approve amount",
+              "·Wait for signal to remove card"
+            ]
+          },
+          {
+            "sto": "Engage in the process of grocery shopping",
+            "taskAnalysis": [
+              "·Create a list of items needed",
+              "·Choose a basket or card depending on amount of grocery items needed upon arrival at the store",
+              "·Access the correct sections of the store for items on the list",
+              "·Select or measure items as necessary",
+              "·Bring items to the cashier",
+              "·Hand appropriate amount of money to the cashier",
+              "·Bag items as necessary in appropriate bags (i.e. cold items together, non-food items together, etc)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Counting change",
+        "shortTermObjectives": [
+          {
+            "sto": "Calculate change",
+            "taskAnalysis": [
+              "·Calculate the amount of change he/she should receive using a calculator",
+              "·Wait for receipt and change (if applicable)",
+              "·Take purchases"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Money identification",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify money demominations",
+            "taskAnalysis": [
+              "·Identify penny",
+              "·Identify nickel",
+              "·Identify dime",
+              "·Identify 1 dollar bill",
+              "·Identify 5 dollar bill",
+              "·Identify quarter",
+              "·Identify 10 dollar bill",
+              "·Identify 20 dollar bill"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Budgeting",
+        "shortTermObjectives": [
+          {
+            "sto": "Set and follow a weekly budget",
+            "taskAnalysis": [
+              "·Set a spending limit based on expected income or earnings for the week",
+              "·Select items to purchase that are less than or equal to the weekly allowance",
+              "·Explain the need for a budget",
+              "·Define income and expenses and give examples of each",
+              "·Define needs and wants and give examples of each",
+              "·Record expenses on a spending diary or expense tracking sheet"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Money identification and counting change",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify money demominations and calculate change",
+            "taskAnalysis": [
+              "·Identify coins (i.e.penny, nickel, and dime)",
+              "·Identify dollar (i.e. 1 dollar and 5 dollars)",
+              "·Calculate the amount of change",
+              "·Wait for a receipt or change (when applicable)",
+              "·Take purchases"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Banking",
+        "shortTermObjectives": [
+          {
+            "sto": "Withdraw money from the ATM",
+            "taskAnalysis": [
+              "·Go to the ATM machine",
+              "·Take out debt or credit card",
+              "·Follow steps to withdraw money (will vary from bank to bank)",
+              "·Remove card from the machine",
+              "·Put card back in wallet",
+              "·Remove cash from machine and place in wallet"
+            ]
+          },
+          {
+            "sto": "Manage money via online bank account",
+            "taskAnalysis": [
+              "·Access bank website",
+              "·Log in to bank account with provided username and password",
+              "·Check available money",
+              "·Note down expenses",
+              "·Categorize expenses (i.e. food, entertainment, recreation, etc.)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Identifying quantity",
+        "shortTermObjectives": [
+          {
+            "sto": "Correctly identify number of items in a picture",
+            "taskAnalysis": [
+              "·Look at picture",
+              "·Count items in the picture",
+              "·Correctly identify the number that corresponds with the amount pictured"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Physical Health",
+    "targetSkills": [
+      {
+        "targetSkill": "Weight management",
+        "shortTermObjectives": [
+          {
+            "sto": "Participate in a physical activity",
+            "taskAnalysis": [
+              "·Choose a desired physical activity",
+              "·Engage in physical activity"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of illness",
+        "shortTermObjectives": [
+          {
+            "sto": "Wear a mask",
+            "taskAnalysis": [
+              "·Put on mask for 5 minutes",
+              "·Put on mask for 15 minutes",
+              "·Put on mask for 25 minutes",
+              "·Put on mask for 30 minutes or longer"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Improving balance",
+        "shortTermObjectives": [
+          {
+            "sto": "Use exercise ball",
+            "taskAnalysis": [
+              "·Take out exercise ball",
+              "·Find area to use exercise ball",
+              "·Engage in doctor recommended excercise(s) using exercise ball for 3 minutes",
+              "·Engage in doctor recommended excercise(s) using exercise ball for 6 minutes",
+              "·Engage in doctor recommended excercise(s) using exercise ball for 9 minutes",
+              "·Engage in doctor recommended excercise(s) using exercise ball for 12 minutes"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Exercise",
+        "shortTermObjectives": [
+          {
+            "sto": "Walk to the bus stop",
+            "taskAnalysis": [
+              "·Choose appropriate clothing for walking for weather conditions",
+              "·Walk prescribed distance with head up",
+              "·Walk using appropriate posture, arm swing, and stride",
+              "·Walk safely on the sidewalk",
+              "·Cross the street safely",
+              "·Walk continuously",
+              "·Use proper breathing techniques"
+            ]
+          },
+          {
+            "sto": "Perform a variety of exercises",
+            "taskAnalysis": [
+              "·Walk on a treadmill",
+              "·Perform an alternative physical activity",
+              "·Participate in sport activities",
+              "·Participate in walking and/or running",
+              "·Participate in riding a bike"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Aggressive Behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Self-Soothe",
+        "shortTermObjectives": [
+          {
+            "sto": "Perform self-regulation techniques",
+            "taskAnalysis": [
+              "·Communicate feeling/emotion",
+              "·Request for a break",
+              "·Take deep breaths",
+              "·Count 1-10",
+              "·Identify appropriate response during a crisis",
+              "·Engage in other self-soothing strategy not listed"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reduce spitting behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Eliminate inappropriate spitting behavior",
+            "taskAnalysis": [
+              "·Refrain from inappropriate spitting",
+              "·Express dislike or displeasure by communicating with gesture, PEC, verbalization, ot communication device rather than spitting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Community Integration",
+    "targetSkills": [
+      {
+        "targetSkill": "Pre-vocational knowledge",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify at least 1-3 entry level jobs",
+            "taskAnalysis": [
+              "·Research the entry level positions",
+              "·Identify the various job opportunities",
+              "·Identify the entry level positions of highest interest to him",
+              "·Describe skills he/she would need to demonstrate for each of his chosen positions"
+            ]
+          },
+          {
+            "sto": "Sort things according to a given model",
+            "taskAnalysis": [
+              "·Sort a set of six items according to two identiying characteristics (i.e. shape, colour, type, etc)",
+              "·Indicate items according to a given protocol (i.e. what goes in the kitchen, the bedroom, the yard, etc.)",
+              "·Create item sets from a group of objects given a specific protocol (i.e. given a boxed or bagged model set of one paper plate and one paper cup, create three identical sets)",
+              "·Use letter and number tiles to duplicate given site words, name, numbers, etc"
+            ]
+          },
+          {
+            "sto": "Answer interview questions appropriately",
+            "taskAnalysis": [
+              "·State full name, when asked",
+              "·State age, when asked",
+              "·State address, when asked",
+              "·State phone number, when asked",
+              "·State school attended, when asked",
+              "·Name 1-3 job titles, when asked",
+              "·Discuss experience as it relates to job",
+              "·Identify personal strengths and skills"
+            ]
+          },
+          {
+            "sto": "Perform clerical duties",
+            "taskAnalysis": [
+              "·Listen to verbal instructions",
+              "·Read written instructions",
+              "·Follow directions",
+              "·Perform each task/step of verbal/written directions",
+              "·Double check work",
+              "·Make necessary corrections",
+              "·Complete all tasks/steps given",
+              "·Enter data in a computer",
+              "·File records and documents",
+              "·Make copies on copier",
+              "·Shred records and documents",
+              "·Type a document from a model"
+            ]
+          },
+          {
+            "sto": "Operate a computer to perform a variety ",
+            "taskAnalysis": [
+              "·Operate on/off switch",
+              "·Insert/remove disk, CD, or USB",
+              "·Open programs",
+              "·Open websites",
+              "·Save information to disk, hard drive or desktop",
+              "·Print hard copy",
+              "·Use safety rules for operating equipment",
+              "·Follow correct formatting to create an email",
+              "·Create an email",
+              "·Respond to email",
+              "·Chat with family, peers, staff",
+              "·Complete data entry activities",
+              "·Type words on the keyboard",
+              "·Launch a web browser",
+              "·Login to email with username and password",
+              "·Check email from mom",
+              "·Respond to mom's email",
+              "·Complete a fillable form on the computer",
+              "·Save completed form on the computer"
+            ]
+          },
+          {
+            "sto": "Acquire basic pre-vocational skills",
+            "taskAnalysis": [
+              "·Fold and hang clothes according to sizes for display",
+              "·Shred papers using a shredding machine",
+              "·Assemble items such as pizza boxes",
+              "·Collate papers to make a set",
+              "·File papers and documents",
+              "·Stock and arrange items as shelves",
+              "·Sort items according to categories"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Mobility",
+        "shortTermObjectives": [
+          {
+            "sto": "Travel by foot",
+            "taskAnalysis": ["·Present trip plan(s) to tech"]
+          },
+          {
+            "sto": "Utilize walker during community integratio activities",
+            "taskAnalysis": ["Nil"]
+          },
+          {
+            "sto": "Get up from a wheelchair and utilize other seating in the environment such as a park bench or seating at a bowling alley, etc.",
+            "taskAnalysis": [
+              "·Locate alternative seating in the environment such as a park bench, picnic table, etc",
+              "·Put wheelchair in lock position",
+              "·Stand up out of wheelchair",
+              "·Steady self by holding onto the wheelchair, another person or solid object",
+              "·Seat self on the alternative seating option"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Community participation",
+        "shortTermObjectives": [
+          {
+            "sto": "Participate in a new activity with minimum resistance",
+            "taskAnalysis": [
+              "·Listen to the activity suggestions offered",
+              "·Make a choice of the activity",
+              "·Transition to the activity without resistance",
+              "·Participate in the activity without resistance"
+            ]
+          },
+          {
+            "sto": "Participate in a regularly scheduled group activity",
+            "taskAnalysis": [
+              "·Follow the directions involved with the activity",
+              "·participate at correct times",
+              "·Remain seated and/or quiet when it is directed"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Use of public participation",
+        "shortTermObjectives": [
+          {
+            "sto": "Travel by bus",
+            "taskAnalysis": [
+              "·Walk to bus stop",
+              "·Prepare money for fare",
+              "·Board transport",
+              "·Sit in unoccupied seat",
+              "·Remain seated",
+              "·Pull on wire to request to get off",
+              "·Get off the bus"
+            ]
+          },
+          {
+            "sto": "Travel by train",
+            "taskAnalysis": [
+              "·Plan the route",
+              "·Find the station",
+              "·Purchase the correct fare",
+              "·Pass through the turnstile",
+              "·Proceed to the nearest escalator that coordinates with the correct track line (i.e. green line, yellow line, etc.)",
+              "·Stand on the correct platform for the direction in which you want to go (i.e. northbound, southbouth, eastbound, or westbound)",
+              "·When the train arrived, wait for any passengers to exit",
+              "·Board the train",
+              "·Find a seat or hold onto a safety bar",
+              "·Exit the train when it comes to a complete stop at the correct destination",
+              "·Exit the station"
+            ]
+          },
+          {
+            "sto": "Travel by door-to-door transportation services",
+            "taskAnalysis": [
+              "·Choose a destination",
+              "·Schedule an appointment for the trip",
+              "·Enter vehicle safely",
+              "·Put seat belt on",
+              "·Exit vehicle upon arriving at destination"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Use of community resources",
+        "shortTermObjectives": [
+          {
+            "sto": "Enter/exit a revolving door",
+            "taskAnalysis": [
+              "·Approach revolving door",
+              "·Wait for the next vacant space",
+              "·Enter empty space",
+              "·Move with space",
+              "·Stay out of the space onto the open door"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Job-seeking skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Prepare for a job intervew",
+            "taskAnalysis": [
+              "·Create resume",
+              "·Practice responding to interview questions"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Job maintenance",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Participation in community",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Recreational activities",
+        "shortTermObjectives": [
+          {
+            "sto": "Express creativity and master new skills",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Trip planning",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Eating out",
+        "shortTermObjectives": [
+          {
+            "sto": "Select meal preferences via sign, PCS or communication devices while at a restaurant",
+            "taskAnalysis": [
+              "·Look at menu at fast food, sit down, or cafeteria style restaurant",
+              "·Make selections utilizing an appropriate mode of communication"
+            ]
+          },
+          {
+            "sto": "Eat a meal at a restaurant or cafeteria",
+            "taskAnalysis": [
+              "·When food arrives, unpack it if necessary",
+              "·Eat at least 50% of the meal at the restaurant or cafeteria location"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Participation and task engagement",
+        "shortTermObjectives": [
+          {
+            "sto": "Participate in recreational activities available in the community",
+            "taskAnalysis": [
+              "·Identify exercise options (e.g. going for a walk, riding an exercise bike, etc.)",
+              "·Pick which activity to engage in",
+              "·Identify the activity",
+              "·Obtain any necessary materials",
+              "·Familiarize with the location",
+              "·Warm up for 5 minutes by engaging in a light physical activity",
+              "·Engage in the activity for 15 minutes",
+              "·Perform recommended exercise on equipment",
+              "·Follow directions during community outings",
+              "·Engage in activity for at least 15 minutes",
+              "·Engage in activity for at least 30 minutes",
+              "·Refrain from asking to leave the activity",
+              "·Engage in activities during outings to the mall and movies",
+              "·Engage in activities during visits to pools, parks, and recreation centers",
+              "·Engage in activities during visits to skating rinks, bowling alleys, trampoline parks",
+              "·Engage in activities during visits to skating rinks, bowling alleys, trampoline parks",
+              "·Engage in activities during family social events",
+              "·Engage in hobbies: riding bikes, singing, dancing, twirling"
+            ]
+          },
+          {
+            "sto": "Perform office tasks",
+            "taskAnalysis": [
+              "·File paper by dates",
+              "·Practice typing text on computer",
+              "·Shredding paper w/shredder",
+              "·Deliver paper to other staff"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Use of public bathroom",
+        "shortTermObjectives": [
+          {
+            "sto": "Utilize public bathroom facilities",
+            "taskAnalysis": [
+              "·Recognize male/female symbols",
+              "·Use bathroom stall",
+              "·Wash hands with soap",
+              "·Dry hands with paper towel/dryer"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Home Safety",
+    "targetSkills": [
+      {
+        "targetSkill": "Knowledge of personal and emergency contact information",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Stranger Danger Awareness in the Home",
+        "shortTermObjectives": [
+          {
+            "sto": "Open house door for unknown individuals (i.e. family members, friends, trusted adults)",
+            "taskAnalysis": [
+              "·Stop in front of the door",
+              "·Look through the peephole",
+              "·Open the door for known individual(s) (i.e. family, friends, trusted adults)",
+              "·Keep the door closed to strangers",
+              "·Tell parents or a trusted adult when stranger does not have"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Recognizing Temperature",
+        "shortTermObjectives": [
+          {
+            "sto": "Discriminate hot versus cold",
+            "taskAnalysis": [
+              "·Identify if item(s) is/are hot or cold given picture",
+              "·Identify if item(s) is/are hot or cold given real-life object",
+              "·Moves away from hot surface/situation",
+              "·Protects self from cold temperature"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Evacuate safely during an emergency",
+        "shortTermObjectives": [
+          {
+            "sto": "Exit the home within 3 minutes to a designated location",
+            "taskAnalysis": [
+              "·Stop activity at the sound of fire alarm",
+              "·Walk to the nearest exit",
+              "·Walk out of the nearest exit",
+              "·Walk to designated location"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Maintaining privacy",
+        "shortTermObjectives": [
+          {
+            "sto": "Knock on door and ask first before entering space",
+            "taskAnalysis": [
+              "·Approach door",
+              "·Knock on door",
+              "·Ask to enter space",
+              "·Wait for response",
+              "·Respond accordingly"
+            ]
+          },
+          {
+            "sto": "Close bathroom door before pulling bottoms down",
+            "taskAnalysis": [
+              "·Knock on bathroom door to check if it is occupied",
+              "·Wait if occupied",
+              "·Open bathroom door",
+              "·Enter bathroom",
+              "·Turn on bathroom light",
+              "·Close bathroom door",
+              "·Lock bathroom door",
+              "·Use bathroom"
+            ]
+          },
+          {
+            "sto": "Identifying body parts",
+            "taskAnalysis": [
+              "·Identify head",
+              "·Identify arms",
+              "·Identify legs",
+              "·Identify feet",
+              "·Identify buttocks",
+              "·Identify chest",
+              "·Identify private part",
+              "·Identify face",
+              "·Identify ears, eyes, nose",
+              "·Identify hair"
+            ]
+          },
+          {
+            "sto": "Identify body part as public",
+            "taskAnalysis": [
+              "·Point to picture of buttocks",
+              "·Draw a shape (square/circle/rectangle) around it",
+              "·Point to picture of chest",
+              "·Draw a shape (square/circle/rectangle)",
+              "·Point to picture of private part (with clothes)",
+              "·Draw a shape (square/circle) around it"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Home security",
+        "shortTermObjectives": [
+          {
+            "sto": "Use house key",
+            "taskAnalysis": [
+              "·Locate key",
+              "·Insert key into lock",
+              "·Turn key to the left to unlock",
+              "·Turn the door knob to open the door",
+              "·Turn key to the right",
+              "·Remove key from the lock"
+            ]
+          },
+          {
+            "sto": "Lock front door from inside",
+            "taskAnalysis": [
+              "·Close the door",
+              "·Turn top lock to the right",
+              "·Turn the bottom lock to the right",
+              "·Pick up chain latch",
+              "·Place end of chain latch inside circle",
+              "·Slide chain latch to the right"
+            ]
+          },
+          {
+            "sto": "Close the door appropriately",
+            "taskAnalysis": [
+              "·Open door",
+              "·Close door gently",
+              "·Keep door unlocked"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Awareness of electronic hazards",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Phone use for emergency calls",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate phone use for emergency situations",
+            "taskAnalysis": [
+              "·Dial parent's contact number",
+              "·Dial 911 for emergency assistance"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Home safety awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate awareness of potential dangers and hazards in the home",
+            "taskAnalysis": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Health Care",
+    "targetSkills": [
+      {
+        "targetSkill": "Medication management",
+        "shortTermObjectives": [
+          {
+            "sto": "Take medication as prescribed",
+            "taskAnalysis": [
+              "·Review medication instructions upon receipt",
+              "·Store medication in a safe and temperature appropriate location",
+              "·When it is time to take the medication, retrieve the medication",
+              "·Open the medication carefully",
+              "·Remove the appropriate amount from the package (ex. 2 pills or measure liquid)",
+              "·Take medication as prescribed (ex. by mouth, with a meal, etc.)",
+              "·Replace cap on medication",
+              "·Return medication to proper storage area",
+              "·Name medication"
+            ]
+          },
+          {
+            "sto": "Use medical equipment",
+            "taskAnalysis": [
+              "·Remove cap of inhaler",
+              "·Hold the inhaler upright",
+              "·Shake the inhaler",
+              "·Tilt head back slightly while breathing out",
+              "·Use a spacer if recommended",
+              "·Press down the inhaler to release the medicine",
+              "·Breathe in slowly for 3 to 5 seconds",
+              "·Hold your breath for 10 seconds",
+              "·Repeat puffs as directed"
+            ]
+          },
+          {
+            "sto": "Manage medication",
+            "taskAnalysis": [
+              "·Review prescription once received",
+              "·Identify the name of the medication(s) / brand",
+              "·Identify the dosage of the medication(s)",
+              "·Identify the day/times to take the medication(s)",
+              "·Fill a weekly pill box",
+              "·Take medication(s) as prescribed",
+              "·Track the number of remaining pills",
+              "·Call the pharmacy to order refill of medication(s)",
+              "·Use the pharmacy's app to order refill of medication(s)",
+              "·Pick up refill of medication(s)",
+              "·Inform parent when medicine count/amount is low"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Maintain healthy sleeping behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Sleeping independently",
+            "taskAnalysis": [
+              "·Prepare for bed",
+              "·Engage in sensory activity (i.e. read story, listen to music, gentle massage)",
+              "·Get into bed",
+              "·Stay in bed throughout the night"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Health awareness",
+        "shortTermObjectives": []
+      },
+      {
+        "targetSkill": "Nutrition",
+        "shortTermObjectives": [
+          {
+            "sto": "Make healthy food choices",
+            "taskAnalysis": [
+              "·Identify/ Name basic food groups",
+              "·Identify to which food group a given food item belongs",
+              "·Identify healthy and unhealthy food items"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Sensory Integration",
+    "targetSkills": [
+      {
+        "targetSkill": "Motor skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Manipulate objects",
+            "taskAnalysis": [
+              "·Transfer an object from one hand to the other",
+              "·Open and close a jar or a container",
+              "·Use writing and art tools",
+              "·Practice shoe tying",
+              "·Practice lacing on a lacing board",
+              "·Turn pages",
+              "·Use scissors",
+              "·Use computer or ipad",
+              "·Manipulate clothespin",
+              "·Put and remove pegs on a peg board",
+              "·Hold or grasp object in left hand"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Self-Injurious Behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce various self-injurious behaviors",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of self-injurious behaviours",
+            "taskAnalysis": [
+              "·Wear helmet",
+              "·Display 0 incident of head banging",
+              "·Display 0 incident of hitting other parts of the body with knee",
+              "·Display 0 incident of body slamming",
+              "·Display 0 incident of self-biting",
+              "·Display 0 incident of self-kicking and heel to shin SIB",
+              "·Display 0 incident of skin-directed SIB (scratching or pinching)",
+              "·Display 0 incident of hand to head SIB",
+              "·Display 0 incident of hand to body SIB"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Destructive Behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce inappropriate cutting of items",
+        "shortTermObjectives": [
+          {
+            "sto": "Refrain from inappropriate cutting and cut only appropriate items provided by a responsible adult",
+            "taskAnalysis": [
+              "·Refrain from cutting inappropriate items",
+              "·Ask a responsible adult for something to cut when having the urge to cut items",
+              "·Cut appropriate items provided by a responsible adult to satisfy the urge to cut with scissors"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Pica",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce inappropriate cutting of items",
+        "shortTermObjectives": []
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing Elopment",
+    "targetSkills": [
+      {
+        "targetSkill": "Reducing elopement in the community",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of elopement",
+            "taskAnalysis": [
+              "·Point to each picture icon on schedule",
+              "·Point to next activity when transitioning to new activity",
+              "·Transition to next activity by following the adult(s)",
+              "·If it is appropriate to hold an adult's hand, do so, if not stay within 6 feet of a responsible adult",
+              "·When there is a desire to elope or dart away, communicate the want/need to technician or caregiver",
+              "·If given permission, walk calmly with technician or caregiver to desired object/area",
+              "·Stay within 6 feet of an adult",
+              "·If not given permission, accepting no or an alternative",
+              "·Read signs and identify areas that he is not allowed to enter"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Grooming",
+    "targetSkills": [
+      {
+        "targetSkill": "Shoe Tying",
+        "shortTermObjectives": [
+          {
+            "sto": "Tie shoes",
+            "taskAnalysis": [
+              "·Put shoes on feet",
+              "·Put laces to tighten",
+              "·Pick up first lace",
+              "·Cross lace to opposite side",
+              "·Pick up second lace",
+              "·Cross over laces creating an X",
+              "·Pick up first and second lace in separate hands",
+              "·Pull each lace in opposite directions",
+              "·Form loops with both laces",
+              "·Cross loops to form an X",
+              "·Push right loop under X and pull it out",
+              "·Pull right loop out",
+              "·Pull each loop in opposite directions until right"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Dressing",
+        "shortTermObjectives": [
+          {
+            "sto": "Dress self",
+            "taskAnalysis": [
+              "·Choose what to wear",
+              "·Identify front and back",
+              "·Put arms through the sleeves",
+              "·Pull arms out of the sleeves",
+              "·Pull shirt over head",
+              "·Button/zip shirt",
+              "·Hold pants by waist with proper alignment (front, back)",
+              "·Put foot into correct hole",
+              "·Pull pants up so foot is out at bottom",
+              "·Put second foot in",
+              "·Pull all the way up to the waist",
+              "·Button/zip pants",
+              "·Find the zipper pull",
+              "·Hold the zipper pull between thumb and forefinger",
+              "·Use other hand to pull down on pant front",
+              "·Pull up on a zipper until it reaches the top",
+              "·Use both hands to button or snap",
+              "·Put socks on",
+              "·Put on bra",
+              "·Remove bra",
+              "·Adjust bra straps"
+            ]
+          },
+          {
+            "sto": "Undress self",
+            "taskAnalysis": [
+              "·Grasp bottom sides of shirt",
+              "·Pull upward and off over head",
+              "·Unbutton/unzip pants (if applicable)",
+              "·Push down pants",
+              "·Pull cuffs or bottoms down over feet",
+              "·Remove pants completely"
+            ]
+          },
+          {
+            "sto": "Participate in undressing and dressing routines before and after bathing",
+            "taskAnalysis": [
+              "·Identify when it is appropriate to undress",
+              "·Grasp bottom sides of shirt",
+              "·Pull upward and off over head",
+              "·Unbutton/unzip pants (if applicable)",
+              "·Push down pants",
+              "·Pull cuffs or bottoms down over feet",
+              "·Remove pants completely",
+              "·Identify when it is appropriate to dress",
+              "·Identify front and back",
+              "·Put arms through the sleeves",
+              "·Pull arms out of sleeves",
+              "·Pull shirt over head",
+              "·Button/zip shirt",
+              "·Hold pants by waist with proper alignment (front, back)",
+              "·Put foot into correct hole",
+              "·Pull pants up so foot is out at the bottom",
+              "·Put second foot in",
+              "·Pull all the way up to the waist",
+              "·Button zip/pants"
+            ]
+          },
+          {
+            "sto": "Tie sash and shoe laces using a basic knot",
+            "taskAnalysis": [
+              "·Pick up first lace",
+              "·Cross lace to opposite side",
+              "·Pick up second lace",
+              "·Cross over first creating an X",
+              "·Push one lace under X",
+              "·Pull out lace",
+              "·Pull each lace in opposite directions until light"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Shaving",
+        "shortTermObjectives": [
+          {
+            "sto": "Shave facial hair",
+            "taskAnalysis": [
+              "·Take off safety lid",
+              "·Turn on razor (if using an )",
+              "·Shave left cheek",
+              "·Shave right cheek",
+              "·Shave under nose",
+              "·Shave chin",
+              "·Shave neck",
+              "·Check mirror for missed spots",
+              "·Shave missed spots",
+              "·Turn razor off (if using an electric razor)",
+              "·Open razor and blow whiskers in basket",
+              "·Clean razor and brush",
+              "·Put safety lid back on"
+            ]
+          },
+          {
+            "sto": "Shave body hair",
+            "taskAnalysis": [
+              "·Shave under arms",
+              "·Shave legs",
+              "·Shave other body parts"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Nail Care",
+        "shortTermObjectives": [
+          {
+            "sto": "Clip nails using a nail clipper",
+            "taskAnalysis": [
+              "·Take nail clippers",
+              "·Cut finger nails on left hand",
+              "·Cut finger nails on right hand",
+              "·Cut toe nails on left foot",
+              "·Cut toe nails on right foot",
+              "·Throw nail clippings away"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Combing Hair",
+        "shortTermObjectives": [
+          {
+            "sto": "Comb hair with hairbrush",
+            "taskAnalysis": [
+              "·Hold brush with bristles facing towards self",
+              "·Look at self in mirror",
+              "·Hold brush above head",
+              "·Comb hair on the right side of head",
+              "·Hold brush with the other hand",
+              "·Hold brush above head",
+              "·Comb hair on the left side of head",
+              "·Repeat steps 3 to 7 if applicable",
+              "·Put brush away"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Selecting & coordinating appropriate clothing",
+        "shortTermObjectives": [
+          {
+            "sto": "Choose the appropriate clothing to wear in common areas of the house (living room, kitchen, dining room, etc)",
+            "taskAnalysis": [
+              "·Choose a top from a set of two clothes",
+              "·Choose a bottom from a set of two clothes",
+              "·Choose an appropriate sensory if needed (scarf, bonnet, etc)",
+              "·Put on the top",
+              "·Put on the bottom"
+            ]
+          },
+          {
+            "sto": "Choose a complete attire to wear",
+            "taskAnalysis": [
+              "·Select clothes that are clean and mended",
+              "·Select clothes that match/coordinate in color or design",
+              "·Select clothes that are appropriate for the occasion or activity",
+              "·Select clothes based on personal tastes",
+              "·Check whether and select clothes appropriate for the weather",
+              "·Select a new piece of clothing different from usual choices",
+              "·Select clothes appropriate to the weather"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Grooming Routine",
+        "shortTermObjectives": [
+          {
+            "sto": "Perform grooming activities",
+            "taskAnalysis": [
+              "·Put deodorant",
+              "·Brush hair",
+              "·Clean ears",
+              "·Trim nails",
+              "·Apply lotion/oil on arms and legs",
+              "·Brush teeth",
+              "·Wash face",
+              "·Take a bath",
+              "·Shave beard",
+              "·Trim beard"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Hygiene",
+    "targetSkills": [
+      {
+        "targetSkill": "Bathing",
+        "shortTermObjectives": [
+          {
+            "sto": "Bathe self in bath",
+            "taskAnalysis": [
+              "·Turn on water",
+              "·Gauge right performance",
+              "·Get in bath",
+              "·Wet hair and body",
+              "·Put small amount of shampoo on palm",
+              "·Sud up hair",
+              "·Rinse shampoo",
+              "·Scrub entire body using soap and wash cloth",
+              "·Rinse entire body",
+              "·Drain bath water",
+              "·Dry head and body with towel",
+              "·Pick up wash cloth",
+              "·Lather soap onto wash cloth",
+              "·Scrub upper body",
+              "·Scrub lower body",
+              "·Scrub private parts",
+              "·Wash upper body",
+              "·Wash lower body",
+              "·Wash private parts"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Menstrual Care",
+        "shortTermObjectives": [
+          {
+            "sto": "Change pad during menses",
+            "taskAnalysis": [
+              "·Walk into bathroom",
+              "·Pull down underwear and sit on toilet",
+              "·Remove soiled pad from underwear",
+              "·Wrap up pad in toilet paper and throw away",
+              "·Wipe vaginal area with toilet paper",
+              "·Open clean pad and put it in underwear sticky side down, press in place",
+              "·Pull up pants and underwear",
+              "·Flush toilet"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Showering",
+        "shortTermObjectives": [
+          {
+            "sto": "Perform shower routine",
+            "taskAnalysis": [
+              "·Wet self using shower noozle",
+              "·Pick up wash cloth",
+              "·Push soap container to release soap on wash cloth",
+              "·Scrub upper body",
+              "·Scrub lower body",
+              "·Scrub private parts",
+              "·Rinse upper body",
+              "·Rinse lower body",
+              "·Rinse private parts",
+              "·Wash hair with both hands",
+              "·Rinse hair with water"
+            ]
+          },
+          {
+            "sto": "Bathe self in shower",
+            "taskAnalysis": [
+              "·Turn water on",
+              "·Gauge right temperature",
+              "·Get in shower",
+              "·Wet hair and body",
+              "·Put appropriate amount of shampoo on palm",
+              "·Sud up hair",
+              "·Rinse shampoo",
+              "·Squeeze/scrub soap on wash cloth",
+              "·Scrub entire body",
+              "·Rinse entire body",
+              "·Turn water off",
+              "·Dry head with towel",
+              "·Dry body with towel",
+              "·Wear robe",
+              "·Put on pajamas"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Tooth Brushing",
+        "shortTermObjectives": [
+          {
+            "sto": "Brush teeth",
+            "taskAnalysis": [
+              "·Get toothbrush, toothpaste, and a cup of water",
+              "·Wet tooth brush with water",
+              "·Open tooth paste",
+              "·Put appropriate amount of tooth paste on toothbrush",
+              "·Close the tooth paste tube",
+              "·Brush front teeth",
+              "·Brush left side, top, and bottom teeth",
+              "·Brush right side, top, and bottom teeth",
+              "·Spit foam into sink",
+              "·Rinse mouth",
+              "·Spit into sink",
+              "·Rinse toothbrush",
+              "·Put items away in appropriate place",
+              "·Floss teeth"
+            ]
+          },
+          {
+            "sto": "Brush teeth with washcloth",
+            "taskAnalysis": [
+              "·Get cloth",
+              "·Brush front teeth",
+              "·Brush left side",
+              "·Brush right side"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Toweling",
+        "shortTermObjectives": [
+          {
+            "sto": "Dry with a towel",
+            "taskAnalysis": [
+              "·Dry face",
+              "·Dry off hair",
+              "·Dry off upper body",
+              "·Dry lower body"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Hand washing",
+        "shortTermObjectives": [
+          {
+            "sto": "Wash hands after bathroom use",
+            "taskAnalysis": [
+              "·Put appropriate amount of hand soap on hand",
+              "·Rub hands together",
+              "·Turn water on",
+              "·Put hands under running water",
+              "·Rub back and front of hands together",
+              "·Rinse hands entirely",
+              "·Shake off excess water in sink",
+              "·Dry hands with towel"
+            ]
+          },
+          {
+            "sto": "Wash hands thoroughly",
+            "taskAnalysis": [
+              "·Pump appropriate amount of hand soap on hand",
+              "·Rub hands together",
+              "·Turn water on",
+              "·Put hands under running water",
+              "·Rub back and front of hands together",
+              "·Rinse hand entirely",
+              "·Shake off excess water in sink",
+              "·Dry hands with towel"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Shampooing",
+        "shortTermObjectives": [
+          {
+            "sto": "Shampoo hair",
+            "taskAnalysis": [
+              "·Wet hair",
+              "·Work shampoo through hair",
+              "·Rinse shampoo entirely"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Scrubbing upper body",
+        "shortTermObjectives": [
+          {
+            "sto": "Scrub upper body with washcloth",
+            "taskAnalysis": [
+              "·Get washcloth",
+              "·Scrub face",
+              "·Scrub neck",
+              "·Scrub shoulders",
+              "·Scrub arms",
+              "·Scrub underarms",
+              "·Scrub chest"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Scrubbing lower body",
+        "shortTermObjectives": [
+          {
+            "sto": "Scrub lower body with washcloth",
+            "taskAnalysis": [
+              "·Scrub privates",
+              "·Scrub buttocks",
+              "·Scrub upper legs",
+              "·Scrub lower legs"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Face washing",
+        "shortTermObjectives": [
+          {
+            "sto": "Wash face with wash cloth",
+            "taskAnalysis": [
+              "·Turn water on",
+              "·Wet wash cloth",
+              "·Turn water off",
+              "·Apply soap to wash cloth",
+              "·Lather soap into wash cloth",
+              "·Close eyes",
+              "·Wash face with wash cloth",
+              "·Bring face closer to the sink",
+              "·Turn water on",
+              "·Rinse face with water",
+              "·Turn water off",
+              "·Dry face"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Illness prevention",
+        "shortTermObjectives": [
+          {
+            "sto": "Cover mouth with hand, elbow or tissue when coughing or sneezing",
+            "taskAnalysis": [
+              "·When feeling the urge to cough or sneeze cover mouth and nose with hand, elbow, or tissue",
+              "·If covering mouth with hands, wash hands afterwards"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "General hygiene awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Discriminate between clean and dirty items",
+            "taskAnalysis": [
+              "·Identify clean and dirty clothing",
+              "·Identify clean and dirty utensils",
+              "·Refrain from eating food particles or crumbe on the floor/ground",
+              "·Refrain from scavenging food items in the trash"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Toileting",
+    "targetSkills": [
+      {
+        "targetSkill": "Habit training",
+        "shortTermObjectives": [
+          {
+            "sto": "Remain dry in a 3-hour period by following a toileting schedule",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Use the bathroom as scheduled",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Wipe self after defecating",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Perform bathroom routine",
+            "taskAnalysis": []
+          },
+          {
+            "sto": "Preparation",
+            "taskAnalysis": [
+              "Recognize the Need to Wipe – The child should understand when wiping is necessary (e.g., after defecating).",
+              "Remain Seated – Stay seated on the toilet to prevent messes and maintain balance.",
+              "Obtain Toilet Paper"
+            ]
+          },
+          {
+            "sto": "                           Wiping Process",
+            "taskAnalysis": [
+              "Reach Behind – Using the dominant hand, reach behind the body between the legs or around the back.",
+              "First Wipe – Gently wipe from front to back (for hygiene and to avoid infection).",
+              "Check the Paper – Look at the toilet paper to see if it is dirty.",
+              "Dispose of the Paper – Drop the used toilet paper into the toilet.",
+              "Repeat Wiping – Take fresh toilet paper, fold it, and repeat wiping until the paper is clean after wiping."
+            ]
+          },
+          {
+            "sto": "Post-Wiping Routine",
+            "taskAnalysis": [
+              "Flush the Toilet – Ensure all toilet paper is in the bowl before flushing.",
+              "Pull Up Clothes – Adjust underwear and pants properly.",
+              "Wash Hands"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Remaining dry",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Positioning self",
+        "shortTermObjectives": [
+          {
+            "sto": "Positioning self correctly on the toilet bowl",
+            "taskAnalysis": [
+              "·Enter the bathroom",
+              "·Position self in front of the toilet bowl",
+              "·Unfasten, unbutton, and/or unzip bottom wear",
+              "·Pull down pull-up and bottom wear",
+              "·Sit on the toilet bowl",
+              "·Void (i.e. urinate and defecate)",
+              "·Change pull-up when necessary",
+              "·Discard soiled pull-up",
+              "·Stand up and pull bottoms up",
+              "·Refasten, rebutton, and/or rezip bottom wear"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Toileting",
+        "shortTermObjectives": [
+          {
+            "sto": "Pull bottoms down to mid-hip or mid-thigh",
+            "taskAnalysis": [
+              "·Unbuckle belt",
+              "·Unbutton bottoms",
+              "·Unzip buttoms",
+              "·Pull buttoms to mid-hip when unirating",
+              "·Pull buttoms down to mid-thigh when defecating"
+            ]
+          },
+          {
+            "sto": "Refrain from using bare hands with bringing the toilet seat up and down",
+            "taskAnalysis": [
+              "·Use toilet paper to bring toilet seat up or down",
+              "·Get a toilet seat protector before sitting on the toilet",
+              "·Pull pant down to knees"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Eating",
+    "targetSkills": [
+      {
+        "targetSkill": "Fundamentals of eating",
+        "shortTermObjectives": [
+          {
+            "sto": "Scoop appropriate amounts of food to eat",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Refrain from playing with and/or smearing food on the table or plate for sensory input",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Eat appropriate amounts of food",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Finish food or meal within an alloted time",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Chew properly before taking another bite or eating more food",
+            "taskAnalysis": ["Unavailable"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Using utensils",
+        "shortTermObjectives": [
+          {
+            "sto": "Eat with utensils",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Use appropriate utensils at mealtime",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Use a fork and knife to cut food",
+            "taskAnalysis": ["Unavailable"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Household management",
+    "targetSkills": [
+      {
+        "targetSkill": "Domestic skills training",
+        "shortTermObjectives": [
+          {
+            "sto": "Perform post meal clean-up",
+            "taskAnalysis": [
+              "·Put dishes away in the sink/dishwasher",
+              "·Get the dish cloth",
+              "·Remove food items on the table",
+              "·Wipe the surface of the table",
+              "·Sweep dirt on the floor (if necessary)"
+            ]
+          },
+          {
+            "sto": "Perform scheduled domestic tasks",
+            "taskAnalysis": [
+              "·Put belongings (i.e. book bag, shoes, coat) away",
+              "·Put dirty clothes in hamper",
+              "·Put dish in the sink or dishwasher",
+              "·Wipe table",
+              "·Sweep floor",
+              "·Fold laundry"
+            ]
+          },
+          {
+            "sto": "Perform assigned chores",
+            "taskAnalysis": [
+              "·Pick clothes off the floor",
+              "·Put dirty clothes in the hamper",
+              "·Put toys away in the proper storage",
+              "·Complete laundry",
+              "·Dust items and/or furniture",
+              "·Put items away in correct location",
+              "·Sweep floor",
+              "·Vacuum floors",
+              "·Put away dishes",
+              "·Set table",
+              "·Wash dirty clothes",
+              "·Read task list",
+              "·Dust items and shelves",
+              "·Perform 2 household tasks",
+              "·Complete other assigned chore",
+              "·Perform 3 household tasks",
+              "·Perform 4 household tasks",
+              "·Perform 4 or more household tasks",
+              "·Load dishwasher",
+              "·Take trash out",
+              "·Take hamper and dirty linen to laundry area",
+              "·Load washing machine and/or dryer",
+              "·Wheel emptied trash bin back to the garage",
+              "·Clean bathroom",
+              "·Make bed",
+              "·Empty dishwasher",
+              "·Bring the mail in",
+              "·Wipe table",
+              "·Put recycling in the proper bin",
+              "·Sort clothes for laundry",
+              "·Fold clothes",
+              "·Mop floors",
+              "·Clean windows"
+            ]
+          },
+          {
+            "sto": "Clean up all garbage debris left from activity or meal",
+            "taskAnalysis": [
+              "·Clean up all garbage debris after activity ot meal",
+              "·Locate garbage",
+              "·Throw garbage debris into a garbage bin"
+            ]
+          },
+          {
+            "sto": "Use chore chart to perform assigned tasks",
+            "taskAnalysis": [
+              "·Gather necessary materials/equipment to complete task",
+              "·Follow steps to complete a chore",
+              "·Mark on chore chart when a chore is completed",
+              "·Complete all chores on chore chart"
+            ]
+          },
+          {
+            "sto": "Load and unload dishes",
+            "taskAnalysis": [
+              "·Place glassware in the top rack",
+              "·Put silverware in the silverware rack",
+              "·Stack plates in the bottom of the dishwasher",
+              "·Place pots, and pans around other dishes but do not block the water sprayer",
+              "·Unload glassware place in the dishware cabinet",
+              "·Unload silverwares and place in the silverware rack",
+              "·Unload plates/saucers and place in the dishware cabinet",
+              "·Unload pots and pans and place in the kitchen cabinet"
+            ]
+          },
+          {
+            "sto": "Wash tableware",
+            "taskAnalysis": [
+              "·Dump all the large pieces of food into the compost bin or disposal",
+              "·Take dirty tableware (i.e. dishes, utensils, cups) to the sink",
+              "·Turn on the faucet",
+              "·Rinse dirty tableware under the water",
+              "·Scrub the dirty tableware using a sponge",
+              "·Pump dish detergent onto the sponge",
+              "·Wash tableware with the soapy sponge",
+              "·Turn off the faucet",
+              "·Rinse tableware under warm water",
+              "·Place tableware in an area to dry",
+              "·Rinse out sponge"
+            ]
+          },
+          {
+            "sto": "Increase ablity to operate a computer to perform a variety of functions",
+            "taskAnalysis": [
+              "·Operate on/off switch",
+              "·Insert/remove disk, CD or USB",
+              "·Open programs",
+              "·Open websites",
+              "·Save information to disk, hard drive, or desktop",
+              "·Print",
+              "·Send an email",
+              "·Type words on the keyboard"
+            ]
+          },
+          {
+            "sto": "Clean after self",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Bed Making",
+        "shortTermObjectives": [
+          {
+            "sto": "Make Bed",
+            "taskAnalysis": [
+              "·Fluff the pillow",
+              "·Position pillow on top of the bed",
+              "·Pull sides of the bed sheet to position it correctly",
+              "·Smooth top sheet and blanket",
+              "·Change bed linens and pillow cases"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Vacuuming",
+        "shortTermObjectives": [
+          {
+            "sto": "Vacuum floor",
+            "taskAnalysis": [
+              "·Take out vacuum cleaner",
+              "·Plug electrical cord into outlet",
+              "·Turn on vacuum cleaner",
+              "·Release vacuum body",
+              "·Use back and forth motion to vacuum space",
+              "·Turn off vacuum cleaner",
+              "·Unplug vacuum cleaner",
+              "·Wrap cord appropriately",
+              "·Wheel vacuum cleaner away"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Dusting",
+        "shortTermObjectives": []
+      },
+      {
+        "targetSkill": "Trash Management",
+        "shortTermObjectives": [
+          {
+            "sto": "Take out the trash from the bin",
+            "taskAnalysis": [
+              "·Identify when trash can waste basket is full",
+              "·Collect trash from various room in the house",
+              "·Lift out liner and tie it shut",
+              "·Take liner to garbage can and place in the can",
+              "·Place a fresh liner in the trash can/waste basket"
+            ]
+          },
+          {
+            "sto": "Take out the garbage",
+            "taskAnalysis": [
+              "·Identify when trashcan baskets are full",
+              "·Collect trash from various room in the house",
+              "·Lift up liner and tie it shut",
+              "·Take out the garbage and put to the trash bin",
+              "·Place a fresh liner in the trash can/waste basket"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Organization",
+        "shortTermObjectives": [
+          {
+            "sto": "Sort the mail according to whom it is addressed to",
+            "taskAnalysis": [
+              "·Retrieve the mail from the mail box",
+              "·Make one pile of mail for each person receiving mail",
+              "·Sort all mail into the appropriate piles"
+            ]
+          },
+          {
+            "sto": "Sort and shelve books",
+            "taskAnalysis": [
+              "·Sort books by reading level",
+              "·Place books neatly on shelves"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Laundry",
+        "shortTermObjectives": [
+          {
+            "sto": "Complete laundry",
+            "taskAnalysis": [
+              "·Sort dirty clothes (e.g. dark and lights)",
+              "·Load laundry in washer",
+              "·Measure detergent",
+              "·Pour detergent or put in detergent pod",
+              "·Close washer",
+              "·Set apropriate washer setting",
+              "·Start washer",
+              "·Move wet clothes to dryer",
+              "·Close dryer",
+              "·Set appropriate dryer setting",
+              "·Start dryer"
+            ]
+          },
+          {
+            "sto": "Sort and put away laundry",
+            "taskAnalysis": [
+              "·Sort clothes (e.g. shirts and pants)",
+              "·Identify where clothes belong",
+              "·Fold clothing appropriately and neatly",
+              "·Hang clothing appropriately and neatly"
+            ]
+          },
+          {
+            "sto": "Sort clothing items for machine washing",
+            "taskAnalysis": [
+              "·Look at PECS of clothes for whites, warm water wash clothes and cld water wash clothes",
+              "·Lay PECS on a flat surface or table with enough space",
+              "·Get one piece of clothing from laundry basket",
+              "·Use PECS to classify the clothing",
+              "·Put the clothing under the appropriate PECS category",
+              "·Repeat steps 3 to 5 until there are no more clothes to sort"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Identification of household items",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify and learn to operate a refrigerator",
+            "taskAnalysis": [
+              "·State reason of use",
+              "·Demonstrate how to operate it"
+            ]
+          },
+          {
+            "sto": "Identify and learn to operate a microwave",
+            "taskAnalysis": [
+              "·State reason of use",
+              "·Demonstrate how to operate it"
+            ]
+          },
+          {
+            "sto": "Name common household items",
+            "taskAnalysis": [
+              "·Name household appliance(s)",
+              "·Name food(s) at snack and meal time",
+              "·Name drink at snack and meal time",
+              "·Name pieces of furniture",
+              "·Name rooms of the house",
+              "·Name toys",
+              "·Name personal belongings"
+            ]
+          },
+          {
+            "sto": "Identify household appliances and their functions",
+            "taskAnalysis": [
+              "·Name the appliance",
+              "·State the use of the appliance"
+            ]
+          },
+          {
+            "sto": "Identify and learn to operate a vacuum cleaner",
+            "taskAnalysis": [
+              "·State reason of use",
+              "·Demonstrate how to operate it"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Set the table",
+        "shortTermObjectives": [
+          {
+            "sto": "Set the table before mealtime",
+            "taskAnalysis": [
+              "·Assemble materials for a complete place setting e.g., knife, fork, spoon, plate, glass, napkin",
+              "·Assemble materials for 2 complete place settings",
+              "·Assemble materials for 3 complete place settings",
+              "·Assemble materials for 4 complete place settings",
+              "·Space settings for multiple people around the table"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Lawn and garden care",
+        "shortTermObjectives": [
+          {
+            "sto": "Maintain personal lawn and/or garden",
+            "taskAnalysis": [
+              "·Rake debris (i.e. leaves, sticks, etc) into a pile",
+              "·Pull weeds in garden",
+              "·Use lawnmower (push mower may be safest) to cut grass",
+              "·Sweep patio or sidewalk areas",
+              "·Water lawn or garden",
+              "·Dispose of any lawn related trash"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Bedroom organization",
+        "shortTermObjectives": [
+          {
+            "sto": "Keep bedroom tidy and organized",
+            "taskAnalysis": [
+              "·Make bed",
+              "·Put shoes away",
+              "·Dust desk and other furniture",
+              "·Put clothes in the hamper",
+              "·Pick up trash",
+              "·Collect trash",
+              "·Put toys away",
+              "·Vacuum floor",
+              "·Dust furniture"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Food Preparation",
+    "targetSkills": [
+      {
+        "targetSkill": "Menu planning",
+        "shortTermObjectives": [
+          {
+            "sto": "Prepare food",
+            "taskAnalysis": [
+              "·Take items out of the refrigerator or pantry",
+              "·Set items on the table or counter",
+              "·Pour liquids in another container",
+              "·Put bread in the toaster",
+              "·Set toaster settings",
+              "·Wait for toast",
+              "·Transfer toast on a plate",
+              "·Set the table with needed utensils",
+              "·Use the microwave",
+              "·Use the stove",
+              "·Scoop portions of food unto plate"
+            ]
+          },
+          {
+            "sto": "Prepare a simple meal",
+            "taskAnalysis": [
+              "·Wash hands before handling food",
+              "·Go over steps of the recipe",
+              "·Gather necessary ingredients",
+              "·Gather necessary utensils",
+              "·Perform step(s) to make meal",
+              "·Store away ingredients used in proper storage",
+              "·Arrange used utensils in the sink/dishwasher",
+              "·Measure water for noodles",
+              "·Use a knife",
+              "·Cleanup after meal preparation",
+              "·Pack meal for school the next day"
+            ]
+          },
+          {
+            "sto": "Pack a lunch",
+            "taskAnalysis": [
+              "·Get a lunch bag and put on counter",
+              "·Get food items (i.e. sandwich, lunchables, cookies, dessert items, fruits, vegetables, e.t.c)",
+              "·Get beverage in the refrigerator",
+              "·Put food items and beverage in the lunch bag"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Operating kitchen appliance",
+        "shortTermObjectives": [
+          {
+            "sto": "Warm food on the stove",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Operate microwave",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Open the oven",
+            "taskAnalysis": ["Unavailable"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Post-meal clean up",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Pouring liquids",
+        "shortTermObjectives": [
+          {
+            "sto": "Pour liquid in a cup",
+            "taskAnalysis": [
+              "·Take cup out",
+              "·Put cup on table",
+              "·Get container that holds liquid",
+              "·Tip liquid container into cup",
+              "·Pour liquid until desired amount",
+              "·Place container on table",
+              "·Return container to original location"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Socialization",
+    "targetSkills": [
+      {
+        "targetSkill": "Proper judgement",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify and speak with appropriate conversational partners",
+            "taskAnalysis": [
+              "·Identify situations in which it would not be appropriate to speak with straners",
+              "·Identify situations in which it would be appropriate to speak with strangers",
+              "·Identify appropriate conversational topics when talking to a stranger would be acceptable",
+              "·Only speak to strangers when it is totally acceptable"
+            ]
+          },
+          {
+            "sto": "Identify and respect restricted areas",
+            "taskAnalysis": [
+              "·Identify restricted areas such as employees only doors in stores",
+              "·Respect the boundary by refraining from entering areas that are off limits"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Social behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Maintain an arms length distance between self and others",
+            "taskAnalysis": [
+              "·Approach another person",
+              "·Maintain appropriate length distance",
+              "·Keep hands to self"
+            ]
+          },
+          {
+            "sto": "Say \"hello\" and shake hands when acknowledged",
+            "taskAnalysis": [
+              "·Approach peer",
+              "·Keep an appropriate distance",
+              "·Say \"hello\"",
+              "·Shake hands with peer"
+            ]
+          },
+          {
+            "sto": "Demonstrate an understanding of appropriate contact with others",
+            "taskAnalysis": [
+              "·Stand with about one to two feet between self and others",
+              "·Refrain from physically touching another person until given permission",
+              "·Correctly identify appropriate and inappropriate touching as described in stories or videos"
+            ]
+          },
+          {
+            "sto": "Move about in the environment at an appropriate speed",
+            "taskAnalysis": [
+              "·Use appropriate speed",
+              "·Move to a desired location using reasonable pace",
+              "·Slow down when moving too fast",
+              "·Move up and down the stairs with caution"
+            ]
+          },
+          {
+            "sto": "Respect privacy of others",
+            "taskAnalysis": [
+              "·Knock at door",
+              "·Wait for a response",
+              "·Respond appropriately (i.e. enter if given permission)",
+              "·Read social stories about appropriate ways to join a conversation",
+              "·Refrain from butting in a conversation",
+              "·Wait until acknowledged by others who are in a conversation",
+              "·Ask politely to join a conversation instead of butting in"
+            ]
+          },
+          {
+            "sto": "Respect property of others and their personal space",
+            "taskAnalysis": [
+              "·Distinguish the property of others from your own",
+              "·Demonstrate recignition of property ownership by using those materials and objects for which permission has been given",
+              "·Ask permission to use the property of others",
+              "·Demonstrate understanding of the rules regarding property ownership (i.e. do not use/ disturb/ remove an item)",
+              "·Return borrowed material at or before the previous/agreed upon time",
+              "·Use and return borrrowed items to the owner in original condition",
+              "·Make restitution and be responsible when taking something without permission"
+            ]
+          },
+          {
+            "sto": "Reduce inappropriate behaviors",
+            "taskAnalysis": [
+              "·Walk in a crowded space (i.e. hallway, sidewalk/crosswalk, opposite direction, e.t.c without bumping or touching others)",
+              "·Line up without bumping and touching others",
+              "·Refrain from marking off/crossing out days on the calendar when at the restaurant, church, library, etc",
+              "·Refrain from turning over the calendar page when at the restaurant, church, library, etc."
+            ]
+          },
+          {
+            "sto": "Respect the personal space of others by refraining from coming too close or touching others without permission",
+            "taskAnalysis": [
+              "·When walking, do not bump into or push others",
+              "·Ask for permission before hugging someone",
+              "·Stay at least one foot away from others when talking or engaging in an activity",
+              "·Say \"excuse me\" when wanting to pass and yield for others",
+              "·Do not touch or sniff others without permission"
+            ]
+          },
+          {
+            "sto": "Hold the door for others",
+            "taskAnalysis": [
+              "·Stop at the door",
+              "·Look behind to see if there is a person",
+              "·Open the door",
+              "·Hold the door open",
+              "·Say \"Go ahead\"",
+              "·Motion for the person to walk through the floor",
+              "·Go inside"
+            ]
+          },
+          {
+            "sto": "Refrain from publicly touching private body parts",
+            "taskAnalysis": [
+              "·Refrain from touching genitals in public",
+              "·Refrain from putting hand down inside of pants",
+              "·Refrain from touching belly button"
+            ]
+          },
+          {
+            "sto": "Use appropriate scripts in conversations",
+            "taskAnalysis": [
+              "·Participate in practicing polite exchanges",
+              "·Use socially appropriate phrases to express preferences or make requests",
+              "·Open request with polite phrases (i.e. excuse me, etc.)",
+              "·Approach and greet peer or adult"
+            ]
+          },
+          {
+            "sto": "Increase social understanding skills",
+            "taskAnalysis": [
+              "·Verbalize relationship between verbalizations and/or actions and their effects on others",
+              "·State rationale of certain social practices (i.e. why do we say excuse me?)",
+              "·State what is taking place in environment",
+              "·Demonstrate proper decorum in various social settings"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Sexual behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Group participation",
+        "shortTermObjectives": [
+          {
+            "sto": "Participate in a commmunity recreational activity with peers",
+            "taskAnalysis": [
+              "·Select a recrational activity to participate in",
+              "·Choose a peer/buddy for the activity",
+              "·Approach a peer during the activity",
+              "·Greet peer/buddy",
+              "·Attend to the activity",
+              "·Stay with peer during the activity"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Attention getting etiquette",
+        "shortTermObjectives": [
+          {
+            "sto": "Properly seek attention via words and/or PCS",
+            "taskAnalysis": [
+              "·Approach known adult",
+              "·Seek for attention via words and/or PCS",
+              "·Wait for response",
+              "·Refrain from making inappropriate noises"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Self control",
+        "shortTermObjectives": [
+          {
+            "sto": "Refrain from begging from food",
+            "taskAnalysis": [
+              "·Put hand down",
+              "·Wait until food is offered",
+              "·Ask appropriately after initial food offer",
+              "·Take appropriate amount of food",
+              "·Thank person for food"
+            ]
+          },
+          {
+            "sto": "Refrain from repititive question asking",
+            "taskAnalysis": ["·Ask each question no more than 1 time a session"]
+          },
+          {
+            "sto": "Refrain from taking items without permission",
+            "taskAnalysis": [
+              "·Ask a responsible adult before taking food or other items",
+              "·If told no, accept this answer and refrain from taking item anyways"
+            ]
+          },
+          {
+            "sto": "Wait appropriately",
+            "taskAnalysis": [
+              "·Wait in line without behaviors",
+              "·Wait within a specified time frame"
+            ]
+          },
+          {
+            "sto": "Wait for turn to speak",
+            "taskAnalysis": [
+              "·Say \"excuse me\"",
+              "·Remain quiet until the other person stops talking",
+              "·Speak when acknowledged"
+            ]
+          },
+          {
+            "sto": "Refrain from repeating irrelevant statements (i.e. reduce echolalia or scripting)",
+            "taskAnalysis": [
+              "·Make statements only that are relevant to the situation or conversation",
+              "·Have 0 instances of repeating statements unnecessarily"
+            ]
+          },
+          {
+            "sto": "Refrain from self-praise",
+            "taskAnalysis": ["Nil"]
+          },
+          {
+            "sto": "Refrain from making inappropriate noises",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Emotional awareness",
+        "shortTermObjectives": [
+          {
+            "sto": "Demonstrate an understanding of a wide variety of emotions",
+            "taskAnalysis": [
+              "·Receptively identify emotions when asked to do so",
+              "·Label the emotions of others in either fictional or real-life situations",
+              "·Communicate with specific accuracy what emotion you are experiencing",
+              "·Name different things or situations that may provide different emotions (e.g. eating ice cream maked me happy or mean people make me sad)"
+            ]
+          },
+          {
+            "sto": "Identify the emotions of others",
+            "taskAnalysis": [
+              "·Identify the correct expression identified in a picture",
+              "·Identify the correct expression expressed by another person in the environment",
+              "·Identify the most likely emotion a person would have given different circumstances (ex. when reading a story about a girl who loses her dog the feeling she would have would be sadness)",
+              "·Correctly identify different emotions- happy, angry, sad, frustrated, excited, bored, etc",
+              "·Correctly identify specific emotions of characters in a social story",
+              "·Give examples of situations that elicit particular emotions",
+              "·Correctly identify the emotional states of people in the natural environment that are similar to the characters in the social story (ex. Sally is happy, just like the girl in the story)"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Self- Expression",
+    "targetSkills": [
+      {
+        "targetSkill": "Verbal expressive language",
+        "shortTermObjectives": [
+          {
+            "sto": "Respond to Wh- questions regarding book using a full-length sentence",
+            "taskAnalysis": [
+              "·Respond to Who-question using a full-length sentence",
+              "·Respond to What-question using a full-length sentence",
+              "·Respond to Where-question using a full-length sentence",
+              "·Respond to When-question using a full-length sentence",
+              "·Respond to Why-question using a full-length sentence"
+            ]
+          },
+          {
+            "sto": "Make three or more requests using sentence starters",
+            "taskAnalysis": [
+              "·Indicate desire for food using sentence starters",
+              "·Indicate desire for drink using sentence starters",
+              "·Indicate desire for an alternative activity using sentence starters",
+              "·Indicate desire to use the bathroom using sentence starters",
+              "·Indicate desire for a break from an activity using sentence starters",
+              "·Indicate desire for other item/activity using sentence starters"
+            ]
+          },
+          {
+            "sto": "Expand requests using sentence patterns (i.e. I want/need, I want/need to)",
+            "taskAnalysis": [
+              "·Indicate desire for food/drink using a full length sentence",
+              "·Indicate desire for an activity using a full length sentence",
+              "·Indicate desire to use the bathroom using a full length sentence",
+              "·Indicate desire for a break from an activity using a full length sentence",
+              "·Indicate desire for other item/activity not listed above using sentence starters",
+              "·Indicate request for help using a full length sentence"
+            ]
+          },
+          {
+            "sto": "Make food requests",
+            "taskAnalysis": [
+              "·Indicate desire for snack using words",
+              "·Indicate desire for breakfast using words",
+              "·Indicate desire for lunch using words",
+              "·Indicate desire for diner using words"
+            ]
+          },
+          {
+            "sto": "Make general requests",
+            "taskAnalysis": [
+              "·Indicate desire for an item by naming it and saying \"please\"",
+              "·Indicate desire for an activity by naming it and saying \"please\" ·Identify"
+            ]
+          },
+          {
+            "sto": "Greet others",
+            "taskAnalysis": [
+              "·Greet another person using appropriate greeting (e.g. \"Hello\", \"Good morning\", \"Good afternoon\", etc)",
+              "·Maintain eye contact"
+            ]
+          },
+          {
+            "sto": "Ask for help via words and/or PCS",
+            "taskAnalysis": [
+              "·Approach known adult",
+              "·Ask for help using words and/or PCS",
+              "·Wait for response"
+            ]
+          },
+          {
+            "sto": "Indicate a preference vis words and/or Picture Communication Symbols (PCS)",
+            "taskAnalysis": [
+              "·Indicate preferred food/drink using words and/or PCS",
+              "·Indicate preference for an activity using words and/or PCS",
+              "·Indicate the desire to use the bathroom using words and/or PCS",
+              "·Indicate the desire for a break for an activity using words and/or PCS",
+              "·Indicate other preferred item/activity using words and/or PCS"
+            ]
+          },
+          {
+            "sto": "Verbalize objects, characters, or actions to demonstrate understanding",
+            "taskAnalysis": [
+              "·Name an object in the book",
+              "·Name a character in the book",
+              "·Name an action in the book",
+              "·Name an event in the book"
+            ]
+          },
+          {
+            "sto": "Use grammatically correct complete sentences when speaking",
+            "taskAnalysis": [
+              "·Speak in a complete sentence",
+              "·Refer to self and others appropriately (ex. saying I versus stating their own name)",
+              "·Utilize correct verb tense (ex. past, present, future)"
+            ]
+          },
+          {
+            "sto": "Expand statements and greetings using sentence patterns",
+            "taskAnalysis": [
+              "·Greet others using a full sentence including the name of the individual being greeted. Ex. Hello, Ms. Smith versus Hello",
+              "·Make all requests using a full sentence. Ex. I want or I need or Please may I have",
+              "·Make statements about feelings in complete sentences such as I feel happy versus happy",
+              "·Answer questions using a complete sentence. Ex. I used the computer at Creed versus computer"
+            ]
+          },
+          {
+            "sto": "Express feelings",
+            "taskAnalysis": [
+              "·Use sentences to accurately express personal emotions",
+              "·Use visual aid to accurately express personal emotions",
+              "·Express the origin or cause of a feeling (i.e. I am mad because...)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Non-verbal expressive language",
+        "shortTermObjectives": [
+          {
+            "sto": "Use the appropriate head shake and PCS to indicate Yes or No",
+            "taskAnalysis": [
+              "·Point to the correct PCS for yes or no when asked a question",
+              "·Shake head up and down to indicate yes in response to a question",
+              "·Shake head from side to side to indicate no in response to a question"
+            ]
+          },
+          {
+            "sto": "Make requests via an \"I want/need\" Board and PCS",
+            "taskAnalysis": [
+              "·Indicate desire for food/drink using \"I want/need\" board and PCS",
+              "·Indicate desire for an activity using \"I want/need\" board and PCS",
+              "·Indicate desire to use the bathroom using word, \"I want/need\" board and PCS",
+              "·Indicate desire for a break from an activity using \"I want/need\" board and PCS",
+              "·Indicate desire for other item/activity not listed above using \"I want/need\" board and PCS"
+            ]
+          },
+          {
+            "sto": "Express needs or wants via various modes of communication",
+            "taskAnalysis": [
+              "·Indicate desire for food/drink using vocalizations, gestures, PCS, or Ipad",
+              "·Indicate desire for an activity using vocalizations, gestures, PCS, or Ipad",
+              "·Indicate desire to use the bathroom using vocalizations, gestures, PCS, or Ipad",
+              "·Indicate desire for a break from an activity using vocalizations, gestures, PCS, or Ipad",
+              "·Indicate desire forother item/activity not listed above using vocalizations, gestures, PCS, or Ipad"
+            ]
+          },
+          {
+            "sto": "Express needs, wants, or desires via PCS or sign language",
+            "taskAnalysis": [
+              "·Indicate desire for food/drink using PCS or sign language",
+              "·Express personal feelings or emotions via PCS or sign language",
+              "·Indicate desire for a preferred activity or place given vraious choices using PCS or sign language",
+              "·Indicate desire for other item/activity not listed above using PCS or sign language",
+              "·Indicate need to use the bathroom using PCS or sign language"
+            ]
+          },
+          {
+            "sto": "Expand requests using sentence patterns using Voice Output Device (VOD) ",
+            "taskAnalysis": [
+              "·Indicate desire for food/drink using VOD",
+              "·Indicate desire for an activity using VOD",
+              "·Indicate desire to use the bathroom using VOD",
+              "·Indicate desire for a break from an activity using VOD",
+              "·Indicate desire for other item/activity not listed above using VOD"
+            ]
+          },
+          {
+            "sto": "Indicate \"all done\" using Voice Output Device (VOD) ",
+            "taskAnalysis": [
+              "·Press appropriate icon on VOD after 3 verbal or physical prompts",
+              "·Press appropriate icon on VOD after 2 verbal or physical prompts",
+              "·Press appropriate icon on VOD after 1 verbal or physical prompts",
+              "·Press appropriate icon on VOD after 1 verbal prompt"
+            ]
+          },
+          {
+            "sto": "Make a request with a Voice Output Device (VOD) using sentence patterns (i.e. I want, I want to)",
+            "taskAnalysis": [
+              "·Locate VOD",
+              "·Push appropriate buttons to create a full sentence",
+              "·Indicate the request being made",
+              "·Wait for the other persons response"
+            ]
+          },
+          {
+            "sto": "Express emotions using PCS, signs, or communication device",
+            "taskAnalysis": [
+              "·Obtain communication device if necessary",
+              "·Express emotion using device, sign, or PCS"
+            ]
+          },
+          {
+            "sto": "Indicate \"all done\" after completing an activity (i.e. bathroom, game, etc.) or finishing food or drink",
+            "taskAnalysis": [
+              "·Use VOD to indicate \"all done\" when using the bathroom",
+              "·Use VOD to indicate \"all done\" when eating or drinking",
+              "·Use VOD to indicate \"all done\" during an activity such as a game, table work, etc."
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Making choices",
+        "shortTermObjectives": [
+          {
+            "sto": "Make a choice",
+            "taskAnalysis": [
+              "·Point to picture of activity",
+              "·Point to picture of clothing",
+              "·Point to picture of food/drink",
+              "·Point to picture of place"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Utilizing various modes of communication",
+        "shortTermObjectives": [
+          {
+            "sto": "Make 3 or more requests using words, gestures, or pictures",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Express needs or wants via words, gestures, or pictures",
+            "taskAnalysis": ["Unavailable"]
+          },
+          {
+            "sto": "Expand requests using sentence patterns (i.e. I want/need) via words, PECs, or digital communication tool",
+            "taskAnalysis": ["Unavailable"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Pragmatic Speech",
+    "targetSkills": [
+      {
+        "targetSkill": "Conversation",
+        "shortTermObjectives": [
+          {
+            "sto": "Engage in at least four turn-taking conversations with parents\n",
+            "taskAnalysis": [
+              "·Choose a peer",
+              "·Approach peer during the activity",
+              "·Greet peer (e.g. \"Hello\", \"Good morning\", \"Good afternoon\", etc)",
+              "·Ask peer how he/she is doing (e.g. \"How are you today?\")",
+              "·Make one compliment (e.g. \"I really like your outfit\". \"The colour of your shirt suits you\", etc.)",
+              "·Use other contingent queries and responses",
+              "·Allow appropriate time between exchanges"
+            ]
+          },
+          {
+            "sto": "Engage in conversations with peers and adults using complete sentences\n",
+            "taskAnalysis": [
+              "·Answer one question about surroundings/situations",
+              "·Answer a question related to the topic being discussed",
+              "·Answer two or more questions about surroundings/situations",
+              "·Make a statement related to the topic being discussed",
+              "·Ask one question regarding the destination of travel",
+              "·Ask a question related to the topic being discussed",
+              "·Ask two or more questions regarding the destination of travel",
+              "·Maintain eye contact while speaking or being spoken to",
+              "·Describe the steps to make a purchase",
+              "·Describe the steps needed when traveling (e.g. walking and/or taking the bus)",
+              "·If starting a conversation, will discuss only appropriate topics"
+            ]
+          },
+          {
+            "sto": "Initiate and sustain a conversation for three or more minutes\n",
+            "taskAnalysis": [
+              "·Initiate conversation with another",
+              "·Sustain reciprocal conversation for 1 minute",
+              "·Sustain reciprocal conversation for 2 minutes",
+              "·Sustain reciprocal conversation for 3 minutes",
+              "·Sustain reciprocal conversation for 3 or more minutes"
+            ]
+          },
+          {
+            "sto": "Talk about three topics using 3-4 sentences per topic",
+            "taskAnalysis": [
+              "·Think about and select a topic to discuss",
+              "·Make a statement or ask a question about the topic using a complete sentence",
+              "·Include detail in the statement or question about the topic using a variety of adjectives",
+              "·Listen when the other person responds",
+              "·Respond appropriately and on topic to the other speaker using a complete sentence"
+            ]
+          },
+          {
+            "sto": "Use appropriate pleasantries in conversations with others",
+            "taskAnalysis": [
+              "Respond appropriately with please, thank you, you're welcome, etc."
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Phone Conversation",
+        "shortTermObjectives": [
+          {
+            "sto": "Make request and or comment on the phone",
+            "taskAnalysis": [
+              "·Prepare script for telephone request/conversation",
+              "·Locate telephone",
+              "·Dial number",
+              "·Greet person on the other line",
+              "·Introduce self",
+              "·Make a request/ conversation",
+              "·Say goodbye",
+              "·Terminate phone call",
+              "·Replace handset"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Texting",
+        "shortTermObjectives": [
+          {
+            "sto": "Text family members as a form of communication",
+            "taskAnalysis": [
+              "·Get cell phone",
+              "·Assign recipient of text message",
+              "·Compose text message",
+              "·Send text message to recipient",
+              "·Respond to an incoming text message"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Self-Advocacy",
+    "targetSkills": [
+      {
+        "targetSkill": "Email",
+        "shortTermObjectives": [
+          {
+            "sto": "Nil",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Verbal self-advocacy",
+        "shortTermObjectives": [
+          {
+            "sto": "Seek comfort when hurt",
+            "taskAnalysis": ["·Alert adult if hurt or in pain", "·Seek help"]
+          },
+          {
+            "sto": "Respond assertively to others",
+            "taskAnalysis": [
+              "·Inform others to stop and leave him or her alone",
+              "·Politely decline if does not want to be included in an activity"
+            ]
+          },
+          {
+            "sto": "Demonstrate understanding about his/her disability",
+            "taskAnalysis": [
+              "·Explain diability to others",
+              "·Explain accommodations or supports one may need",
+              "·Know how and when to disclose disability and needs to others"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Selection of leisure activity",
+    "targetSkills": [
+      {
+        "targetSkill": "Choose and attend to leisure activity",
+        "shortTermObjectives": [
+          {
+            "sto": "Attend to leisure activity of choice for 5 - 20 minutes",
+            "taskAnalysis": [
+              "·Point to a leisure activity given 3 picture choices",
+              "·Engage in activity for 5 minutes",
+              "·Engage in activity for 10 minutes",
+              "·Engage in activity for 15 minutes",
+              "·Engage in activity for 20 minutes"
+            ]
+          },
+          {
+            "sto": "Choose leisure activity",
+            "taskAnalysis": [
+              "·Choose one leisure activity given a choice of different activities",
+              "·Verbalize the activity of choice",
+              "·Participate in the leisure activity within a time frame"
+            ]
+          },
+          {
+            "sto": "Engage in leisure time reading",
+            "taskAnalysis": [
+              "·Read for 5 minutes",
+              "·Read for 10 minutes",
+              "·Read for 15 minutes",
+              "·Read for 20 minutes",
+              "·Recall details about the material being read",
+              "·Respond to questions about the material being read"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Voice",
+    "targetSkills": [
+      {
+        "targetSkill": "Regulation of volume",
+        "shortTermObjectives": [
+          {
+            "sto": "Read aloud to family members using an appropriate volume and pitch",
+            "taskAnalysis": [
+              "·Choose a book",
+              "·Tell family member(s) he will read a book outloud to them",
+              "·Read book outloud",
+              "·Use appropriate volume while reading outloud",
+              "·Use appropriate pitch while reading outloud"
+            ]
+          },
+          {
+            "sto": "Use appropriate volume in accordance with the environment",
+            "taskAnalysis": [
+              "·Whisper or use a soft voice in quiet buildings such as libraried museume, movie theaters, etc.",
+              "·Use a normal volume in stores at home",
+              "·Shout or speak loudly when outside and your conversational partner indicates that they cannot hear you well"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Receptive language",
+    "targetSkills": [
+      {
+        "targetSkill": "Eye gaze",
+        "shortTermObjectives": [
+          {
+            "sto": "Maintain eye contact for at least 3 seconds",
+            "taskAnalysis": [
+              "·Look at person who is speaking",
+              "·Maintain eye contact for 1 second",
+              "·Maintain eye contact for 2 seconds",
+              "·Maintain eye contact for 3 seconds or more"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Identify objects",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify correct picture from fields of 4",
+            "taskAnalysis": [
+              "·Look at the pictures",
+              "·Listen for the object you need to locate",
+              "·Point to the picture of the correct object"
+            ]
+          },
+          {
+            "sto": "Sort by feature, function or class",
+            "taskAnalysis": [
+              "·Sort by feature (i.e. color, shape, size, etc)",
+              "·Sort by function (i.e. something you clean with such as broom, sponge, or something you eat with such as fork, spoon, knife, etc.)",
+              "·Sort by class (i.e. aimal, vehicle, plant, etc.)"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Listener responding",
+        "shortTermObjectives": [
+          {
+            "sto": "Respond to communication from another",
+            "taskAnalysis": [
+              "·Attends to a speaker by making eye contact",
+              "·Performs different motor actions on command (e.g., can you jump? show me clapping)",
+              "·Select the correct item in a book, picture scene, or natural environment when named (e.g., point to the...)",
+              "·Follow 3-step directions",
+              "·Make eye contact with speaker",
+              "·Respond to speaker appropriately"
+            ]
+          },
+          {
+            "sto": "Responds to questions about telling time",
+            "taskAnalysis": [
+              "·Identified time indicated on a digital clock",
+              "·Identifies hour hand on a traditional numerical face clock",
+              "·Identifies minute hand on a traditional numerical face clock",
+              "·Identifies second hand on a traditional numerical face clock",
+              "·Identifies the hour indicated on a traditional numerical face clock",
+              "·Identifies the minutes indicated on a traditional numerical face clock"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Follow directions/respond to communication",
+        "shortTermObjectives": [
+          {
+            "sto": "Follow two-step directions",
+            "taskAnalysis": [
+              "·Listen to the first direction/step",
+              "·Watch counselor model the actions necessary to do the task",
+              "·Move body in response to the first step/direction",
+              "·Listen to the second direction/step",
+              "·Watch counselor model the actions necessary to do the second task",
+              "·Move body in response to the second step/direction"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing target behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce target behaviors",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of target behaviors",
+            "taskAnalysis": [
+              "·Refrain from aggressing towards others",
+              "·Have no incident of property destruction",
+              "·Have no incident of elopement",
+              "·Have no incident of head banging",
+              "·Have no incident of disruptive behaviors",
+              "·Have no incident of spitting",
+              "·Have no incident of self-injurious behaviors (SIB)",
+              "·Have no incident of disrobing",
+              "·Have no incident of banging on wall or other type of surfaces",
+              "·Have no incident of inappropriate fecal play",
+              "·Have no incident of saliva play",
+              "·Have no incident of PICA",
+              "·Have no incident of masturbation"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Organization",
+    "targetSkills": [
+      {
+        "targetSkill": "Personal management",
+        "shortTermObjectives": [
+          {
+            "sto": "Prepare clothes and belongings",
+            "taskAnalysis": [
+              "·Maintain a checklist of clothes and belongings needed",
+              "·Get and coordinate clothes to build an outfit",
+              "·Prepare footwear that go with outfit",
+              "·Prepare the necessary belongings for school",
+              "·Iron clothes"
+            ]
+          },
+          {
+            "sto": "Follow a routine schedule",
+            "taskAnalysis": [
+              "·Review schedule",
+              "·Complete hygiene activities",
+              "·Perform chore",
+              "·Eat meal",
+              "·Prepare for transition"
+            ]
+          },
+          {
+            "sto": "Grab essentials belongings before leaving",
+            "taskAnalysis": [
+              "·Maintain a checklist of essential belongings",
+              "·Grab bag and/or lunch bag",
+              "·Grab keys",
+              "·Grab ID",
+              "·Grab mask"
+            ]
+          },
+          {
+            "sto": "Carry house key and keep it safe at all times",
+            "taskAnalysis": [
+              "·Keep key in key chain or lanyard",
+              "·Keep house key in a safe place (i.e. back pack, around the neck, etc.)",
+              "·Keep house key in one's possession",
+              "·Locate key"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Transportation",
+    "targetSkills": [
+      {
+        "targetSkill": "Safety during transportation",
+        "shortTermObjectives": [
+          {
+            "sto": "Transition to the vehicle in a safe manner",
+            "taskAnalysis": [
+              "·Walk to vehicle with staff",
+              "·Open vehicle door carefully",
+              "·Step inside vehicle",
+              "·Sit down on the seat",
+              "·Buckle seatbelt"
+            ]
+          },
+          {
+            "sto": "Transition out of the vehicle in a safe manner",
+            "taskAnalysis": [
+              "·Wait until the vehicle is parked",
+              "·Unbuckle seat belt",
+              "·Look around for oncoming vehicles",
+              "·Open car door when safe to do so",
+              "·Step out of vehicle",
+              "·Walk safely with staff to destination"
+            ]
+          },
+          {
+            "sto": "Enter vehicle without behaviors",
+            "taskAnalysis": [
+              "·Walk with staff to vehicle",
+              "·Open vehicle door slowly and carefully",
+              "·Step inside vehicle without resistance",
+              "·Remain seated in vehicle",
+              "·Keep both feet on the floor",
+              "·Buckle seat belt"
+            ]
+          },
+          {
+            "sto": "Exit vehicle without behaviors",
+            "taskAnalysis": [
+              "·Remain seated until ignition has been turned off",
+              "·Unbuckle seat belt",
+              "·Look for oncoming vehicles before opening the car door",
+              "·Exit vehicle without resistance"
+            ]
+          },
+          {
+            "sto": "Stay safe during transportation",
+            "taskAnalysis": [
+              "·Remain wearing seatbelt",
+              "·Remain seated",
+              "·Keep both feet on the ground",
+              "·Talk to technician using indoor voice",
+              "·Keep hands to self",
+              "·Refrain from playing with door of vehicle",
+              "·Refrain from playing with window of vehicle"
+            ]
+          },
+          {
+            "sto": "Manage behavior during transportation",
+            "taskAnalysis": [
+              "·Have 0 incidents of kicking",
+              "·Have 0 incidents of yelling",
+              "·Have 0 incidents of bumping head",
+              "·Have 0 incidents of screaming",
+              "·Have 0 incidents of property destruction",
+              "·Have 0 incidents of biting",
+              "·Have 0 incidents of attempting to exit vehicle",
+              "·Have 0 incidents of aggression towards driver",
+              "·Have 0 incidents of aggression towards other passengers",
+              "·Have 0 incidents of taking off shoes",
+              "·Have 0 incidents of aggression towards self",
+              "·Have 0 incidents of pushing",
+              "·Have 0 incidents of unbuckling seatbelt",
+              "·Have 0 incidents of resistive behaviors",
+              "·Have 0 incidents of scratching",
+              "·Have 0 incidents of name calling",
+              "·Have 0 incidents of grabbing others",
+              "·Have 0 incidents of spitting"
+            ]
+          },
+          {
+            "sto": "Fasten seat belt",
+            "taskAnalysis": [
+              "·Position self on the seat",
+              "·Pull seat belt",
+              "·Wear seat belt snug and low over the pelvic bone",
+              "·Click the seat belt latch",
+              "·Fix any twisted parts"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Traffic signs and symbols",
+        "shortTermObjectives": [
+          {
+            "sto": "Recognize traffic lights and their function during transportation",
+            "taskAnalysis": [
+              "·Identify red traffic light",
+              "·Identify that red traffic light means stop",
+              "·Identify yellow traffic light",
+              "·Identify that red traffic light means slow down",
+              "·Identify green traffic light",
+              "·Identify that red traffic light means go"
+            ]
+          },
+          {
+            "sto": "Recognize traffic signs and their function during transportation",
+            "taskAnalysis": [
+              "·Identify stop sign",
+              "·Indicate that stop sign means stop for vehicles",
+              "·Identify pedestrian cross walk sign",
+              "·Indicate that pedestrian cross walk sign means cross the street here"
+            ]
+          },
+          {
+            "sto": "Recognize pedestrian signals and their function during transportation",
+            "taskAnalysis": [
+              "·Identify pedestrian light",
+              "·Indicate pedestrian light is for people walking to cross the street",
+              "·Identify the symbol that means walk",
+              "·Identify countdown",
+              "·Indicate that the countdown is how many seconds until they need to cross the street",
+              "·Identify the symbol that means do not work"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Direction concepts",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify routes",
+            "taskAnalysis": [
+              "·Identify correct route(s)",
+              "·Identify correct highway route",
+              "·Identify correct parkway route",
+              "·Identify correct local road route"
+            ]
+          },
+          {
+            "sto": "Identify directions",
+            "taskAnalysis": ["·Indicate correct turns", "·Identify landmarks"]
+          },
+          {
+            "sto": "Identify destinations",
+            "taskAnalysis": [
+              "·Identify correct destination",
+              "·Name correct street of destination",
+              "·Name correct address of destination"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing confrontational behavior",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce confrontational behavior",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of verbal and/or physical confrontation with others",
+            "taskAnalysis": [
+              "·Remove self from situation",
+              "·Practice a self-calming strategy",
+              "·Speak politely about others",
+              "·Use appropriate words in conversations"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Physical contact",
+    "targetSkills": [
+      {
+        "targetSkill": "Good Touch/ Bad Touch",
+        "shortTermObjectives": [
+          {
+            "sto": "Identify good touch and bad touch",
+            "taskAnalysis": [
+              "·Identify private parts",
+              "·Identify people who can touch body parts"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Community-based services",
+    "targetSkills": [
+      {
+        "targetSkill": "Obtaining an identification card",
+        "shortTermObjectives": [
+          {
+            "sto": "Remain seated while picture is taken for his ID at the Motor Vehicle Administration (MVA)",
+            "taskAnalysis": [
+              "·Fall in line for a number",
+              "·Wait for number to be called",
+              "·Sit still while picture is taken"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Motor skills",
+    "targetSkills": [
+      {
+        "targetSkill": "Gross motor skills",
+        "shortTermObjectives": [
+          {
+            "sto": "Walk with limited support",
+            "taskAnalysis": [
+              "·Stand from a sitting position",
+              "·Take predetermined number of steps"
+            ]
+          },
+          {
+            "sto": "Use kitchen utensils to prepare simple meals/snacks",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Making choices",
+    "targetSkills": [
+      {
+        "targetSkill": "Choice making",
+        "shortTermObjectives": [
+          {
+            "sto": "Choose and plan recreational activities",
+            "taskAnalysis": [
+              "·Browse and identify different fun recreational activities on the internet",
+              "·Present preferred recreation activities for mom to approve",
+              "·Select activity of choice from mom's approved activities",
+              "·Review planned schedule for selected recreation activity in preparation for weekend community integration session"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Aggressibe behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Hitting others",
+        "shortTermObjectives": [
+          {
+            "sto": "Reduce incidences of hitting others",
+            "taskAnalysis": ["Nil"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing socially inappropriate behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Reducing defecation on the floor",
+        "shortTermObjectives": [
+          {
+            "sto": "Defecate in the toilet",
+            "taskAnalysis": [
+              "·Sit on the toilet when voiding",
+              "·Continue sitting until finished with bowel movement",
+              "·Refrain from playing with or smearing faeces"
+            ]
+          }
+        ]
+      },
+      {
+        "targetSkill": "Reducing repititive speech",
+        "shortTermObjectives": [
+          {
+            "sto": "Reduce repititive questions, statements, or requets",
+            "taskAnalysis": [
+              "·Return to previous activity",
+              "·Refrain from repeating the statement, question, or request more than 1x per hour",
+              "·Refrain from repeating the sttatement, question, or request more than 1x per 2 hours"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "goalArea": "Reducing disruptive behaviors",
+    "targetSkills": [
+      {
+        "targetSkill": "Reduce disruptive behaviors",
+        "shortTermObjectives": [
+          {
+            "sto": "Have 0 incidents of disruptive behaviors",
+            "taskAnalysis": [
+              "·Have 0 incidents of screaming or yelling",
+              "·Refrain from making inappropriate noise"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
