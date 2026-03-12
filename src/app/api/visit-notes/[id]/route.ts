@@ -70,6 +70,14 @@ export async function GET(
             fileUrl: true,
           },
         },
+        carePlan: {
+          select: {
+            id: true,
+            planNumber: true,
+            status: true,
+            formData: true,
+          },
+        },
         thresholdBreaches: {
           select: {
             id: true,
@@ -129,6 +137,13 @@ export async function GET(
       submittedBy: visitNote.submittedBy,
       submittedOnBehalf: visitNote.carerId !== visitNote.submittedById,
       files: visitNote.files,
+      carePlanId: visitNote.carePlanId,
+      carePlan: visitNote.carePlan ? {
+        id: visitNote.carePlan.id,
+        planNumber: visitNote.carePlan.planNumber,
+        status: visitNote.carePlan.status,
+        formData: visitNote.carePlan.formData,
+      } : null,
       thresholdBreaches: visitNote.thresholdBreaches.map((breach) => ({
         id: breach.id,
         fieldId: breach.fieldId,

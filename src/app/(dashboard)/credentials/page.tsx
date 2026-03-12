@@ -9,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Badge,
   Input,
   DateInput,
   Label,
@@ -23,8 +22,6 @@ import {
   X,
   Award,
   AlertTriangle,
-  ChevronUp,
-  ChevronDown,
   User,
   FileText,
   Clock,
@@ -34,6 +31,7 @@ import {
   Trash2,
   Bell,
 } from "lucide-react";
+import { DataTable, ColumnDef, SortDirection, StatusCell } from "@/components/ui/data-table";
 import { FileUpload } from "@/components/ui/file-upload";
 
 interface CredentialType {
@@ -159,9 +157,6 @@ const US_STATES = [
   { value: "WY", label: "Wyoming" },
 ];
 
-type SortField = "caregiver" | "type" | "expiration" | "status";
-type SortDirection = "asc" | "desc";
-
 export default function CredentialsPage() {
   const router = useRouter();
   const [credentials, setCredentials] = React.useState<Credential[]>([]);
@@ -178,7 +173,7 @@ export default function CredentialsPage() {
   const [typeFilter, setTypeFilter] = React.useState<string>("");
 
   // Sorting
-  const [sortField, setSortField] = React.useState<SortField>("expiration");
+  const [sortColumn, setSortColumn] = React.useState<string | null>("expiration");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
   // Modal states
@@ -466,22 +461,9 @@ export default function CredentialsPage() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" />
-    ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" />
-    );
+  const handleSortChange = (column: string, direction: SortDirection) => {
+    setSortColumn(direction ? column : null);
+    setSortDirection(direction);
   };
 
   const filteredAndSortedCredentials = React.useMemo(() => {
@@ -498,35 +480,144 @@ export default function CredentialsPage() {
       return matchesSearch && matchesStatus && matchesCategory && matchesType;
     });
 
-    result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "caregiver": {
-          const nameA = `${a.caregiverProfile.user.firstName} ${a.caregiverProfile.user.lastName}`;
-          const nameB = `${b.caregiverProfile.user.firstName} ${b.caregiverProfile.user.lastName}`;
-          comparison = nameA.localeCompare(nameB);
-          break;
+    if (sortColumn && sortDirection) {
+      result.sort((a, b) => {
+        let comparison = 0;
+        switch (sortColumn) {
+          case "caregiver": {
+            const nameA = `${a.caregiverProfile.user.firstName} ${a.caregiverProfile.user.lastName}`;
+            const nameB = `${b.caregiverProfile.user.firstName} ${b.caregiverProfile.user.lastName}`;
+            comparison = nameA.localeCompare(nameB);
+            break;
+          }
+          case "type":
+            comparison = a.credentialType.name.localeCompare(b.credentialType.name);
+            break;
+          case "expiration": {
+            const dateA = new Date(a.expirationDate).getTime();
+            const dateB = new Date(b.expirationDate).getTime();
+            comparison = dateA - dateB;
+            break;
+          }
+          case "status": {
+            const statusOrder = { EXPIRED: 0, EXPIRING_SOON: 1, PENDING_VERIFICATION: 2, ACTIVE: 3, REVOKED: 4 };
+            comparison = statusOrder[a.status] - statusOrder[b.status];
+            break;
+          }
         }
-        case "type":
-          comparison = a.credentialType.name.localeCompare(b.credentialType.name);
-          break;
-        case "expiration": {
-          const dateA = new Date(a.expirationDate).getTime();
-          const dateB = new Date(b.expirationDate).getTime();
-          comparison = dateA - dateB;
-          break;
-        }
-        case "status": {
-          const statusOrder = { EXPIRED: 0, EXPIRING_SOON: 1, PENDING_VERIFICATION: 2, ACTIVE: 3, REVOKED: 4 };
-          comparison = statusOrder[a.status] - statusOrder[b.status];
-          break;
-        }
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
 
     return result;
-  }, [credentials, searchQuery, statusFilter, categoryFilter, typeFilter, sortField, sortDirection]);
+  }, [credentials, searchQuery, statusFilter, categoryFilter, typeFilter, sortColumn, sortDirection]);
+
+  // Column definitions for DataTable
+  const columns: ColumnDef<Credential>[] = [
+    {
+      id: "caregiver",
+      header: "Caregiver",
+      sortable: true,
+      cell: (cred) => (
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-[10px] font-medium text-green-700">
+              {cred.caregiverProfile.user.firstName[0]}
+              {cred.caregiverProfile.user.lastName[0]}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-gray-900 truncate">
+              {cred.caregiverProfile.user.firstName} {cred.caregiverProfile.user.lastName}
+            </p>
+            <p className="text-[10px] text-gray-500 truncate">
+              {cred.caregiverProfile.user.email}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "type",
+      header: "Credential",
+      sortable: true,
+      cell: (cred) => (
+        <div>
+          <p className="text-xs font-medium text-gray-900">{cred.credentialType.name}</p>
+          <p className="text-[10px] text-gray-500">
+            {CATEGORY_LABELS[cred.credentialType.category]}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "licenseNumber",
+      header: "License #",
+      cell: (cred) => (
+        <span className="text-[11px] text-gray-600">{cred.licenseNumber || "-"}</span>
+      ),
+    },
+    {
+      id: "expiration",
+      header: "Expiration",
+      sortable: true,
+      cell: (cred) => {
+        const daysUntil = getDaysUntilExpiration(cred.expirationDate);
+        return (
+          <div>
+            <p className={`text-[11px] ${daysUntil < 0 ? "text-red-600" : daysUntil <= 30 ? "text-yellow-600" : "text-gray-700"}`}>
+              {formatDate(cred.expirationDate)}
+            </p>
+            <p className="text-[10px] text-gray-500">
+              {daysUntil < 0
+                ? `${Math.abs(daysUntil)}d overdue`
+                : daysUntil === 0
+                ? "Today"
+                : `${daysUntil}d left`}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
+      id: "status",
+      header: "Status",
+      sortable: true,
+      align: "center",
+      cell: (cred) => (
+        <StatusCell
+          status={cred.status}
+          label={STATUS_CONFIG[cred.status].label}
+          variant={STATUS_CONFIG[cred.status].variant === "default" ? "default" : STATUS_CONFIG[cred.status].variant}
+        />
+      ),
+    },
+    {
+      id: "verified",
+      header: "Verified",
+      align: "center",
+      cell: (cred) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleVerify(cred);
+          }}
+          className={`p-1 rounded ${
+            cred.isVerified
+              ? "text-green-600 hover:text-green-500"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+          title={cred.isVerified ? "Verified - Click to unverify" : "Click to verify"}
+        >
+          {cred.isVerified ? (
+            <CheckCircle className="w-4 h-4" />
+          ) : (
+            <XCircle className="w-4 h-4" />
+          )}
+        </button>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -715,147 +806,34 @@ export default function CredentialsPage() {
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : filteredAndSortedCredentials.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Award className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
-            <p className="text-foreground-secondary">No credentials found</p>
-            <Button className="mt-4" onClick={() => setShowAddModal(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Credential
-            </Button>
-          </CardContent>
-        </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-secondary">
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("caregiver")}
-                  >
-                    Caregiver <SortIcon field="caregiver" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("type")}
-                  >
-                    Credential <SortIcon field="type" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">License #</th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("expiration")}
-                  >
-                    Expiration <SortIcon field="expiration" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status <SortIcon field="status" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Verified</th>
-                  <th className="text-right p-4 font-medium text-foreground-secondary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedCredentials.map((credential) => {
-                  const daysUntil = getDaysUntilExpiration(credential.expirationDate);
-                  return (
-                    <tr
-                      key={credential.id}
-                      className="border-b border-border hover:bg-background-secondary/50 transition-colors"
-                    >
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-medium text-primary">
-                              {credential.caregiverProfile.user.firstName[0]}
-                              {credential.caregiverProfile.user.lastName[0]}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium">
-                              {credential.caregiverProfile.user.firstName} {credential.caregiverProfile.user.lastName}
-                            </p>
-                            <p className="text-xs text-foreground-secondary">
-                              {credential.caregiverProfile.user.email}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div>
-                          <p className="font-medium">{credential.credentialType.name}</p>
-                          <p className="text-xs text-foreground-secondary">
-                            {CATEGORY_LABELS[credential.credentialType.category]}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="p-4 text-foreground-secondary">
-                        {credential.licenseNumber || "-"}
-                      </td>
-                      <td className="p-4">
-                        <div>
-                          <p className={daysUntil < 0 ? "text-error" : daysUntil <= 30 ? "text-warning" : ""}>
-                            {formatDate(credential.expirationDate)}
-                          </p>
-                          <p className="text-xs text-foreground-secondary">
-                            {daysUntil < 0
-                              ? `${Math.abs(daysUntil)} days overdue`
-                              : daysUntil === 0
-                              ? "Expires today"
-                              : `${daysUntil} days remaining`}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <Badge variant={STATUS_CONFIG[credential.status].variant}>
-                          {STATUS_CONFIG[credential.status].label}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <button
-                          onClick={() => handleVerify(credential)}
-                          className={`p-1 rounded ${
-                            credential.isVerified
-                              ? "text-success hover:text-success/80"
-                              : "text-foreground-tertiary hover:text-foreground"
-                          }`}
-                          title={credential.isVerified ? "Verified - Click to unverify" : "Click to verify"}
-                        >
-                          {credential.isVerified ? (
-                            <CheckCircle className="w-5 h-5" />
-                          ) : (
-                            <XCircle className="w-5 h-5" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditModal(credential)}
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 border-t border-border text-sm text-foreground-secondary">
+        <div className="space-y-2">
+          <DataTable
+            data={filteredAndSortedCredentials}
+            columns={columns}
+            isLoading={isLoading}
+            getRowKey={(cred) => cred.id}
+            onRowClick={(cred) => openEditModal(cred)}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+            emptyIcon={<Award className="w-8 h-8" />}
+            emptyMessage="No credentials found"
+            rowActions={(cred) => (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openEditModal(cred)}
+                title="Edit"
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            )}
+          />
+          <div className="px-3 py-2 text-[11px] text-gray-500">
             Showing {filteredAndSortedCredentials.length} of {credentials.length} credentials
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Add Credential Modal */}

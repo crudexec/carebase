@@ -40,6 +40,8 @@ import {
   ChevronUp,
   User,
   X,
+  ClipboardList,
+  Check,
 } from "lucide-react";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import {
@@ -47,6 +49,8 @@ import {
   TaskAlignmentResult,
 } from "@/lib/visit-notes/diagnosis-task-mapping";
 import { cn as _cn } from "@/lib/utils";
+import { GoalTrackingContainer } from "@/components/visit-notes/goal-tracking";
+import { GoalTrackingData } from "@/lib/visit-notes/types";
 
 // Types
 interface Shift {
@@ -72,6 +76,15 @@ interface LastVisitNote {
   id: string;
   submittedAt: string;
   templateName: string;
+}
+
+interface CarePlanOption {
+  id: string;
+  planNumber: string;
+  status: string;
+  templateName?: string;
+  effectiveDate?: string;
+  endDate?: string;
 }
 
 type WizardStep = "client" | "template" | "form";
@@ -116,6 +129,12 @@ export default function NewVisitNotePage() {
     new Date().toISOString().split("T")[0]
   );
 
+  // Care plan state
+  const [, setCarePlans] = React.useState<CarePlanOption[]>([]);
+  const [selectedCarePlan, setSelectedCarePlan] = React.useState<CarePlanOption | null>(null);
+  const [isLoadingCarePlans, setIsLoadingCarePlans] = React.useState(false);
+  const [goalTrackingData, setGoalTrackingData] = React.useState<Record<number, GoalTrackingData>>({});
+
   // UI state - auto-expand shift section if client is pre-selected
   const [showShiftSection, setShowShiftSection] = React.useState(!!preselectedClientId);
 
@@ -141,6 +160,52 @@ export default function NewVisitNotePage() {
       router.replace("/visit-notes");
     }
   }, [session, status, router]);
+
+  // Fetch care plans for selected client and auto-select the active one
+  React.useEffect(() => {
+    if (!selectedClientId) {
+      setCarePlans([]);
+      setSelectedCarePlan(null);
+      return;
+    }
+
+    const fetchCarePlans = async () => {
+      try {
+        setIsLoadingCarePlans(true);
+        const response = await fetch(`/api/care-plans?clientId=${selectedClientId}&status=ACTIVE`);
+        const data = await response.json();
+        if (response.ok) {
+          const plans: CarePlanOption[] = (data.carePlans || []).map((cp: {
+            id: string;
+            planNumber: string;
+            status: string;
+            template?: { name: string };
+            effectiveDate?: string;
+            endDate?: string;
+          }) => ({
+            id: cp.id,
+            planNumber: cp.planNumber,
+            status: cp.status,
+            templateName: cp.template?.name,
+            effectiveDate: cp.effectiveDate,
+            endDate: cp.endDate,
+          }));
+          setCarePlans(plans);
+
+          // Auto-select the active care plan (there should only be one active at a time)
+          if (plans.length > 0) {
+            setSelectedCarePlan(plans[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch care plans:", err);
+      } finally {
+        setIsLoadingCarePlans(false);
+      }
+    };
+
+    fetchCarePlans();
+  }, [selectedClientId]);
 
   // Fetch shifts for selected client (optional linking)
   React.useEffect(() => {
@@ -177,14 +242,20 @@ export default function NewVisitNotePage() {
     fetchShifts();
   }, [selectedClientId]);
 
-  // Fetch templates
+  // Fetch templates and auto-select the active one
   React.useEffect(() => {
     const fetchTemplates = async () => {
       try {
         const response = await fetch("/api/visit-notes/templates/enabled");
         const data = await response.json();
         if (response.ok) {
-          setTemplates(data.templates || []);
+          const enabledTemplates = data.templates || [];
+          setTemplates(enabledTemplates);
+
+          // Auto-select the active template (there should only be one)
+          if (enabledTemplates.length > 0) {
+            setSelectedTemplate(enabledTemplates[0]);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch templates:", err);
@@ -258,7 +329,12 @@ export default function NewVisitNotePage() {
     if (currentStep === "client") {
       // Client is required to proceed
       if (selectedClientId) {
-        goToStep("template");
+        // If there's only one template (auto-selected), skip template step
+        if (templates.length === 1 && selectedTemplate) {
+          goToStep("form");
+        } else {
+          goToStep("template");
+        }
       }
     } else if (currentStep === "template" && selectedTemplate) {
       goToStep("form");
@@ -269,7 +345,12 @@ export default function NewVisitNotePage() {
     if (currentStep === "template") {
       goToStep("client");
     } else if (currentStep === "form") {
-      goToStep("template");
+      // If there's only one template, go back to client instead of template
+      if (templates.length === 1) {
+        goToStep("client");
+      } else {
+        goToStep("template");
+      }
     }
   };
 
@@ -317,23 +398,37 @@ export default function NewVisitNotePage() {
     setPendingData(null);
 
     try {
-      // Build request body - shift is optional
+      // Merge goal tracking data into form data if care plan is selected
+      const mergedData = {
+        ...data,
+        ...(selectedCarePlan && Object.keys(goalTrackingData).length > 0
+          ? { goalTracking: goalTrackingData }
+          : {}),
+      };
+
+      // Build request body - shift and care plan are optional
       const requestBody: {
         templateId: string;
         clientId: string;
         visitDate: string;
-        data: VisitNoteData;
+        data: Record<string, unknown>;
         shiftId?: string;
+        carePlanId?: string;
       } = {
         templateId: selectedTemplate.id,
         clientId: selectedClientId,
         visitDate: visitDate,
-        data,
+        data: mergedData,
       };
 
       // Optionally include shift if one is selected
       if (selectedShift) {
         requestBody.shiftId = selectedShift.id;
+      }
+
+      // Optionally include care plan if one is selected
+      if (selectedCarePlan) {
+        requestBody.carePlanId = selectedCarePlan.id;
       }
 
       const response = await fetch("/api/visit-notes", {
@@ -574,6 +669,58 @@ export default function NewVisitNotePage() {
                 )}
               </div>
             )}
+
+            {/* Care Plan - Auto-linked (read-only display) */}
+            {selectedClientId && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <ClipboardList className="h-4 w-4 text-foreground-tertiary" />
+                  <span className="text-sm font-medium text-foreground-secondary">
+                    Care Plan
+                  </span>
+                </div>
+
+                {isLoadingCarePlans ? (
+                  <div className="flex items-center gap-2 py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-foreground-tertiary" />
+                    <span className="text-sm text-foreground-tertiary">Loading care plan...</span>
+                  </div>
+                ) : selectedCarePlan ? (
+                  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                          <Check className="h-3 w-3" />
+                        </div>
+                        <span className="font-medium text-sm">{selectedCarePlan.planNumber}</span>
+                      </div>
+                      <Badge variant="success" className="text-xs">
+                        Active
+                      </Badge>
+                    </div>
+                    {selectedCarePlan.templateName && (
+                      <p className="text-xs text-foreground-secondary mt-1 ml-7">
+                        {selectedCarePlan.templateName}
+                      </p>
+                    )}
+                    {selectedCarePlan.effectiveDate && (
+                      <p className="text-xs text-foreground-tertiary mt-0.5 ml-7">
+                        Effective: {new Date(selectedCarePlan.effectiveDate).toLocaleDateString()}
+                        {selectedCarePlan.endDate && ` - ${new Date(selectedCarePlan.endDate).toLocaleDateString()}`}
+                      </p>
+                    )}
+                    <p className="text-xs text-primary mt-2 ml-7">
+                      Goal tracking will be included in this visit note
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-lg border border-border bg-background-secondary/50 text-center">
+                    <p className="text-sm text-foreground-tertiary">No active care plan for this client</p>
+                    <p className="text-xs text-foreground-tertiary mt-1">Goal tracking will not be available</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -611,6 +758,14 @@ export default function NewVisitNotePage() {
                     <span className="text-foreground-tertiary">·</span>
                     <span className="text-foreground-secondary text-xs">
                       Shift: {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  </>
+                )}
+                {selectedCarePlan && (
+                  <>
+                    <span className="text-foreground-tertiary">·</span>
+                    <span className="text-foreground-secondary text-xs">
+                      Care Plan: {selectedCarePlan.planNumber}
                     </span>
                   </>
                 )}
@@ -744,6 +899,18 @@ export default function NewVisitNotePage() {
               shift={selectedShift}
               lastVisitNote={lastVisitNote}
             />
+          )}
+
+          {/* Goal Tracking Section - show if care plan is selected */}
+          {selectedCarePlan && (
+            <div className="rounded-xl border bg-background p-5">
+              <GoalTrackingContainer
+                carePlanId={selectedCarePlan.id}
+                data={goalTrackingData}
+                onChange={setGoalTrackingData}
+                disabled={isSubmitting}
+              />
+            </div>
           )}
 
           {/* Form */}

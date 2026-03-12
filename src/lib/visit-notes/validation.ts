@@ -132,6 +132,7 @@ export const createVisitNoteSchema = z.object({
   templateId: z.string().min(1),
   shiftId: z.string().min(1).optional(), // Optional - for shift-based notes
   clientId: z.string().min(1),
+  carePlanId: z.string().min(1).optional(), // Optional - for goal tracking from care plan
   visitDate: z.string().optional(), // Required if no shiftId (ISO date string)
   data: visitNoteDataSchema,
 });

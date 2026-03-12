@@ -253,23 +253,28 @@ export function ShiftDetailModal({
               Attendance
             </h5>
 
-            {/* Check-in Status */}
+            {/* Check-in Status Row */}
             <div className={cn(
-              "flex items-center gap-3 p-2 rounded-md",
-              isCheckedIn ? "bg-success/10" : "bg-background-secondary"
+              "flex items-center gap-3 p-3 rounded-lg transition-all",
+              isCheckedIn
+                ? "bg-green-50 border border-green-200"
+                : "bg-gray-50 border border-gray-200"
             )}>
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center",
-                isCheckedIn ? "bg-success text-white" : "bg-gray-200 text-gray-400"
+                "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+                isCheckedIn ? "bg-green-500 text-white" : "bg-gray-300 text-gray-500"
               )}>
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-5 h-5" />
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">
+              <div className="flex-1 min-w-0">
+                <div className={cn(
+                  "text-sm font-semibold",
+                  isCheckedIn ? "text-green-800" : "text-gray-700"
+                )}>
                   {isCheckedIn ? "Checked In" : "Not Checked In"}
                 </div>
-                {isCheckedIn && displayShift.actualStart && (
-                  <div className="text-xs text-foreground-secondary">
+                {isCheckedIn && displayShift.actualStart ? (
+                  <div className="text-xs text-green-600">
                     {new Date(displayShift.actualStart).toLocaleString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -278,28 +283,63 @@ export function ShiftDetailModal({
                       minute: "2-digit",
                     })}
                   </div>
+                ) : !isCheckedIn && (
+                  <div className="text-xs text-gray-500">Awaiting check-in</div>
                 )}
               </div>
-              {isCheckedIn && <CheckCircle2 className="w-5 h-5 text-success" />}
+              {isCheckedIn ? (
+                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
+              ) : canCheckIn ? (
+                <Button
+                  size="sm"
+                  className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow transition-all"
+                  onClick={handleCheckIn}
+                  disabled={isCheckingIn}
+                >
+                  {isCheckingIn ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 mr-1.5" />
+                      Check In
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
-            {/* Check-out Status */}
+            {/* Check-out Status Row */}
             <div className={cn(
-              "flex items-center gap-3 p-2 rounded-md",
-              isCheckedOut ? "bg-success/10" : "bg-background-secondary"
+              "flex items-center gap-3 p-3 rounded-lg transition-all",
+              isCheckedOut
+                ? "bg-green-50 border border-green-200"
+                : isCheckedIn
+                  ? "bg-amber-50 border border-amber-200"
+                  : "bg-gray-50 border border-gray-200 opacity-60"
             )}>
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center",
-                isCheckedOut ? "bg-success text-white" : "bg-gray-200 text-gray-400"
+                "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+                isCheckedOut
+                  ? "bg-green-500 text-white"
+                  : isCheckedIn
+                    ? "bg-amber-400 text-white"
+                    : "bg-gray-300 text-gray-500"
               )}>
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-5 h-5" />
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">
+              <div className="flex-1 min-w-0">
+                <div className={cn(
+                  "text-sm font-semibold",
+                  isCheckedOut
+                    ? "text-green-800"
+                    : isCheckedIn
+                      ? "text-amber-800"
+                      : "text-gray-500"
+                )}>
                   {isCheckedOut ? "Checked Out" : "Not Checked Out"}
                 </div>
-                {isCheckedOut && displayShift.actualEnd && (
-                  <div className="text-xs text-foreground-secondary">
+                {isCheckedOut && displayShift.actualEnd ? (
+                  <div className="text-xs text-green-600">
                     {new Date(displayShift.actualEnd).toLocaleString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -308,10 +348,40 @@ export function ShiftDetailModal({
                       minute: "2-digit",
                     })}
                   </div>
+                ) : isCheckedIn && !isCheckedOut ? (
+                  <div className="text-xs text-amber-600">In progress - ready to check out</div>
+                ) : (
+                  <div className="text-xs text-gray-400">Check in first</div>
                 )}
               </div>
-              {isCheckedOut && <CheckCircle2 className="w-5 h-5 text-success" />}
+              {isCheckedOut ? (
+                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
+              ) : canCheckOut ? (
+                <Button
+                  size="sm"
+                  className="h-9 px-4 bg-amber-500 hover:bg-amber-600 text-white shadow-sm hover:shadow transition-all"
+                  onClick={handleCheckOut}
+                  disabled={isCheckingOut}
+                >
+                  {isCheckingOut ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4 mr-1.5" />
+                      Check Out
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
+
+            {/* Check-in/Check-out Error */}
+            {checkInError && (
+              <div className="p-2 rounded-md bg-red-50 border border-red-200 text-sm text-red-600 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {checkInError}
+              </div>
+            )}
           </div>
 
           {/* Missed Visit Info */}
@@ -384,7 +454,7 @@ export function ShiftDetailModal({
               <Button
                 variant="secondary"
                 onClick={() => setShowSignatureModal(true)}
-                className="w-full"
+                className="w-full h-10 bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100 hover:border-purple-300 transition-all"
               >
                 <PenLine className="w-4 h-4 mr-2" />
                 Request Client Signature
@@ -453,91 +523,41 @@ export function ShiftDetailModal({
             )}
           </div>
 
-          {/* Check-in/Check-out Error */}
-          {checkInError && (
-            <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-sm text-error">
-              {checkInError}
-            </div>
-          )}
-
-          {/* Quick Actions for Check-in/Check-out */}
-          {(canCheckIn || canCheckOut) && (
-            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2">
-              <h5 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Quick Actions
-              </h5>
-              <div className="flex gap-2">
-                {canCheckIn && (
-                  <Button
-                    className="flex-1"
-                    onClick={handleCheckIn}
-                    disabled={isCheckingIn}
-                  >
-                    {isCheckingIn ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Checking In...
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="w-4 h-4 mr-2" />
-                        Check In
-                      </>
-                    )}
-                  </Button>
-                )}
-                {canCheckOut && (
-                  <Button
-                    className="flex-1"
-                    variant="secondary"
-                    onClick={handleCheckOut}
-                    disabled={isCheckingOut}
-                  >
-                    {isCheckingOut ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Checking Out...
-                      </>
-                    ) : (
-                      <>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Check Out
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Add Note Button */}
           <Button
             variant="secondary"
             onClick={handleAddNote}
-            className="w-full"
+            className="w-full h-10 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-all"
           >
             <StickyNote className="w-4 h-4 mr-2" />
             Add Visit Note
           </Button>
 
           {/* Actions */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
-            <Button variant="ghost" onClick={onClose} className="flex-1">
+          <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 h-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            >
               Close
             </Button>
             {canMarkAsMissed && (
               <Button
                 variant="secondary"
                 onClick={() => setShowMissedVisitModal(true)}
-                className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+                className="flex-1 h-9 bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 hover:border-orange-300 transition-all"
               >
                 <XCircle className="w-4 h-4 mr-1" />
                 Mark as Missed
               </Button>
             )}
             {canEditShift && (
-              <Button variant="secondary" onClick={onEdit} className="flex-1">
+              <Button
+                variant="secondary"
+                onClick={onEdit}
+                className="flex-1 h-9 bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-all"
+              >
                 Edit Shift
               </Button>
             )}
@@ -546,7 +566,7 @@ export function ShiftDetailModal({
                 variant="secondary"
                 onClick={onCancel}
                 disabled={isCancelling}
-                className="flex-1 border-error text-error hover:bg-error/10"
+                className="flex-1 h-9 bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300 transition-all"
               >
                 {isCancelling ? (
                   <>

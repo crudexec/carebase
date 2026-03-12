@@ -1664,6 +1664,10 @@ model VisitNote {
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
+  // Care Plan association (for goal tracking)
+  carePlanId String?
+  carePlan   CarePlan? @relation(fields: [carePlanId], references: [id])
+
   // QA Workflow
   qaStatus       QAStatus? // PENDING_REVIEW, APPROVED, REJECTED
   qaComment      String?   @db.Text // QA reviewer comments
@@ -1685,6 +1689,7 @@ model VisitNote {
   @@index([shiftId])
   @@index([carerId])
   @@index([clientId])
+  @@index([carePlanId])
   @@index([visitDate])
   @@index([submittedAt])
   @@index([submittedById])
@@ -2890,6 +2895,9 @@ model CarePlan {
 
   // External signature requests (parents, physicians, etc.)
   signatureRequests CarePlanSignatureRequest[]
+
+  // Visit notes associated with this care plan
+  visitNotes VisitNote[]
 
   @@index([companyId])
   @@index([clientId])

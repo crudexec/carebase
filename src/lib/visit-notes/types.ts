@@ -282,6 +282,140 @@ export interface VisitNoteDetailWithBreaches extends VisitNoteDetail {
 }
 
 // ============================================
+// Goal Tracking Types (for visit notes with care plan)
+// ============================================
+
+// Goal info from care plan (read-only display)
+export interface CarePlanGoalInfo {
+  index: number;
+  goalAreaName: string;
+  targetSkillName: string;
+  shortTermObjective: string;
+  currentSkillLevel: string;
+  targetPerformanceLevel: string;
+  numberOfTrials: string;
+  frequency: string;
+  goalBackground: string;
+  goalStatement: string;
+  implementationProcedure: string;
+  steps: Array<{ id: string; name: string }>;
+}
+
+// Task analysis step tracking data
+export interface TaskAnalysisStepData {
+  stepId: string;
+  stepName: string;
+  response: "Yes" | "No" | "";
+  promptUsed: string;
+  opportunities: string;
+  success: string;
+}
+
+// Goal tracking data for visit note
+export interface GoalTrackingData {
+  goalIndex: number;
+  // Activity tracking
+  activityLocation: string;
+  circumstanceLeadingToActivity: string;
+  clientResponse: string;
+  consequentlyClient: string;
+  totalTimeMinutes: number | null;
+  clientReward: string;
+  // Task analysis table
+  taskAnalysisData: TaskAnalysisStepData[];
+  // Additional comments
+  additionalComments: string;
+}
+
+// Dropdown options for goal tracking
+export const GOAL_TRACKING_OPTIONS = {
+  activityLocation: ["Home", "Community", "Through telehealth"],
+  circumstances: [
+    "During meal/ snack time",
+    "During domestic training time",
+    "During project work/ reading",
+    "During leisure time",
+    "During personal care",
+    "During bowel and bladder movement",
+    "During socialization and community integration",
+    "During routine task",
+    "During transition",
+    "When choice was given",
+    "When instruction/ directive was given",
+    "When told \"no\"",
+    "When there was close proximity",
+    "When I paid attention to others",
+    "When there was a loud noise",
+    "Other",
+  ],
+  clientResponse: [
+    "Being cooperative",
+    "Being responsive",
+    "Showing eagerness to participate",
+    "Intensifying the situation",
+    "Yelling, crying, and moving away",
+    "Engaging in self-stimulation",
+    "Leaving the area",
+    "Taking a short nap",
+    "Being apologetic",
+    "Showing remorse",
+    "Refusing to follow instructions",
+    "Being defiant",
+    "Being unresponsive",
+    "Being anxious",
+    "Being angry",
+    "Being agitated",
+    "Being distracted",
+    "Being irritated",
+    "Showing a flat affect",
+    "Being withdrawn",
+    "Being sad",
+    "Being calm",
+    "Other",
+  ],
+  consequently: [
+    "Was rewarded",
+    "Was not rewarded",
+    "Was redirected",
+    "Was given another chance",
+    "Had me discuss behaviour",
+    "Was given personal space",
+    "Was asked to participate in another activity",
+    "Received peer attention",
+    "Was verbally praised",
+    "Was verbally reprimanded",
+    "Was physically prompted",
+    "Other",
+  ],
+  reward: [
+    "Good job",
+    "High-5",
+    "Computer",
+    "Tokens",
+    "Movie",
+    "Cookies",
+    "Hugs",
+    "Ice cream",
+    "Chips",
+    "Other",
+  ],
+  promptUsed: [
+    "Hand over Hand",
+    "Physical Prompts",
+    "Model Prompts",
+    "Gesture Prompts",
+    "Visual Cue",
+    "Verbal Prompts",
+    "Intermittent Verbal Prompts",
+    "Independence",
+    "Refused",
+    "Unable",
+  ],
+  opportunities: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+  success: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+};
+
+// ============================================
 // Field Type Metadata
 // ============================================
 

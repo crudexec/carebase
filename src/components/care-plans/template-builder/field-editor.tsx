@@ -1,10 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { CarePlanTemplateFieldData, FIELD_TYPE_LABELS, ChoiceOption } from "@/lib/care-plans/types";
+import {
+  CarePlanTemplateFieldData,
+  FIELD_TYPE_LABELS,
+  ChoiceOption,
+  RepeatableGroupFieldConfig,
+} from "@/lib/care-plans/types";
 import { Input, Label, Textarea, Checkbox, Button } from "@/components/ui";
 import { X, Plus, Trash2 } from "lucide-react";
 import { FieldTypeIcon } from "./field-type-selector";
+import { RepeatableGroupConfigEditor } from "./repeatable-group-config-editor";
 
 interface FieldEditorProps {
   field: CarePlanTemplateFieldData;
@@ -236,6 +242,23 @@ function renderConfigEditor(
           </div>
         </div>
       );
+
+    case "REPEATABLE_GROUP": {
+      const repeatableConfig: RepeatableGroupFieldConfig = {
+        childFields: (config.childFields as RepeatableGroupFieldConfig["childFields"]) || [],
+        minItems: config.minItems as number | undefined,
+        maxItems: config.maxItems as number | undefined,
+        addButtonLabel: config.addButtonLabel as string | undefined,
+        itemLabel: config.itemLabel as string | undefined,
+        collapsible: config.collapsible as boolean | undefined,
+      };
+      return (
+        <RepeatableGroupConfigEditor
+          config={repeatableConfig}
+          updateConfig={updateConfig}
+        />
+      );
+    }
 
     default:
       return null;

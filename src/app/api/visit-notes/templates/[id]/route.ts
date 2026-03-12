@@ -144,6 +144,20 @@ export async function PATCH(
 
     // Use a transaction to update everything atomically
     const template = await prisma.$transaction(async (tx) => {
+      // When enabling a template, disable all other templates for the same company
+      if (isEnabled === true) {
+        await tx.formTemplate.updateMany({
+          where: {
+            companyId: user.companyId,
+            isEnabled: true,
+            id: { not: id },
+          },
+          data: {
+            isEnabled: false,
+          },
+        });
+      }
+
       // If sections are provided, delete existing and recreate
       if (sections) {
         // Delete existing sections (cascades to fields)

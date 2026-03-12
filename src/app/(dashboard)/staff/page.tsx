@@ -10,12 +10,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Badge,
   Input,
   Label,
   Select,
   ConfirmActionModal,
 } from "@/components/ui";
+import { DataTable, ColumnDef, SortDirection, StatusCell, DateCell } from "@/components/ui/data-table";
 import { toast } from "sonner";
 import {
   Plus,
@@ -26,8 +26,6 @@ import {
   X,
   User,
   RotateCcw,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
 import { ProfileFieldsRenderer } from "@/components/profile-fields/profile-fields-renderer";
 import { FieldValue } from "@/lib/visit-notes/types";
@@ -75,7 +73,6 @@ const STAFF_ROLES: UserRole[] = [
 ];
 
 type SortField = "name" | "email" | "role" | "lastLogin" | "status";
-type SortDirection = "asc" | "desc";
 
 export default function StaffPage() {
   const { data: _session } = useSession();
@@ -86,7 +83,7 @@ export default function StaffPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("");
   const [statusFilter, setStatusFilter] = React.useState<string>("active"); // Default to active
-  const [sortField, setSortField] = React.useState<SortField>("name");
+  const [sortField, setSortField] = React.useState<SortField | null>("name");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
   // Modal states
@@ -291,31 +288,9 @@ export default function StaffPage() {
     setShowEditModal(true);
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" />
-    ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" />
-    );
+  const handleSortChange = (column: string, direction: SortDirection) => {
+    setSortField(direction ? (column as SortField) : null);
+    setSortDirection(direction);
   };
 
   const filteredAndSortedStaff = React.useMemo(() => {
@@ -332,30 +307,32 @@ export default function StaffPage() {
       return matchesSearch && matchesRole && matchesStatus;
     });
 
-    result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "name":
-          comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
-          break;
-        case "email":
-          comparison = a.email.localeCompare(b.email);
-          break;
-        case "role":
-          comparison = ROLE_LABELS[a.role].localeCompare(ROLE_LABELS[b.role]);
-          break;
-        case "lastLogin": {
-          const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
-          const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
-          comparison = aDate - bDate;
-          break;
+    if (sortField && sortDirection) {
+      result.sort((a, b) => {
+        let comparison = 0;
+        switch (sortField) {
+          case "name":
+            comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+            break;
+          case "email":
+            comparison = a.email.localeCompare(b.email);
+            break;
+          case "role":
+            comparison = ROLE_LABELS[a.role].localeCompare(ROLE_LABELS[b.role]);
+            break;
+          case "lastLogin": {
+            const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
+            const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+            comparison = aDate - bDate;
+            break;
+          }
+          case "status":
+            comparison = (a.isActive ? 1 : 0) - (b.isActive ? 1 : 0);
+            break;
         }
-        case "status":
-          comparison = (a.isActive ? 1 : 0) - (b.isActive ? 1 : 0);
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
 
     return result;
   }, [staff, searchQuery, roleFilter, statusFilter, sortField, sortDirection]);
@@ -434,132 +411,131 @@ export default function StaffPage() {
       )}
 
       {/* Staff Table */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : filteredAndSortedStaff.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <User className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
-            <p className="text-foreground-secondary">No staff members found</p>
-            <Button className="mt-4" onClick={() => setShowAddModal(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Staff Member
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-secondary">
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("name")}
+      {(() => {
+        const columns: ColumnDef<StaffMember>[] = [
+          {
+            id: "name",
+            header: "Name",
+            sortable: true,
+            cell: (member) => (
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-medium text-green-700">
+                    {member.firstName[0]}{member.lastName[0]}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-gray-900">
+                  {member.firstName} {member.lastName}
+                </span>
+              </div>
+            ),
+          },
+          {
+            id: "email",
+            header: "Email",
+            accessorKey: "email",
+            sortable: true,
+          },
+          {
+            id: "role",
+            header: "Role",
+            sortable: true,
+            cell: (member) => (
+              <StatusCell
+                status={member.role}
+                label={ROLE_LABELS[member.role]}
+                variant={ROLE_COLORS[member.role]}
+              />
+            ),
+          },
+          {
+            id: "phone",
+            header: "Phone",
+            cell: (member) => member.phone || "-",
+          },
+          {
+            id: "lastLogin",
+            header: "Last Login",
+            sortable: true,
+            cell: (member) => <DateCell date={member.lastLogin} />,
+          },
+          {
+            id: "status",
+            header: "Status",
+            sortable: true,
+            cell: (member) => (
+              <StatusCell
+                status={member.isActive ? "active" : "inactive"}
+                label={member.isActive ? "Active" : "Inactive"}
+                variant={member.isActive ? "success" : "error"}
+              />
+            ),
+          },
+        ];
+
+        return (
+          <>
+            <DataTable
+              data={filteredAndSortedStaff}
+              columns={columns}
+              isLoading={isLoading}
+              getRowKey={(member) => member.id}
+              onRowClick={(member) => router.push(`/staff/${member.id}`)}
+              sortColumn={sortField}
+              sortDirection={sortDirection}
+              onSortChange={handleSortChange}
+              emptyIcon={<User className="w-8 h-8" />}
+              emptyMessage="No staff members found"
+              emptyState={
+                <div className="text-center">
+                  <User className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500 mb-4">No staff members found</p>
+                  <Button onClick={() => setShowAddModal(true)}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Staff Member
+                  </Button>
+                </div>
+              }
+              getRowClassName={(member) =>
+                `${!member.isActive ? "opacity-60" : ""} ${
+                  deactivatingId === member.id ? "opacity-0 scale-95" : ""
+                }`
+              }
+              rowActions={(member) => (
+                <div className="flex items-center justify-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEditModal(member)}
+                    title="Edit"
+                    className="h-6 w-6 p-0"
                   >
-                    Name <SortIcon field="name" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("email")}
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeactivateClick(member)}
+                    title={member.isActive ? "Deactivate" : "Reactivate"}
+                    className="h-6 w-6 p-0"
                   >
-                    Email <SortIcon field="email" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("role")}
-                  >
-                    Role <SortIcon field="role" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Phone</th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("lastLogin")}
-                  >
-                    Last Login <SortIcon field="lastLogin" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status <SortIcon field="status" />
-                  </th>
-                  <th className="text-right p-4 font-medium text-foreground-secondary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedStaff.map((member) => (
-                  <tr
-                    key={member.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-all duration-300 ${
-                      !member.isActive ? "opacity-60" : ""
-                    } ${deactivatingId === member.id ? "opacity-0 scale-95" : ""}`}
-                  >
-                    <td className="p-4">
-                      <div
-                        className="flex items-center gap-3 cursor-pointer hover:text-primary"
-                        onClick={() => router.push(`/staff/${member.id}`)}
-                      >
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-medium text-primary">
-                            {member.firstName[0]}
-                            {member.lastName[0]}
-                          </span>
-                        </div>
-                        <span className="font-medium hover:underline">
-                          {member.firstName} {member.lastName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{member.email}</td>
-                    <td className="p-4">
-                      <Badge variant={ROLE_COLORS[member.role]}>
-                        {ROLE_LABELS[member.role]}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{member.phone || "-"}</td>
-                    <td className="p-4 text-foreground-secondary">{formatDate(member.lastLogin)}</td>
-                    <td className="p-4">
-                      <Badge variant={member.isActive ? "success" : "error"}>
-                        {member.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(member)}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeactivateClick(member)}
-                          title={member.isActive ? "Deactivate" : "Reactivate"}
-                        >
-                          {member.isActive ? (
-                            <Trash2 className="w-4 h-4 text-error" />
-                          ) : (
-                            <RotateCcw className="w-4 h-4 text-success" />
-                          )}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 border-t border-border text-sm text-foreground-secondary">
-            Showing {filteredAndSortedStaff.length} of {staff.length} staff members
-          </div>
-        </Card>
-      )}
+                    {member.isActive ? (
+                      <Trash2 className="w-3 h-3 text-red-500" />
+                    ) : (
+                      <RotateCcw className="w-3 h-3 text-green-500" />
+                    )}
+                  </Button>
+                </div>
+              )}
+            />
+            {filteredAndSortedStaff.length > 0 && (
+              <div className="mt-2 text-[11px] text-gray-500">
+                Showing {filteredAndSortedStaff.length} of {staff.length} staff members
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Add Staff Modal */}
       {showAddModal && (

@@ -44,7 +44,6 @@ import {
   PanelLeftClose,
   PanelLeft,
   GraduationCap,
-  Users2,
   BookCheck,
 } from "lucide-react";
 
@@ -158,12 +157,6 @@ const navigation: NavEntry[] = [
         label: "Training",
         href: "/training",
         icon: GraduationCap,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
-      },
-      {
-        label: "Supervision",
-        href: "/supervision",
-        icon: Users2,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
       },
       {

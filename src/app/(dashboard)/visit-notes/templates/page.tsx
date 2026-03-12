@@ -80,10 +80,38 @@ export default function TemplatesPage() {
     }
   }, [session, status, router]);
 
+  // Define fetch functions before useEffect
+  const fetchTemplates = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/visit-notes/templates");
+      const data = await response.json();
+      if (response.ok) {
+        setTemplates(data.templates || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch templates:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchStarterTemplates = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/visit-notes/templates/starters");
+      const data = await response.json();
+      if (response.ok) {
+        setStarterTemplates(data.starters || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch starter templates:", error);
+    }
+  }, []);
+
   React.useEffect(() => {
     fetchTemplates();
     fetchStarterTemplates();
-  }, []);
+  }, [fetchTemplates, fetchStarterTemplates]);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -161,33 +189,6 @@ export default function TemplatesPage() {
   if (status === "loading" || session?.user?.role === "SPONSOR") {
     return null;
   }
-
-  const fetchTemplates = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/visit-notes/templates");
-      const data = await response.json();
-      if (response.ok) {
-        setTemplates(data.templates || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch templates:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchStarterTemplates = async () => {
-    try {
-      const response = await fetch("/api/visit-notes/templates/starters");
-      const data = await response.json();
-      if (response.ok) {
-        setStarterTemplates(data.starters || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch starter templates:", error);
-    }
-  };
 
   const cloneStarterTemplate = async (starterId: string) => {
     setCloningId(starterId);

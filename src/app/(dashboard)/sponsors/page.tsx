@@ -13,6 +13,7 @@ import {
   Label,
   Select,
 } from "@/components/ui";
+import { DataTable, ColumnDef, SortDirection, StatusCell, DateCell } from "@/components/ui/data-table";
 import {
   Plus,
   RefreshCw,
@@ -22,8 +23,6 @@ import {
   X,
   Users,
   RotateCcw,
-  ChevronUp,
-  ChevronDown,
   Mail,
   Heart,
   AlertTriangle,
@@ -58,7 +57,6 @@ interface Client {
 }
 
 type SortField = "name" | "email" | "clients" | "lastLogin" | "status";
-type SortDirection = "asc" | "desc";
 
 export default function SponsorsPage() {
   const [sponsors, setSponsors] = React.useState<Sponsor[]>([]);
@@ -66,7 +64,7 @@ export default function SponsorsPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
-  const [sortField, setSortField] = React.useState<SortField>("name");
+  const [sortField, setSortField] = React.useState<SortField | null>("name");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
   // Modal states
@@ -448,31 +446,9 @@ export default function SponsorsPage() {
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" />
-    ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" />
-    );
+  const handleSortChange = (column: string, direction: SortDirection) => {
+    setSortField(direction ? (column as SortField) : null);
+    setSortDirection(direction);
   };
 
   const filteredAndSortedSponsors = React.useMemo(() => {
@@ -488,30 +464,32 @@ export default function SponsorsPage() {
       return matchesSearch && matchesStatus;
     });
 
-    result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "name":
-          comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
-          break;
-        case "email":
-          comparison = a.email.localeCompare(b.email);
-          break;
-        case "clients":
-          comparison = a.clientCount - b.clientCount;
-          break;
-        case "lastLogin": {
-          const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
-          const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
-          comparison = aDate - bDate;
-          break;
+    if (sortField && sortDirection) {
+      result.sort((a, b) => {
+        let comparison = 0;
+        switch (sortField) {
+          case "name":
+            comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+            break;
+          case "email":
+            comparison = a.email.localeCompare(b.email);
+            break;
+          case "clients":
+            comparison = a.clientCount - b.clientCount;
+            break;
+          case "lastLogin": {
+            const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
+            const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+            comparison = aDate - bDate;
+            break;
+          }
+          case "status":
+            comparison = (a.isActive ? 1 : 0) - (b.isActive ? 1 : 0);
+            break;
         }
-        case "status":
-          comparison = (a.isActive ? 1 : 0) - (b.isActive ? 1 : 0);
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
 
     return result;
   }, [sponsors, searchQuery, statusFilter, sortField, sortDirection]);
@@ -582,149 +560,146 @@ export default function SponsorsPage() {
       )}
 
       {/* Sponsors Table */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : filteredAndSortedSponsors.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Heart className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
-            <p className="text-foreground-secondary">No sponsors found</p>
-            <div className="flex justify-center gap-2 mt-4">
-              <Button variant="secondary" onClick={() => setShowInviteModal(true)}>
-                <Mail className="w-4 h-4 mr-1" />
-                Invite Sponsor
-              </Button>
-              <Button onClick={() => setShowAddModal(true)}>
-                <Plus className="w-4 h-4 mr-1" />
-                Add Sponsor
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-secondary">
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("name")}
+      {(() => {
+        const columns: ColumnDef<Sponsor>[] = [
+          {
+            id: "name",
+            header: "Name",
+            sortable: true,
+            cell: (sponsor) => (
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-medium text-amber-700">
+                    {sponsor.firstName[0]}{sponsor.lastName[0]}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-gray-900">
+                  {sponsor.firstName} {sponsor.lastName}
+                </span>
+              </div>
+            ),
+          },
+          {
+            id: "email",
+            header: "Email",
+            accessorKey: "email",
+            sortable: true,
+          },
+          {
+            id: "phone",
+            header: "Phone",
+            cell: (sponsor) => sponsor.phone || "-",
+          },
+          {
+            id: "clients",
+            header: "Clients",
+            sortable: true,
+            cell: (sponsor) => (
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3 text-gray-400" />
+                <span className="text-[11px]">{sponsor.clientCount}</span>
+                {sponsor.sponsoredClients.length > 0 && (
+                  <span className="text-gray-400 text-[10px] ml-1 truncate max-w-[100px]">
+                    ({sponsor.sponsoredClients.map((c) => `${c.firstName} ${c.lastName[0]}.`).join(", ")})
+                  </span>
+                )}
+              </div>
+            ),
+          },
+          {
+            id: "lastLogin",
+            header: "Last Login",
+            sortable: true,
+            cell: (sponsor) => <DateCell date={sponsor.lastLogin} />,
+          },
+          {
+            id: "status",
+            header: "Status",
+            sortable: true,
+            cell: (sponsor) => (
+              <StatusCell
+                status={sponsor.isActive ? "active" : "inactive"}
+                label={sponsor.isActive ? "Active" : "Inactive"}
+                variant={sponsor.isActive ? "success" : "error"}
+              />
+            ),
+          },
+        ];
+
+        return (
+          <>
+            <DataTable
+              data={filteredAndSortedSponsors}
+              columns={columns}
+              isLoading={isLoading}
+              getRowKey={(sponsor) => sponsor.id}
+              sortColumn={sortField}
+              sortDirection={sortDirection}
+              onSortChange={handleSortChange}
+              clickableRows={false}
+              emptyIcon={<Heart className="w-8 h-8" />}
+              emptyMessage="No sponsors found"
+              emptyState={
+                <div className="text-center">
+                  <Heart className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500 mb-4">No sponsors found</p>
+                  <div className="flex justify-center gap-2">
+                    <Button variant="secondary" onClick={() => setShowInviteModal(true)}>
+                      <Mail className="w-4 h-4 mr-1" />
+                      Invite Sponsor
+                    </Button>
+                    <Button onClick={() => setShowAddModal(true)}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Sponsor
+                    </Button>
+                  </div>
+                </div>
+              }
+              getRowClassName={(sponsor) => !sponsor.isActive ? "opacity-60" : ""}
+              rowActions={(sponsor) => (
+                <div className="flex items-center justify-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEditModal(sponsor)}
+                    title="Edit"
+                    className="h-6 w-6 p-0"
                   >
-                    Name <SortIcon field="name" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("email")}
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleActive(sponsor)}
+                    title={sponsor.isActive ? "Deactivate" : "Reactivate"}
+                    className="h-6 w-6 p-0"
                   >
-                    Email <SortIcon field="email" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Phone</th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("clients")}
+                    {sponsor.isActive ? (
+                      <Power className="w-3 h-3 text-amber-500" />
+                    ) : (
+                      <RotateCcw className="w-3 h-3 text-green-500" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openDeleteModal(sponsor)}
+                    title="Delete permanently"
+                    className="h-6 w-6 p-0"
                   >
-                    Clients <SortIcon field="clients" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("lastLogin")}
-                  >
-                    Last Login <SortIcon field="lastLogin" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status <SortIcon field="status" />
-                  </th>
-                  <th className="text-right p-4 font-medium text-foreground-secondary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedSponsors.map((sponsor) => (
-                  <tr
-                    key={sponsor.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-colors ${
-                      !sponsor.isActive ? "opacity-60" : ""
-                    }`}
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-medium text-warning">
-                            {sponsor.firstName[0]}
-                            {sponsor.lastName[0]}
-                          </span>
-                        </div>
-                        <span className="font-medium">
-                          {sponsor.firstName} {sponsor.lastName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{sponsor.email}</td>
-                    <td className="p-4 text-foreground-secondary">{sponsor.phone || "-"}</td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4 text-foreground-tertiary" />
-                        <span>{sponsor.clientCount}</span>
-                        {sponsor.sponsoredClients.length > 0 && (
-                          <span className="text-foreground-tertiary text-sm ml-1">
-                            ({sponsor.sponsoredClients.map((c) => `${c.firstName} ${c.lastName[0]}.`).join(", ")})
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{formatDate(sponsor.lastLogin)}</td>
-                    <td className="p-4">
-                      <Badge variant={sponsor.isActive ? "success" : "error"}>
-                        {sponsor.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(sponsor)}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(sponsor)}
-                          title={sponsor.isActive ? "Deactivate" : "Reactivate"}
-                        >
-                          {sponsor.isActive ? (
-                            <Power className="w-4 h-4 text-warning" />
-                          ) : (
-                            <RotateCcw className="w-4 h-4 text-success" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDeleteModal(sponsor)}
-                          title="Delete permanently"
-                        >
-                          <Trash2 className="w-4 h-4 text-error" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 border-t border-border text-sm text-foreground-secondary">
-            Showing {filteredAndSortedSponsors.length} of {sponsors.length} sponsors
-          </div>
-        </Card>
-      )}
+                    <Trash2 className="w-3 h-3 text-red-500" />
+                  </Button>
+                </div>
+              )}
+            />
+            {filteredAndSortedSponsors.length > 0 && (
+              <div className="mt-2 text-[11px] text-gray-500">
+                Showing {filteredAndSortedSponsors.length} of {sponsors.length} sponsors
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Add Sponsor Modal */}
       {showAddModal && (

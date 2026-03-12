@@ -228,7 +228,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { templateId, shiftId, clientId, visitDate, data } = validation.data;
+    const { templateId, shiftId, clientId, carePlanId, visitDate, data } = validation.data;
 
     // Variables that will be set based on whether we have a shift or not
     let finalCarerId: string;
@@ -312,6 +312,26 @@ export async function POST(request: Request) {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
       };
+    }
+
+    // Validate care plan if provided
+    if (carePlanId) {
+      const carePlan = await prisma.carePlan.findFirst({
+        where: {
+          id: carePlanId,
+          companyId: user.companyId,
+          clientId: clientId, // Must belong to the same client
+          status: "ACTIVE", // Only active care plans
+        },
+        select: { id: true },
+      });
+
+      if (!carePlan) {
+        return NextResponse.json(
+          { error: "Care plan not found, not active, or does not belong to this client" },
+          { status: 404 }
+        );
+      }
     }
 
     // Get the template with its full structure
@@ -424,6 +444,7 @@ export async function POST(request: Request) {
         templateId,
         templateVersion: template.version,
         shiftId: shiftId || null,
+        carePlanId: carePlanId || null, // Care plan for goal tracking
         clientId,
         carerId: finalCarerId, // The carer (from shift or current user for manual entry)
         submittedById: user.id, // Who actually submitted the note
@@ -487,6 +508,7 @@ export async function POST(request: Request) {
           templateId,
           templateName: template.name,
           shiftId: shiftId || undefined,
+          carePlanId: carePlanId || undefined,
           clientId,
           carerId: finalCarerId,
           carerName: `${carerInfo.firstName} ${carerInfo.lastName}`,

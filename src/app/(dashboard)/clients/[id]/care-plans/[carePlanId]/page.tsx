@@ -10,6 +10,10 @@ import {
   Save,
   FileDown,
   Send,
+  CheckCircle,
+  Trash2,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { CarePlanRenderer } from "@/components/care-plans/care-plan-renderer";
 import { Button, Breadcrumb, Badge } from "@/components/ui";
@@ -193,6 +197,10 @@ export default function CarePlanDetailPage() {
   const [showFaxModal, setShowFaxModal] = React.useState(false);
   const [faxNumber, setFaxNumber] = React.useState("");
   const [faxRecipientName, setFaxRecipientName] = React.useState("");
+  const [isActivating, setIsActivating] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [isRevertingToDraft, setIsRevertingToDraft] = React.useState(false);
   const printRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -421,6 +429,94 @@ export default function CarePlanDetailPage() {
     }
   };
 
+  const handleActivate = async () => {
+    if (!carePlan) return;
+
+    setIsActivating(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlanId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACTIVE" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to activate care plan");
+      }
+
+      const { carePlan: updatedCarePlan } = await response.json();
+      setCarePlan(updatedCarePlan);
+      toast.success("Care plan activated successfully");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to activate care plan";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!carePlan) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlanId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete care plan");
+      }
+
+      toast.success("Care plan deleted successfully");
+      router.push(`/clients/${clientId}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete care plan";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setShowDeleteModal(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleRevertToDraft = async () => {
+    if (!carePlan) return;
+
+    setIsRevertingToDraft(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlanId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "DRAFT" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to revert care plan to draft");
+      }
+
+      const { carePlan: updatedCarePlan } = await response.json();
+      setCarePlan(updatedCarePlan);
+      toast.success("Care plan reverted to draft");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to revert care plan";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsRevertingToDraft(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -529,6 +625,52 @@ export default function CarePlanDetailPage() {
                 )}
               </Button>
             )}
+            {carePlan.status === "DRAFT" && (
+              <Button
+                variant="default"
+                onClick={handleActivate}
+                disabled={isActivating || isSaving || isSubmitting}
+              >
+                {isActivating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Activating...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Activate
+                  </>
+                )}
+              </Button>
+            )}
+            {carePlan.status !== "DRAFT" && (
+              <Button
+                variant="secondary"
+                onClick={handleRevertToDraft}
+                disabled={isRevertingToDraft || isSaving || isSubmitting}
+              >
+                {isRevertingToDraft ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Reverting...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Revert to Draft
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              variant="error"
+              onClick={() => setShowDeleteModal(true)}
+              disabled={isDeleting || isSaving || isSubmitting}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
           </div>
         </div>
 
@@ -627,6 +769,51 @@ export default function CarePlanDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error/10">
+                  <AlertTriangle className="h-5 w-5 text-error" />
+                </div>
+                <h3 className="text-lg font-semibold">Delete Care Plan</h3>
+              </div>
+              <p className="text-foreground-secondary mb-6">
+                Are you sure you want to delete this care plan? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="error"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -716,6 +903,52 @@ export default function CarePlanDetailPage() {
               )}
             </Button>
           )}
+          {carePlan.status === "DRAFT" && (
+            <Button
+              variant="default"
+              onClick={handleActivate}
+              disabled={isActivating || isSaving || isSubmitting}
+            >
+              {isActivating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Activating...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Activate
+                </>
+              )}
+            </Button>
+          )}
+          {carePlan.status !== "DRAFT" && (
+            <Button
+              variant="secondary"
+              onClick={handleRevertToDraft}
+              disabled={isRevertingToDraft || isSaving || isSubmitting}
+            >
+              {isRevertingToDraft ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Reverting...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Revert to Draft
+                </>
+              )}
+            </Button>
+          )}
+          <Button
+            variant="error"
+            onClick={() => setShowDeleteModal(true)}
+            disabled={isDeleting || isSaving || isSubmitting}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </Button>
         </div>
       </div>
 
@@ -807,6 +1040,51 @@ export default function CarePlanDetailPage() {
                   <>
                     <Send className="mr-2 h-4 w-4" />
                     Send Fax
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error/10">
+                <AlertTriangle className="h-5 w-5 text-error" />
+              </div>
+              <h3 className="text-lg font-semibold">Delete Care Plan</h3>
+            </div>
+            <p className="text-foreground-secondary mb-6">
+              Are you sure you want to delete this care plan? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="error"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
                   </>
                 )}
               </Button>

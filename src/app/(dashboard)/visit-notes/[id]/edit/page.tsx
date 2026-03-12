@@ -15,7 +15,9 @@ import {
   Breadcrumb,
 } from "@/components/ui";
 import { FormRenderer } from "@/components/visit-notes/form-renderer";
-import { FormSchemaSnapshot, VisitNoteData } from "@/lib/visit-notes/types";
+import { FormSchemaSnapshot, VisitNoteData, GoalTrackingData, CarePlanGoalInfo } from "@/lib/visit-notes/types";
+import { GoalTrackingContainer } from "@/components/visit-notes/goal-tracking";
+import { extractGoalsFromCarePlan } from "@/components/visit-notes/goal-tracking/goal-tracking-viewer";
 import {
   ArrowLeft,
   Loader2,
@@ -27,12 +29,13 @@ import {
   CheckCircle,
   XCircle,
   RotateCcw,
+  ClipboardList,
 } from "lucide-react";
 
 interface VisitNoteDetail {
   id: string;
   formSchemaSnapshot: FormSchemaSnapshot;
-  data: VisitNoteData;
+  data: VisitNoteData & { goalTracking?: Record<number, GoalTrackingData> };
   visitDate: string;
   submittedAt: string;
   qaStatus: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
@@ -53,6 +56,13 @@ interface VisitNoteDetail {
     scheduledStart: string;
     scheduledEnd: string;
   } | null;
+  carePlanId?: string | null;
+  carePlan?: {
+    id: string;
+    planNumber: string;
+    status: string;
+    formData: Record<string, unknown>;
+  } | null;
 }
 
 export default function EditVisitNotePage() {
@@ -66,6 +76,8 @@ export default function EditVisitNotePage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [resubmitForReview, setResubmitForReview] = React.useState(false);
+  const [goalTrackingData, setGoalTrackingData] = React.useState<Record<number, GoalTrackingData>>({});
+  const [carePlanGoals, setCarePlanGoals] = React.useState<CarePlanGoalInfo[]>([]);
 
   // Redirect sponsors away from edit page
   React.useEffect(() => {
@@ -86,6 +98,17 @@ export default function EditVisitNotePage() {
         }
 
         setVisitNote(data.visitNote);
+
+        // Initialize goal tracking data from visit note
+        if (data.visitNote.data?.goalTracking) {
+          setGoalTrackingData(data.visitNote.data.goalTracking);
+        }
+
+        // Extract goals from care plan if available
+        if (data.visitNote.carePlan?.formData) {
+          const goals = extractGoalsFromCarePlan(data.visitNote.carePlan.formData);
+          setCarePlanGoals(goals);
+        }
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load visit note";
@@ -109,11 +132,19 @@ export default function EditVisitNotePage() {
     setError(null);
 
     try {
+      // Merge goal tracking data if present
+      const mergedData = {
+        ...data,
+        ...(visitNote?.carePlan && Object.keys(goalTrackingData).length > 0
+          ? { goalTracking: goalTrackingData }
+          : {}),
+      };
+
       const response = await fetch(`/api/visit-notes/${noteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          data,
+          data: mergedData,
           resubmit: resubmitForReview,
         }),
       });
@@ -356,6 +387,25 @@ export default function EditVisitNotePage() {
                   : "Save Changes"
               }
             />
+
+            {/* Goal Tracking Section */}
+            {visitNote.carePlan && carePlanGoals.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <div className="flex items-center gap-2 mb-4">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Goal Tracking</h3>
+                  <span className="text-sm text-foreground-secondary">
+                    (Care Plan #{visitNote.carePlan.planNumber})
+                  </span>
+                </div>
+                <GoalTrackingContainer
+                  carePlanId={visitNote.carePlan.id}
+                  data={goalTrackingData}
+                  onChange={setGoalTrackingData}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
 
             {/* Resubmit option for rejected notes */}
             {isRejected && (

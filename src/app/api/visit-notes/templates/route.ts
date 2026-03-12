@@ -186,6 +186,19 @@ export async function POST(request: Request) {
       }
     }
 
+    // If creating an enabled template, disable all other templates first
+    if (isEnabled) {
+      await prisma.formTemplate.updateMany({
+        where: {
+          companyId: session.user.companyId,
+          isEnabled: true,
+        },
+        data: {
+          isEnabled: false,
+        },
+      });
+    }
+
     // Create template with sections and fields
     const template = await prisma.formTemplate.create({
       data: {

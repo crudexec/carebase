@@ -286,7 +286,25 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     };
 
     // Status
-    if (data.status !== undefined) updateData.status = data.status;
+    if (data.status !== undefined) {
+      updateData.status = data.status;
+
+      // When activating a care plan, deactivate any other active care plans for the same client
+      if (data.status === "ACTIVE") {
+        // Move other active care plans to DRAFT (inactive) so they can be re-activated later
+        await prisma.carePlan.updateMany({
+          where: {
+            clientId: carePlan.clientId,
+            companyId: session.user.companyId,
+            status: "ACTIVE",
+            id: { not: id },
+          },
+          data: {
+            status: "DRAFT",
+          },
+        });
+      }
+    }
 
     // Plan dates
     if (data.effectiveDate !== undefined) updateData.effectiveDate = processDate(data.effectiveDate);
@@ -478,16 +496,33 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Only allow deleting draft care plans
-    if (carePlan.status !== "DRAFT") {
-      return NextResponse.json(
-        { error: "Can only delete draft care plans" },
-        { status: 400 }
-      );
-    }
+    // Delete related records first to handle foreign key constraints
+    await prisma.$transaction(async (tx) => {
+      // Delete related diagnoses
+      await tx.carePlanDiagnosis.deleteMany({
+        where: { carePlanId: id },
+      });
 
-    await prisma.carePlan.delete({
-      where: { id },
+      // Delete related orders
+      await tx.carePlanOrder.deleteMany({
+        where: { carePlanId: id },
+      });
+
+      // Delete related tasks
+      await tx.carePlanTask.deleteMany({
+        where: { carePlanId: id },
+      });
+
+      // Unlink visit notes (don't delete them, just remove the association)
+      await tx.visitNote.updateMany({
+        where: { carePlanId: id },
+        data: { carePlanId: null },
+      });
+
+      // Delete the care plan
+      await tx.carePlan.delete({
+        where: { id },
+      });
     });
 
     // Create audit log
@@ -500,6 +535,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
         entityId: id,
         changes: {
           clientName: `${carePlan.client.firstName} ${carePlan.client.lastName}`,
+          previousStatus: carePlan.status,
         },
       },
     });

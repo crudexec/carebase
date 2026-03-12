@@ -151,7 +151,11 @@ export function RepeatableGroupField({
         );
 
       case "SINGLE_CHOICE": {
-        const options = (fieldConfig.options as string[]) || [];
+        const rawOptions = (fieldConfig.options as (string | { value: string; label: string })[]) || [];
+        // Handle both string[] and {value, label}[] formats
+        const options = rawOptions.map((opt) =>
+          typeof opt === "string" ? { value: opt, label: opt } : opt
+        );
         return (
           <Select
             value={(fieldValue as string) || ""}
@@ -161,8 +165,8 @@ export function RepeatableGroupField({
           >
             <option value="">Select...</option>
             {options.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </Select>

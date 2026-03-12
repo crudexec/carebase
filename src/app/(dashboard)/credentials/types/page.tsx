@@ -9,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Badge,
   Input,
   Label,
   Select,
@@ -25,11 +24,10 @@ import {
   Trash2,
   X,
   Award,
-  ChevronUp,
-  ChevronDown,
   RotateCcw,
   ArrowLeft,
 } from "lucide-react";
+import { DataTable, ColumnDef, SortDirection, StatusCell } from "@/components/ui/data-table";
 
 interface CredentialType {
   id: string;
@@ -71,9 +69,6 @@ const ROLE_OPTIONS = [
   { value: "SUPERVISOR", label: "Supervisor" },
 ];
 
-type SortField = "name" | "category" | "validity" | "credentials";
-type SortDirection = "asc" | "desc";
-
 export default function CredentialTypesPage() {
   const router = useRouter();
   const [credentialTypes, setCredentialTypes] = React.useState<CredentialType[]>([]);
@@ -81,7 +76,7 @@ export default function CredentialTypesPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("");
-  const [sortField, setSortField] = React.useState<SortField>("name");
+  const [sortColumn, setSortColumn] = React.useState<string | null>("name");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
 
   // Modal states
@@ -280,22 +275,9 @@ export default function CredentialTypesPage() {
     setShowEditModal(true);
   };
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" />
-    ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" />
-    );
+  const handleSortChange = (column: string, direction: SortDirection) => {
+    setSortColumn(direction ? column : null);
+    setSortDirection(direction);
   };
 
   const filteredAndSortedTypes = React.useMemo(() => {
@@ -308,27 +290,109 @@ export default function CredentialTypesPage() {
       return matchesSearch && matchesCategory;
     });
 
-    result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "name":
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case "category":
-          comparison = CATEGORY_LABELS[a.category].localeCompare(CATEGORY_LABELS[b.category]);
-          break;
-        case "validity":
-          comparison = a.defaultValidityMonths - b.defaultValidityMonths;
-          break;
-        case "credentials":
-          comparison = (a._count?.credentials || 0) - (b._count?.credentials || 0);
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
+    if (sortColumn && sortDirection) {
+      result.sort((a, b) => {
+        let comparison = 0;
+        switch (sortColumn) {
+          case "name":
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case "category":
+            comparison = CATEGORY_LABELS[a.category].localeCompare(CATEGORY_LABELS[b.category]);
+            break;
+          case "validity":
+            comparison = a.defaultValidityMonths - b.defaultValidityMonths;
+            break;
+          case "credentials":
+            comparison = (a._count?.credentials || 0) - (b._count?.credentials || 0);
+            break;
+        }
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
 
     return result;
-  }, [credentialTypes, searchQuery, categoryFilter, sortField, sortDirection]);
+  }, [credentialTypes, searchQuery, categoryFilter, sortColumn, sortDirection]);
+
+  // Column definitions for DataTable
+  const columns: ColumnDef<CredentialType>[] = [
+    {
+      id: "name",
+      header: "Name",
+      sortable: true,
+      cell: (type) => (
+        <div>
+          <p className="text-xs font-medium text-gray-900">
+            {type.name}
+            {type.isRequired && (
+              <span className="ml-1.5 text-[10px] text-yellow-600">(Required)</span>
+            )}
+          </p>
+          {type.description && (
+            <p className="text-[10px] text-gray-500 line-clamp-1">
+              {type.description}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "category",
+      header: "Category",
+      sortable: true,
+      cell: (type) => (
+        <StatusCell
+          status={type.category}
+          label={CATEGORY_LABELS[type.category]}
+          variant={CATEGORY_COLORS[type.category] === "default" ? "default" : CATEGORY_COLORS[type.category]}
+        />
+      ),
+    },
+    {
+      id: "validity",
+      header: "Validity",
+      sortable: true,
+      cell: (type) => (
+        <span className="text-[11px] text-gray-600">
+          {type.defaultValidityMonths === 0
+            ? "No expiration"
+            : `${type.defaultValidityMonths} months`}
+        </span>
+      ),
+    },
+    {
+      id: "reminders",
+      header: "Reminders",
+      cell: (type) => (
+        <span className="text-[11px] text-gray-600">
+          {type.reminderDays.length > 0
+            ? type.reminderDays.map((d) => `${d}d`).join(", ")
+            : "None"}
+        </span>
+      ),
+    },
+    {
+      id: "credentials",
+      header: "In Use",
+      sortable: true,
+      align: "center",
+      cell: (type) => (
+        <span className="text-[11px] text-gray-600">{type._count?.credentials || 0}</span>
+      ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      align: "center",
+      cell: (type) => (
+        <StatusCell
+          status={type.isActive ? "active" : "inactive"}
+          label={type.isActive ? "Active" : "Inactive"}
+          variant={type.isActive ? "success" : "error"}
+        />
+      ),
+    },
+  ];
 
   const breadcrumbItems = [
     { label: "Credentials", href: "/credentials" },
@@ -411,139 +475,61 @@ export default function CredentialTypesPage() {
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : filteredAndSortedTypes.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Award className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
-            <p className="text-foreground-secondary">No credential types found</p>
-            <Button className="mt-4" onClick={() => setShowAddModal(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Credential Type
-            </Button>
-          </CardContent>
-        </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-secondary">
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("name")}
+        <div className="space-y-2">
+          <DataTable
+            data={filteredAndSortedTypes}
+            columns={columns}
+            isLoading={isLoading}
+            getRowKey={(type) => type.id}
+            onRowClick={(type) => openEditModal(type)}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+            emptyIcon={<Award className="w-8 h-8" />}
+            emptyMessage="No credential types found"
+            getRowClassName={(type) =>
+              `${!type.isActive ? "opacity-60" : ""} ${deletingId === type.id ? "opacity-0 scale-95" : ""}`
+            }
+            rowActions={(type) => (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openEditModal(type)}
+                  title="Edit"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleToggleActive(type)}
+                  title={type.isActive ? "Deactivate" : "Reactivate"}
+                >
+                  {type.isActive ? (
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4 text-green-500" />
+                  )}
+                </Button>
+                {(type._count?.credentials || 0) === 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteClick(type)}
+                    title="Delete permanently"
                   >
-                    Name <SortIcon field="name" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("category")}
-                  >
-                    Category <SortIcon field="category" />
-                  </th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("validity")}
-                  >
-                    Validity <SortIcon field="validity" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Reminders</th>
-                  <th
-                    className="text-left p-4 font-medium text-foreground-secondary cursor-pointer hover:text-foreground"
-                    onClick={() => handleSort("credentials")}
-                  >
-                    In Use <SortIcon field="credentials" />
-                  </th>
-                  <th className="text-left p-4 font-medium text-foreground-secondary">Status</th>
-                  <th className="text-right p-4 font-medium text-foreground-secondary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedTypes.map((type) => (
-                  <tr
-                    key={type.id}
-                    className={`border-b border-border hover:bg-background-secondary/50 transition-all duration-300 ${
-                      !type.isActive ? "opacity-60" : ""
-                    } ${deletingId === type.id ? "opacity-0 scale-95" : ""}`}
-                  >
-                    <td className="p-4">
-                      <div>
-                        <p className="font-medium">
-                          {type.name}
-                          {type.isRequired && (
-                            <span className="ml-2 text-xs text-warning">(Required)</span>
-                          )}
-                        </p>
-                        {type.description && (
-                          <p className="text-xs text-foreground-secondary line-clamp-1">
-                            {type.description}
-                          </p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge variant={CATEGORY_COLORS[type.category]}>
-                        {CATEGORY_LABELS[type.category]}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-foreground-secondary">
-                      {type.defaultValidityMonths === 0
-                        ? "No expiration"
-                        : `${type.defaultValidityMonths} months`}
-                    </td>
-                    <td className="p-4 text-foreground-secondary">
-                      {type.reminderDays.length > 0
-                        ? type.reminderDays.map((d) => `${d}d`).join(", ")
-                        : "None"}
-                    </td>
-                    <td className="p-4 text-foreground-secondary">{type._count?.credentials || 0}</td>
-                    <td className="p-4">
-                      <Badge variant={type.isActive ? "success" : "error"}>
-                        {type.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(type)}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(type)}
-                          title={type.isActive ? "Deactivate" : "Reactivate"}
-                        >
-                          {type.isActive ? (
-                            <Trash2 className="w-4 h-4 text-error" />
-                          ) : (
-                            <RotateCcw className="w-4 h-4 text-success" />
-                          )}
-                        </Button>
-                        {(type._count?.credentials || 0) === 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(type)}
-                            title="Delete permanently"
-                          >
-                            <X className="w-4 h-4 text-error" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 border-t border-border text-sm text-foreground-secondary">
+                    <X className="w-4 h-4 text-red-500" />
+                  </Button>
+                )}
+              </div>
+            )}
+          />
+          <div className="px-3 py-2 text-[11px] text-gray-500">
             Showing {filteredAndSortedTypes.length} of {credentialTypes.length} credential types
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Add Type Modal */}

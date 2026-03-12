@@ -33,7 +33,9 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface CarePlan {
   id: string;
@@ -116,6 +118,11 @@ export default function CarePlansPage() {
   const [clients, setClients] = React.useState<Client[]>([]);
   const [clientSearch, setClientSearch] = React.useState("");
   const [isLoadingClients, setIsLoadingClients] = React.useState(false);
+
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [carePlanToDelete, setCarePlanToDelete] = React.useState<CarePlan | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const fetchCarePlans = React.useCallback(async () => {
     try {
@@ -254,6 +261,62 @@ export default function CarePlansPage() {
     router.push(`/clients/${carePlan.client.id}/care-plans/${carePlan.id}`);
   };
 
+  const handleDeleteClick = (carePlan: CarePlan) => {
+    setCarePlanToDelete(carePlan);
+    setShowDeleteModal(true);
+    setOpenActionId(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!carePlanToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlanToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete care plan");
+      }
+
+      toast.success("Care plan deleted successfully");
+      setShowDeleteModal(false);
+      setCarePlanToDelete(null);
+      fetchCarePlans(); // Refresh the list
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete care plan";
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleRevertToDraft = async (carePlan: CarePlan) => {
+    setOpenActionId(null);
+
+    try {
+      const response = await fetch(`/api/care-plans/${carePlan.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "DRAFT" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to revert care plan to draft");
+      }
+
+      toast.success("Care plan reverted to draft");
+      fetchCarePlans(); // Refresh the list
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to revert care plan";
+      toast.error(errorMessage);
+    }
+  };
+
   // Column definitions
   const columns: ColumnDef<CarePlan>[] = [
     {
@@ -363,12 +426,18 @@ export default function CarePlansPage() {
             <Download className="w-4 h-4" />
             Download PDF
           </button>
+          {row.status !== "DRAFT" && (
+            <button
+              onClick={() => handleRevertToDraft(row)}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors"
+            >
+              <Edit2 className="w-4 h-4" />
+              Revert to Draft
+            </button>
+          )}
           <div className="border-t border-border my-1" />
           <button
-            onClick={() => {
-              // TODO: Implement delete with confirmation
-              setOpenActionId(null);
-            }}
+            onClick={() => handleDeleteClick(row)}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error hover:bg-error/10 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
@@ -558,6 +627,74 @@ export default function CarePlansPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && carePlanToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              if (!isDeleting) {
+                setShowDeleteModal(false);
+                setCarePlanToDelete(null);
+              }
+            }}
+          />
+          {/* Modal Content */}
+          <Card className="relative z-10 w-full max-w-md mx-4 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error/10">
+                  <AlertTriangle className="h-5 w-5 text-error" />
+                </div>
+                <h3 className="text-lg font-semibold">Delete Care Plan</h3>
+              </div>
+              <p className="text-foreground-secondary mb-2">
+                Are you sure you want to delete this care plan for{" "}
+                <span className="font-medium text-foreground">
+                  {carePlanToDelete.client.firstName} {carePlanToDelete.client.lastName}
+                </span>
+                ?
+              </p>
+              <p className="text-foreground-secondary text-sm mb-6">
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setCarePlanToDelete(null);
+                  }}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="error"
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>

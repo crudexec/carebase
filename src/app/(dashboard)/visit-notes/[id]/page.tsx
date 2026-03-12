@@ -25,6 +25,11 @@ import {
 } from "@/lib/visit-notes/types";
 import { ThresholdAlertBanner } from "@/components/visit-notes/threshold-alert-banner";
 import { BodyMapViewer } from "@/components/visit-notes/body-map-viewer";
+import {
+  GoalTrackingViewer,
+  extractGoalsFromCarePlan,
+} from "@/components/visit-notes/goal-tracking/goal-tracking-viewer";
+import { GoalTrackingData } from "@/lib/visit-notes/types";
 import { FormFieldType, UserRole } from "@prisma/client";
 import {
   Loader2,
@@ -43,6 +48,7 @@ import {
   XCircle,
   FileText,
   Printer,
+  ClipboardList,
 } from "lucide-react";
 import { Rating } from "@/components/ui";
 
@@ -704,6 +710,36 @@ export default function ViewVisitNotePage() {
           </CardContent>
         </Card>
       ))}
+
+      {/* Goal Tracking Data */}
+      {(() => {
+        const carePlan = (visitNote as unknown as { carePlan?: { id: string; planNumber: string; status: string; formData: Record<string, unknown> } }).carePlan;
+        const goalTrackingData = (visitNote.data as unknown as { goalTracking?: Record<number, GoalTrackingData> }).goalTracking;
+
+        if (carePlan && goalTrackingData && Object.keys(goalTrackingData).length > 0) {
+          const goals = extractGoalsFromCarePlan(carePlan.formData);
+
+          if (goals.length > 0) {
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-primary" />
+                    Goal Tracking
+                  </CardTitle>
+                  <CardDescription>
+                    Linked to Care Plan #{carePlan.planNumber}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GoalTrackingViewer goals={goals} data={goalTrackingData} />
+                </CardContent>
+              </Card>
+            );
+          }
+        }
+        return null;
+      })()}
 
       {/* Submission Info */}
       <Card>
