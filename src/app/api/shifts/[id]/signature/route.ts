@@ -50,6 +50,7 @@ export async function POST(
         id: true,
         status: true,
         carerId: true,
+        clientId: true,
         clientSignature: true,
       },
     });
@@ -58,12 +59,22 @@ export async function POST(
       return NextResponse.json({ error: "Shift not found" }, { status: 404 });
     }
 
-    // Only the assigned carer can submit a signature
-    if (shift.carerId !== user.id) {
-      return NextResponse.json(
-        { error: "Only the assigned carer can request client signature" },
-        { status: 403 }
-      );
+    // Verify access - carers can only access their own shifts
+    if (user.role === "CARER" && shift.carerId !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Sponsors can only access shifts for their clients
+    if (user.role === "SPONSOR") {
+      const client = await prisma.client.findFirst({
+        where: {
+          id: shift.clientId,
+          sponsorId: user.id,
+        },
+      });
+      if (!client) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     // Signature can only be captured for in-progress shifts

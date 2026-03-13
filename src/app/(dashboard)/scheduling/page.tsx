@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, RefreshCw, Filter, CalendarPlus, List, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, RefreshCw, Filter, CalendarPlus, List, Trash2, X, Loader2, Clock, User, MapPin } from "lucide-react";
 import { CalendarView } from "@/components/scheduling/calendar-view";
-import { ShiftCard, ShiftData } from "@/components/scheduling/shift-card";
+import { ShiftData } from "@/components/scheduling/shift-card";
+import { getShiftStatusConfig, formatTime, getShiftDuration } from "@/lib/scheduling";
 import { ShiftFormModal, ShiftFormData } from "@/components/scheduling/shift-form-modal";
 import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
 import { BulkShiftModal } from "@/components/scheduling/bulk-shift-modal";
@@ -223,94 +223,134 @@ export default function SchedulingPage() {
 
   // Count of scheduled shifts for delete confirmation
   const scheduledShiftsCount = shifts.filter((s) => s.status === "SCHEDULED").length;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const inProgressCount = shifts.filter((s) => s.status === "IN_PROGRESS").length;
+  const completedCount = shifts.filter((s) => s.status === "COMPLETED").length;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-heading-2 text-foreground">Scheduling</h1>
-          <p className="text-body-sm text-foreground-secondary mt-1">
-            Manage carer shifts and schedules
-          </p>
+    <div className="space-y-3">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Scheduling</h1>
+          <span className="text-xs text-gray-500">{shifts.length} shifts</span>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          {/* Filter Toggle */}
+          <button
             onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors ${
+              showFilters || filterCarerId || filterStatus
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
           >
-            <Filter className="w-4 h-4 mr-1" />
+            <Filter className="h-3 w-3" />
             Filters
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setShowListModal(true)}>
-            <List className="w-4 h-4 mr-1" />
+            {(filterCarerId || filterStatus) && (
+              <span className="ml-1 px-1 py-0.5 text-[10px] bg-blue-600 text-white rounded">
+                {(filterCarerId ? 1 : 0) + (filterStatus ? 1 : 0)}
+              </span>
+            )}
+          </button>
+
+          {/* View All */}
+          <button
+            onClick={() => setShowListModal(true)}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 rounded hover:bg-gray-100"
+          >
+            <List className="h-3 w-3" />
             View All
-          </Button>
-          <Button variant="ghost" size="sm" onClick={fetchShifts}>
-            <RefreshCw className="w-4 h-4 mr-1" />
-            Refresh
-          </Button>
+          </button>
+
+          {/* Refresh */}
+          <button
+            onClick={fetchShifts}
+            disabled={isLoading}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+            title="Refresh"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+
           {canManage && (
             <>
+              {/* Delete All */}
               {scheduledShiftsCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => setShowDeleteAllModal(true)}
-                  className="text-error hover:text-error hover:bg-error/10"
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 rounded hover:bg-red-50"
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Delete All ({scheduledShiftsCount})
-                </Button>
+                  <Trash2 className="h-3 w-3" />
+                  Delete ({scheduledShiftsCount})
+                </button>
               )}
-              <Button variant="secondary" onClick={() => setShowBulkModal(true)}>
-                <CalendarPlus className="w-4 h-4 mr-1" />
-                Bulk Schedule
-              </Button>
-              <Button onClick={handleAddClick}>
-                <Plus className="w-4 h-4 mr-1" />
+
+              {/* Bulk Schedule */}
+              <button
+                onClick={() => setShowBulkModal(true)}
+                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                <CalendarPlus className="h-3 w-3" />
+                Bulk
+              </button>
+
+              {/* Create Shift */}
+              <button
+                onClick={handleAddClick}
+                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+              >
+                <Plus className="h-3 w-3" />
                 Create Shift
-              </Button>
+              </button>
             </>
           )}
         </div>
       </div>
 
+      {/* Stats Bar - inline with header */}
+      <div className="flex items-center gap-3 text-[11px] -mt-1">
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="text-gray-500">{scheduledShiftsCount} scheduled</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="text-gray-500">{inProgressCount} in progress</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <span className="text-gray-500">{completedCount} completed</span>
+        </div>
+      </div>
+
       {/* Error Message */}
       {error && (
-        <div className="p-3 rounded-md bg-error/20 text-body-sm">
-          {error}
+        <div className="flex items-center justify-between p-2 rounded bg-red-50 border border-red-200 text-xs text-red-700">
+          <span>{error}</span>
           <button
             onClick={() => setError(null)}
-            className="ml-2 text-foreground-secondary hover:text-foreground"
+            className="p-0.5 rounded hover:bg-red-100"
           >
-            Dismiss
+            <X className="h-3 w-3" />
           </button>
         </div>
       )}
 
-      {/* Filters */}
+      {/* Filters Panel */}
       {showFilters && (
-        <div className="p-4 rounded-lg bg-background-secondary border space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-3 rounded border border-gray-200 bg-gray-50 space-y-3">
+          <div className="flex items-end gap-3 flex-wrap">
             {canManage && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground-secondary">
-                  Carer
-                </label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-gray-500 uppercase">Carer</label>
                 <select
                   value={filterCarerId}
-                  onChange={(e) => setFilterCarerId(e.target.value)}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  onChange={(e) => {
+                    setFilterCarerId(e.target.value);
+                    fetchShifts();
+                  }}
+                  className="w-40 rounded border border-gray-300 bg-white px-2 py-1 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">All Carers</option>
                   {caregivers.map((carer) => (
@@ -321,14 +361,15 @@ export default function SchedulingPage() {
                 </select>
               </div>
             )}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground-secondary">
-                Status
-              </label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-gray-500 uppercase">Status</label>
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  fetchShifts();
+                }}
+                className="w-32 rounded border border-gray-300 bg-white px-2 py-1 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">All Statuses</option>
                 <option value="SCHEDULED">Scheduled</option>
@@ -337,57 +378,146 @@ export default function SchedulingPage() {
                 <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setFilterCarerId("");
-                setFilterStatus("");
-              }}
-            >
-              Clear Filters
-            </Button>
-            <Button size="sm" onClick={fetchShifts}>
-              Apply
-            </Button>
+            {(filterCarerId || filterStatus) && (
+              <button
+                onClick={() => {
+                  setFilterCarerId("");
+                  setFilterStatus("");
+                  fetchShifts();
+                }}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Calendar View */}
-      <div className="min-h-[600px]">
-        <CalendarView
-          shifts={shifts}
-          onShiftClick={handleShiftClick}
-          onDateClick={handleDateClick}
-          selectedDate={selectedDate}
-        />
-      </div>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        </div>
+      )}
 
-      {/* Upcoming Shifts List (optional sidebar) */}
-      {shifts.filter((s) => s.status === "SCHEDULED").length > 0 && (
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Upcoming Shifts
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {shifts
-              .filter((s) => s.status === "SCHEDULED")
-              .sort(
-                (a, b) =>
-                  new Date(a.scheduledStart).getTime() -
-                  new Date(b.scheduledStart).getTime()
-              )
-              .slice(0, 6)
-              .map((shift) => (
-                <ShiftCard
-                  key={shift.id}
-                  shift={shift}
-                  onClick={() => handleShiftClick(shift)}
-                />
-              ))}
+      {/* Calendar View */}
+      {!isLoading && (
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
+          <CalendarView
+            shifts={shifts}
+            onShiftClick={handleShiftClick}
+            onDateClick={handleDateClick}
+            selectedDate={selectedDate}
+          />
+        </div>
+      )}
+
+      {/* Upcoming Shifts Table */}
+      {!isLoading && scheduledShiftsCount > 0 && (
+        <div className="bg-white rounded border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Date</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Time</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Client</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Carer</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 hidden md:table-cell">Location</th>
+                  <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shifts
+                  .filter((s) => s.status === "SCHEDULED")
+                  .sort(
+                    (a, b) =>
+                      new Date(a.scheduledStart).getTime() -
+                      new Date(b.scheduledStart).getTime()
+                  )
+                  .slice(0, 10)
+                  .map((shift, index) => {
+                    const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+                    const startTime = new Date(shift.scheduledStart);
+                    const endTime = new Date(shift.scheduledEnd);
+                    const statusConfig = getShiftStatusConfig(shift.status);
+                    return (
+                      <tr
+                        key={shift.id}
+                        className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+                        onClick={() => handleShiftClick(shift)}
+                      >
+                        <td className="px-3 py-2">
+                          <span className="text-[11px] font-medium text-gray-900">
+                            {startTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-gray-400" />
+                            <span className="text-[11px] text-gray-700">
+                              {formatTime(startTime)} - {formatTime(endTime)}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              ({getShiftDuration(startTime, endTime)})
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center text-[9px] font-medium text-blue-700">
+                              {shift.client.firstName[0]}{shift.client.lastName[0]}
+                            </div>
+                            <span className="text-[11px] font-medium text-gray-900">
+                              {shift.client.firstName} {shift.client.lastName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <User className="h-3 w-3 text-gray-400" />
+                            <span className="text-[11px] text-gray-700">
+                              {shift.carer.firstName} {shift.carer.lastName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 hidden md:table-cell">
+                          {shift.client.address ? (
+                            <div className="flex items-center gap-1 max-w-[200px]">
+                              <MapPin className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                              <span className="text-[10px] text-gray-500 truncate">
+                                {shift.client.address}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className={`inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded ${statusConfig.color}`}>
+                            {statusConfig.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-200 flex items-center justify-between">
+            <span className="text-[10px] text-gray-600">
+              Showing {Math.min(10, scheduledShiftsCount)} of {scheduledShiftsCount} upcoming shift{scheduledShiftsCount !== 1 ? "s" : ""}
+            </span>
+            {scheduledShiftsCount > 10 && (
+              <button
+                onClick={() => setShowListModal(true)}
+                className="text-[10px] text-blue-600 hover:underline"
+              >
+                View all
+              </button>
+            )}
           </div>
         </div>
       )}

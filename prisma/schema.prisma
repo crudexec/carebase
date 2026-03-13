@@ -110,6 +110,13 @@ enum EscalationStatus {
   RESOLVED
 }
 
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
 enum FormFieldType {
   TEXT_SHORT
   TEXT_LONG
@@ -572,6 +579,9 @@ model Company {
   // Goal hierarchies for cascading selections
   goalHierarchies GoalHierarchy[]
 
+  // Staff invitations
+  invites Invite[]
+
   @@index([isActive])
 }
 
@@ -734,6 +744,10 @@ model User {
   oasisAssessmentsGiven   OasisAssessment[]  @relation("OasisAssessor")
   oasisAssessmentsQAd     OasisAssessment[]  @relation("OasisQAReviewer")
   oasisResponsesModified  OasisResponse[]    @relation("OasisResponseModifier")
+
+  // Invitations
+  invitesCreated Invite[] @relation("InvitesCreated")
+  invitesUsed    Invite[] @relation("InvitesUsed")
 
   @@index([email])
   @@index([role])
@@ -1505,6 +1519,38 @@ model Notification {
   @@index([read])
   @@index([createdAt])
   @@index([companyId])
+}
+
+// ============================================
+// INVITATIONS
+// ============================================
+
+model Invite {
+  id        String       @id @default(cuid())
+  token     String       @unique @default(cuid())
+  email     String? // Optional: if set, only this email can use the invite
+  role      UserRole     @default(CARER)
+  status    InviteStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+  usedAt    DateTime?
+
+  // Company
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Created by
+  createdById String
+  createdBy   User   @relation("InvitesCreated", fields: [createdById], references: [id])
+
+  // Used by (when accepted)
+  usedById String?
+  usedBy   User?   @relation("InvitesUsed", fields: [usedById], references: [id])
+
+  @@index([token])
+  @@index([email])
+  @@index([companyId])
+  @@index([status])
 }
 
 model AuditLog {

@@ -7,14 +7,6 @@ import {
   Card,
   CardContent,
   Input,
-  Select,
-  Breadcrumb,
-  DataTable,
-  StatusCell,
-  DateRangeCell,
-  UserCell,
-  type ColumnDef,
-  type SortDirection,
 } from "@/components/ui";
 import {
   Plus,
@@ -30,12 +22,13 @@ import {
   Edit2,
   Trash2,
   Download,
-  CheckCircle,
-  Clock,
-  AlertCircle,
   AlertTriangle,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
+
+type SortDirection = "asc" | "desc" | null;
 
 interface CarePlan {
   id: string;
@@ -85,15 +78,15 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
-const STATUS_VARIANTS: Record<string, "primary" | "success" | "warning" | "error" | "default"> = {
-  DRAFT: "default",
-  PENDING_CLINICAL_REVIEW: "warning",
-  CLINICAL_APPROVED: "primary",
-  PENDING_CLIENT_SIGNATURE: "warning",
-  ACTIVE: "success",
-  REVISED: "primary",
-  COMPLETED: "success",
-  CANCELLED: "error",
+const STATUS_COLORS: Record<string, string> = {
+  DRAFT: "bg-gray-100 text-gray-600",
+  PENDING_CLINICAL_REVIEW: "bg-yellow-100 text-yellow-700",
+  CLINICAL_APPROVED: "bg-blue-100 text-blue-700",
+  PENDING_CLIENT_SIGNATURE: "bg-yellow-100 text-yellow-700",
+  ACTIVE: "bg-green-100 text-green-700",
+  REVISED: "bg-blue-100 text-blue-700",
+  COMPLETED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
 };
 
 export default function CarePlansPage() {
@@ -252,9 +245,39 @@ export default function CarePlansPage() {
     return result;
   }, [carePlans, search, sortColumn, sortDirection]);
 
-  const handleSortChange = (column: string, direction: SortDirection) => {
-    setSortColumn(direction ? column : null);
-    setSortDirection(direction);
+  // Sort header click handler
+  const handleHeaderClick = (column: string) => {
+    if (sortColumn === column) {
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
+        setSortColumn(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Render sort indicator
+  const renderSortIndicator = (column: string) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-3 w-3 inline ml-0.5" />
+    ) : (
+      <ChevronDown className="h-3 w-3 inline ml-0.5" />
+    );
+  };
+
+  // Helper to format date
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const handleRowClick = (carePlan: CarePlan) => {
@@ -317,242 +340,270 @@ export default function CarePlansPage() {
     }
   };
 
-  // Column definitions
-  const columns: ColumnDef<CarePlan>[] = [
-    {
-      id: "client",
-      header: "Client",
-      sortable: true,
-      minWidth: "200px",
-      cell: (row) => (
-        <UserCell
-          firstName={row.client.firstName}
-          lastName={row.client.lastName}
-          subtitle={row._count ? `${row._count.diagnoses} diagnoses, ${row._count.orders} orders` : undefined}
-        />
-      ),
-    },
-    {
-      id: "status",
-      header: "Status",
-      sortable: true,
-      width: "140px",
-      cell: (row) => (
-        <StatusCell
-          status={row.status}
-          label={STATUS_LABELS[row.status] || row.status}
-          variant={STATUS_VARIANTS[row.status] || "default"}
-        />
-      ),
-    },
-    {
-      id: "certPeriod",
-      header: "Certification Period",
-      sortable: true,
-      hideOnMobile: true,
-      minWidth: "180px",
-      cell: (row) => (
-        <DateRangeCell startDate={row.certStartDate} endDate={row.certEndDate} />
-      ),
-    },
-    {
-      id: "physician",
-      header: "Physician",
-      sortable: true,
-      hideOnMobile: true,
-      minWidth: "160px",
-      cell: (row) => row.physician ? (
-        <span className="text-foreground-secondary">
-          Dr. {row.physician.firstName} {row.physician.lastName}
-        </span>
-      ) : (
-        <span className="text-foreground-tertiary">-</span>
-      ),
-    },
-    {
-      id: "updatedAt",
-      header: "Last Updated",
-      sortable: true,
-      hideOnMobile: true,
-      width: "130px",
-      cell: (row) => (
-        <span className="text-foreground-secondary text-sm">
-          {new Date(row.updatedAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </span>
-      ),
-    },
-  ];
-
-  // Row actions
-  const renderRowActions = (row: CarePlan) => (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpenActionId(openActionId === row.id ? null : row.id);
-        }}
-        className="p-1.5 rounded-md hover:bg-background-secondary transition-colors"
-      >
-        <MoreHorizontal className="w-4 h-4 text-foreground-secondary" />
-      </button>
-
-      {openActionId === row.id && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-background border border-border rounded-lg shadow-lg py-1 z-20">
-          <button
-            onClick={() => router.push(`/clients/${row.client.id}/care-plans/${row.id}`)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors"
-          >
-            <Eye className="w-4 h-4" />
-            View Details
-          </button>
-          <button
-            onClick={() => router.push(`/clients/${row.client.id}/care-plans/${row.id}?edit=true`)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors"
-          >
-            <Edit2 className="w-4 h-4" />
-            Edit Care Plan
-          </button>
-          <button
-            onClick={() => {
-              // TODO: Implement download
-              setOpenActionId(null);
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Download PDF
-          </button>
-          {row.status !== "DRAFT" && (
-            <button
-              onClick={() => handleRevertToDraft(row)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors"
-            >
-              <Edit2 className="w-4 h-4" />
-              Revert to Draft
-            </button>
-          )}
-          <div className="border-t border-border my-1" />
-          <button
-            onClick={() => handleDeleteClick(row)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error hover:bg-error/10 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
-  // Stats for the header
-  const statusCounts = React.useMemo(() => {
-    const counts: Record<string, number> = {};
-    carePlans.forEach((cp) => {
-      counts[cp.status] = (counts[cp.status] || 0) + 1;
-    });
-    return counts;
-  }, [carePlans]);
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb items={[{ label: "Care Plans" }]} />
+    <div className="space-y-4">
+      {/* Header with Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Care Plans</h1>
+          <span className="text-xs text-gray-500">{total} total</span>
+        </div>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-heading-2 text-foreground">Plans of Care</h1>
-          <p className="text-body-sm text-foreground-secondary mt-1">
-            Manage and track client care plans
-          </p>
-        </div>
-        <Button onClick={() => setIsClientModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Care Plan
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-40 border border-gray-300 rounded px-2 py-1 pl-7 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
 
-      {/* Stats - Compact inline */}
-      <div className="flex items-center gap-6 text-sm flex-wrap">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-primary" />
-          <span className="font-semibold">{total}</span>
-          <span className="text-foreground-secondary">total</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 text-success" />
-          <span className="font-semibold">{statusCounts["ACTIVE"] || 0}</span>
-          <span className="text-foreground-secondary">active</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-warning" />
-          <span className="font-semibold">{(statusCounts["PENDING_CLINICAL_REVIEW"] || 0) + (statusCounts["PENDING_CLIENT_SIGNATURE"] || 0)}</span>
-          <span className="text-foreground-secondary">pending</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-foreground-tertiary" />
-          <span className="font-semibold">{statusCounts["DRAFT"] || 0}</span>
-          <span className="text-foreground-secondary">drafts</span>
-        </div>
-      </div>
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">All Statuses</option>
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-tertiary" />
-          <Input
-            type="text"
-            placeholder="Search by client or physician..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          {/* Refresh */}
+          <button
+            onClick={() => fetchCarePlans()}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+
+          {/* New Care Plan */}
+          <button
+            onClick={() => setIsClientModalOpen(true)}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            <Plus className="h-3 w-3" />
+            New Care Plan
+          </button>
         </div>
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="sm:w-48"
-        >
-          <option value="">All Statuses</option>
-          {Object.entries(STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </Select>
-        <Button variant="ghost" onClick={fetchCarePlans} className="sm:w-auto">
-          <RefreshCw className="w-4 h-4" />
-        </Button>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 rounded-md bg-error/10 border border-error/20 text-body-sm text-error">
+        <div className="p-3 rounded-md bg-red-50 border border-red-200 text-xs text-red-600">
           {error}
         </div>
       )}
 
-      {/* Data Table */}
-      <DataTable
-        data={processedCarePlans}
-        columns={columns}
-        isLoading={isLoading}
-        getRowKey={(row) => row.id}
-        onRowClick={handleRowClick}
-        sortColumn={sortColumn}
-        sortDirection={sortDirection}
-        onSortChange={handleSortChange}
-        rowActions={renderRowActions}
-        emptyIcon={<FileText className="w-12 h-12" />}
-        emptyMessage={
-          search || statusFilter
-            ? "No care plans match your filters."
-            : "No care plans have been created yet."
-        }
-      />
+      {/* Care Plans Table */}
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("client")}
+                >
+                  Client {renderSortIndicator("client")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("status")}
+                >
+                  Status {renderSortIndicator("status")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 hidden md:table-cell"
+                  onClick={() => handleHeaderClick("certPeriod")}
+                >
+                  Certification Period {renderSortIndicator("certPeriod")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 hidden md:table-cell"
+                  onClick={() => handleHeaderClick("physician")}
+                >
+                  Physician {renderSortIndicator("physician")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 hidden md:table-cell"
+                  onClick={() => handleHeaderClick("updatedAt")}
+                >
+                  Last Updated {renderSortIndicator("updatedAt")}
+                </th>
+                <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 w-10">
+                  {/* Actions */}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="px-3 py-8 text-center">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-gray-400" />
+                    <p className="text-[11px] text-gray-500 mt-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : processedCarePlans.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-3 py-8 text-center">
+                    <FileText className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                    <p className="text-[11px] text-gray-500">
+                      {search || statusFilter
+                        ? "No care plans match your filters."
+                        : "No care plans have been created yet."}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                processedCarePlans.map((cp, index) => {
+                  const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+                  return (
+                    <tr
+                      key={cp.id}
+                      className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50 ${rowBg}`}
+                      onClick={() => handleRowClick(cp)}
+                    >
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-medium text-blue-700">
+                            {cp.client.firstName[0]}{cp.client.lastName[0]}
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-medium text-gray-900">
+                              {cp.client.firstName} {cp.client.lastName}
+                            </p>
+                            {cp._count && (
+                              <p className="text-[10px] text-gray-500">
+                                {cp._count.diagnoses} diagnoses, {cp._count.orders} orders
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-medium rounded ${STATUS_COLORS[cp.status] || "bg-gray-100 text-gray-600"}`}>
+                          {STATUS_LABELS[cp.status] || cp.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell">
+                        <div className="text-[10px] text-gray-600">
+                          {cp.certStartDate ? (
+                            <>
+                              <p>{formatDate(cp.certStartDate)}</p>
+                              <p className="text-gray-400">to {formatDate(cp.certEndDate)}</p>
+                            </>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell">
+                        {cp.physician ? (
+                          <span className="text-[11px] text-gray-600">
+                            Dr. {cp.physician.firstName} {cp.physician.lastName}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell">
+                        <span className="text-[10px] text-gray-600">
+                          {formatDate(cp.updatedAt)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenActionId(openActionId === cp.id ? null : cp.id);
+                            }}
+                            className="p-1 rounded hover:bg-gray-200"
+                          >
+                            <MoreHorizontal className="h-3.5 w-3.5 text-gray-500" />
+                          </button>
+                          {openActionId === cp.id && (
+                            <div className="absolute right-0 top-full mt-1 w-40 rounded shadow-lg bg-white border border-gray-200 z-50">
+                              <div className="py-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/clients/${cp.client.id}/care-plans/${cp.id}`);
+                                  }}
+                                  className="flex items-center w-full px-3 py-1.5 text-[11px] hover:bg-gray-100"
+                                >
+                                  <Eye className="mr-2 h-3 w-3" />
+                                  View Details
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/clients/${cp.client.id}/care-plans/${cp.id}?edit=true`);
+                                  }}
+                                  className="flex items-center w-full px-3 py-1.5 text-[11px] hover:bg-gray-100"
+                                >
+                                  <Edit2 className="mr-2 h-3 w-3" />
+                                  Edit Care Plan
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenActionId(null);
+                                  }}
+                                  className="flex items-center w-full px-3 py-1.5 text-[11px] hover:bg-gray-100"
+                                >
+                                  <Download className="mr-2 h-3 w-3" />
+                                  Download PDF
+                                </button>
+                                {cp.status !== "DRAFT" && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRevertToDraft(cp);
+                                    }}
+                                    className="flex items-center w-full px-3 py-1.5 text-[11px] hover:bg-gray-100"
+                                  >
+                                    <Edit2 className="mr-2 h-3 w-3" />
+                                    Revert to Draft
+                                  </button>
+                                )}
+                                <hr className="my-1 border-gray-200" />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(cp);
+                                  }}
+                                  className="flex items-center w-full px-3 py-1.5 text-[11px] text-red-600 hover:bg-gray-100"
+                                >
+                                  <Trash2 className="mr-2 h-3 w-3" />
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-200 text-[10px] text-gray-600">
+          Showing {processedCarePlans.length} care plan{processedCarePlans.length !== 1 ? "s" : ""}
+        </div>
+      </div>
 
       {/* Client Selection Modal */}
       {isClientModalOpen && (

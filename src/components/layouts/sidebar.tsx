@@ -302,6 +302,12 @@ const navigation: NavEntry[] = [
         roles: ["ADMIN"],
       },
       {
+        label: "Team Invites",
+        href: "/settings/invites",
+        icon: UserPlus,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
         label: "State Config",
         href: "/settings/state",
         icon: MapPin,

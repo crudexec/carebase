@@ -24,6 +24,7 @@ interface ShiftSelectionCardProps {
   isSelected: boolean;
   onSelect: (shift: ShiftData) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 export function ShiftSelectionCard({
@@ -31,6 +32,7 @@ export function ShiftSelectionCard({
   isSelected,
   onSelect,
   disabled = false,
+  compact = false,
 }: ShiftSelectionCardProps) {
   const hasNote = shift.hasVisitNote;
   const isDisabled = disabled || hasNote;
@@ -44,6 +46,39 @@ export function ShiftSelectionCard({
   };
 
   const clientInitials = `${shift.client.firstName[0]}${shift.client.lastName[0]}`;
+
+  // Compact version for sidebar
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={() => !isDisabled && onSelect(shift)}
+        disabled={isDisabled}
+        className={cn(
+          "w-full p-2 rounded-lg border text-left transition-all",
+          "focus:outline-none focus:ring-1 focus:ring-primary/20",
+          isSelected && "border-primary bg-primary/5",
+          !isSelected && !isDisabled && "border-border hover:border-primary/50 bg-background hover:bg-background-secondary",
+          isDisabled && "opacity-50 cursor-not-allowed bg-background-secondary"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-foreground-secondary">
+            <Clock className="h-3 w-3" />
+            <span className={isSelected ? "text-primary font-medium" : ""}>
+              {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
+            </span>
+          </div>
+          {isSelected && (
+            <Check className="h-3 w-3 text-primary" />
+          )}
+          {hasNote && !isSelected && (
+            <Badge variant="success" className="text-[9px] px-1 py-0">Done</Badge>
+          )}
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button

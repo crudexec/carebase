@@ -13,8 +13,6 @@ import {
   DAY_NAMES,
   MONTH_NAMES,
 } from "@/lib/scheduling";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "week" | "month";
 
@@ -101,41 +99,54 @@ export function CalendarView({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={navigatePrevious}>
+          <button
+            onClick={navigatePrevious}
+            className="p-1 rounded hover:bg-gray-200 text-gray-500"
+          >
             <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <h2 className="text-lg font-semibold text-foreground min-w-64 text-center">
+          </button>
+          <h2 className="text-sm font-semibold text-gray-900 min-w-48 text-center">
             {getHeaderText()}
           </h2>
-          <Button variant="ghost" size="sm" onClick={navigateNext}>
+          <button
+            onClick={navigateNext}
+            className="p-1 rounded hover:bg-gray-200 text-gray-500"
+          >
             <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={goToToday}>
+          </button>
+          <button
+            onClick={goToToday}
+            className="px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded"
+          >
             Today
-          </Button>
+          </button>
         </div>
 
-        <div className="flex items-center gap-1 bg-background-secondary rounded-lg p-1">
-          <Button
-            variant={viewMode === "week" ? "secondary" : "ghost"}
-            size="sm"
+        <div className="flex items-center gap-1 bg-gray-200 rounded p-0.5">
+          <button
             onClick={() => setViewMode("week")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors",
+              viewMode === "week" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+            )}
           >
-            <List className="w-4 h-4 mr-1" />
+            <List className="w-3 h-3" />
             Week
-          </Button>
-          <Button
-            variant={viewMode === "month" ? "secondary" : "ghost"}
-            size="sm"
+          </button>
+          <button
             onClick={() => setViewMode("month")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors",
+              viewMode === "month" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+            )}
           >
-            <Calendar className="w-4 h-4 mr-1" />
+            <Calendar className="w-3 h-3" />
             Month
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -191,7 +202,7 @@ interface WeekViewProps {
 
 function WeekView({ dates, shiftsByDate, onShiftClick, onDateClick, selectedDate }: WeekViewProps) {
   return (
-    <div className="grid grid-cols-7 gap-2 flex-1">
+    <div className="grid grid-cols-7 gap-px bg-gray-200">
       {dates.map((date, index) => {
         const dateKey = date.toDateString();
         const dayShifts = shiftsByDate.get(dateKey) || [];
@@ -201,26 +212,25 @@ function WeekView({ dates, shiftsByDate, onShiftClick, onDateClick, selectedDate
           <div
             key={index}
             className={cn(
-              "flex flex-col rounded-lg border bg-background min-h-48 overflow-hidden",
-              isToday(date) && "border-primary",
-              isSelected && "ring-2 ring-primary"
+              "flex flex-col bg-white min-h-28 overflow-hidden",
+              isSelected && "ring-2 ring-inset ring-blue-500"
             )}
           >
             {/* Day Header */}
             <button
               onClick={() => onDateClick?.(date)}
               className={cn(
-                "p-2 border-b text-center transition-colors hover:bg-background-secondary",
-                isToday(date) && "bg-primary/10"
+                "px-1.5 py-1 border-b border-gray-100 text-center transition-colors hover:bg-gray-50",
+                isToday(date) && "bg-blue-50"
               )}
             >
-              <div className="text-xs text-foreground-secondary font-medium">
+              <div className="text-[9px] text-gray-500 font-medium uppercase">
                 {DAY_NAMES[date.getDay()]}
               </div>
               <div
                 className={cn(
-                  "text-lg font-semibold",
-                  isToday(date) ? "text-primary" : "text-foreground"
+                  "text-sm font-semibold",
+                  isToday(date) ? "text-blue-600" : "text-gray-900"
                 )}
               >
                 {date.getDate()}
@@ -228,9 +238,9 @@ function WeekView({ dates, shiftsByDate, onShiftClick, onDateClick, selectedDate
             </button>
 
             {/* Shifts */}
-            <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+            <div className="flex-1 p-0.5 space-y-0.5 overflow-y-auto">
               {dayShifts.length === 0 ? (
-                <div className="text-xs text-foreground-tertiary text-center py-4">
+                <div className="text-[9px] text-gray-400 text-center py-1">
                   No shifts
                 </div>
               ) : (
@@ -273,18 +283,18 @@ function MonthView({
   onShowDayDetail,
 }: MonthViewProps) {
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col">
       {/* Day Headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-px bg-gray-200">
         {DAY_NAMES.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-foreground-secondary py-2">
+          <div key={day} className="text-center text-[10px] font-medium text-gray-500 uppercase py-1.5 bg-gray-50">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 flex-1">
+      <div className="grid grid-cols-7 gap-px bg-gray-200">
         {dates.map((date, index) => {
           const dateKey = date.toDateString();
           const dayShifts = shiftsByDate.get(dateKey) || [];
@@ -296,22 +306,22 @@ function MonthView({
               key={index}
               onClick={() => onDateClick?.(date)}
               className={cn(
-                "p-1 rounded border text-left transition-all min-h-24",
-                "hover:border-primary/50 hover:bg-background-secondary",
-                isCurrentMonth ? "bg-background" : "bg-background-secondary/50 opacity-50",
-                isToday(date) && "border-primary",
-                isSelected && "ring-2 ring-primary"
+                "p-1 text-left transition-all min-h-20 bg-white",
+                "hover:bg-blue-50/50",
+                !isCurrentMonth && "bg-gray-50/50 opacity-50",
+                isToday(date) && "bg-blue-50",
+                isSelected && "ring-2 ring-inset ring-blue-500"
               )}
             >
               <div
                 className={cn(
-                  "text-sm font-medium mb-1",
-                  isToday(date) ? "text-primary" : "text-foreground-secondary"
+                  "text-xs font-medium",
+                  isToday(date) ? "text-blue-600" : "text-gray-600"
                 )}
               >
                 {date.getDate()}
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-0.5 mt-0.5">
                 {dayShifts.slice(0, 2).map((shift) => (
                   <div
                     key={shift.id}
@@ -319,7 +329,7 @@ function MonthView({
                       e.stopPropagation();
                       onShiftClick?.(shift);
                     }}
-                    className="text-[10px] p-0.5 rounded bg-primary/20 text-primary truncate cursor-pointer hover:bg-primary/30"
+                    className="text-[9px] px-1 py-0.5 rounded bg-blue-100 text-blue-700 truncate cursor-pointer hover:bg-blue-200"
                   >
                     {shift.client.firstName} {shift.client.lastName[0]}.
                   </div>
@@ -338,7 +348,7 @@ function MonthView({
                         onShowDayDetail?.(date, dayShifts);
                       }
                     }}
-                    className="text-[10px] text-primary font-medium hover:text-primary/80 hover:underline transition-colors w-full text-left cursor-pointer block"
+                    className="text-[9px] text-blue-600 font-medium hover:underline cursor-pointer block"
                   >
                     +{dayShifts.length - 2} more
                   </span>
@@ -374,9 +384,8 @@ function DayDetailModal({ date, shifts, onClose, onShiftClick }: DayDetailModalP
   const formatDateHeader = (d: Date) => {
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
-      month: "long",
+      month: "short",
       day: "numeric",
-      year: "numeric",
     };
     return d.toLocaleDateString("en-US", options);
   };
@@ -388,92 +397,77 @@ function DayDetailModal({ date, shifts, onClose, onShiftClick }: DayDetailModalP
   const getStatusColor = (status: string) => {
     switch (status) {
       case "SCHEDULED":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-blue-100 text-blue-700";
       case "IN_PROGRESS":
-        return "bg-amber-100 text-amber-700 border-amber-200";
+        return "bg-amber-100 text-amber-700";
       case "COMPLETED":
-        return "bg-green-100 text-green-700 border-green-200";
+        return "bg-green-100 text-green-700";
       case "CANCELLED":
-        return "bg-red-100 text-red-700 border-red-200";
+        return "bg-red-100 text-red-700";
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            {formatDateHeader(date)}
-          </CardTitle>
-          <button
-            onClick={onClose}
-            className="text-foreground-secondary hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-foreground-secondary">
-              {shifts.length} shift{shifts.length !== 1 ? "s" : ""} scheduled
-            </span>
+      <div className="bg-white rounded-lg border border-gray-200 shadow-lg w-full max-w-md">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-semibold text-gray-900">{formatDateHeader(date)}</span>
             {isToday(date) && (
-              <Badge variant="primary" className="text-primary border-primary">
-                Today
-              </Badge>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">Today</span>
             )}
           </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          <div className="max-h-[400px] overflow-y-auto pr-2">
-            <div className="space-y-3">
-              {sortedShifts.map((shift) => (
-                <button
-                  key={shift.id}
-                  onClick={() => onShiftClick?.(shift)}
-                  className="w-full p-4 rounded-lg border bg-background hover:bg-background-secondary/50 hover:border-primary/30 transition-all text-left group"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <User className="w-4 h-4 text-foreground-secondary" />
-                        <span className="font-medium text-foreground truncate">
-                          {shift.client.firstName} {shift.client.lastName}
-                        </span>
-                      </div>
+        <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
+          <span className="text-xs text-gray-600">
+            {shifts.length} shift{shifts.length !== 1 ? "s" : ""}
+          </span>
+        </div>
 
-                      <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>
-                          {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
-                        </span>
-                      </div>
-
-                      {shift.carer && (
-                        <div className="mt-2 text-xs text-foreground-tertiary">
-                          Carer: {shift.carer.firstName} {shift.carer.lastName}
-                        </div>
-                      )}
+        <div className="max-h-[320px] overflow-y-auto">
+          <div className="divide-y divide-gray-100">
+            {sortedShifts.map((shift) => (
+              <button
+                key={shift.id}
+                onClick={() => onShiftClick?.(shift)}
+                className="w-full px-4 py-2.5 hover:bg-blue-50/50 transition-colors text-left"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <User className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs font-medium text-gray-900 truncate">
+                        {shift.client.firstName} {shift.client.lastName}
+                      </span>
                     </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge
-                        variant="default"
-                        className={cn("text-xs", getStatusColor(shift.status))}
-                      >
-                        {shift.status.replace("_", " ")}
-                      </Badge>
-                      <ChevronRight className="w-4 h-4 text-foreground-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Clock className="w-3 h-3 text-gray-400" />
+                      <span className="text-[11px] text-gray-600">
+                        {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
+                      </span>
                     </div>
+                    {shift.carer && (
+                      <div className="text-[10px] text-gray-500 mt-1">
+                        {shift.carer.firstName} {shift.carer.lastName}
+                      </div>
+                    )}
                   </div>
-                </button>
-              ))}
-            </div>
+                  <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", getStatusColor(shift.status))}>
+                    {shift.status.replace("_", " ")}
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

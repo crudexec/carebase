@@ -11,9 +11,7 @@ import {
   Badge,
   Input,
   Label,
-  Select,
 } from "@/components/ui";
-import { DataTable, ColumnDef, SortDirection, StatusCell, DateCell } from "@/components/ui/data-table";
 import {
   Plus,
   RefreshCw,
@@ -27,7 +25,12 @@ import {
   Heart,
   AlertTriangle,
   Power,
+  Loader2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
+
+type SortDirection = "asc" | "desc" | null;
 
 interface SponsoredClient {
   id: string;
@@ -446,9 +449,39 @@ export default function SponsorsPage() {
     }
   };
 
-  const handleSortChange = (column: string, direction: SortDirection) => {
-    setSortField(direction ? (column as SortField) : null);
-    setSortDirection(direction);
+  // Sort header click handler
+  const handleHeaderClick = (column: SortField) => {
+    if (sortField === column) {
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
+        setSortField(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortField(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Render sort indicator
+  const renderSortIndicator = (column: SortField) => {
+    if (sortField !== column) return null;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-3 w-3 inline ml-0.5" />
+    ) : (
+      <ChevronDown className="h-3 w-3 inline ml-0.5" />
+    );
+  };
+
+  // Helper to format date
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const filteredAndSortedSponsors = React.useMemo(() => {
@@ -495,56 +528,66 @@ export default function SponsorsPage() {
   }, [sponsors, searchQuery, statusFilter, sortField, sortDirection]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-heading-2 text-foreground">Sponsors</h1>
-          <p className="text-body-sm text-foreground-secondary mt-1">
-            Manage family members and sponsors for your clients
-          </p>
+    <div className="space-y-4">
+      {/* Header with Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Sponsors</h1>
+          <span className="text-xs text-gray-500">{sponsors.length} total</span>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => fetchSponsors()}>
-            <RefreshCw className="w-4 h-4 mr-1" />
-            Refresh
-          </Button>
-          <Button variant="secondary" onClick={() => setShowInviteModal(true)}>
-            <Mail className="w-4 h-4 mr-1" />
-            Invite Sponsor
-          </Button>
-          <Button onClick={() => setShowAddModal(true)}>
-            <Plus className="w-4 h-4 mr-1" />
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-40 border border-gray-300 rounded px-2 py-1 pl-7 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          {/* Refresh */}
+          <button
+            onClick={() => fetchSponsors()}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+            title="Refresh"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+
+          {/* Invite Sponsor */}
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+          >
+            <Mail className="h-3 w-3" />
+            Invite
+          </button>
+
+          {/* Add Sponsor */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            <Plus className="h-3 w-3" />
             Add Sponsor
-          </Button>
+          </button>
         </div>
       </div>
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-48"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Error Message */}
       {error && (
@@ -560,146 +603,164 @@ export default function SponsorsPage() {
       )}
 
       {/* Sponsors Table */}
-      {(() => {
-        const columns: ColumnDef<Sponsor>[] = [
-          {
-            id: "name",
-            header: "Name",
-            sortable: true,
-            cell: (sponsor) => (
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-[10px] font-medium text-amber-700">
-                    {sponsor.firstName[0]}{sponsor.lastName[0]}
-                  </span>
-                </div>
-                <span className="text-xs font-medium text-gray-900">
-                  {sponsor.firstName} {sponsor.lastName}
-                </span>
-              </div>
-            ),
-          },
-          {
-            id: "email",
-            header: "Email",
-            accessorKey: "email",
-            sortable: true,
-          },
-          {
-            id: "phone",
-            header: "Phone",
-            cell: (sponsor) => sponsor.phone || "-",
-          },
-          {
-            id: "clients",
-            header: "Clients",
-            sortable: true,
-            cell: (sponsor) => (
-              <div className="flex items-center gap-1">
-                <Users className="w-3 h-3 text-gray-400" />
-                <span className="text-[11px]">{sponsor.clientCount}</span>
-                {sponsor.sponsoredClients.length > 0 && (
-                  <span className="text-gray-400 text-[10px] ml-1 truncate max-w-[100px]">
-                    ({sponsor.sponsoredClients.map((c) => `${c.firstName} ${c.lastName[0]}.`).join(", ")})
-                  </span>
-                )}
-              </div>
-            ),
-          },
-          {
-            id: "lastLogin",
-            header: "Last Login",
-            sortable: true,
-            cell: (sponsor) => <DateCell date={sponsor.lastLogin} />,
-          },
-          {
-            id: "status",
-            header: "Status",
-            sortable: true,
-            cell: (sponsor) => (
-              <StatusCell
-                status={sponsor.isActive ? "active" : "inactive"}
-                label={sponsor.isActive ? "Active" : "Inactive"}
-                variant={sponsor.isActive ? "success" : "error"}
-              />
-            ),
-          },
-        ];
-
-        return (
-          <>
-            <DataTable
-              data={filteredAndSortedSponsors}
-              columns={columns}
-              isLoading={isLoading}
-              getRowKey={(sponsor) => sponsor.id}
-              sortColumn={sortField}
-              sortDirection={sortDirection}
-              onSortChange={handleSortChange}
-              clickableRows={false}
-              emptyIcon={<Heart className="w-8 h-8" />}
-              emptyMessage="No sponsors found"
-              emptyState={
-                <div className="text-center">
-                  <Heart className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500 mb-4">No sponsors found</p>
-                  <div className="flex justify-center gap-2">
-                    <Button variant="secondary" onClick={() => setShowInviteModal(true)}>
-                      <Mail className="w-4 h-4 mr-1" />
-                      Invite Sponsor
-                    </Button>
-                    <Button onClick={() => setShowAddModal(true)}>
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Sponsor
-                    </Button>
-                  </div>
-                </div>
-              }
-              getRowClassName={(sponsor) => !sponsor.isActive ? "opacity-60" : ""}
-              rowActions={(sponsor) => (
-                <div className="flex items-center justify-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEditModal(sponsor)}
-                    title="Edit"
-                    className="h-6 w-6 p-0"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleActive(sponsor)}
-                    title={sponsor.isActive ? "Deactivate" : "Reactivate"}
-                    className="h-6 w-6 p-0"
-                  >
-                    {sponsor.isActive ? (
-                      <Power className="w-3 h-3 text-amber-500" />
-                    ) : (
-                      <RotateCcw className="w-3 h-3 text-green-500" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openDeleteModal(sponsor)}
-                    title="Delete permanently"
-                    className="h-6 w-6 p-0"
-                  >
-                    <Trash2 className="w-3 h-3 text-red-500" />
-                  </Button>
-                </div>
+      <div className="bg-white rounded border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("name")}
+                >
+                  Name {renderSortIndicator("name")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("email")}
+                >
+                  Email {renderSortIndicator("email")}
+                </th>
+                <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 hidden md:table-cell">
+                  Phone
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("clients")}
+                >
+                  Clients {renderSortIndicator("clients")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 hidden md:table-cell"
+                  onClick={() => handleHeaderClick("lastLogin")}
+                >
+                  Last Login {renderSortIndicator("lastLogin")}
+                </th>
+                <th
+                  className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleHeaderClick("status")}
+                >
+                  Status {renderSortIndicator("status")}
+                </th>
+                <th className="text-left px-3 py-1.5 text-[10px] font-semibold text-gray-600 w-24">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-3 py-8 text-center">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-gray-400" />
+                    <p className="text-[11px] text-gray-500 mt-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : filteredAndSortedSponsors.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-3 py-8 text-center">
+                    <Heart className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                    <p className="text-[11px] text-gray-500 mb-3">No sponsors found</p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => setShowInviteModal(true)}
+                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                      >
+                        <Mail className="h-3 w-3" />
+                        Invite Sponsor
+                      </button>
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Sponsor
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredAndSortedSponsors.map((sponsor, index) => {
+                  const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50/50";
+                  const opacity = sponsor.isActive ? "" : "opacity-60";
+                  return (
+                    <tr
+                      key={sponsor.id}
+                      className={`border-b border-gray-100 ${rowBg} ${opacity}`}
+                    >
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center text-[10px] font-medium text-amber-700">
+                            {sponsor.firstName[0]}{sponsor.lastName[0]}
+                          </div>
+                          <span className="text-[11px] font-medium text-gray-900">
+                            {sponsor.firstName} {sponsor.lastName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="text-[11px] text-gray-700">{sponsor.email}</span>
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell">
+                        <span className="text-[11px] text-gray-600">{sponsor.phone || "-"}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-gray-400" />
+                          <span className="text-[11px]">{sponsor.clientCount}</span>
+                          {sponsor.sponsoredClients.length > 0 && (
+                            <span className="text-gray-400 text-[10px] ml-1 truncate max-w-[100px]">
+                              ({sponsor.sponsoredClients.map((c) => `${c.firstName} ${c.lastName[0]}.`).join(", ")})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell">
+                        <span className="text-[10px] text-gray-600">{formatDate(sponsor.lastLogin)}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-medium rounded ${sponsor.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                          {sponsor.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEditModal(sponsor)}
+                            title="Edit"
+                            className="p-1 rounded hover:bg-gray-200"
+                          >
+                            <Edit2 className="w-3 h-3 text-gray-500" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleActive(sponsor)}
+                            title={sponsor.isActive ? "Deactivate" : "Reactivate"}
+                            className="p-1 rounded hover:bg-gray-200"
+                          >
+                            {sponsor.isActive ? (
+                              <Power className="w-3 h-3 text-amber-500" />
+                            ) : (
+                              <RotateCcw className="w-3 h-3 text-green-500" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(sponsor)}
+                            title="Delete permanently"
+                            className="p-1 rounded hover:bg-gray-200"
+                          >
+                            <Trash2 className="w-3 h-3 text-red-500" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
-            />
-            {filteredAndSortedSponsors.length > 0 && (
-              <div className="mt-2 text-[11px] text-gray-500">
-                Showing {filteredAndSortedSponsors.length} of {sponsors.length} sponsors
-              </div>
-            )}
-          </>
-        );
-      })()}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-3 py-1.5 bg-gray-100 border-t border-gray-200 text-[10px] text-gray-600">
+          Showing {filteredAndSortedSponsors.length} of {sponsors.length} sponsor{sponsors.length !== 1 ? "s" : ""}
+        </div>
+      </div>
 
       {/* Add Sponsor Modal */}
       {showAddModal && (

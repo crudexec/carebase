@@ -13,6 +13,8 @@ import {
   DateCell,
   UserCell,
   ConfirmDeleteModal,
+  Card,
+  CardContent,
   type ColumnDef,
   type SortDirection,
 } from "@/components/ui";
@@ -31,9 +33,20 @@ import {
   Trash2,
   Send,
   CheckCircle,
+  X,
+  User,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { VisitNoteListItem } from "@/lib/visit-notes/types";
 import { toast } from "sonner";
+
+interface Client {
+  id: string;
+  firstName: string;
+  lastName: string;
+  status: string;
+}
 
 // Relative time helper
 function getRelativeTime(dateString: string) {
@@ -152,6 +165,12 @@ export default function VisitNotesPage() {
   }>({ isOpen: false, noteId: "", clientName: "" });
   const [deletingIds, setDeletingIds] = React.useState<Set<string>>(new Set());
 
+  // Client picker modal state
+  const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
+  const [clients, setClients] = React.useState<Client[]>([]);
+  const [clientSearch, setClientSearch] = React.useState("");
+  const [isLoadingClients, setIsLoadingClients] = React.useState(false);
+
   const fetchVisitNotes = React.useCallback(async () => {
     try {
       setIsLoading(true);
@@ -170,6 +189,43 @@ export default function VisitNotesPage() {
   React.useEffect(() => {
     fetchVisitNotes();
   }, [fetchVisitNotes]);
+
+  // Fetch clients for modal
+  const fetchClients = React.useCallback(async (searchTerm: string = "") => {
+    try {
+      setIsLoadingClients(true);
+      const params = new URLSearchParams();
+      params.set("status", "ACTIVE");
+      params.set("limit", "20");
+      if (searchTerm) params.set("search", searchTerm);
+
+      const response = await fetch(`/api/clients?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setClients(data.clients || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+    } finally {
+      setIsLoadingClients(false);
+    }
+  }, []);
+
+  // Load clients when modal opens
+  React.useEffect(() => {
+    if (isClientModalOpen) {
+      fetchClients();
+    }
+  }, [isClientModalOpen, fetchClients]);
+
+  // Debounced client search
+  React.useEffect(() => {
+    if (!isClientModalOpen) return;
+    const timer = setTimeout(() => {
+      fetchClients(clientSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [clientSearch, isClientModalOpen, fetchClients]);
 
   // Close action menu when clicking outside
   React.useEffect(() => {
@@ -471,12 +527,10 @@ export default function VisitNotesPage() {
                   Templates
                 </Button>
               </Link>
-              <Link href="/visit-notes/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Note
-                </Button>
-              </Link>
+              <Button onClick={() => setIsClientModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Note
+              </Button>
             </>
           )}
         </div>
@@ -570,6 +624,95 @@ export default function VisitNotesPage() {
         description="Are you sure you want to delete this visit note? All associated data including comments and files will be permanently removed."
         itemName={deleteModal.clientName ? `Visit note for ${deleteModal.clientName}` : undefined}
       />
+
+      {/* Client Selection Modal */}
+      {isClientModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              setIsClientModalOpen(false);
+              setClientSearch("");
+            }}
+          />
+          {/* Modal Content */}
+          <Card className="relative z-10 w-full max-w-md mx-4 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-foreground">Select Client</h2>
+                <button
+                  onClick={() => {
+                    setIsClientModalOpen(false);
+                    setClientSearch("");
+                  }}
+                  className="p-1 rounded-lg hover:bg-background-secondary transition-colors"
+                >
+                  <X className="w-5 h-5 text-foreground-secondary" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-tertiary" />
+                  <Input
+                    type="text"
+                    placeholder="Search clients by name..."
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    className="pl-9"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Client List */}
+                <div className="max-h-72 overflow-y-auto">
+                  {isLoadingClients ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : clients.length === 0 ? (
+                    <div className="text-center py-8 text-foreground-secondary">
+                      {clientSearch
+                        ? "No clients found matching your search."
+                        : "No active clients available."}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {clients.map((client) => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          onClick={() => {
+                            setIsClientModalOpen(false);
+                            setClientSearch("");
+                            router.push(`/visit-notes/new?clientId=${client.id}`);
+                          }}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-background-secondary transition-colors text-left"
+                        >
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate">
+                              {client.firstName} {client.lastName}
+                            </p>
+                            <p className="text-xs text-foreground-secondary">
+                              Create visit note
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-foreground-tertiary flex-shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

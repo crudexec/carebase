@@ -1,16 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
+import { Loader2, Building2, AlertCircle, CheckCircle, UserPlus } from "lucide-react";
 
-export default function RegisterPage() {
+interface InviteInfo {
+  token: string;
+  email: string | null;
+  role: string;
+  expiresAt: string;
+  company: {
+    id: string;
+    name: string;
+  };
+}
+
+function InviteRegistrationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [invite, setInvite] = useState<InviteInfo | null>(null);
+  const [isValidating, setIsValidating] = useState(true);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,12 +36,43 @@ export default function RegisterPage() {
     phone: "",
     password: "",
     confirmPassword: "",
-    companyName: "",
-    companyAddress: "",
-    companyPhone: "",
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Validate the invite token
+  useEffect(() => {
+    async function validateToken() {
+      if (!token) {
+        setValidationError("No invite token provided");
+        setIsValidating(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/invites/validate?token=${token}`);
+        const data = await response.json();
+
+        if (!data.valid) {
+          setValidationError(data.error || "Invalid invite");
+          setIsValidating(false);
+          return;
+        }
+
+        setInvite(data.invite);
+        // Pre-fill email if the invite is for a specific email
+        if (data.invite.email) {
+          setFormData((prev) => ({ ...prev, email: data.invite.email }));
+        }
+      } catch {
+        setValidationError("Failed to validate invite");
+      } finally {
+        setIsValidating(false);
+      }
+    }
+
+    validateToken();
+  }, [token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -40,10 +88,6 @@ export default function RegisterPage() {
 
     // Client-side validation
     const validationErrors: string[] = [];
-
-    if (!formData.companyName.trim()) {
-      validationErrors.push("Company name is required");
-    }
 
     if (formData.password !== formData.confirmPassword) {
       validationErrors.push("Passwords do not match");
@@ -76,18 +120,16 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/auth/register-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          token,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
-          companyName: formData.companyName,
-          companyAddress: formData.companyAddress,
-          companyPhone: formData.companyPhone,
         }),
       });
 
@@ -107,6 +149,46 @@ export default function RegisterPage() {
     }
   };
 
+  // Loading state
+  if (isValidating) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-sm text-foreground-secondary">Validating invite...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Invalid token state
+  if (validationError || !invite) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="w-6 h-6 text-red-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-foreground mb-2">Invalid Invitation</h2>
+                <p className="text-sm text-foreground-secondary mb-6">
+                  {validationError || "This invitation link is not valid."}
+                </p>
+                <Link href="/login">
+                  <Button variant="secondary" className="w-full">
+                    Go to Login
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-background">
       <div className="w-full max-w-md animate-slideUp">
@@ -118,19 +200,26 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Invite Notice */}
-        <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-xs text-blue-800">
-            <strong>Have an invitation link?</strong> Use that link to join an existing organization instead of creating a new one.
+        {/* Invite Info */}
+        <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Building2 className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-900">{invite.company.name}</span>
+          </div>
+          <p className="text-xs text-blue-700">
+            You've been invited to join as <strong>{invite.role.replace("_", " ")}</strong>
           </p>
         </div>
 
         {/* Register Card */}
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Create a new organization</CardTitle>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle>Create your account</CardTitle>
             <CardDescription>
-              Register your care agency on CareBase
+              Complete your registration to join {invite.company.name}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -145,62 +234,6 @@ export default function RegisterPage() {
                   </ul>
                 </div>
               )}
-
-              {/* Company Section */}
-              <div className="p-4 rounded-lg bg-background-secondary border border-border space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Building2 className="w-4 h-4" />
-                  Company Details
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyName" required>
-                    Company Name
-                  </Label>
-                  <Input
-                    id="companyName"
-                    name="companyName"
-                    type="text"
-                    placeholder="Acme Care Services"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyAddress">
-                    Company Address
-                  </Label>
-                  <Input
-                    id="companyAddress"
-                    name="companyAddress"
-                    type="text"
-                    placeholder="123 Main St, City, State"
-                    value={formData.companyAddress}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyPhone">
-                    Company Phone
-                  </Label>
-                  <Input
-                    id="companyPhone"
-                    name="companyPhone"
-                    type="tel"
-                    placeholder="+1234567890"
-                    value={formData.companyPhone}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              {/* Admin Account Section */}
-              <div className="text-sm font-medium text-foreground pt-2">
-                Admin Account
-              </div>
 
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
@@ -250,14 +283,19 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                   autoComplete="email"
+                  disabled={!!invite.email}
                 />
+                {invite.email && (
+                  <p className="text-xs text-foreground-tertiary flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-green-600" />
+                    This invite is specifically for this email
+                  </p>
+                )}
               </div>
 
               {/* Phone Field */}
               <div className="space-y-2">
-                <Label htmlFor="phone">
-                  Phone Number
-                </Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
                   name="phone"
@@ -307,11 +345,7 @@ export default function RegisterPage() {
               </div>
 
               {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Create account"}
               </Button>
             </form>
@@ -319,10 +353,7 @@ export default function RegisterPage() {
             {/* Login Link */}
             <p className="text-center text-body-sm text-foreground-secondary mt-4">
               Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-foreground hover:underline font-medium"
-              >
+              <Link href="/login" className="text-foreground hover:underline font-medium">
                 Sign in
               </Link>
             </p>
@@ -335,5 +366,19 @@ export default function RegisterPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function InviteRegistrationPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </main>
+      }
+    >
+      <InviteRegistrationContent />
+    </Suspense>
   );
 }
