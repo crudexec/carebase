@@ -223,18 +223,6 @@ const navigation: NavEntry[] = [
         icon: ClipboardCheck,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"],
       },
-      {
-        label: "EVV Dashboard",
-        href: "/evv",
-        icon: MapPin,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
-      },
-      {
-        label: "EVV Reports",
-        href: "/evv/reports",
-        icon: BarChart3,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
-      },
     ],
   },
 
@@ -354,6 +342,18 @@ const navigation: NavEntry[] = [
         href: "/settings/evv",
         icon: MapPin,
         roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "EVV Dashboard",
+        href: "/evv",
+        icon: MapPin,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
+      },
+      {
+        label: "EVV Reports",
+        href: "/evv/reports",
+        icon: BarChart3,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
       },
     ],
   },
