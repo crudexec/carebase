@@ -182,7 +182,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     // Update template with sections in a transaction
-    const updatedTemplate = await prisma.$transaction(async (tx) => {
+    // Increase timeout to 30 seconds for large templates with many items
+    let deletedResponsesCount = 0;
+    const updatedTemplate = await prisma.$transaction(
+      async (tx) => {
       // Update template metadata
       const _template = await tx.assessmentTemplate.update({
         where: { id },
@@ -202,6 +205,31 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
       // If sections are provided, delete and recreate them
       if (sections) {
+        // First, get all existing item IDs for this template
+        const existingItems = await tx.assessmentTemplateItem.findMany({
+          where: {
+            section: {
+              templateId: id,
+            },
+          },
+          select: { id: true },
+        });
+
+        const existingItemIds = existingItems.map((item) => item.id);
+
+        // Delete responses that reference these items (to avoid FK constraint violation)
+        if (existingItemIds.length > 0) {
+          const deleteResult = await tx.assessmentResponse.deleteMany({
+            where: {
+              itemId: { in: existingItemIds },
+            },
+          });
+          deletedResponsesCount = deleteResult.count;
+          if (deletedResponsesCount > 0) {
+            console.log(`Deleted ${deletedResponsesCount} responses for ${existingItemIds.length} items`);
+          }
+        }
+
         // Delete existing sections (items will cascade delete)
         await tx.assessmentTemplateSection.deleteMany({
           where: { templateId: id },
@@ -224,22 +252,20 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             },
           });
 
-          // Create items for this section
-          for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
-            const item = section.items[itemIndex];
+          // Prepare items data for batch creation
+          if (section.items.length > 0) {
+            const itemsData = section.items.map((item, itemIndex) => {
+              // Combine all config into responseOptions for storage
+              let responseOptions = item.responseOptions || null;
+              if (item.listConfig || item.repeaterConfig) {
+                responseOptions = {
+                  ...(item.responseOptions ? { options: item.responseOptions } : {}),
+                  ...(item.listConfig ? { listConfig: item.listConfig } : {}),
+                  ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
+                };
+              }
 
-            // Combine all config into responseOptions for storage
-            let responseOptions = item.responseOptions || null;
-            if (item.listConfig || item.repeaterConfig) {
-              responseOptions = {
-                ...(item.responseOptions ? { options: item.responseOptions } : {}),
-                ...(item.listConfig ? { listConfig: item.listConfig } : {}),
-                ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
-              };
-            }
-
-            await tx.assessmentTemplateItem.create({
-              data: {
+              return {
                 sectionId: newSection.id,
                 code: item.code,
                 question: item.questionText,
@@ -252,7 +278,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 maxValue: item.maxValue ?? null,
                 scoreMapping: item.scoreMapping || null,
                 showIf: item.showIf || null,
-              },
+              };
+            });
+
+            // Batch create all items for this section
+            await tx.assessmentTemplateItem.createMany({
+              data: itemsData,
             });
           }
 
@@ -274,13 +305,26 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           },
         },
       });
-    });
+    },
+    {
+      maxWait: 10000, // 10 seconds max wait to acquire connection
+      timeout: 60000, // 60 seconds timeout for the transaction
+    }
+    );
 
     console.log("=== PATCH COMPLETE ===");
     console.log("Updated template sections:", updatedTemplate?.sections?.length);
+    if (deletedResponsesCount > 0) {
+      console.log(`Cleared ${deletedResponsesCount} assessment responses due to template restructure`);
+    }
     console.log("=== END ASSESSMENT TEMPLATE PATCH ===\n");
 
-    return NextResponse.json({ template: updatedTemplate });
+    return NextResponse.json({
+      template: updatedTemplate,
+      ...(deletedResponsesCount > 0 && {
+        warning: `Template update cleared ${deletedResponsesCount} existing assessment response(s)`
+      })
+    });
   } catch (error) {
     console.error("Error updating assessment template:", error);
     return NextResponse.json(
