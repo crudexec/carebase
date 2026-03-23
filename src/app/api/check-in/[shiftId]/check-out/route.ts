@@ -205,19 +205,25 @@ export async function POST(
     }
 
     // Check if this is the last day of the shift (or past the scheduled end)
-    const _isLastDay = isLastDayOfShift(shift.scheduledEnd);
+    const isLastDay = isLastDayOfShift(shift.scheduledEnd);
 
-    // Mark shift as COMPLETED and store EVV location data
+    // Update shift status based on whether it's the last day
+    // For multi-day shifts, only mark as COMPLETED on the last day
+    // Otherwise keep as IN_PROGRESS so carer can check in again tomorrow
     interface ShiftUpdateData {
-      actualEnd: Date;
-      status: "COMPLETED";
+      actualEnd?: Date;
+      status: "COMPLETED" | "IN_PROGRESS";
       checkOutLocation?: string;
     }
 
     const updateData: ShiftUpdateData = {
-      actualEnd: checkOutTime,
-      status: "COMPLETED",
+      status: isLastDay ? "COMPLETED" : "IN_PROGRESS",
     };
+
+    // Only set actualEnd on the last day when shift is fully completed
+    if (isLastDay) {
+      updateData.actualEnd = checkOutTime;
+    }
 
     // Store EVV location data
     if (evvData) {
@@ -230,6 +236,7 @@ export async function POST(
     });
 
     // Calculate total hours worked for the shift and deduct from authorization
+    // Only deduct on the last day to avoid partial/duplicate deductions for multi-day shifts
     const totalHoursWorked = calculateShiftHours({
       actualStart: shift.actualStart,
       actualEnd: checkOutTime,
@@ -237,20 +244,26 @@ export async function POST(
       scheduledEnd: shift.scheduledEnd,
     });
 
-    // Deduct units from the client's active authorization
-    const authResult = await deductAuthorizationUnits({
-      companyId: user.companyId,
-      clientId: shift.clientId,
-      hoursWorked: totalHoursWorked,
-      shiftId: shiftId,
-      userId: user.id,
-    });
+    let authResult = { success: false, authorizationId: null as string | null, unitsDeducted: 0, remainingUnits: 0 };
 
-    if (authResult.success && authResult.authorizationId) {
-      console.log(
-        `Authorization units deducted: ${authResult.unitsDeducted} units, ` +
-        `${authResult.remainingUnits} remaining`
-      );
+    if (isLastDay) {
+      // Deduct units from the client's active authorization only on the final day
+      authResult = await deductAuthorizationUnits({
+        companyId: user.companyId,
+        clientId: shift.clientId,
+        hoursWorked: totalHoursWorked,
+        shiftId: shiftId,
+        userId: user.id,
+      });
+
+      if (authResult.success && authResult.authorizationId) {
+        console.log(
+          `Authorization units deducted: ${authResult.unitsDeducted} units, ` +
+          `${authResult.remainingUnits} remaining`
+        );
+      }
+    } else {
+      console.log(`Multi-day shift: skipping authorization deduction until final day`);
     }
 
     // Create audit log for check-out with EVV data
@@ -349,20 +362,22 @@ export async function POST(
       ).catch(console.error);
     }
 
-    // Send SHIFT_COMPLETED notification to sponsor
-    sendNotificationToSponsor(
-      "SHIFT_COMPLETED",
-      shift.clientId,
-      {
-        carerName,
-        clientName,
-        shiftDate,
-        totalHours: actualHours.toFixed(1),
-        checkInTime: shift.actualStart?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) || "N/A",
-        checkOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      },
-      { relatedEntityType: "Shift", relatedEntityId: shiftId }
-    ).catch(console.error);
+    // Send SHIFT_COMPLETED notification to sponsor (only on last day)
+    if (isLastDay) {
+      sendNotificationToSponsor(
+        "SHIFT_COMPLETED",
+        shift.clientId,
+        {
+          carerName,
+          clientName,
+          shiftDate,
+          totalHours: actualHours.toFixed(1),
+          checkInTime: shift.actualStart?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) || "N/A",
+          checkOutTime: checkOutTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        },
+        { relatedEntityType: "Shift", relatedEntityId: shiftId }
+      ).catch(console.error);
+    }
 
     // Send CHECK_OUT_CONFIRMATION to sponsor
     sendNotificationToSponsor(
@@ -421,7 +436,9 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: "Checked out successfully - shift completed",
+      message: isLastDay
+        ? "Checked out successfully - shift completed"
+        : "Checked out successfully for today",
       shift: {
         id: updatedShift!.id,
         clientId: updatedShift!.clientId,

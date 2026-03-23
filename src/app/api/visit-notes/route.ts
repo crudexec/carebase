@@ -84,7 +84,7 @@ export async function GET(request: Request) {
     if (user.role === "CARER") {
       where.carerId = user.id;
     } else if (user.role === "SPONSOR") {
-      // Sponsors can only see notes for their associated clients
+      // Sponsors can only see approved notes for their associated clients
       const sponsorClients = await prisma.client.findMany({
         where: {
           companyId: user.companyId,
@@ -101,6 +101,7 @@ export async function GET(request: Request) {
         });
       }
       where.clientId = { in: clientIds };
+      where.qaStatus = "APPROVED"; // Sponsors can only see approved notes
     } else {
       // Other roles can filter by carer
       if (carerId) {

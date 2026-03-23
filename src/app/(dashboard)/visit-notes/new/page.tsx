@@ -27,11 +27,11 @@ import {
   Calendar,
   FileText,
   Clock,
-  ChevronDown,
-  ChevronUp,
   X,
   ClipboardList,
   Check,
+  Settings,
+  Link as LinkIcon,
 } from "lucide-react";
 import {
   validateTaskAlignment,
@@ -101,8 +101,7 @@ export default function NewVisitNotePage() {
   const [goalTrackingData, setGoalTrackingData] = React.useState<Record<number, GoalTrackingData>>({});
 
   // UI state
-  const [showShiftSection, setShowShiftSection] = React.useState(false);
-  const [showTemplateSelector, setShowTemplateSelector] = React.useState(false);
+  const [showOptionsModal, setShowOptionsModal] = React.useState(false);
 
   // Loading/error state
   const [isLoadingClient, setIsLoadingClient] = React.useState(true);
@@ -238,7 +237,7 @@ export default function NewVisitNotePage() {
     fetchShifts();
   }, [clientId]);
 
-  // Fetch templates and auto-select
+  // Fetch templates and auto-select the active one
   React.useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -248,13 +247,8 @@ export default function NewVisitNotePage() {
           const enabledTemplates = data.templates || [];
           setTemplates(enabledTemplates);
 
-          // Auto-select if only one template
-          if (enabledTemplates.length === 1) {
-            setSelectedTemplate(enabledTemplates[0]);
-          } else if (enabledTemplates.length > 1) {
-            // Show selector if multiple templates
-            setShowTemplateSelector(true);
-            // Pre-select the first one
+          // Always auto-select the first (active) template
+          if (enabledTemplates.length > 0) {
             setSelectedTemplate(enabledTemplates[0]);
           }
         }
@@ -408,12 +402,12 @@ export default function NewVisitNotePage() {
 
       {/* Main Content */}
       {!isLoading && client && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Sidebar - Client Info & Options */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Client Card */}
-            <div className="rounded-xl border bg-background p-4">
-              <div className="flex items-center gap-3 mb-4">
+        <div className="max-w-4xl mx-auto space-y-4">
+          {/* Header Bar - Client Info, Date, Care Plan, Options */}
+          <div className="rounded-xl border bg-background p-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Client Info */}
+              <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
                   {client.firstName[0]}{client.lastName[0]}
                 </div>
@@ -423,215 +417,75 @@ export default function NewVisitNotePage() {
                 </div>
               </div>
 
-              {/* Visit Date */}
-              <div className="space-y-2 mb-4">
-                <label className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Visit Date
-                </label>
-                <DatePicker
-                  value={visitDate ? new Date(visitDate + "T00:00:00") : null}
-                  onChange={(date) => {
-                    if (date) {
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, "0");
-                      const day = String(date.getDate()).padStart(2, "0");
-                      setVisitDate(`${year}-${month}-${day}`);
-                    }
-                  }}
-                  placeholder="Select date"
-                />
-              </div>
+              {/* Right side controls */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Visit Date */}
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-foreground-tertiary" />
+                  <DatePicker
+                    value={visitDate ? new Date(visitDate + "T00:00:00") : null}
+                    onChange={(date) => {
+                      if (date) {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+                        setVisitDate(`${year}-${month}-${day}`);
+                      }
+                    }}
+                    placeholder="Select date"
+                  />
+                </div>
 
-              {/* Care Plan - Auto-linked */}
-              <div className="space-y-2 mb-4">
-                <label className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
-                  <ClipboardList className="h-3.5 w-3.5" />
-                  Care Plan
-                </label>
-
+                {/* Care Plan Badge */}
                 {isLoadingCarePlans ? (
-                  <div className="flex items-center gap-2 py-2">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-background-secondary/50">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-foreground-tertiary" />
                     <span className="text-xs text-foreground-tertiary">Loading...</span>
                   </div>
                 ) : selectedCarePlan ? (
-                  <div className="p-2.5 rounded-lg border border-primary/20 bg-primary/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Check className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-xs font-medium">{selectedCarePlan.planNumber}</span>
-                      </div>
-                      <Badge variant="success" className="text-[10px] px-1.5 py-0">Active</Badge>
-                    </div>
-                    {selectedCarePlan.templateName && (
-                      <p className="text-[10px] text-foreground-secondary mt-1 ml-5">
-                        {selectedCarePlan.templateName}
-                      </p>
-                    )}
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-primary/20 bg-primary/5">
+                    <ClipboardList className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-medium">{selectedCarePlan.planNumber}</span>
+                    <Badge variant="success" className="text-[10px] px-1.5 py-0">Active</Badge>
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-lg border border-border bg-background-secondary/50">
-                    <p className="text-xs text-foreground-tertiary">No active care plan</p>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-background-secondary/50">
+                    <ClipboardList className="h-3.5 w-3.5 text-foreground-tertiary" />
+                    <span className="text-xs text-foreground-tertiary">No care plan</span>
                   </div>
                 )}
-              </div>
 
-              {/* Optional Shift Link */}
-              <div className="border-t border-border pt-4">
+                {/* Linked Shift Badge (if selected) */}
+                {selectedShift && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-primary/20 bg-primary/5">
+                    <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-medium">
+                      {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                    <button
+                      onClick={() => setSelectedShift(null)}
+                      className="text-foreground-tertiary hover:text-foreground-secondary ml-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Options Button */}
                 <button
                   type="button"
-                  onClick={() => setShowShiftSection(!showShiftSection)}
-                  className="flex items-center justify-between w-full text-left group"
+                  onClick={() => setShowOptionsModal(true)}
+                  className="p-2 rounded-lg border border-border hover:bg-background-secondary transition-colors"
+                  title="Options"
                 >
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-foreground-tertiary" />
-                    <span className="text-xs font-medium text-foreground-secondary">
-                      Link to Shift
-                    </span>
-                    <Badge variant="default" className="text-[9px] px-1 py-0">Optional</Badge>
-                  </div>
-                  {showShiftSection ? (
-                    <ChevronUp className="h-3.5 w-3.5 text-foreground-tertiary" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5 text-foreground-tertiary" />
-                  )}
+                  <Settings className="h-4 w-4 text-foreground-secondary" />
                 </button>
-
-                {selectedShift && !showShiftSection && (
-                  <div className="mt-2 p-2 rounded bg-primary/5 border border-primary/10">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-primary font-medium">
-                        {new Date(selectedShift.scheduledStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedShift(null);
-                        }}
-                        className="text-foreground-tertiary hover:text-foreground-secondary"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {showShiftSection && (
-                  <div className="mt-3 space-y-2">
-                    {isLoadingShifts ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-4 w-4 animate-spin text-foreground-tertiary" />
-                      </div>
-                    ) : shifts.length === 0 ? (
-                      <p className="text-xs text-foreground-tertiary text-center py-3">
-                        No recent shifts found
-                      </p>
-                    ) : (
-                      <>
-                        {selectedShift && (
-                          <button
-                            onClick={() => setSelectedShift(null)}
-                            className="text-[10px] text-foreground-tertiary hover:text-foreground-secondary flex items-center gap-1"
-                          >
-                            <X className="h-2.5 w-2.5" />
-                            Clear selection
-                          </button>
-                        )}
-
-                        {/* Today's Shifts */}
-                        {groupedShifts.today.length > 0 && (
-                          <div>
-                            <span className="text-[10px] font-medium text-foreground-tertiary uppercase">Today</span>
-                            <div className="mt-1 space-y-1">
-                              {groupedShifts.today.map((shift) => (
-                                <ShiftSelectionCard
-                                  key={shift.id}
-                                  shift={shift}
-                                  isSelected={selectedShift?.id === shift.id}
-                                  onSelect={setSelectedShift}
-                                  compact
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Yesterday's Shifts */}
-                        {groupedShifts.yesterday.length > 0 && (
-                          <div>
-                            <span className="text-[10px] font-medium text-foreground-tertiary uppercase">Yesterday</span>
-                            <div className="mt-1 space-y-1">
-                              {groupedShifts.yesterday.map((shift) => (
-                                <ShiftSelectionCard
-                                  key={shift.id}
-                                  shift={shift}
-                                  isSelected={selectedShift?.id === shift.id}
-                                  onSelect={setSelectedShift}
-                                  compact
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Earlier Shifts */}
-                        {groupedShifts.earlier.length > 0 && (
-                          <div>
-                            <span className="text-[10px] font-medium text-foreground-tertiary uppercase">Earlier</span>
-                            <div className="mt-1 space-y-1">
-                              {groupedShifts.earlier.slice(0, 5).map((shift) => (
-                                <ShiftSelectionCard
-                                  key={shift.id}
-                                  shift={shift}
-                                  isSelected={selectedShift?.id === shift.id}
-                                  onSelect={setSelectedShift}
-                                  compact
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
-
-            {/* Template Selector - Only show if multiple templates */}
-            {showTemplateSelector && templates.length > 1 && (
-              <div className="rounded-xl border bg-background p-4">
-                <label className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5 mb-3">
-                  <FileText className="h-3.5 w-3.5" />
-                  Template
-                </label>
-                <div className="space-y-1">
-                  {templates.map((template) => (
-                    <button
-                      key={template.id}
-                      onClick={() => setSelectedTemplate(template)}
-                      className={`w-full p-2.5 rounded-lg text-left transition-colors ${
-                        selectedTemplate?.id === template.id
-                          ? "bg-primary/10 border border-primary/20"
-                          : "border border-border hover:bg-background-secondary"
-                      }`}
-                    >
-                      <p className="text-xs font-medium">{template.name}</p>
-                      {template.description && (
-                        <p className="text-[10px] text-foreground-secondary mt-0.5 line-clamp-1">
-                          {template.description}
-                        </p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Main Form Area */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="space-y-4">
             {/* Goal Tracking Section - Show if care plan is selected */}
             {selectedCarePlan && (
               <div className="rounded-xl border bg-background p-5">
@@ -684,6 +538,127 @@ export default function NewVisitNotePage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Options Modal - Link to Shift */}
+      {showOptionsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Options
+                </CardTitle>
+                <button
+                  onClick={() => setShowOptionsModal(false)}
+                  className="text-foreground-secondary hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Link to Shift Section */}
+              <div>
+                <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-3">
+                  <Clock className="h-4 w-4" />
+                  Link to Shift
+                  <Badge variant="default" className="text-[10px] px-1.5 py-0">Optional</Badge>
+                </label>
+
+                {isLoadingShifts ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-foreground-tertiary" />
+                  </div>
+                ) : shifts.length === 0 ? (
+                  <div className="text-center py-6 text-foreground-secondary">
+                    <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No recent shifts found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {selectedShift && (
+                      <button
+                        onClick={() => setSelectedShift(null)}
+                        className="text-xs text-foreground-tertiary hover:text-foreground-secondary flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" />
+                        Clear selection
+                      </button>
+                    )}
+
+                    {/* Today's Shifts */}
+                    {groupedShifts.today.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-foreground-tertiary uppercase">Today</span>
+                        <div className="mt-1.5 space-y-1.5">
+                          {groupedShifts.today.map((shift) => (
+                            <ShiftSelectionCard
+                              key={shift.id}
+                              shift={shift}
+                              isSelected={selectedShift?.id === shift.id}
+                              onSelect={(s) => {
+                                setSelectedShift(s);
+                              }}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Yesterday's Shifts */}
+                    {groupedShifts.yesterday.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-foreground-tertiary uppercase">Yesterday</span>
+                        <div className="mt-1.5 space-y-1.5">
+                          {groupedShifts.yesterday.map((shift) => (
+                            <ShiftSelectionCard
+                              key={shift.id}
+                              shift={shift}
+                              isSelected={selectedShift?.id === shift.id}
+                              onSelect={(s) => {
+                                setSelectedShift(s);
+                              }}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Earlier Shifts */}
+                    {groupedShifts.earlier.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-foreground-tertiary uppercase">Earlier</span>
+                        <div className="mt-1.5 space-y-1.5">
+                          {groupedShifts.earlier.slice(0, 5).map((shift) => (
+                            <ShiftSelectionCard
+                              key={shift.id}
+                              shift={shift}
+                              isSelected={selectedShift?.id === shift.id}
+                              onSelect={(s) => {
+                                setSelectedShift(s);
+                              }}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button onClick={() => setShowOptionsModal(false)}>
+                  Done
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

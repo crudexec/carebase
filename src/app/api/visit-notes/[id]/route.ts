@@ -103,11 +103,27 @@ export async function GET(
     }
 
     // Check permissions - carers can only see their own notes
-    if (
-      user.role === "CARER" &&
-      visitNote.carerId !== user.id
-    ) {
+    if (user.role === "CARER" && visitNote.carerId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Sponsors can only see approved notes for their associated clients
+    if (user.role === "SPONSOR") {
+      const client = await prisma.client.findFirst({
+        where: {
+          id: visitNote.clientId,
+          sponsorId: user.id,
+        },
+      });
+      if (!client) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      if (visitNote.qaStatus !== "APPROVED") {
+        return NextResponse.json(
+          { error: "This visit note is not yet approved" },
+          { status: 403 }
+        );
+      }
     }
 
     // Transform response

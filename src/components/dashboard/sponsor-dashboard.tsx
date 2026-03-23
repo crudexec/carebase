@@ -178,13 +178,6 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
   const client = clients[0];
   const age = client ? calculateAge(client.dateOfBirth) : null;
 
-  // Stats
-  const stats = {
-    totalNotes: visitNotes.length,
-    upcomingVisits: upcomingShifts.filter(s => s.status === "SCHEDULED").length,
-    completedVisits: upcomingShifts.filter(s => s.status === "COMPLETED").length,
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -239,62 +232,6 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
           View Profile
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Calendar className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold">{stats.upcomingVisits}</p>
-                <p className="text-xs text-foreground-secondary">Upcoming Visits</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <ClipboardList className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold">{stats.totalNotes}</p>
-                <p className="text-xs text-foreground-secondary">Care Reports</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100">
-                <MessageCircle className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold">0</p>
-                <p className="text-xs text-foreground-secondary">Messages</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100">
-                <DollarSign className="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold">$0</p>
-                <p className="text-xs text-foreground-secondary">Balance Due</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Tabs */}

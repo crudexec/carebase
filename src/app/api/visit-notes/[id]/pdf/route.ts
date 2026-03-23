@@ -384,18 +384,39 @@ export async function GET(
 
     // Carers can view their own notes
     const isCarer = role === "CARER";
+    const isSponsor = role === "SPONSOR";
 
-    if (!canView && !isCarer) {
+    if (!canView && !isCarer && !isSponsor) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Build where clause based on role
+    const whereClause: { id: string; companyId: string; carerId?: string; clientId?: { in: string[] }; qaStatus?: string } = {
+      id,
+      companyId,
+    };
+
+    if (isCarer && !canView) {
+      whereClause.carerId = userId;
+    }
+
+    // Sponsors can only view PDFs for their clients' approved notes
+    if (isSponsor) {
+      const sponsorClients = await prisma.client.findMany({
+        where: { companyId, sponsorId: userId },
+        select: { id: true },
+      });
+      const clientIds = sponsorClients.map((c) => c.id);
+      if (clientIds.length === 0) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      whereClause.clientId = { in: clientIds };
+      whereClause.qaStatus = "APPROVED";
     }
 
     // Fetch visit note with all details
     const visitNote = await prisma.visitNote.findFirst({
-      where: {
-        id,
-        companyId,
-        ...(isCarer && !canView ? { carerId: userId } : {}),
-      },
+      where: whereClause,
       include: {
         company: {
           select: {

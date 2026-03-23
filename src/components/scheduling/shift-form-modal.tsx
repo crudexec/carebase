@@ -53,9 +53,23 @@ export function ShiftFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Format date to local datetime-local input format (YYYY-MM-DDTHH:mm)
+  const formatDateTimeLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const getDefaultDate = () => {
     const date = selectedDate || new Date();
-    return date.toISOString().split("T")[0];
+    // Use local date components to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   const [formData, setFormData] = useState<ShiftFormData>({
@@ -71,8 +85,8 @@ export function ShiftFormModal({
       setFormData({
         carerId: shift.carer.id,
         clientId: shift.client.id,
-        scheduledStart: new Date(shift.scheduledStart).toISOString().slice(0, 16),
-        scheduledEnd: new Date(shift.scheduledEnd).toISOString().slice(0, 16),
+        scheduledStart: formatDateTimeLocal(new Date(shift.scheduledStart)),
+        scheduledEnd: formatDateTimeLocal(new Date(shift.scheduledEnd)),
         status: shift.status,
       });
     } else {

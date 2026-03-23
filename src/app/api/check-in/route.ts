@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { startOfDay, endOfDay } from "date-fns";
 
 // Helper to get today's date at midnight (UTC)
 function getTodayDate(): Date {
@@ -28,7 +29,7 @@ export async function GET() {
     const now = new Date();
     const today = getTodayDate();
 
-    // Get all upcoming shifts for the carer (including in-progress)
+    // Get all shifts for today and upcoming shifts for the carer
     const shifts = await prisma.shift.findMany({
       where: {
         companyId: session.user.companyId,
@@ -36,10 +37,26 @@ export async function GET() {
         status: {
           in: ["SCHEDULED", "IN_PROGRESS"],
         },
-        // Shift hasn't ended yet
-        scheduledEnd: {
-          gt: now,
-        },
+        // Include shifts scheduled for today OR future shifts
+        OR: [
+          {
+            // Shifts that start today (regardless of whether they've ended)
+            scheduledStart: {
+              gte: startOfDay(now),
+              lte: endOfDay(now),
+            },
+          },
+          {
+            // Future shifts that haven't started yet
+            scheduledStart: {
+              gt: endOfDay(now),
+            },
+          },
+          {
+            // Any in-progress shifts (in case they started before today)
+            status: "IN_PROGRESS",
+          },
+        ],
       },
       include: {
         client: {
@@ -49,6 +66,13 @@ export async function GET() {
             lastName: true,
             address: true,
             phone: true,
+          },
+        },
+        carer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           },
         },
         // Include today's attendance record
@@ -80,6 +104,11 @@ export async function GET() {
           lastName: shift.client.lastName,
           address: shift.client.address,
           phone: shift.client.phone,
+        },
+        carer: {
+          id: shift.carer.id,
+          firstName: shift.carer.firstName,
+          lastName: shift.carer.lastName,
         },
         // Today's attendance info
         todayAttendance: todayAttendance ? {

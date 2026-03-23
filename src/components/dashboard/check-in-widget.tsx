@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CollapsibleWidget } from "./collapsible-widget";
+import { ShiftDetailModal } from "@/components/scheduling/shift-detail-modal";
+import { ShiftData as ShiftDetailData } from "@/components/scheduling/shift-card";
 
 interface TodayAttendance {
   id: string;
@@ -38,6 +40,11 @@ interface ShiftData {
     lastName: string;
     address: string | null;
   };
+  carer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   todayAttendance: TodayAttendance | null;
 }
 
@@ -47,9 +54,38 @@ export function CheckInWidget() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedShift, setSelectedShift] = useState<ShiftDetailData | null>(null);
 
   const handleAddNote = (clientId: string) => {
     router.push(`/visit-notes/new?clientId=${clientId}`);
+  };
+
+  const handleShiftClick = (shift: ShiftData) => {
+    setSelectedShift({
+      id: shift.id,
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+      actualStart: shift.actualStart,
+      actualEnd: shift.actualEnd,
+      status: shift.status,
+      client: {
+        id: shift.client.id,
+        firstName: shift.client.firstName,
+        lastName: shift.client.lastName,
+        address: shift.client.address,
+      },
+      carer: {
+        id: shift.carer.id,
+        firstName: shift.carer.firstName,
+        lastName: shift.carer.lastName,
+      },
+    });
+  };
+
+  const handleModalClose = () => {
+    setSelectedShift(null);
+    // Refresh shifts in case check-in/check-out happened in the modal
+    fetchShifts();
   };
 
   const fetchShifts = useCallback(async () => {
@@ -174,6 +210,7 @@ export function CheckInWidget() {
   }
 
   return (
+    <>
     <CollapsibleWidget
       id="check-in-widget"
       title="Today's Shifts"
@@ -219,7 +256,8 @@ export function CheckInWidget() {
             return (
               <div
                 key={shift.id}
-                className="p-3 rounded-lg border border-border bg-background-secondary/50"
+                className="p-3 rounded-lg border border-border bg-background-secondary/50 cursor-pointer hover:border-primary/50 hover:bg-background-secondary transition-colors"
+                onClick={() => handleShiftClick(shift)}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -259,7 +297,7 @@ export function CheckInWidget() {
                 )}
 
                 {/* Action buttons */}
-                <div className="flex gap-2">
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                   {!completedToday && !checkOutEnabled && checkInEnabled && (
                     <Button
                       size="sm"
@@ -299,10 +337,11 @@ export function CheckInWidget() {
                   )}
                   <Button
                     size="sm"
-                    variant="ghost"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => handleAddNote(shift.client.id)}
                   >
-                    <StickyNote className="w-4 h-4" />
+                    <StickyNote className="w-4 h-4 mr-1" />
+                    Add Note
                   </Button>
                 </div>
               </div>
@@ -320,5 +359,13 @@ export function CheckInWidget() {
         )}
       </div>
     </CollapsibleWidget>
+
+    {/* Shift Detail Modal */}
+    <ShiftDetailModal
+      isOpen={!!selectedShift}
+      onClose={handleModalClose}
+      shift={selectedShift}
+    />
+    </>
   );
 }

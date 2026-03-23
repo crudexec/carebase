@@ -100,6 +100,7 @@ function renderFieldInput(
           placeholder={config?.placeholder as string}
           disabled={disabled}
           error={!!error}
+          className="w-28 text-lg font-semibold text-center"
         />
       );
 
