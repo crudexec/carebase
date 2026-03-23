@@ -244,12 +244,14 @@ export async function POST(
       scheduledEnd: shift.scheduledEnd,
     });
 
-    let authResult: { success: boolean; authorizationId?: string; unitsDeducted: number; remainingUnits: number } = {
-      success: false,
-      authorizationId: undefined,
-      unitsDeducted: 0,
-      remainingUnits: 0
-    };
+    let authResult: {
+      success: boolean;
+      authorizationId?: string;
+      unitsDeducted?: number;
+      remainingUnits?: number;
+      error?: string;
+      noAuthorizationFound?: boolean;
+    } = { success: false };
 
     if (isLastDay) {
       // Deduct units from the client's active authorization only on the final day
