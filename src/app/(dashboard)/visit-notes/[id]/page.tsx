@@ -131,7 +131,7 @@ export default function ViewVisitNotePage() {
   const [showResubmitModal, setShowResubmitModal] = React.useState(false);
 
   // Check if user can review QA
-  const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"].includes(session.user.role);
+  const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"].includes(session.user.role);
 
   // Check if user is the carer who owns the note
   const isOwner = session?.user?.id === visitNote?.carer?.id;

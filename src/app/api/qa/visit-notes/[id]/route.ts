@@ -21,7 +21,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     // Check permissions
-    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"];
+    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"];
     if (!allowedRoles.includes(session.user.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -141,7 +141,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 
     // Check permissions
-    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"];
+    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"];
     if (!allowedRoles.includes(session.user.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     // Check permissions - only certain roles can access QA
-    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"];
+    const allowedRoles = ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"];
     if (!allowedRoles.includes(session.user.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

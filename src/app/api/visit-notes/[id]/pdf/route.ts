@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyPermission, PERMISSIONS } from "@/lib/permissions";
 import jsPDF from "jspdf";
-import { FormFieldType } from "@prisma/client";
+import { FormFieldType, Prisma } from "@prisma/client";
 
 interface FormField {
   id: string;
@@ -391,7 +391,7 @@ export async function GET(
     }
 
     // Build where clause based on role
-    const whereClause: { id: string; companyId: string; carerId?: string; clientId?: { in: string[] }; qaStatus?: string } = {
+    const whereClause: Prisma.VisitNoteWhereInput = {
       id,
       companyId,
     };
@@ -411,7 +411,7 @@ export async function GET(
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
       whereClause.clientId = { in: clientIds };
-      whereClause.qaStatus = "APPROVED";
+      whereClause.qaStatus = "APPROVED" as const;
     }
 
     // Fetch visit note with all details
