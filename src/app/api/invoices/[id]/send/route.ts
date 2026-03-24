@@ -13,6 +13,15 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "invoices@carebasehealth.com";
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || "CareBase";
 const _APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
 
+// Currency configuration
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+const CURRENCY_LOCALES: Record<Currency, string> = {
+  USD: "en-US",
+  GBP: "en-GB",
+  CAD: "en-CA",
+  NGN: "en-NG",
+};
+
 // Generate PDF for invoice
 async function generateInvoicePDF(invoice: NonNullable<Awaited<ReturnType<typeof getInvoiceWithDetails>>>): Promise<Buffer> {
   const doc = new jsPDF();
@@ -20,15 +29,18 @@ async function generateInvoicePDF(invoice: NonNullable<Awaited<ReturnType<typeof
   const margin = 20;
   let y = 20;
 
+  const invoiceCurrency = (invoice.currency || "USD") as Currency;
+  const locale = CURRENCY_LOCALES[invoiceCurrency];
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "USD",
+      currency: invoiceCurrency,
     }).format(amount);
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+    return new Date(date).toLocaleDateString(locale, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -187,15 +199,18 @@ async function getInvoiceWithDetails(id: string, companyId: string) {
 
 // Generate email HTML
 function generateEmailHTML(invoice: NonNullable<Awaited<ReturnType<typeof getInvoiceWithDetails>>>) {
+  const invoiceCurrency = (invoice.currency || "USD") as Currency;
+  const locale = CURRENCY_LOCALES[invoiceCurrency];
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "USD",
+      currency: invoiceCurrency,
     }).format(amount);
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+    return new Date(date).toLocaleDateString(locale, {
       month: "short",
       day: "numeric",
       year: "numeric",

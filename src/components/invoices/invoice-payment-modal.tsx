@@ -11,11 +11,21 @@ import {
 } from "@/components/ui";
 import { X, Loader2, DollarSign } from "lucide-react";
 
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+
+const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  USD: "$",
+  GBP: "£",
+  CAD: "C$",
+  NGN: "₦",
+};
+
 interface InvoicePaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   invoiceId: string;
   amountDue: number;
+  currency?: Currency;
   onSuccess: () => void;
 }
 
@@ -24,6 +34,7 @@ export function InvoicePaymentModal({
   onClose,
   invoiceId,
   amountDue,
+  currency = "USD",
   onSuccess,
 }: InvoicePaymentModalProps) {
   const [amount, setAmount] = React.useState("");
@@ -87,9 +98,15 @@ export function InvoicePaymentModal({
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
+    const locales: Record<Currency, string> = {
+      USD: "en-US",
+      GBP: "en-GB",
+      CAD: "en-CA",
+      NGN: "en-NG",
+    };
+    return new Intl.NumberFormat(locales[currency], {
       style: "currency",
-      currency: "USD",
+      currency: currency,
     }).format(value);
   };
 
@@ -136,7 +153,7 @@ export function InvoicePaymentModal({
             <Label htmlFor="amount">Payment Amount *</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-secondary">
-                $
+                {CURRENCY_SYMBOLS[currency]}
               </span>
               <Input
                 id="amount"
@@ -146,7 +163,7 @@ export function InvoicePaymentModal({
                 max={amountDue}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="pl-7"
+                className="pl-8"
                 placeholder="0.00"
                 required
               />

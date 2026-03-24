@@ -70,11 +70,14 @@ interface Payment {
   createdAt: string;
 }
 
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+
 interface Invoice {
   id: string;
   invoiceNumber: string;
   periodStart: string;
   periodEnd: string;
+  currency: Currency;
   subtotal: number;
   taxRate: number;
   taxAmount: number;
@@ -228,12 +231,19 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+  const formatCurrency = React.useCallback((amount: number) => {
+    const currency = invoice?.currency || "USD";
+    const locales: Record<Currency, string> = {
+      USD: "en-US",
+      GBP: "en-GB",
+      CAD: "en-CA",
+      NGN: "en-NG",
+    };
+    return new Intl.NumberFormat(locales[currency], {
       style: "currency",
-      currency: "USD",
+      currency: currency,
     }).format(amount);
-  };
+  }, [invoice?.currency]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -625,6 +635,7 @@ export default function InvoiceDetailPage() {
         onClose={() => setShowPaymentModal(false)}
         invoiceId={invoice.id}
         amountDue={invoice.amountDue}
+        currency={invoice.currency}
         onSuccess={() => {
           setShowPaymentModal(false);
           fetchInvoice();

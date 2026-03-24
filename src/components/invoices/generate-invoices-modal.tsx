@@ -10,6 +10,7 @@ import {
   Label,
   Card,
   CardContent,
+  Select,
 } from "@/components/ui";
 import {
   X,
@@ -99,6 +100,7 @@ export function GenerateInvoicesModal({
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
   const [dueDate, setDueDate] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("0");
+  const [currency, setCurrency] = React.useState<"USD" | "GBP" | "CAD" | "NGN">("USD");
 
   // Handler for client filter selection
   const handleClientFilterChange = (clientId: string, _client: ClientData | null) => {
@@ -198,6 +200,7 @@ export function GenerateInvoicesModal({
             periodEnd,
             dueDate: dueDate || null,
             taxRate: parseFloat(taxRate) / 100,
+            currency,
             status: "DRAFT",
           }),
         });
@@ -300,7 +303,7 @@ export function GenerateInvoicesModal({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="dueDate">Due Date (optional)</Label>
                   <DateInput
@@ -321,6 +324,20 @@ export function GenerateInvoicesModal({
                     value={taxRate}
                     onChange={(e) => setTaxRate(e.target.value)}
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select
+                    id="currency"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value as "USD" | "GBP" | "CAD" | "NGN")}
+                  >
+                    <option value="USD">$ USD - US Dollar</option>
+                    <option value="GBP">£ GBP - British Pound</option>
+                    <option value="CAD">C$ CAD - Canadian Dollar</option>
+                    <option value="NGN">₦ NGN - Nigerian Naira</option>
+                  </Select>
                 </div>
               </div>
             </div>

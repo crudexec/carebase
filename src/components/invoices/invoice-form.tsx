@@ -47,6 +47,8 @@ interface LineItem {
   serviceDate?: string;
 }
 
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+
 interface InvoiceFormData {
   clientId: string;
   sponsorId?: string;
@@ -55,12 +57,28 @@ interface InvoiceFormData {
   dueDate?: string;
   notes?: string;
   taxRate: number;
+  currency: Currency;
   lineItems: LineItem[];
   status: "DRAFT" | "PENDING";
 }
 
+// Currency configuration
+const CURRENCY_CONFIG: Record<Currency, { symbol: string; locale: string; name: string }> = {
+  USD: { symbol: "$", locale: "en-US", name: "US Dollar" },
+  GBP: { symbol: "£", locale: "en-GB", name: "British Pound" },
+  CAD: { symbol: "C$", locale: "en-CA", name: "Canadian Dollar" },
+  NGN: { symbol: "₦", locale: "en-NG", name: "Nigerian Naira" },
+};
+
+const formatCurrency = (amount: number, currency: Currency): string => {
+  return new Intl.NumberFormat(CURRENCY_CONFIG[currency].locale, {
+    style: "currency",
+    currency: currency,
+  }).format(amount);
+};
+
 interface InvoiceFormProps {
-  initialData?: InvoiceFormData & { id?: string; clientName?: string; sponsorName?: string };
+  initialData?: InvoiceFormData & { id?: string; clientName?: string; sponsorName?: string; currency?: Currency };
   onCancel: () => void;
 }
 
@@ -91,6 +109,7 @@ export function InvoiceForm({
   const [dueDate, setDueDate] = React.useState(initialData?.dueDate || "");
   const [notes, setNotes] = React.useState(initialData?.notes || "");
   const [taxRate, setTaxRate] = React.useState(initialData?.taxRate || 0);
+  const [currency, setCurrency] = React.useState<Currency>(initialData?.currency || "USD");
   const [lineItems, setLineItems] = React.useState<LineItem[]>(
     initialData?.lineItems?.length ? initialData.lineItems : [{ ...defaultLineItem }]
   );
@@ -208,6 +227,7 @@ export function InvoiceForm({
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         taxRate,
+        currency,
         lineItems: validLineItems.map(item => ({
           type: item.type,
           description: item.description,
@@ -357,7 +377,7 @@ export function InvoiceForm({
             Billing Period
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <Label htmlFor="periodStart">Period Start *</Label>
             <DateInput
@@ -383,6 +403,20 @@ export function InvoiceForm({
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="currency">Currency</Label>
+            <Select
+              id="currency"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as Currency)}
+            >
+              <option value="USD">{CURRENCY_CONFIG.USD.symbol} USD - {CURRENCY_CONFIG.USD.name}</option>
+              <option value="GBP">{CURRENCY_CONFIG.GBP.symbol} GBP - {CURRENCY_CONFIG.GBP.name}</option>
+              <option value="CAD">{CURRENCY_CONFIG.CAD.symbol} CAD - {CURRENCY_CONFIG.CAD.name}</option>
+              <option value="NGN">{CURRENCY_CONFIG.NGN.symbol} NGN - {CURRENCY_CONFIG.NGN.name}</option>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -470,7 +504,7 @@ export function InvoiceForm({
 
                 <div className="md:col-span-1 flex items-center justify-end">
                   <span className="text-sm font-medium">
-                    ${(item.quantity * item.unitPrice).toFixed(2)}
+                    {formatCurrency(item.quantity * item.unitPrice, currency)}
                   </span>
                 </div>
 
@@ -495,7 +529,7 @@ export function InvoiceForm({
             <div className="flex flex-col items-end gap-2">
               <div className="flex justify-between w-full max-w-xs text-sm">
                 <span className="text-foreground-secondary">Subtotal:</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(subtotal, currency)}</span>
               </div>
 
               <div className="flex justify-between items-center w-full max-w-xs gap-4">
@@ -513,12 +547,12 @@ export function InvoiceForm({
 
               <div className="flex justify-between w-full max-w-xs text-sm">
                 <span className="text-foreground-secondary">Tax:</span>
-                <span className="font-medium">${taxAmount.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(taxAmount, currency)}</span>
               </div>
 
               <div className="flex justify-between w-full max-w-xs text-lg font-semibold pt-2 border-t border-border">
                 <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCurrency(total, currency)}</span>
               </div>
             </div>
           </div>

@@ -31,11 +31,14 @@ import {
 } from "lucide-react";
 import { GenerateInvoicesModal } from "@/components/invoices/generate-invoices-modal";
 
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+
 interface Invoice {
   id: string;
   invoiceNumber: string;
   periodStart: string;
   periodEnd: string;
+  currency: Currency;
   total: number;
   amountPaid: number;
   amountDue: number;
@@ -107,10 +110,16 @@ export default function InvoicesPage() {
     fetchData();
   }, [fetchData]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+  const formatCurrency = (amount: number, currency: Currency = "USD") => {
+    const locales: Record<Currency, string> = {
+      USD: "en-US",
+      GBP: "en-GB",
+      CAD: "en-CA",
+      NGN: "en-NG",
+    };
+    return new Intl.NumberFormat(locales[currency], {
       style: "currency",
-      currency: "USD",
+      currency: currency,
     }).format(amount);
   };
 
@@ -322,12 +331,12 @@ export default function InvoicesPage() {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className="font-semibold text-sm">
-                            {formatCurrency(invoice.total)}
+                            {formatCurrency(invoice.total, invoice.currency)}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className={`text-sm ${invoice.amountDue > 0 ? "text-warning font-medium" : "text-foreground-secondary"}`}>
-                            {formatCurrency(invoice.amountDue)}
+                            {formatCurrency(invoice.amountDue, invoice.currency)}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">

@@ -35,6 +35,7 @@ interface Invoice {
   invoiceNumber: string;
   periodStart: string;
   periodEnd: string;
+  currency: "USD" | "GBP" | "CAD" | "NGN";
   dueDate: string | null;
   notes: string | null;
   taxRate: number;
@@ -150,6 +151,7 @@ export default function EditInvoicePage() {
     dueDate: invoice.dueDate ? formatDateForInput(invoice.dueDate) : undefined,
     notes: invoice.notes || undefined,
     taxRate: invoice.taxRate,
+    currency: invoice.currency as "USD" | "GBP" | "CAD" | "NGN",
     lineItems: invoice.lineItems.map(item => ({
       id: item.id,
       type: item.type,

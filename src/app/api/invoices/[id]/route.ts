@@ -22,6 +22,7 @@ const updateInvoiceSchema = z.object({
   dueDate: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   taxRate: z.number().min(0).max(1).optional(),
+  currency: z.enum(["USD", "GBP", "CAD", "NGN"]).optional(),
   status: z.enum(["DRAFT", "PENDING", "SENT", "PARTIAL", "PAID", "OVERDUE", "CANCELLED"]).optional(),
   sponsorId: z.string().optional().nullable(),
   lineItems: z.array(lineItemSchema).optional(),
@@ -123,6 +124,7 @@ export async function GET(
         invoiceNumber: invoice.invoiceNumber,
         periodStart: invoice.periodStart,
         periodEnd: invoice.periodEnd,
+        currency: invoice.currency,
         subtotal: invoice.subtotal.toNumber(),
         taxRate: invoice.taxRate.toNumber(),
         taxAmount: invoice.taxAmount.toNumber(),
@@ -255,6 +257,9 @@ export async function PATCH(
     if (data.sponsorId !== undefined) {
       updateData.sponsorId = data.sponsorId;
     }
+    if (data.currency !== undefined) {
+      updateData.currency = data.currency;
+    }
 
     // Handle line items update
     if (data.lineItems) {
@@ -354,6 +359,7 @@ export async function PATCH(
     return NextResponse.json({
       invoice: {
         ...updatedInvoice,
+        currency: updatedInvoice.currency,
         subtotal: updatedInvoice.subtotal.toNumber(),
         taxRate: updatedInvoice.taxRate.toNumber(),
         taxAmount: updatedInvoice.taxAmount.toNumber(),

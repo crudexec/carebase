@@ -83,16 +83,26 @@ export async function GET(
     const margin = 20;
     let y = 20;
 
+    // Currency configuration
+    type Currency = "USD" | "GBP" | "CAD" | "NGN";
+    const currencyLocales: Record<Currency, string> = {
+      USD: "en-US",
+      GBP: "en-GB",
+      CAD: "en-CA",
+      NGN: "en-NG",
+    };
+    const invoiceCurrency = (invoice.currency || "USD") as Currency;
+
     // Helper functions
     const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat(currencyLocales[invoiceCurrency], {
         style: "currency",
-        currency: "USD",
+        currency: invoiceCurrency,
       }).format(amount);
     };
 
     const formatDate = (date: Date) => {
-      return new Date(date).toLocaleDateString("en-US", {
+      return new Date(date).toLocaleDateString(currencyLocales[invoiceCurrency], {
         month: "short",
         day: "numeric",
         year: "numeric",

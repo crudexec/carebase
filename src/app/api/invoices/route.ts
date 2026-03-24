@@ -36,6 +36,7 @@ const createInvoiceSchema = z.object({
   dueDate: z.string().optional(),
   notes: z.string().optional(),
   taxRate: z.number().min(0).max(1).default(0),
+  currency: z.enum(["USD", "GBP", "CAD", "NGN"]).default("USD"),
   lineItems: z.array(lineItemSchema).min(1, "At least one line item is required"),
   status: z.enum(["DRAFT", "PENDING"]).default("DRAFT"),
 });
@@ -200,6 +201,7 @@ export async function GET(request: NextRequest) {
         invoiceNumber: inv.invoiceNumber,
         periodStart: inv.periodStart,
         periodEnd: inv.periodEnd,
+        currency: inv.currency,
         subtotal: inv.subtotal.toNumber(),
         taxRate: inv.taxRate.toNumber(),
         taxAmount: inv.taxAmount.toNumber(),
@@ -328,6 +330,7 @@ export async function POST(request: NextRequest) {
         periodEnd: new Date(data.periodEnd),
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         notes: data.notes,
+        currency: data.currency,
         subtotal,
         taxRate: data.taxRate,
         taxAmount,
@@ -373,6 +376,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       invoice: {
         ...invoice,
+        currency: invoice.currency,
         subtotal: invoice.subtotal.toNumber(),
         taxRate: invoice.taxRate.toNumber(),
         taxAmount: invoice.taxAmount.toNumber(),
