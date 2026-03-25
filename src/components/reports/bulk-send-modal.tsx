@@ -15,6 +15,10 @@ import {
   User,
   Mail,
   Calendar,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -81,6 +85,16 @@ export function BulkSendModal({
   const [timePreset, setTimePreset] = useState<TimePreset>("30d");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
+
+  // Email customization
+  const [showEmailOptions, setShowEmailOptions] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailIntro, setEmailIntro] = useState("");
+  const [emailClosing, setEmailClosing] = useState("");
+
+  // Preview state
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewClientId, setPreviewClientId] = useState<string | null>(null);
 
   // Fetch clients when modal opens
   useEffect(() => {
@@ -154,6 +168,37 @@ export function BulkSendModal({
     }, 150);
   };
 
+  const handlePreviewPDF = async (clientId: string) => {
+    setIsPreviewLoading(true);
+    setPreviewClientId(clientId);
+    try {
+      const params = new URLSearchParams({ clientId });
+      if (timePreset === "custom" && customStartDate && customEndDate) {
+        params.set("startDate", customStartDate);
+        params.set("endDate", customEndDate);
+      }
+
+      const response = await fetch(
+        `/api/reports/saved/${savedReportId}/preview?${params}`
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to generate preview");
+      }
+    } catch (err) {
+      console.error("Failed to generate preview:", err);
+      toast.error("Failed to generate preview");
+    } finally {
+      setIsPreviewLoading(false);
+      setPreviewClientId(null);
+    }
+  };
+
   const toggleClient = (clientId: string) => {
     setSelectedClientIds((prev) => {
       const next = new Set(prev);
@@ -184,6 +229,9 @@ export function BulkSendModal({
         clientIds: string[];
         startDate?: string;
         endDate?: string;
+        emailSubject?: string;
+        emailIntro?: string;
+        emailClosing?: string;
       } = {
         savedReportId,
         clientIds: Array.from(selectedClientIds),
@@ -192,6 +240,17 @@ export function BulkSendModal({
       if (timePreset === "custom" && customStartDate && customEndDate) {
         body.startDate = customStartDate;
         body.endDate = customEndDate;
+      }
+
+      // Add custom email content if provided
+      if (emailSubject.trim()) {
+        body.emailSubject = emailSubject.trim();
+      }
+      if (emailIntro.trim()) {
+        body.emailIntro = emailIntro.trim();
+      }
+      if (emailClosing.trim()) {
+        body.emailClosing = emailClosing.trim();
       }
 
       const response = await fetch("/api/reports/bulk-send", {
@@ -387,6 +446,72 @@ export function BulkSendModal({
                 )}
               </div>
 
+              {/* Email Customization */}
+              <div className="mb-4 border rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowEmailOptions(!showEmailOptions)}
+                  className="w-full flex items-center justify-between p-3 bg-background-secondary hover:bg-background-secondary/80 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-foreground-secondary" />
+                    <span className="text-sm font-medium">Customize Email</span>
+                    {(emailSubject || emailIntro || emailClosing) && (
+                      <span className="px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary">
+                        Customized
+                      </span>
+                    )}
+                  </div>
+                  {showEmailOptions ? (
+                    <ChevronUp className="w-4 h-4 text-foreground-secondary" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-foreground-secondary" />
+                  )}
+                </button>
+                {showEmailOptions && (
+                  <div className="p-3 space-y-3 border-t bg-background">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-foreground-secondary">
+                        Email Subject (optional)
+                      </label>
+                      <Input
+                        type="text"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        placeholder="Default: Trends Report: [Client Name] - [Report Name]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-foreground-secondary">
+                        Introduction Message (optional)
+                      </label>
+                      <textarea
+                        value={emailIntro}
+                        onChange={(e) => setEmailIntro(e.target.value)}
+                        placeholder="Default: Please find attached the trends report for [Client Name]..."
+                        rows={2}
+                        className="w-full rounded-md border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-foreground-secondary">
+                        Closing Message (optional)
+                      </label>
+                      <textarea
+                        value={emailClosing}
+                        onChange={(e) => setEmailClosing(e.target.value)}
+                        placeholder="Default: If you have any questions about this report, please don't hesitate to contact us."
+                        rows={2}
+                        className="w-full rounded-md border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                    <p className="text-xs text-foreground-tertiary">
+                      Leave fields empty to use default content. Use [Client Name] and [Sponsor Name] as placeholders.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Search and Selection Controls */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="relative flex-1">
@@ -452,13 +577,31 @@ export function BulkSendModal({
                             </div>
                           )}
                         </div>
-                        {!client.canSendReport && (
-                          <span className="px-2 py-0.5 rounded-full text-xs bg-warning/10 text-warning">
-                            {!client.hasSponsor
-                              ? "No sponsor"
-                              : "No email"}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreviewPDF(client.id);
+                            }}
+                            disabled={isPreviewLoading}
+                            className="p-1.5 rounded-md hover:bg-background text-foreground-secondary hover:text-foreground transition-colors disabled:opacity-50"
+                            title="Preview PDF"
+                          >
+                            {isPreviewLoading && previewClientId === client.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                          {!client.canSendReport && (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-warning/10 text-warning">
+                              {!client.hasSponsor
+                                ? "No sponsor"
+                                : "No email"}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

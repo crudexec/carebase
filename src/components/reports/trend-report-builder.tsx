@@ -89,7 +89,7 @@ interface SavedReport {
   name: string;
   description?: string;
   config: {
-    clientId: string;
+    clientId?: string; // Optional - legacy support
     templateId: string;
     fieldIds: string[];
     defaultTimeRange: string;
@@ -156,6 +156,9 @@ export function TrendReportBuilder({
 
   // Error state
   const [error, setError] = useState<string | null>(null);
+
+  // Track if we're loading a saved report (to prevent resetting selections)
+  const [isLoadingSavedReport, setIsLoadingSavedReport] = useState(false);
 
   // Fetch templates for selected client
   const fetchTemplates = useCallback(async () => {
@@ -249,13 +252,14 @@ export function TrendReportBuilder({
 
   // Load saved report
   const loadSavedReport = useCallback(async (reportId: string) => {
+    setIsLoadingSavedReport(true);
     try {
       const response = await fetch(`/api/reports/saved/${reportId}`);
       if (response.ok) {
         const data = await response.json();
         const report: SavedReport = data.report;
 
-        setSelectedClientId(report.config.clientId);
+        // Set template and fields first (before client to avoid reset)
         setSelectedTemplateId(report.config.templateId);
         setSelectedFieldIds(report.config.fieldIds);
         setTimePreset(report.config.defaultTimeRange as TimePreset);
@@ -263,9 +267,19 @@ export function TrendReportBuilder({
         setReportName(report.name);
         setReportDescription(report.description || "");
         setSavedReportDisplayName(report.name);
+        setCurrentSavedReportId(report.id);
+
+        // Only set clientId if it exists (legacy reports)
+        // New reports don't include clientId - user selects client for preview
+        if (report.config.clientId) {
+          setSelectedClientId(report.config.clientId);
+        }
       }
     } catch (err) {
       console.error("Failed to load saved report:", err);
+    } finally {
+      // Reset the flag after a short delay to allow useEffects to run
+      setTimeout(() => setIsLoadingSavedReport(false), 100);
     }
   }, []);
 
@@ -275,8 +289,9 @@ export function TrendReportBuilder({
 
     setIsSaving(true);
     try {
+      // Note: clientId is intentionally NOT saved - the report template
+      // is client-agnostic and can be used for any client
       const config = {
-        clientId: selectedClientId,
         templateId: selectedTemplateId,
         fieldIds: selectedFieldIds,
         defaultTimeRange: timePreset,
@@ -383,12 +398,16 @@ export function TrendReportBuilder({
   useEffect(() => {
     if (selectedClientId) {
       fetchTemplates();
-      setSelectedTemplateId("");
-      setAvailableFields([]);
-      setSelectedFieldIds([]);
-      setReportData(null);
+      // Only reset template and fields if not loading a saved report
+      // When loading a saved report, we want to preserve the loaded config
+      if (!isLoadingSavedReport && !currentSavedReportId) {
+        setSelectedTemplateId("");
+        setAvailableFields([]);
+        setSelectedFieldIds([]);
+        setReportData(null);
+      }
     }
-  }, [selectedClientId, fetchTemplates]);
+  }, [selectedClientId, fetchTemplates, isLoadingSavedReport, currentSavedReportId]);
 
   // Fetch fields when template changes
   useEffect(() => {
@@ -443,7 +462,24 @@ export function TrendReportBuilder({
     <div className="space-y-6">
       {/* Configuration Section */}
       <div className="border rounded-lg p-4 bg-background space-y-4">
-        <h3 className="font-semibold text-foreground">Report Configuration</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">Report Configuration</h3>
+          {currentSavedReportId && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground-secondary">
+                {savedReportDisplayName}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowBulkSendModal(true)}
+              >
+                <Send className="w-4 h-4 mr-1" />
+                Send to Sponsors
+              </Button>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Client Selection (only shown if not pre-selected) */}

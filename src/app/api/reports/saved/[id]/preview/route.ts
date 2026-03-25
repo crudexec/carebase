@@ -1,29 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Resend } from "resend";
 import {
   generateTrendReportPDF,
   TrendFieldData,
 } from "@/lib/reports/trend-pdf-generator";
-import {
-  generateTrendReportEmailHtml,
-  wrapInTrendReportEmailTemplate,
-  TrendSummaryItem,
-} from "@/lib/reports/trend-report-email-template";
 import {
   calculateStats,
   aggregateByDay,
   getDateRange,
   DataPoint,
 } from "@/lib/reports/trend-calculations";
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const EMAIL_FROM = process.env.EMAIL_FROM || "reports@carebasehealth.com";
-const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || "CareBase";
 
 interface FieldConfig {
   min?: number;
@@ -47,16 +34,15 @@ interface RouteParams {
 }
 
 /**
- * POST /api/reports/saved/[id]/send
- * Send a saved trend report to the client's sponsor via email
+ * GET /api/reports/saved/[id]/preview
+ * Generate and return a PDF preview for a specific client
  *
- * Body (optional):
- * - recipientEmail: Override email address (optional)
- * - clientId: Override client (for bulk send, optional)
- * - startDate: Override start date (optional)
- * - endDate: Override end date (optional)
+ * Query params:
+ * - clientId: string (required) - The client to generate the preview for
+ * - startDate: string (optional) - Override start date
+ * - endDate: string (optional) - Override end date
  */
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -65,22 +51,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { companyId } = session.user;
     const { id } = await params;
-    const body = await request.json().catch(() => ({}));
+    const { searchParams } = new URL(request.url);
 
-    const {
-      recipientEmail: overrideEmail,
-      clientId: overrideClientId,
-      startDate: overrideStartDate,
-      endDate: overrideEndDate,
-      emailSubject: customEmailSubject,
-      emailIntro: customEmailIntro,
-      emailClosing: customEmailClosing,
-    } = body;
+    const clientId = searchParams.get("clientId");
+    const overrideStartDate = searchParams.get("startDate");
+    const overrideEndDate = searchParams.get("endDate");
 
-    if (!resend) {
+    if (!clientId) {
       return NextResponse.json(
-        { error: "Email service not configured. Set RESEND_API_KEY environment variable." },
-        { status: 500 }
+        { error: "clientId is required" },
+        { status: 400 }
       );
     }
 
@@ -105,39 +85,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (savedReport.type !== "VISIT_NOTE_TRENDS") {
       return NextResponse.json(
-        { error: "Only trend reports can be sent via email" },
+        { error: "Only trend reports support PDF preview" },
         { status: 400 }
       );
     }
 
     const config = savedReport.config as unknown as SavedReportConfig;
-    const effectiveClientId = overrideClientId || config.clientId;
 
-    if (!effectiveClientId) {
-      return NextResponse.json(
-        { error: "clientId is required in the request body" },
-        { status: 400 }
-      );
-    }
-
-    // Get the client and their sponsor
+    // Get the client
     const client = await prisma.client.findFirst({
       where: {
-        id: effectiveClientId,
+        id: clientId,
         companyId,
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
-        sponsor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
       },
     });
 
@@ -145,28 +109,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    // Determine recipient email
-    const recipientEmail = overrideEmail || client.sponsor?.email;
-    const sponsorName = client.sponsor
-      ? `${client.sponsor.firstName} ${client.sponsor.lastName}`
-      : "Sponsor";
-
-    if (!recipientEmail) {
-      return NextResponse.json(
-        {
-          error: "No email address available. Client has no sponsor or sponsor has no email.",
-          clientId: client.id,
-          clientName: `${client.firstName} ${client.lastName}`,
-        },
-        { status: 400 }
-      );
-    }
-
     // Calculate date range
     let dateRange: { start: Date; end: Date };
     try {
       if (overrideStartDate && overrideEndDate) {
-        dateRange = getDateRange("custom", new Date(overrideStartDate), new Date(overrideEndDate));
+        dateRange = getDateRange(
+          "custom",
+          new Date(overrideStartDate),
+          new Date(overrideEndDate)
+        );
       } else if (config.timeRange !== "custom") {
         dateRange = getDateRange(config.timeRange);
       } else if (config.customStartDate && config.customEndDate) {
@@ -232,7 +183,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const visitNotes = await prisma.visitNote.findMany({
       where: {
         companyId,
-        clientId: effectiveClientId,
+        clientId,
         templateId: config.templateId,
         OR: [
           {
@@ -329,72 +280,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       aggregationMethod: config.aggregation,
     });
 
-    // Generate email HTML
-    const summaryStats: TrendSummaryItem[] = fieldsData.map((field) => ({
-      fieldLabel: field.fieldLabel,
-      average: field.stats.average,
-      trend: field.stats.trend,
-    }));
-
-    const formatDate = (date: Date) => {
-      return new Date(date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    };
-
-    const emailHtml = generateTrendReportEmailHtml({
-      sponsorName,
-      clientName,
-      templateName: savedReport.name,
-      companyName: savedReport.company.name,
-      dateRange: `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`,
-      summaryStats,
-      customIntro: customEmailIntro,
-      customClosing: customEmailClosing,
-    });
-
-    // Generate subject line
-    const emailSubject = customEmailSubject
-      ? customEmailSubject
-          .replace(/\[Client Name\]/gi, clientName)
-          .replace(/\[Report Name\]/gi, savedReport.name)
-      : `Trends Report: ${clientName} - ${savedReport.name}`;
-
-    // Send email
-    const { data, error } = await resend.emails.send({
-      from: `${EMAIL_FROM_NAME} <${EMAIL_FROM}>`,
-      to: recipientEmail,
-      subject: emailSubject,
-      html: wrapInTrendReportEmailTemplate(emailHtml),
-      attachments: [
-        {
-          filename: `${clientName.replace(/\s+/g, "_")}_Trends_Report.pdf`,
-          content: pdfBuffer,
-        },
-      ],
-    });
-
-    if (error) {
-      console.error("Error sending trend report email:", error);
-      return NextResponse.json(
-        { error: "Failed to send email", details: error.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      messageId: data?.id,
-      sentTo: recipientEmail,
-      clientId: client.id,
-      clientName,
+    // Return PDF as response
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${clientName.replace(/\s+/g, "_")}_Trends_Report_Preview.pdf"`,
+      },
     });
   } catch (error) {
-    console.error("Error sending trend report:", error);
+    console.error("Error generating PDF preview:", error);
     return NextResponse.json(
-      { error: "Failed to send trend report" },
+      { error: "Failed to generate PDF preview" },
       { status: 500 }
     );
   }

@@ -18,6 +18,8 @@ export interface TrendReportEmailParams {
   companyName: string;
   dateRange: string;
   summaryStats: TrendSummaryItem[];
+  customIntro?: string;
+  customClosing?: string;
 }
 
 /**
@@ -66,10 +68,19 @@ export function generateTrendReportEmailHtml(
     )
     .join("");
 
+  // Process custom intro - replace placeholders
+  const defaultIntro = `Please find attached the trends report for <strong>${params.clientName}</strong> from ${params.companyName}.`;
+  const introText = params.customIntro
+    ? params.customIntro
+        .replace(/\[Client Name\]/gi, params.clientName)
+        .replace(/\[Sponsor Name\]/gi, params.sponsorName)
+        .replace(/\n/g, "<br/>")
+    : defaultIntro;
+
   return `
     <p>Dear ${params.sponsorName},</p>
 
-    <p>Please find attached the trends report for <strong>${params.clientName}</strong> from ${params.companyName}.</p>
+    <p>${introText}</p>
 
     <div class="alert-box alert-info">
       <table class="info-table">
@@ -114,7 +125,14 @@ export function generateTrendReportEmailHtml(
       and visualizations for each tracked metric.
     </p>
 
-    <p style="margin-top: 24px;">If you have any questions about this report, please don't hesitate to contact us.</p>
+    <p style="margin-top: 24px;">${
+      params.customClosing
+        ? params.customClosing
+            .replace(/\[Client Name\]/gi, params.clientName)
+            .replace(/\[Sponsor Name\]/gi, params.sponsorName)
+            .replace(/\n/g, "<br/>")
+        : "If you have any questions about this report, please don't hesitate to contact us."
+    }</p>
 
     <p>Best regards,<br/><strong>${params.companyName}</strong></p>
   `;

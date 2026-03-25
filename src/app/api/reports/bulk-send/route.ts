@@ -33,7 +33,7 @@ interface FieldConfig {
 }
 
 interface SavedReportConfig {
-  clientId: string;
+  clientId?: string; // Optional - legacy support, new reports don't include clientId
   templateId: string;
   fieldIds: string[];
   timeRange: "7d" | "30d" | "90d" | "custom";
@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
       startDate: overrideStartDate,
       endDate: overrideEndDate,
       skipWithoutSponsor = true,
+      emailSubject: customEmailSubject,
+      emailIntro: customEmailIntro,
+      emailClosing: customEmailClosing,
     } = body;
 
     if (!savedReportId) {
@@ -397,13 +400,22 @@ export async function POST(request: NextRequest) {
           companyName: savedReport.company.name,
           dateRange: `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`,
           summaryStats,
+          customIntro: customEmailIntro,
+          customClosing: customEmailClosing,
         });
+
+        // Generate subject line
+        const emailSubject = customEmailSubject
+          ? customEmailSubject
+              .replace(/\[Client Name\]/gi, clientName)
+              .replace(/\[Report Name\]/gi, savedReport.name)
+          : `Trends Report: ${clientName} - ${savedReport.name}`;
 
         // Send email
         const { data, error } = await resend.emails.send({
           from: `${EMAIL_FROM_NAME} <${EMAIL_FROM}>`,
           to: recipientEmail,
-          subject: `Trends Report: ${clientName} - ${savedReport.name}`,
+          subject: emailSubject,
           html: wrapInTrendReportEmailTemplate(emailHtml),
           attachments: [
             {
