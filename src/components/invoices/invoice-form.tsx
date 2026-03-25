@@ -114,6 +114,22 @@ export function InvoiceForm({
     initialData?.lineItems?.length ? initialData.lineItems : [{ ...defaultLineItem }]
   );
 
+  // Fetch company default currency on mount (only if no initial currency)
+  React.useEffect(() => {
+    if (!initialData?.currency) {
+      fetch("/api/settings/company")
+        .then(res => res.json())
+        .then(data => {
+          if (data.company?.currency) {
+            setCurrency(data.company.currency as Currency);
+          }
+        })
+        .catch(() => {
+          // Silently fail - will use default USD
+        });
+    }
+  }, [initialData?.currency]);
+
   // Sponsor autocomplete state
   const [sponsorSearch, setSponsorSearch] = React.useState("");
   const [sponsorSuggestions, setSponsorSuggestions] = React.useState<Sponsor[]>([]);

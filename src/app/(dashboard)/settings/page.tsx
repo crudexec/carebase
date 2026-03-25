@@ -13,7 +13,9 @@ import {
   CheckCircle,
   Save,
   Phone,
+  DollarSign,
 } from "lucide-react";
+import { Select } from "@/components/ui";
 
 interface CompanyData {
   id: string;
@@ -21,9 +23,19 @@ interface CompanyData {
   address: string | null;
   phone: string | null;
   faxNumber: string | null;
+  currency: string;
   isActive: boolean;
   createdAt: string;
 }
+
+type Currency = "USD" | "GBP" | "CAD" | "NGN";
+
+const CURRENCY_OPTIONS: { value: Currency; label: string; symbol: string }[] = [
+  { value: "USD", label: "US Dollar", symbol: "$" },
+  { value: "GBP", label: "British Pound", symbol: "£" },
+  { value: "CAD", label: "Canadian Dollar", symbol: "C$" },
+  { value: "NGN", label: "Nigerian Naira", symbol: "₦" },
+];
 
 export default function SettingsPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -38,6 +50,7 @@ export default function SettingsPage() {
     address: "",
     phone: "",
     faxNumber: "",
+    currency: "USD" as Currency,
   });
 
   // Fetch company details
@@ -53,6 +66,7 @@ export default function SettingsPage() {
           address: data.company.address || "",
           phone: data.company.phone || "",
           faxNumber: data.company.faxNumber || "",
+          currency: (data.company.currency || "USD") as Currency,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load company");
@@ -66,7 +80,7 @@ export default function SettingsPage() {
     }
   }, [sessionStatus]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -224,6 +238,32 @@ export default function SettingsPage() {
                 />
                 <p className="text-xs text-foreground-tertiary">
                   E.164 format (e.g., +12025551234). This number will receive incoming faxes for your organization.
+                </p>
+              </div>
+
+              {/* Default Currency */}
+              <div className="space-y-2">
+                <Label htmlFor="currency">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Default Currency
+                  </div>
+                </Label>
+                <Select
+                  id="currency"
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleChange}
+                  disabled={!isAdmin}
+                >
+                  {CURRENCY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.symbol} {option.value} - {option.label}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-xs text-foreground-tertiary">
+                  Default currency used for invoices and billing.
                 </p>
               </div>
 

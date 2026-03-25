@@ -19,6 +19,7 @@ export async function GET() {
         address: true,
         phone: true,
         faxNumber: true,
+        currency: true,
         isActive: true,
         createdAt: true,
       },
@@ -56,7 +57,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { name, address, phone, faxNumber } = body;
+    const { name, address, phone, faxNumber, currency } = body;
 
     // Validate name is required
     if (!name || !name.trim()) {
@@ -74,6 +75,15 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // Validate currency if provided
+    const validCurrencies = ["USD", "GBP", "CAD", "NGN"];
+    if (currency && !validCurrencies.includes(currency)) {
+      return NextResponse.json(
+        { error: "Invalid currency. Supported: USD, GBP, CAD, NGN" },
+        { status: 400 }
+      );
+    }
+
     const company = await prisma.company.update({
       where: { id: session.user.companyId },
       data: {
@@ -81,6 +91,7 @@ export async function PATCH(request: Request) {
         address: address?.trim() || null,
         phone: phone?.trim() || null,
         faxNumber: faxNumber?.trim() || null,
+        currency: currency || "USD",
       },
       select: {
         id: true,
@@ -88,6 +99,7 @@ export async function PATCH(request: Request) {
         address: true,
         phone: true,
         faxNumber: true,
+        currency: true,
         isActive: true,
         updatedAt: true,
       },
@@ -101,7 +113,7 @@ export async function PATCH(request: Request) {
         action: "COMPANY_UPDATED",
         entityType: "Company",
         entityId: company.id,
-        changes: { name, address, phone, faxNumber },
+        changes: { name, address, phone, faxNumber, currency },
       },
     });
 
