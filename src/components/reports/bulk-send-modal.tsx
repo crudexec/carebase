@@ -1,0 +1,506 @@
+"use client";
+
+import * as React from "react";
+import { useState, useEffect, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Loader2,
+  X,
+  Send,
+  Search,
+  AlertCircle,
+  CheckCircle,
+  User,
+  Mail,
+  Calendar,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+interface ClientWithSponsor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  status: string;
+  hasSponsor: boolean;
+  sponsorHasEmail: boolean;
+  sponsor: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  canSendReport: boolean;
+}
+
+interface BulkSendResult {
+  clientId: string;
+  clientName: string;
+  status: "sent" | "skipped" | "failed";
+  sentTo?: string;
+  error?: string;
+}
+
+interface BulkSendResponse {
+  success: boolean;
+  results: BulkSendResult[];
+  summary: {
+    sent: number;
+    skipped: number;
+    failed: number;
+    total: number;
+  };
+}
+
+interface BulkSendModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  savedReportId: string;
+  savedReportName: string;
+}
+
+type TimePreset = "7d" | "30d" | "90d" | "custom";
+
+export function BulkSendModal({
+  isOpen,
+  onClose,
+  savedReportId,
+  savedReportName,
+}: BulkSendModalProps) {
+  const [clients, setClients] = useState<ClientWithSponsor[]>([]);
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingClients, setIsFetchingClients] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [results, setResults] = useState<BulkSendResponse | null>(null);
+
+  // Date range options
+  const [timePreset, setTimePreset] = useState<TimePreset>("30d");
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
+
+  // Fetch clients when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchClients();
+      setResults(null);
+      setSelectedClientIds(new Set());
+    }
+  }, [isOpen]);
+
+  const fetchClients = async () => {
+    setIsFetchingClients(true);
+    try {
+      const response = await fetch("/api/clients/with-sponsors?status=ACTIVE");
+      if (response.ok) {
+        const data = await response.json();
+        setClients(data.clients);
+      }
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+      toast.error("Failed to load clients");
+    } finally {
+      setIsFetchingClients(false);
+    }
+  };
+
+  // Filter clients by search
+  const filteredClients = useMemo(() => {
+    if (!searchQuery.trim()) return clients;
+    const query = searchQuery.toLowerCase();
+    return clients.filter(
+      (client) =>
+        client.fullName.toLowerCase().includes(query) ||
+        client.sponsor?.fullName.toLowerCase().includes(query) ||
+        client.sponsor?.email.toLowerCase().includes(query)
+    );
+  }, [clients, searchQuery]);
+
+  // Get counts
+  const selectableClients = filteredClients.filter((c) => c.canSendReport);
+  const selectedCount = selectedClientIds.size;
+  const canSendCount = Array.from(selectedClientIds).filter((id) =>
+    clients.find((c) => c.id === id && c.canSendReport)
+  ).length;
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isLoading) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, isLoading]);
+
+  const handleClose = () => {
+    if (isLoading) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 150);
+  };
+
+  const toggleClient = (clientId: string) => {
+    setSelectedClientIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clientId)) {
+        next.delete(clientId);
+      } else {
+        next.add(clientId);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedClientIds(new Set(selectableClients.map((c) => c.id)));
+  };
+
+  const clearAll = () => {
+    setSelectedClientIds(new Set());
+  };
+
+  const handleSend = async () => {
+    if (selectedClientIds.size === 0) return;
+
+    setIsLoading(true);
+    try {
+      const body: {
+        savedReportId: string;
+        clientIds: string[];
+        startDate?: string;
+        endDate?: string;
+      } = {
+        savedReportId,
+        clientIds: Array.from(selectedClientIds),
+      };
+
+      if (timePreset === "custom" && customStartDate && customEndDate) {
+        body.startDate = customStartDate;
+        body.endDate = customEndDate;
+      }
+
+      const response = await fetch("/api/reports/bulk-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        const data: BulkSendResponse = await response.json();
+        setResults(data);
+
+        if (data.summary.sent > 0) {
+          toast.success(`Successfully sent ${data.summary.sent} report(s)`);
+        }
+        if (data.summary.failed > 0) {
+          toast.error(`Failed to send ${data.summary.failed} report(s)`);
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to send reports");
+      }
+    } catch (err) {
+      console.error("Failed to send reports:", err);
+      toast.error("Failed to send reports");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "absolute inset-0 bg-black/50 transition-opacity duration-150",
+          isClosing ? "opacity-0" : "opacity-100"
+        )}
+        onClick={handleClose}
+      />
+
+      {/* Modal */}
+      <div
+        className={cn(
+          "relative bg-background rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col transition-all duration-150",
+          isClosing
+            ? "opacity-0 scale-95"
+            : "opacity-100 scale-100 animate-in fade-in zoom-in-95"
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b">
+          <div>
+            <h2 className="text-lg font-semibold">Send Report to Sponsors</h2>
+            <p className="text-sm text-foreground-secondary">
+              Template: {savedReportName}
+            </p>
+          </div>
+          <button
+            onClick={handleClose}
+            disabled={isLoading}
+            className="p-1 text-foreground-tertiary hover:text-foreground rounded-lg hover:bg-background-secondary transition-colors disabled:opacity-50"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden flex flex-col p-4">
+          {results ? (
+            // Results view
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-background-secondary">
+                <div className="flex-1 grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-success">
+                      {results.summary.sent}
+                    </div>
+                    <div className="text-xs text-foreground-secondary">Sent</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-warning">
+                      {results.summary.skipped}
+                    </div>
+                    <div className="text-xs text-foreground-secondary">Skipped</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-error">
+                      {results.summary.failed}
+                    </div>
+                    <div className="text-xs text-foreground-secondary">Failed</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-auto max-h-[300px] space-y-2">
+                {results.results.map((result) => (
+                  <div
+                    key={result.clientId}
+                    className="flex items-center justify-between p-3 rounded-lg bg-background-secondary"
+                  >
+                    <div className="flex items-center gap-3">
+                      {result.status === "sent" && (
+                        <CheckCircle className="w-4 h-4 text-success" />
+                      )}
+                      {result.status === "skipped" && (
+                        <AlertCircle className="w-4 h-4 text-warning" />
+                      )}
+                      {result.status === "failed" && (
+                        <X className="w-4 h-4 text-error" />
+                      )}
+                      <div>
+                        <div className="font-medium text-sm">{result.clientName}</div>
+                        {result.sentTo && (
+                          <div className="text-xs text-foreground-secondary">
+                            Sent to: {result.sentTo}
+                          </div>
+                        )}
+                        {result.error && (
+                          <div className="text-xs text-error">{result.error}</div>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium",
+                        result.status === "sent" &&
+                          "bg-success/10 text-success",
+                        result.status === "skipped" &&
+                          "bg-warning/10 text-warning",
+                        result.status === "failed" && "bg-error/10 text-error"
+                      )}
+                    >
+                      {result.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button variant="default" onClick={handleClose}>
+                  Done
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Selection view
+            <>
+              {/* Date Range Selection */}
+              <div className="mb-4 p-3 rounded-lg bg-background-secondary">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-4 h-4 text-foreground-secondary" />
+                  <span className="text-sm font-medium">Date Range</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {(["7d", "30d", "90d", "custom"] as TimePreset[]).map(
+                    (preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => setTimePreset(preset)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-md text-sm transition-colors",
+                          timePreset === preset
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background hover:bg-background-secondary"
+                        )}
+                      >
+                        {preset === "7d" && "7 Days"}
+                        {preset === "30d" && "30 Days"}
+                        {preset === "90d" && "90 Days"}
+                        {preset === "custom" && "Custom"}
+                      </button>
+                    )
+                  )}
+                </div>
+                {timePreset === "custom" && (
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      placeholder="Start date"
+                    />
+                    <Input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      placeholder="End date"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Search and Selection Controls */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-tertiary" />
+                  <Input
+                    type="text"
+                    placeholder="Search clients or sponsors..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Button variant="ghost" size="sm" onClick={selectAll}>
+                  Select All
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearAll}>
+                  Clear
+                </Button>
+              </div>
+
+              {/* Client List */}
+              <div className="flex-1 overflow-auto border rounded-lg">
+                {isFetchingClients ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : filteredClients.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-foreground-secondary">
+                    <User className="w-8 h-8 mb-2" />
+                    <p className="text-sm">No clients found</p>
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {filteredClients.map((client) => (
+                      <div
+                        key={client.id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 hover:bg-background-secondary transition-colors",
+                          !client.canSendReport && "opacity-50"
+                        )}
+                      >
+                        <Checkbox
+                          checked={selectedClientIds.has(client.id)}
+                          onChange={() => toggleClient(client.id)}
+                          disabled={!client.canSendReport}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm">
+                            {client.fullName}
+                          </div>
+                          {client.sponsor ? (
+                            <div className="flex items-center gap-1 text-xs text-foreground-secondary">
+                              <Mail className="w-3 h-3" />
+                              {client.sponsor.email || "No email"}
+                              <span className="text-foreground-tertiary">
+                                ({client.sponsor.fullName})
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-xs text-warning">
+                              <AlertCircle className="w-3 h-3" />
+                              No sponsor assigned
+                            </div>
+                          )}
+                        </div>
+                        {!client.canSendReport && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-warning/10 text-warning">
+                            {!client.hasSponsor
+                              ? "No sponsor"
+                              : "No email"}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Summary */}
+              <div className="flex items-center justify-between mt-3 text-sm text-foreground-secondary">
+                <span>
+                  {selectedCount} client{selectedCount !== 1 ? "s" : ""} selected
+                </span>
+                <span>
+                  {canSendCount} email{canSendCount !== 1 ? "s" : ""} will be sent
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
+                <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSend}
+                  disabled={isLoading || canSendCount === 0}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send {canSendCount} Report{canSendCount !== 1 ? "s" : ""}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

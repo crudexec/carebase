@@ -9,11 +9,13 @@ import {
   Loader2,
   Check,
   X,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import { TrendChart, CHART_COLORS } from "./trend-chart";
+import { BulkSendModal } from "./bulk-send-modal";
 
 interface _Client {
   id: string;
@@ -145,6 +147,13 @@ export function TrendReportBuilder({
   const [reportName, setReportName] = useState("");
   const [reportDescription, setReportDescription] = useState("");
 
+  // Bulk send modal
+  const [showBulkSendModal, setShowBulkSendModal] = useState(false);
+  const [currentSavedReportId, setCurrentSavedReportId] = useState<string | null>(
+    savedReportId || null
+  );
+  const [savedReportDisplayName, setSavedReportDisplayName] = useState<string>("");
+
   // Error state
   const [error, setError] = useState<string | null>(null);
 
@@ -253,6 +262,7 @@ export function TrendReportBuilder({
         setAggregation(report.config.aggregation as AggregationMethod);
         setReportName(report.name);
         setReportDescription(report.description || "");
+        setSavedReportDisplayName(report.name);
       }
     } catch (err) {
       console.error("Failed to load saved report:", err);
@@ -285,6 +295,9 @@ export function TrendReportBuilder({
       });
 
       if (response.ok) {
+        const data = await response.json();
+        setCurrentSavedReportId(data.report.id);
+        setSavedReportDisplayName(data.report.name);
         setShowSaveModal(false);
         setReportName("");
         setReportDescription("");
@@ -629,6 +642,16 @@ export function TrendReportBuilder({
                 <Save className="w-4 h-4 mr-1" />
                 Save Configuration
               </Button>
+              {currentSavedReportId && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowBulkSendModal(true)}
+                >
+                  <Send className="w-4 h-4 mr-1" />
+                  Send to Sponsors
+                </Button>
+              )}
               <Button
                 variant="secondary"
                 size="sm"
@@ -749,6 +772,16 @@ export function TrendReportBuilder({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Bulk Send Modal */}
+      {currentSavedReportId && (
+        <BulkSendModal
+          isOpen={showBulkSendModal}
+          onClose={() => setShowBulkSendModal(false)}
+          savedReportId={currentSavedReportId}
+          savedReportName={savedReportDisplayName || "Report"}
+        />
       )}
     </div>
   );

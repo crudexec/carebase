@@ -486,6 +486,9 @@ model Company {
   // Virtual Fax Number for receiving faxes (E.164 format)
   faxNumber String? @unique
 
+  // Invoice/Billing Settings
+  currency String @default("USD") // Default currency for invoices (USD, GBP, CAD, NGN)
+
   // Relations - all tenant-scoped models
   users             User[]
   clients           Client[]
