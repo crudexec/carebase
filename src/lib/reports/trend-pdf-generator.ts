@@ -238,12 +238,11 @@ export async function generateTrendReportPDF(
 
   // Summary table header
   const colWidths = {
-    field: 60,
-    avg: 25,
-    min: 25,
-    max: 25,
-    count: 25,
-    trend: 30,
+    field: 80,
+    avg: 30,
+    min: 30,
+    max: 30,
+    count: 30,
   };
 
   // Table header background
@@ -264,8 +263,6 @@ export async function generateTrendReportPDF(
   doc.text("Max", tableX, y);
   tableX += colWidths.max;
   doc.text("Count", tableX, y);
-  tableX += colWidths.count;
-  doc.text("Trend", tableX, y);
   y += 8;
 
   // Table rows
@@ -277,8 +274,8 @@ export async function generateTrendReportPDF(
 
     // Field name (truncate if too long)
     const fieldLabel =
-      field.fieldLabel.length > 30
-        ? field.fieldLabel.substring(0, 27) + "..."
+      field.fieldLabel.length > 40
+        ? field.fieldLabel.substring(0, 37) + "..."
         : field.fieldLabel;
     doc.text(fieldLabel, tableX, y);
     tableX += colWidths.field;
@@ -291,20 +288,6 @@ export async function generateTrendReportPDF(
     doc.text(field.stats.max.toString(), tableX, y);
     tableX += colWidths.max;
     doc.text(field.stats.count.toString(), tableX, y);
-    tableX += colWidths.count;
-
-    // Trend with color
-    const trend = field.stats.trend;
-    if (trend === "improving") {
-      doc.setTextColor(22, 163, 74); // Green
-    } else if (trend === "worsening") {
-      doc.setTextColor(220, 38, 38); // Red
-    } else {
-      doc.setTextColor(107, 114, 128); // Gray
-    }
-    const trendSymbol = trend === "improving" ? "↗" : trend === "worsening" ? "↘" : "→";
-    doc.text(`${trendSymbol} ${capitalizeFirst(trend)}`, tableX, y);
-    doc.setTextColor(0, 0, 0);
 
     y += 7;
 
@@ -338,22 +321,6 @@ export async function generateTrendReportPDF(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(field.fieldLabel, margin + 10, y);
-
-    // Trend indicator
-    const trend = field.stats.trend;
-    let trendColor: { r: number; g: number; b: number };
-    if (trend === "improving") {
-      trendColor = { r: 22, g: 163, b: 74 };
-    } else if (trend === "worsening") {
-      trendColor = { r: 220, g: 38, b: 38 };
-    } else {
-      trendColor = { r: 107, g: 114, b: 128 };
-    }
-
-    doc.setFontSize(10);
-    doc.setTextColor(trendColor.r, trendColor.g, trendColor.b);
-    const trendSymbol = trend === "improving" ? "↗" : trend === "worsening" ? "↘" : "→";
-    doc.text(`${trendSymbol} ${capitalizeFirst(trend)}`, pageWidth - margin, y, { align: "right" });
 
     y += 8;
 
@@ -432,8 +399,4 @@ export async function generateTrendReportPDF(
   }
 
   return Buffer.from(doc.output("arraybuffer"));
-}
-
-function capitalizeFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
