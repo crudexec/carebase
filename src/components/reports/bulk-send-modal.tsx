@@ -321,7 +321,7 @@ export function BulkSendModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden flex flex-col p-4">
+        <div className="flex-1 overflow-y-auto p-4">
           {results ? (
             // Results view
             <div className="space-y-4">
@@ -533,7 +533,7 @@ export function BulkSendModal({
               </div>
 
               {/* Client List */}
-              <div className="flex-1 overflow-auto border rounded-lg">
+              <div className="max-h-[280px] overflow-auto border rounded-lg">
                 {isFetchingClients ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -608,41 +608,44 @@ export function BulkSendModal({
                 )}
               </div>
 
-              {/* Summary */}
-              <div className="flex items-center justify-between mt-3 text-sm text-foreground-secondary">
-                <span>
-                  {selectedCount} client{selectedCount !== 1 ? "s" : ""} selected
-                </span>
-                <span>
-                  {canSendCount} email{canSendCount !== 1 ? "s" : ""} will be sent
-                </span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
-                <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSend}
-                  disabled={isLoading || canSendCount === 0}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Send {canSendCount} Report{canSendCount !== 1 ? "s" : ""}
-                    </>
-                  )}
-                </Button>
-              </div>
             </>
           )}
         </div>
+
+        {/* Footer - Always visible */}
+        {!results && (
+          <div className="border-t p-4 bg-background">
+            <div className="flex items-center justify-between mb-3 text-sm text-foreground-secondary">
+              <span>
+                {selectedCount} client{selectedCount !== 1 ? "s" : ""} selected
+              </span>
+              <span>
+                {canSendCount} email{canSendCount !== 1 ? "s" : ""} will be sent
+              </span>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || canSendCount === 0}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send {canSendCount} Report{canSendCount !== 1 ? "s" : ""}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

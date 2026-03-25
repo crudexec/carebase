@@ -77,6 +77,13 @@ export const helpCategories: HelpCategory[] = [
     description: "Invoices, payments, and payroll management",
     order: 7,
   },
+  {
+    slug: "reports",
+    title: "Reports & Analytics",
+    icon: "BarChart3",
+    description: "Trend reports, analytics, and data insights",
+    order: 8,
+  },
 ];
 
 // Articles
@@ -924,6 +931,325 @@ Contact your agency with:
 
 ### Where can I see payment history?
 View all past invoices and payments in the Invoices section.
+`,
+  },
+
+  // Reports & Analytics
+  {
+    slug: "trend-reports",
+    title: "Visit Note Trend Reports",
+    category: "reports",
+    description: "Track client health metrics over time and share reports with sponsors",
+    keywords: ["trends", "reports", "analytics", "graphs", "charts", "sponsor", "email"],
+    order: 1,
+    popular: true,
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
+    content: `
+# Visit Note Trend Reports
+
+Trend Reports allow you to track numeric values from visit notes over time and visualize client progress. You can create report templates, preview them with charts, and send professional PDF reports directly to sponsors via email.
+
+## Accessing Trend Reports
+
+1. Navigate to **Reports** in the sidebar
+2. Click on **Visit Note Trends**
+
+## Creating a Trend Report
+
+### Step 1: Configure the Report
+
+1. **Select a Template** - Choose the visit note template that contains the fields you want to track
+2. **Select Fields** - Pick the numeric fields to include (e.g., blood pressure, weight, pain level)
+3. **Set Time Range** - Choose from preset ranges (7, 30, or 90 days) or set a custom date range
+4. **Choose Aggregation** - Select how to handle multiple entries per day:
+   - **Latest Value** - Use the most recent reading
+   - **Average** - Calculate the daily average
+   - **First Value** - Use the first reading of the day
+
+### Step 2: Preview with a Client
+
+1. **Select a Client** - Choose a client to preview their trend data
+2. **View Charts** - The system displays interactive line charts showing:
+   - Data points over time
+   - Average reference line
+   - Trend direction (improving, stable, or worsening)
+   - Statistics (min, max, average, count)
+
+### Step 3: Save the Report Template
+
+1. Click **Save Configuration**
+2. Enter a **Report Name** (e.g., "Weekly Vitals Report")
+3. Add an optional **Description**
+4. Click **Save**
+
+The saved template can be reused for any client - it stores the template, fields, time range, and aggregation settings.
+
+## Sending Reports to Sponsors
+
+Once you have a saved report, you can send it to one or multiple sponsors:
+
+### Step 1: Open Send Modal
+
+1. Click **Send to Sponsors** button
+2. This opens the bulk send modal
+
+### Step 2: Configure the Send
+
+1. **Set Date Range** - Choose the time period for the report data
+2. **Customize Email** (optional) - Click "Customize Email" to:
+   - Set a custom **Subject Line**
+   - Write a custom **Introduction Message**
+   - Write a custom **Closing Message**
+   - Use placeholders like [Client Name] and [Sponsor Name]
+
+### Step 3: Select Recipients
+
+1. **Search or Browse** - Find clients in the list
+2. **Check Availability** - Clients without sponsors or sponsor emails are marked
+3. **Select Clients** - Check the box next to each client to include
+4. **Use Select All** - Quickly select all eligible clients
+
+### Step 4: Preview PDF (Optional)
+
+Before sending, you can preview the exact PDF that will be sent:
+1. Click the **eye icon** next to any client
+2. The PDF opens in a new tab showing exactly what will be attached
+3. Review the charts and data for accuracy
+
+### Step 5: Send Reports
+
+1. Click **Send X Reports**
+2. The system generates individual PDFs for each client
+3. Emails are sent to each sponsor with the PDF attached
+
+### Step 6: Review Results
+
+After sending, you'll see a summary:
+- **Sent** - Successfully delivered reports
+- **Skipped** - Clients without data or valid recipients
+- **Failed** - Any errors that occurred
+
+## Understanding the PDF Report
+
+The generated PDF includes professional line charts similar to the app:
+
+### Header Section
+- Company name
+- Report title and template name
+- Date range covered
+- Client name
+
+### Summary Table
+- All tracked fields at a glance
+- Average, min, max values
+- Data point count
+- Trend direction with color coding (green for improving, red for worsening)
+
+### Individual Charts
+Each field gets its own line chart showing:
+- **Line Graph** - Visual trend over time with connected data points
+- **Data Points** - Colored dots for each measurement
+- **Average Line** - Dashed reference line showing the mean value
+- **Y-Axis** - Value scale with grid lines
+- **X-Axis** - Date labels
+- **Trend Indicator** - Arrow showing improvement or decline
+- **Statistics Row** - Detailed numbers below each chart
+
+## Email Customization
+
+### Default Email Content
+
+Without customization, the email includes:
+- Personalized greeting to sponsor
+- Report details (template name, client name, period)
+- Summary table of metrics and trends
+- PDF attachment with charts
+- Company signature
+
+### Custom Content Options
+
+**Subject Line:**
+Default: "Trends Report: [Client Name] - [Report Name]"
+Use [Client Name] and [Report Name] as placeholders
+
+**Introduction Message:**
+Replace the standard intro with your own message
+Example: "Here is [Client Name]'s weekly progress update."
+
+**Closing Message:**
+Replace the standard closing
+Example: "Please call us at (555) 123-4567 with any questions."
+
+## Best Practices
+
+### For Effective Reports
+
+1. **Choose Meaningful Fields** - Track values that show client progress
+2. **Use Consistent Templates** - Ensure carers complete the same fields each visit
+3. **Set Appropriate Time Ranges** - Longer ranges show better trends
+4. **Name Reports Clearly** - Use descriptive names like "Monthly Pain Assessment"
+
+### For Sponsor Communication
+
+1. **Send Regularly** - Weekly or monthly reports keep families informed
+2. **Customize Messages** - Personal touches improve engagement
+3. **Preview First** - Always verify data before sending
+4. **Follow Up** - Be ready to answer questions about reports
+
+## Troubleshooting
+
+### No Data Available
+
+If charts show "No data":
+- Verify visit notes exist for the selected client
+- Check that visit notes use the selected template
+- Ensure the date range includes completed visits
+- Confirm numeric fields have values entered
+
+### Sponsor Has No Email
+
+Clients are marked if:
+- No sponsor is assigned
+- Sponsor account has no email address
+
+To fix: Go to the client profile and assign or update sponsor email.
+
+### Report Won't Send
+
+Check:
+- Email service is configured correctly
+- Sponsor email address is valid
+- Data exists for the selected fields and date range
+`,
+  },
+  {
+    slug: "creating-report-templates",
+    title: "Creating Report Templates",
+    category: "reports",
+    description: "How to create reusable report templates for consistent reporting",
+    keywords: ["template", "report", "create", "save", "configuration"],
+    order: 2,
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
+    content: `
+# Creating Report Templates
+
+Report templates allow you to save report configurations for reuse. Once created, a template can be used to generate reports for any client.
+
+## What is a Report Template?
+
+A report template saves:
+- **Visit Note Template** - Which form to pull data from
+- **Selected Fields** - Which numeric fields to track
+- **Time Range** - Default reporting period
+- **Aggregation Method** - How to handle multiple daily values
+
+It does NOT save:
+- Specific client selection (templates are client-agnostic)
+- Custom email content (set when sending)
+
+## Creating a Template
+
+### Step 1: Configure Your Report
+
+1. Go to **Reports > Visit Note Trends**
+2. Select a **Template** from the dropdown
+3. Choose **Fields** to include (click to select/deselect)
+4. Set your preferred **Time Range**
+5. Choose an **Aggregation Method**
+
+### Step 2: Preview (Recommended)
+
+1. Select any **Client** to preview
+2. Review the charts and statistics
+3. Verify the data looks correct
+4. Adjust fields or settings if needed
+
+### Step 3: Save the Template
+
+1. Click **Save Configuration**
+2. Enter a **Name** for your template (e.g., "Weekly Vitals Check")
+3. Add a **Description** (optional but helpful)
+4. Click **Save**
+
+## Using Saved Templates
+
+### Loading a Template
+
+1. Go to **Reports > Visit Note Trends**
+2. Click **Saved Reports** button (shows count)
+3. Select a template from the dropdown
+4. Template settings are loaded automatically
+5. The **Send to Sponsors** button appears immediately
+
+### Sending Reports from a Template
+
+Once loaded:
+1. The **Send to Sponsors** button appears in the header
+2. Click it to open the send modal
+3. Select clients and configure email
+4. Preview PDFs if desired
+5. Send reports
+
+## Managing Templates
+
+### Viewing All Templates
+
+1. Click **Saved Reports** in the header
+2. View all templates with their name, description, and creator
+
+### Deleting Templates
+
+1. Open the Saved Reports dropdown
+2. Click **Delete** next to the template
+3. Confirm deletion
+
+## Template Best Practices
+
+### Naming Conventions
+
+Use clear, descriptive names:
+- "Weekly Vitals - Blood Pressure and Weight"
+- "Monthly Cognitive Assessment Trends"
+- "Daily Pain Level Tracking"
+
+### Field Selection
+
+- Include related fields in one template
+- Limit to 5-7 fields per report for readability
+- Group logically (e.g., all vitals together)
+
+### Time Ranges
+
+Choose appropriate defaults:
+- **7 days** - For daily check-ins, rapid changes
+- **30 days** - Standard monthly reporting
+- **90 days** - Quarterly reviews, long-term trends
+
+### Aggregation Methods
+
+- **Latest** - Best for single daily readings
+- **Average** - Best for multiple readings per day
+- **First** - Useful for morning-only measurements
+
+## Common Use Cases
+
+### Weekly Family Updates
+
+- Time Range: 7 days
+- Fields: Weight, blood pressure, mood score
+- Schedule: Send every Friday
+
+### Monthly Progress Reports
+
+- Time Range: 30 days
+- Fields: All tracked metrics
+- Schedule: Send first week of each month
+
+### Quarterly Clinical Reviews
+
+- Time Range: 90 days
+- Fields: Primary health indicators
+- Schedule: Before care plan reviews
 `,
   },
 ];
