@@ -100,7 +100,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    if (savedReport.type !== "visit_note_trends") {
+    if (savedReport.type !== "VISIT_NOTE_TRENDS") {
       return NextResponse.json(
         { error: "Only trend reports can be sent via email" },
         { status: 400 }
