@@ -42,7 +42,7 @@ const createInvoiceSchema = z.object({
 });
 
 // Generate invoice number
-async function generateInvoiceNumber(companyId: string): Promise<string> {
+async function generateInvoiceNumber(companyId: string, offset: number = 0): Promise<string> {
   const year = new Date().getFullYear();
 
   // Find the highest invoice number for this year
@@ -64,6 +64,9 @@ async function generateInvoiceNumber(companyId: string): Promise<string> {
       nextNumber = lastNumber + 1;
     }
   }
+
+  // Add offset for retry attempts (handles race conditions and gaps)
+  nextNumber += offset;
 
   return `INV-${year}-${nextNumber.toString().padStart(4, "0")}`;
 }
@@ -326,8 +329,8 @@ export async function POST(request: NextRequest) {
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        // Generate invoice number fresh on each attempt
-        const invoiceNumber = await generateInvoiceNumber(companyId);
+        // Generate invoice number fresh on each attempt, with offset for retries
+        const invoiceNumber = await generateInvoiceNumber(companyId, attempt);
 
         // Create invoice with line items
         invoice = await prisma.invoice.create({

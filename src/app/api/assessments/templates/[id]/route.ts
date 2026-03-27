@@ -203,41 +203,37 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         },
       });
 
-      // If sections are provided, delete and recreate them
+      // If sections are provided, update them while preserving response data
       if (sections) {
-        // First, get all existing item IDs for this template
+        // Step 1: Get existing items with their codes and IDs (for response migration)
         const existingItems = await tx.assessmentTemplateItem.findMany({
           where: {
             section: {
               templateId: id,
             },
           },
-          select: { id: true },
+          select: { id: true, code: true },
         });
 
-        const existingItemIds = existingItems.map((item) => item.id);
-
-        // Delete responses that reference these items (to avoid FK constraint violation)
-        if (existingItemIds.length > 0) {
-          const deleteResult = await tx.assessmentResponse.deleteMany({
-            where: {
-              itemId: { in: existingItemIds },
-            },
-          });
-          deletedResponsesCount = deleteResult.count;
-          if (deletedResponsesCount > 0) {
-            console.log(`Deleted ${deletedResponsesCount} responses for ${existingItemIds.length} items`);
-          }
+        // Create a map of code -> oldItemId for response migration
+        const oldCodeToItemId = new Map<string, string>();
+        for (const item of existingItems) {
+          oldCodeToItemId.set(item.code, item.id);
         }
 
-        // Delete existing sections (items will cascade delete)
+        console.log(`Found ${existingItems.length} existing items to potentially migrate responses from`);
+
+        // Step 2: Delete existing sections (items will cascade delete)
+        // Note: We do NOT delete responses here - we'll migrate them after creating new items
         await tx.assessmentTemplateSection.deleteMany({
           where: { templateId: id },
         });
 
         console.log("Deleted existing sections, recreating...");
 
-        // Create new sections with items
+        // Step 3: Create new sections and items, tracking code -> newItemId mapping
+        const newCodeToItemId = new Map<string, string>();
+
         for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
           const section = sections[sectionIndex];
 
@@ -254,7 +250,21 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
           // Prepare items data for batch creation
           if (section.items.length > 0) {
-            const itemsData = section.items.map((item, itemIndex) => {
+            // Deduplicate items by code within this section (keep first occurrence)
+            const seenCodes = new Set<string>();
+            const uniqueItems = section.items.filter((item) => {
+              if (seenCodes.has(item.code)) {
+                console.log(`WARNING: Duplicate code "${item.code}" in section "${section.title}", skipping duplicate`);
+                return false;
+              }
+              seenCodes.add(item.code);
+              return true;
+            });
+
+            // Create items one by one to get their IDs for response migration
+            for (let itemIndex = 0; itemIndex < uniqueItems.length; itemIndex++) {
+              const item = uniqueItems[itemIndex];
+
               // Combine all config into responseOptions for storage
               let responseOptions = item.responseOptions || null;
               if (item.listConfig || item.repeaterConfig) {
@@ -265,29 +275,73 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 };
               }
 
-              return {
-                sectionId: newSection.id,
-                code: item.code,
-                question: item.questionText,
-                description: item.description || null,
-                responseType: item.responseType as AssessmentResponseType,
-                isRequired: item.required ?? true,
-                displayOrder: item.order ?? itemIndex,
-                responseOptions,
-                minValue: item.minValue ?? null,
-                maxValue: item.maxValue ?? null,
-                scoreMapping: item.scoreMapping || null,
-                showIf: item.showIf || null,
-              };
-            });
+              const newItem = await tx.assessmentTemplateItem.create({
+                data: {
+                  sectionId: newSection.id,
+                  code: item.code,
+                  question: item.questionText,
+                  description: item.description || null,
+                  responseType: item.responseType as AssessmentResponseType,
+                  isRequired: item.required ?? true,
+                  displayOrder: item.order ?? itemIndex,
+                  responseOptions,
+                  minValue: item.minValue ?? null,
+                  maxValue: item.maxValue ?? null,
+                  scoreMapping: item.scoreMapping || null,
+                  showIf: item.showIf || null,
+                },
+              });
 
-            // Batch create all items for this section
-            await tx.assessmentTemplateItem.createMany({
-              data: itemsData,
-            });
+              // Track the new item ID for this code
+              newCodeToItemId.set(item.code, newItem.id);
+            }
+
+            const skippedCount = section.items.length - uniqueItems.length;
+            if (skippedCount > 0) {
+              console.log(`Created section "${section.title}" with ${uniqueItems.length} items (${skippedCount} duplicates skipped)`);
+            } else {
+              console.log(`Created section "${section.title}" with ${uniqueItems.length} items`);
+            }
+          } else {
+            console.log(`Created section "${section.title}" with 0 items`);
           }
+        }
 
-          console.log(`Created section "${section.title}" with ${section.items.length} items`);
+        // Step 4: Migrate responses from old item IDs to new item IDs based on matching codes
+        let migratedCount = 0;
+        let orphanedCount = 0;
+
+        for (const [code, oldItemId] of oldCodeToItemId) {
+          const newItemId = newCodeToItemId.get(code);
+
+          if (newItemId) {
+            // Migrate responses to the new item ID
+            const result = await tx.assessmentResponse.updateMany({
+              where: { itemId: oldItemId },
+              data: { itemId: newItemId },
+            });
+            if (result.count > 0) {
+              migratedCount += result.count;
+              console.log(`Migrated ${result.count} responses for code "${code}" (${oldItemId} -> ${newItemId})`);
+            }
+          } else {
+            // Item code was removed from template - delete orphaned responses
+            const result = await tx.assessmentResponse.deleteMany({
+              where: { itemId: oldItemId },
+            });
+            if (result.count > 0) {
+              orphanedCount += result.count;
+              console.log(`Deleted ${result.count} orphaned responses for removed code "${code}"`);
+            }
+          }
+        }
+
+        if (migratedCount > 0) {
+          console.log(`Successfully migrated ${migratedCount} responses to new item IDs`);
+        }
+        if (orphanedCount > 0) {
+          deletedResponsesCount = orphanedCount;
+          console.log(`Deleted ${orphanedCount} responses for items that were removed from the template`);
         }
       }
 
@@ -315,14 +369,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     console.log("=== PATCH COMPLETE ===");
     console.log("Updated template sections:", updatedTemplate?.sections?.length);
     if (deletedResponsesCount > 0) {
-      console.log(`Cleared ${deletedResponsesCount} assessment responses due to template restructure`);
+      console.log(`Deleted ${deletedResponsesCount} orphaned responses for removed template items`);
     }
     console.log("=== END ASSESSMENT TEMPLATE PATCH ===\n");
 
     return NextResponse.json({
       template: updatedTemplate,
       ...(deletedResponsesCount > 0 && {
-        warning: `Template update cleared ${deletedResponsesCount} existing assessment response(s)`
+        warning: `${deletedResponsesCount} response(s) were deleted because their associated questions were removed from the template`
       })
     });
   } catch (error) {
