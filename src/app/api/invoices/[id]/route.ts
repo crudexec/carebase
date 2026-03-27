@@ -23,7 +23,7 @@ const updateInvoiceSchema = z.object({
   notes: z.string().optional().nullable(),
   taxRate: z.number().min(0).max(1).optional(),
   currency: z.enum(["USD", "GBP", "CAD", "NGN"]).optional(),
-  status: z.enum(["DRAFT", "PENDING", "SENT", "PARTIAL", "PAID", "OVERDUE", "CANCELLED"]).optional(),
+  status: z.enum(["DRAFT", "PENDING", "SENT", "PARTIAL", "PAID", "OVERDUE", "CANCELLED", "ARCHIVED"]).optional(),
   sponsorId: z.string().optional().nullable(),
   lineItems: z.array(lineItemSchema).optional(),
 });
@@ -208,6 +208,14 @@ export async function PATCH(
     // Only DRAFT and PENDING invoices can be fully edited
     const canEditFully = ["DRAFT", "PENDING"].includes(existingInvoice.status);
 
+    // Archived invoices can only be unarchived, not edited
+    if (existingInvoice.status === "ARCHIVED" && data.status !== "DRAFT" && data.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Archived invoices can only be restored to DRAFT or PENDING status" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const parseResult = updateInvoiceSchema.safeParse(body);
 
@@ -387,7 +395,7 @@ export async function PATCH(
   }
 }
 
-// DELETE - Delete invoice (only DRAFT invoices)
+// DELETE - Delete invoice (only DRAFT, CANCELLED, or ARCHIVED invoices)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -401,39 +409,51 @@ export async function DELETE(
     const { companyId, role } = session.user;
     const { id } = await params;
 
-    // Check permission
-    const canManage = hasAnyPermission(role, [
-      PERMISSIONS.INVOICE_MANAGE,
-      PERMISSIONS.INVOICE_FULL,
-    ]);
+    // Check permission - only INVOICE_FULL can delete
+    const canDelete = hasAnyPermission(role, [PERMISSIONS.INVOICE_FULL]);
 
-    if (!canManage) {
+    if (!canDelete) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Find existing invoice
     const existingInvoice = await prisma.invoice.findFirst({
       where: { id, companyId },
+      include: {
+        payments: true,
+      },
     });
 
     if (!existingInvoice) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    // Only DRAFT invoices can be deleted
-    if (existingInvoice.status !== "DRAFT") {
+    // Only DRAFT, CANCELLED, and ARCHIVED invoices can be deleted
+    const deletableStatuses = ["DRAFT", "CANCELLED", "ARCHIVED"];
+    if (!deletableStatuses.includes(existingInvoice.status)) {
       return NextResponse.json(
-        { error: "Only draft invoices can be deleted. Use cancel instead." },
+        {
+          error: "Only draft, cancelled, or archived invoices can be deleted. Archive the invoice first.",
+          currentStatus: existingInvoice.status
+        },
         { status: 400 }
       );
     }
 
-    // Delete invoice (line items and payments will cascade delete)
+    // Don't allow deletion if there are payments recorded
+    if (existingInvoice.payments.length > 0) {
+      return NextResponse.json(
+        { error: "Cannot delete invoice with recorded payments. Archive it instead." },
+        { status: 400 }
+      );
+    }
+
+    // Delete invoice (line items will cascade delete)
     await prisma.invoice.delete({
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: "Invoice deleted successfully" });
   } catch (error) {
     console.error("Error deleting invoice:", error);
     return NextResponse.json(

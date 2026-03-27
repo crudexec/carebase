@@ -80,6 +80,7 @@ enum InvoiceStatus {
   PAID
   OVERDUE
   CANCELLED
+  ARCHIVED
 }
 
 enum LineItemType {

@@ -120,7 +120,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      whereClause.status = status as Prisma.EnumInvoiceStatusFilter;
+      if (status === "ALL") {
+        // Show all invoices including archived
+      } else {
+        whereClause.status = status as Prisma.EnumInvoiceStatusFilter;
+      }
+    } else {
+      // By default, exclude archived invoices
+      whereClause.status = { not: "ARCHIVED" };
     }
 
     if (clientId) {

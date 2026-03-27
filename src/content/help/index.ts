@@ -849,35 +849,55 @@ Your loved one's information is protected:
 
   // Billing
   {
-    slug: "invoices",
+    slug: "invoices-overview",
     title: "Understanding Invoices",
     category: "billing",
-    description: "How to view and manage invoices in CareBase",
-    keywords: ["invoice", "bill", "payment", "charges"],
+    description: "Overview of the invoicing system in CareBase",
+    keywords: ["invoice", "bill", "payment", "charges", "overview"],
     order: 1,
+    popular: true,
     roles: ["ADMIN", "OPS_MANAGER", "STAFF", "SPONSOR"],
     content: `
 # Understanding Invoices
 
-CareBase generates invoices for care services provided. This guide explains how invoices work and how to manage them.
+CareBase provides a comprehensive invoicing system to bill for care services. This guide explains how invoices work and how to manage them.
+
+## Invoice Basics
+
+An invoice is a bill sent to a sponsor (family member) or client for care services provided during a specific period.
+
+### Key Information on an Invoice
+
+- **Invoice Number** - Unique identifier (e.g., INV-2024-0001)
+- **Billing Period** - Date range for services
+- **Client** - Who received the care
+- **Sponsor** - Who is responsible for payment (if different from client)
+- **Line Items** - Individual services or shifts being billed
+- **Subtotal** - Sum of all line items
+- **Tax** - Applicable tax amount (if configured)
+- **Total** - Final amount due
+- **Due Date** - When payment is expected
+
+### Invoice Statuses
+
+| Status | Description |
+|--------|-------------|
+| **Draft** | Being prepared, not yet sent |
+| **Pending** | Ready to send |
+| **Sent** | Delivered to sponsor |
+| **Partial** | Some payment received |
+| **Paid** | Fully paid |
+| **Overdue** | Past due date, unpaid |
+| **Cancelled** | Voided, no longer valid |
+| **Archived** | Hidden from active list, kept for records |
 
 ## For Sponsors
 
 ### Viewing Your Invoices
 
 1. Navigate to **Invoices** in the sidebar
-2. View list of all invoices
+2. View list of all invoices for your loved one
 3. Click on an invoice to see details
-
-### Invoice Details
-
-Each invoice shows:
-- Invoice number and date
-- Billing period
-- Services provided
-- Hours and rates
-- Total amount due
-- Payment status
 
 ### Making Payments
 
@@ -889,48 +909,554 @@ Payment options depend on your agency:
 
 Contact your agency for specific payment methods.
 
-## For Administrators
+### Common Questions
 
-### Generating Invoices
-
-Invoices can be generated:
-- Automatically based on completed visits
-- Manually for special charges
-- In batch for multiple clients
-
-### Invoice Status
-
-- **Draft** - Being prepared
-- **Sent** - Delivered to sponsor
-- **Paid** - Payment received
-- **Overdue** - Past payment due date
-- **Void** - Cancelled
-
-### Managing Invoices
-
-You can:
-- Edit draft invoices
-- Send reminders for overdue invoices
-- Record payments received
-- Generate statements
-- Export for accounting
-
-## Common Questions
-
-### Why is my invoice different than expected?
-Invoices reflect actual services provided. Check:
+**Why is my invoice different than expected?**
+Invoices reflect actual services provided. Differences may be due to:
 - Shift changes or cancellations
 - Different service rates
-- Adjustments or credits
+- Adjustments or credits applied
 
-### How do I dispute a charge?
+**How do I dispute a charge?**
 Contact your agency with:
 - Invoice number
-- Specific item in question
+- Specific line item in question
 - Reason for dispute
+`,
+  },
+  {
+    slug: "creating-invoices",
+    title: "Creating Invoices",
+    category: "billing",
+    description: "How to create and configure invoices for clients",
+    keywords: ["create invoice", "new invoice", "billing", "generate"],
+    order: 2,
+    roles: ["ADMIN", "OPS_MANAGER", "STAFF"],
+    content: `
+# Creating Invoices
 
-### Where can I see payment history?
-View all past invoices and payments in the Invoices section.
+This guide explains how to create invoices for client services in CareBase.
+
+## Creating a New Invoice
+
+### Step 1: Navigate to Invoices
+
+1. Go to **Invoices** in the sidebar
+2. Click the **Create Invoice** button
+
+### Step 2: Select Client
+
+1. Search for and select the **Client**
+2. Optionally select a **Sponsor** (bill-to party)
+   - If no sponsor selected, invoice goes to client
+
+### Step 3: Set Invoice Details
+
+- **Billing Period** - Start and end dates for services
+- **Due Date** - When payment is expected
+- **Currency** - USD, GBP, CAD, or NGN
+- **Tax Rate** - Applicable tax percentage (0-100%)
+
+### Step 4: Add Line Items
+
+Each line item represents a charge:
+
+#### From Shifts
+1. Click **Add from Shifts**
+2. Select completed shifts within the billing period
+3. System auto-calculates hours and rates
+
+#### Custom Items
+1. Click **Add Custom Item**
+2. Enter description
+3. Set quantity and unit price
+4. System calculates total
+
+### Step 5: Review and Save
+
+1. Review all line items and totals
+2. Add any **Notes** for the sponsor
+3. Click **Save as Draft** or **Create Invoice**
+
+## Invoice Line Items
+
+### Shift-Based Items
+
+When adding shifts:
+- **Description** - Auto-generated from shift details
+- **Service Date** - Date of the shift
+- **Quantity** - Hours worked
+- **Rate** - Hourly rate from billing settings
+- **Amount** - Quantity × Rate
+
+### Custom Items
+
+For non-shift charges:
+- Supply costs
+- Transportation fees
+- Administrative charges
+- One-time services
+
+## Best Practices
+
+1. **Review before sending** - Always check line items and totals
+2. **Include clear descriptions** - Sponsors should understand each charge
+3. **Set realistic due dates** - Typically 15-30 days
+4. **Add helpful notes** - Explain any unusual charges
+5. **Generate promptly** - Bill soon after service period ends
+`,
+  },
+  {
+    slug: "managing-invoices",
+    title: "Managing Invoice Status",
+    category: "billing",
+    description: "How to send, archive, and manage invoice lifecycle",
+    keywords: ["send invoice", "archive", "cancel", "status", "manage"],
+    order: 3,
+    roles: ["ADMIN", "OPS_MANAGER", "STAFF"],
+    content: `
+# Managing Invoice Status
+
+Learn how to manage invoices through their lifecycle - from draft to paid or archived.
+
+## Invoice Lifecycle
+
+\`\`\`
+Draft → Pending → Sent → Paid
+                    ↓
+              Partial → Paid
+                    ↓
+              Overdue → Paid/Cancelled
+                    ↓
+              Archived
+\`\`\`
+
+## Status Actions
+
+### Draft → Pending
+
+Draft invoices are being prepared:
+- Edit line items freely
+- Change dates, amounts, tax
+- Delete if not needed
+
+To move to Pending:
+1. Open the invoice
+2. Review all details
+3. Click **Mark as Pending**
+
+### Pending → Sent
+
+Pending invoices are ready to send:
+1. Open the invoice
+2. Click **Send Invoice**
+3. System emails the sponsor with PDF attached
+4. Status changes to **Sent**
+
+### Recording Partial Payments
+
+When a partial payment is received:
+1. Open the invoice
+2. Click **Record Payment**
+3. Enter payment amount
+4. Add payment date and notes
+5. Status changes to **Partial**
+
+### Marking as Paid
+
+When fully paid:
+- System auto-updates when payments equal total
+- Or manually change status to **Paid**
+
+### Handling Overdue Invoices
+
+Invoices past due date can be:
+- Marked as **Overdue** (manual or automatic)
+- Send payment reminders
+- Apply late fees (add custom line item)
+
+## Cancelling Invoices
+
+To void an invoice:
+1. Open the invoice
+2. Click **Cancel Invoice**
+3. Confirm cancellation
+
+**Note:** Cancelled invoices cannot be deleted but remain for records.
+
+## Archiving Invoices
+
+Archive invoices to hide them from the active list while keeping records.
+
+### When to Archive
+
+- Invoice is paid and no longer relevant
+- Need to clean up the invoice list
+- Cancelled invoices you don't want to see
+
+### How to Archive
+
+1. Open the invoice
+2. Click **Archive** (or change status to Archived)
+3. Invoice moves to archived view
+
+### Viewing Archived Invoices
+
+1. Go to **Invoices**
+2. Use the status filter
+3. Select **Archived** or **All**
+
+### Restoring Archived Invoices
+
+1. View archived invoices
+2. Open the invoice
+3. Change status to **Draft** or **Pending**
+
+## Deleting Invoices
+
+**Only these invoices can be deleted:**
+- Draft status
+- Cancelled status
+- Archived status
+
+**Cannot delete if:**
+- Invoice has recorded payments
+- Invoice was sent to sponsor
+
+To delete:
+1. Open the invoice
+2. Click **Delete**
+3. Confirm deletion
+
+**Note:** Deletion is permanent. Archive instead if you may need records later.
+
+## Best Practices
+
+1. **Don't delete sent invoices** - Archive instead for audit trail
+2. **Record all payments promptly** - Keeps accounts accurate
+3. **Follow up on overdue invoices** - Send reminders before archiving
+4. **Use notes** - Document status changes and communications
+`,
+  },
+  {
+    slug: "recording-payments",
+    title: "Recording Payments",
+    category: "billing",
+    description: "How to record and track invoice payments",
+    keywords: ["payment", "record payment", "partial payment", "paid"],
+    order: 4,
+    roles: ["ADMIN", "OPS_MANAGER", "STAFF"],
+    content: `
+# Recording Payments
+
+Track payments received against invoices to maintain accurate accounts receivable.
+
+## Recording a Payment
+
+### Step 1: Open the Invoice
+
+1. Navigate to **Invoices**
+2. Find and open the invoice
+3. Click **Record Payment**
+
+### Step 2: Enter Payment Details
+
+- **Amount** - Payment amount received
+- **Payment Date** - When payment was received
+- **Payment Method** - Check, cash, transfer, etc.
+- **Reference** - Check number, transaction ID, etc.
+- **Notes** - Any additional details
+
+### Step 3: Save Payment
+
+1. Review the details
+2. Click **Save Payment**
+3. Invoice updates automatically
+
+## Payment Effects
+
+### Full Payment
+
+When payment amount equals amount due:
+- Status changes to **Paid**
+- Paid date is recorded
+- Amount due becomes $0
+
+### Partial Payment
+
+When payment is less than amount due:
+- Status changes to **Partial**
+- Amount due reduces by payment amount
+- Multiple partial payments allowed
+
+### Overpayment
+
+If payment exceeds amount due:
+- System may show credit balance
+- Apply credit to future invoices
+- Or process refund
+
+## Viewing Payment History
+
+Each invoice shows:
+- All payments recorded
+- Payment dates and amounts
+- Who recorded the payment
+- Running balance
+
+## Editing Payments
+
+To correct a payment:
+1. Open the invoice
+2. Find the payment in history
+3. Click **Edit** (if available)
+4. Make corrections
+5. Save changes
+
+**Note:** Some systems may require voiding and re-entering payments.
+
+## Payment Reports
+
+Generate payment reports to see:
+- All payments received by date range
+- Outstanding balances
+- Aging receivables
+- Payment trends
+
+## Best Practices
+
+1. **Record immediately** - Enter payments when received
+2. **Include references** - Check numbers help with reconciliation
+3. **Add notes** - Document special circumstances
+4. **Reconcile regularly** - Match payments to bank statements
+5. **Follow up on partial payments** - Track remaining balances
+`,
+  },
+  {
+    slug: "generating-invoices-from-shifts",
+    title: "Generating Invoices from Shifts",
+    category: "billing",
+    description: "How to automatically generate invoices from completed shifts",
+    keywords: ["generate", "auto invoice", "shifts", "batch", "bulk"],
+    order: 5,
+    roles: ["ADMIN", "OPS_MANAGER", "STAFF"],
+    content: `
+# Generating Invoices from Shifts
+
+CareBase can automatically generate invoices based on completed shifts, saving time and ensuring accuracy.
+
+## Automatic Invoice Generation
+
+### From Completed Shifts
+
+When creating an invoice:
+1. Select the client
+2. Set the billing period
+3. Click **Add from Shifts**
+4. System finds all completed shifts in that period
+5. Select shifts to include
+6. Line items are auto-created
+
+### Shift Data Used
+
+Each shift creates a line item with:
+- **Description** - Service type, carer name, date
+- **Service Date** - Shift date
+- **Quantity** - Hours worked (from check-in/out)
+- **Rate** - From billing rate settings
+- **Amount** - Hours × Rate
+
+## Billing Rates
+
+Rates are determined by:
+1. **Service Type** - Different rates for different services
+2. **Client** - Custom rates per client (if set)
+3. **Day/Time** - Weekend or holiday rates
+4. **Default Rate** - Fallback if no specific rate
+
+### Setting Up Billing Rates
+
+1. Go to **Settings > Billing**
+2. Configure service types and rates
+3. Set special rates for weekends/holidays
+4. Configure client-specific rates if needed
+
+## Batch Invoice Generation
+
+### Generate for Multiple Clients
+
+1. Go to **Invoices**
+2. Click **Generate Invoices** (or Batch Generate)
+3. Set the billing period
+4. Select clients to invoice
+5. Review generated invoices
+6. Confirm and create
+
+### Review Before Sending
+
+Batch generation creates draft invoices:
+- Review each for accuracy
+- Make adjustments as needed
+- Mark as pending when ready
+- Send individually or in batch
+
+## Handling Special Cases
+
+### Cancelled Shifts
+
+Cancelled shifts are typically excluded:
+- Set to not appear in invoice generation
+- Or include with $0 amount and note
+
+### Adjusted Hours
+
+If actual hours differ from scheduled:
+- Use check-in/check-out times for accuracy
+- Or manually adjust line item quantity
+
+### Multiple Service Types
+
+Shifts with multiple service types:
+- Create separate line items per type
+- Or consolidate with combined rate
+
+### Split Billing
+
+When multiple payers share costs:
+- Create separate invoices per payer
+- Allocate appropriate portions
+- Reference the split in notes
+
+## Tips for Efficient Invoicing
+
+1. **Complete shifts promptly** - Ensure carers check out and submit notes
+2. **Review before billing period ends** - Catch missing data early
+3. **Use consistent billing periods** - Weekly, bi-weekly, or monthly
+4. **Generate on schedule** - Same time each period for consistency
+5. **Keep rates updated** - Review billing rates regularly
+`,
+  },
+  {
+    slug: "invoice-pdf-email",
+    title: "Sending Invoice PDFs",
+    category: "billing",
+    description: "How to generate and send invoice PDFs to sponsors",
+    keywords: ["pdf", "email", "send invoice", "download"],
+    order: 6,
+    roles: ["ADMIN", "OPS_MANAGER", "STAFF"],
+    content: `
+# Sending Invoice PDFs
+
+CareBase generates professional PDF invoices that can be emailed to sponsors or downloaded for printing.
+
+## Generating Invoice PDFs
+
+### View PDF
+
+1. Open the invoice
+2. Click **View PDF** or **Download PDF**
+3. PDF opens in a new tab or downloads
+
+### PDF Contents
+
+The invoice PDF includes:
+- Your company header and logo
+- Invoice number and dates
+- Client and sponsor information
+- Itemized list of services
+- Subtotal, tax, and total
+- Payment terms and due date
+- Notes and instructions
+
+## Sending Invoices by Email
+
+### Send Single Invoice
+
+1. Open the invoice
+2. Click **Send Invoice** (or **Email**)
+3. System sends to sponsor's email
+4. PDF is attached automatically
+5. Status changes to **Sent**
+
+### Email Contents
+
+The email includes:
+- Subject: Invoice #[number] from [Company]
+- Greeting to sponsor
+- Invoice summary
+- Amount due and due date
+- PDF attachment
+- Contact information
+
+### Custom Email Messages
+
+Some agencies can customize:
+- Email subject line
+- Introduction text
+- Payment instructions
+- Closing message
+
+## Resending Invoices
+
+### When to Resend
+
+- Sponsor didn't receive original
+- Email bounced
+- Updated contact information
+- Reminder before due date
+
+### How to Resend
+
+1. Open the invoice
+2. Click **Resend** or **Send Again**
+3. Confirm sending
+4. System sends another email with PDF
+
+## Download for Printing
+
+### Download PDF
+
+1. Open the invoice
+2. Click **Download PDF**
+3. Save to your computer
+4. Print as needed
+
+### Batch Download
+
+To download multiple invoices:
+1. Select invoices from the list
+2. Click **Download Selected**
+3. System creates ZIP file with all PDFs
+
+## Troubleshooting
+
+### Email Not Received
+
+Check:
+- Sponsor email address is correct
+- Email didn't go to spam folder
+- No email delivery errors logged
+
+### PDF Won't Generate
+
+Ensure:
+- Invoice has at least one line item
+- All required fields are filled
+- Try refreshing the page
+
+### Wrong Information on PDF
+
+1. Edit the invoice (if still in Draft)
+2. Update incorrect information
+3. Regenerate the PDF
+
+## Best Practices
+
+1. **Preview before sending** - Review PDF for accuracy
+2. **Confirm email addresses** - Verify sponsor contacts
+3. **Send promptly** - Bill while services are recent
+4. **Keep copies** - Download PDFs for your records
+5. **Follow up** - Check sent invoices were received
 `,
   },
 
@@ -1340,6 +1866,72 @@ When reporting issues, include:
 
 For questions about specific payments, contact your agency's payroll administrator.`,
     category: "payroll",
+  },
+  {
+    question: "How do I create an invoice?",
+    answer: `To create an invoice:
+1. Go to Invoices in the sidebar
+2. Click "Create Invoice"
+3. Select the client and optionally a sponsor
+4. Set the billing period and due date
+5. Add line items from shifts or create custom items
+6. Review totals and add any notes
+7. Save as draft or create the invoice
+
+You can edit draft invoices before sending them to sponsors.`,
+    category: "billing",
+  },
+  {
+    question: "How do I archive an invoice?",
+    answer: `To archive an invoice:
+1. Go to Invoices and find the invoice
+2. Open the invoice details
+3. Change the status to "Archived" or click the Archive button
+
+Archived invoices are hidden from the main list but kept for records. To view archived invoices, use the status filter and select "Archived" or "All".
+
+To restore an archived invoice, change its status back to "Draft" or "Pending".`,
+    category: "billing",
+  },
+  {
+    question: "Can I delete an invoice?",
+    answer: `You can only delete invoices that are:
+- In Draft status
+- Cancelled
+- Archived
+
+You cannot delete invoices that:
+- Have been sent to sponsors
+- Have recorded payments
+
+To delete, open the invoice and click Delete. If you can't delete, consider archiving instead to hide it from the active list while keeping records.`,
+    category: "billing",
+  },
+  {
+    question: "How do I record a payment on an invoice?",
+    answer: `To record a payment:
+1. Open the invoice
+2. Click "Record Payment"
+3. Enter the payment amount
+4. Select the payment date
+5. Optionally add payment method and notes
+6. Save the payment
+
+The invoice will automatically update:
+- Partial payments change status to "Partial"
+- Full payments change status to "Paid"`,
+    category: "billing",
+  },
+  {
+    question: "How do I send an invoice to a sponsor?",
+    answer: `To send an invoice:
+1. Open the invoice (must be in Pending or higher status)
+2. Click "Send Invoice" or "Email"
+3. The system sends an email to the sponsor with the PDF attached
+4. Status changes to "Sent"
+
+Make sure the sponsor has a valid email address. You can resend invoices if needed.`,
+    category: "billing",
   },
   {
     question: "Can I access CareBase on my phone?",
