@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -95,6 +96,10 @@ export function BulkSendModal({
   // Preview state
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewClientId, setPreviewClientId] = useState<string | null>(null);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [previewClientName, setPreviewClientName] = useState<string>("");
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadClientId, setDownloadClientId] = useState<string | null>(null);
 
   // Fetch clients when modal opens
   useEffect(() => {
@@ -102,6 +107,13 @@ export function BulkSendModal({
       fetchClients();
       setResults(null);
       setSelectedClientIds(new Set());
+    } else {
+      // Clean up preview URL when modal closes
+      if (previewPdfUrl) {
+        URL.revokeObjectURL(previewPdfUrl);
+        setPreviewPdfUrl(null);
+        setPreviewClientName("");
+      }
     }
   }, [isOpen]);
 
@@ -168,7 +180,7 @@ export function BulkSendModal({
     }, 150);
   };
 
-  const handlePreviewPDF = async (clientId: string) => {
+  const handlePreviewPDF = async (clientId: string, clientName: string) => {
     setIsPreviewLoading(true);
     setPreviewClientId(clientId);
     try {
@@ -184,8 +196,13 @@ export function BulkSendModal({
 
       if (response.ok) {
         const blob = await response.blob();
+        // Revoke previous URL if exists
+        if (previewPdfUrl) {
+          URL.revokeObjectURL(previewPdfUrl);
+        }
         const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+        setPreviewPdfUrl(url);
+        setPreviewClientName(clientName);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || "Failed to generate preview");
@@ -197,6 +214,52 @@ export function BulkSendModal({
       setIsPreviewLoading(false);
       setPreviewClientId(null);
     }
+  };
+
+  const handleDownloadPDF = async (clientId: string, clientName: string) => {
+    setIsDownloading(true);
+    setDownloadClientId(clientId);
+    try {
+      const params = new URLSearchParams({ clientId });
+      if (timePreset === "custom" && customStartDate && customEndDate) {
+        params.set("startDate", customStartDate);
+        params.set("endDate", customEndDate);
+      }
+
+      const response = await fetch(
+        `/api/reports/saved/${savedReportId}/preview?${params}`
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${clientName.replace(/\s+/g, "_")}_Trends_Report.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success("PDF downloaded successfully");
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to download PDF");
+      }
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+      toast.error("Failed to download PDF");
+    } finally {
+      setIsDownloading(false);
+      setDownloadClientId(null);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewPdfUrl) {
+      URL.revokeObjectURL(previewPdfUrl);
+    }
+    setPreviewPdfUrl(null);
+    setPreviewClientName("");
   };
 
   const toggleClient = (clientId: string) => {
@@ -284,6 +347,54 @@ export function BulkSendModal({
   if (!isOpen) return null;
 
   return (
+    <>
+    {/* PDF Preview Modal */}
+    {previewPdfUrl && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center">
+        <div
+          className="absolute inset-0 bg-black/60"
+          onClick={closePreview}
+        />
+        <div className="relative bg-background rounded-xl shadow-2xl w-full max-w-4xl mx-4 h-[90vh] flex flex-col animate-in fade-in zoom-in-95">
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">PDF Preview - {previewClientName}</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = previewPdfUrl;
+                  link.download = `${previewClientName.replace(/\s+/g, "_")}_Trends_Report.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+              <button
+                onClick={closePreview}
+                className="p-1 text-foreground-tertiary hover:text-foreground rounded-lg hover:bg-background-secondary transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 p-2 bg-gray-100 dark:bg-gray-900">
+            <iframe
+              src={previewPdfUrl}
+              className="w-full h-full rounded-lg border-0"
+              title="PDF Preview"
+            />
+          </div>
+        </div>
+      </div>
+    )}
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
@@ -577,14 +688,14 @@ export function BulkSendModal({
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePreviewPDF(client.id);
+                              handlePreviewPDF(client.id, client.fullName);
                             }}
-                            disabled={isPreviewLoading}
+                            disabled={isPreviewLoading && previewClientId === client.id}
                             className="p-1.5 rounded-md hover:bg-background text-foreground-secondary hover:text-foreground transition-colors disabled:opacity-50"
                             title="Preview PDF"
                           >
@@ -594,8 +705,24 @@ export function BulkSendModal({
                               <Eye className="w-4 h-4" />
                             )}
                           </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadPDF(client.id, client.fullName);
+                            }}
+                            disabled={isDownloading && downloadClientId === client.id}
+                            className="p-1.5 rounded-md hover:bg-background text-foreground-secondary hover:text-foreground transition-colors disabled:opacity-50"
+                            title="Download PDF"
+                          >
+                            {isDownloading && downloadClientId === client.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </button>
                           {!client.canSendReport && (
-                            <span className="px-2 py-0.5 rounded-full text-xs bg-warning/10 text-warning">
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-warning/10 text-warning ml-1">
                               {!client.hasSponsor
                                 ? "No sponsor"
                                 : "No email"}
@@ -648,5 +775,6 @@ export function BulkSendModal({
         )}
       </div>
     </div>
+    </>
   );
 }

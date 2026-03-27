@@ -311,9 +311,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate invoice number
-    const invoiceNumber = await generateInvoiceNumber(companyId);
-
     // Calculate totals
     const subtotal = data.lineItems.reduce(
       (sum, item) => sum + item.quantity * item.unitPrice,
@@ -322,56 +319,93 @@ export async function POST(request: NextRequest) {
     const taxAmount = subtotal * data.taxRate;
     const total = subtotal + taxAmount;
 
-    // Create invoice with line items
-    const invoice = await prisma.invoice.create({
-      data: {
-        invoiceNumber,
-        periodStart: new Date(data.periodStart),
-        periodEnd: new Date(data.periodEnd),
-        dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        notes: data.notes,
-        currency: data.currency,
-        subtotal,
-        taxRate: data.taxRate,
-        taxAmount,
-        total,
-        amountPaid: 0,
-        amountDue: total,
-        status: data.status,
-        companyId,
-        clientId: data.clientId,
-        sponsorId: data.sponsorId || null,
-        lineItems: {
-          create: data.lineItems.map((item) => ({
-            type: item.type,
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            amount: item.quantity * item.unitPrice,
-            shiftId: item.shiftId || null,
-            serviceDate: item.serviceDate ? new Date(item.serviceDate) : null,
-          })),
-        },
-      },
-      include: {
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
+    // Retry logic to handle race conditions on invoice number
+    const MAX_RETRIES = 5;
+    let invoice = null;
+    let lastError = null;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        // Generate invoice number fresh on each attempt
+        const invoiceNumber = await generateInvoiceNumber(companyId);
+
+        // Create invoice with line items
+        invoice = await prisma.invoice.create({
+          data: {
+            invoiceNumber,
+            periodStart: new Date(data.periodStart),
+            periodEnd: new Date(data.periodEnd),
+            dueDate: data.dueDate ? new Date(data.dueDate) : null,
+            notes: data.notes,
+            currency: data.currency,
+            subtotal,
+            taxRate: data.taxRate,
+            taxAmount,
+            total,
+            amountPaid: 0,
+            amountDue: total,
+            status: data.status,
+            companyId,
+            clientId: data.clientId,
+            sponsorId: data.sponsorId || null,
+            lineItems: {
+              create: data.lineItems.map((item) => ({
+                type: item.type,
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                amount: item.quantity * item.unitPrice,
+                shiftId: item.shiftId || null,
+                serviceDate: item.serviceDate ? new Date(item.serviceDate) : null,
+              })),
+            },
           },
-        },
-        sponsor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+          include: {
+            client: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+            sponsor: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            lineItems: true,
           },
-        },
-        lineItems: true,
-      },
-    });
+        });
+
+        // Success - break out of retry loop
+        break;
+      } catch (error) {
+        lastError = error;
+        // Check if it's a unique constraint error on invoiceNumber (P2002)
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002" &&
+          (error.meta?.target as string[] | undefined)?.includes("invoiceNumber")
+        ) {
+          // Retry with a new invoice number
+          console.log(`Invoice number collision, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
+          continue;
+        }
+        // For other errors, throw immediately
+        throw error;
+      }
+    }
+
+    if (!invoice) {
+      console.error("Failed to create invoice after max retries:", lastError);
+      return NextResponse.json(
+        { error: "Failed to create invoice - please try again" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       invoice: {
