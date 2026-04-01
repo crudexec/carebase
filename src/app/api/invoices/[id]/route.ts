@@ -208,14 +208,6 @@ export async function PATCH(
     // Only DRAFT and PENDING invoices can be fully edited
     const canEditFully = ["DRAFT", "PENDING"].includes(existingInvoice.status);
 
-    // Archived invoices can only be unarchived, not edited
-    if (existingInvoice.status === "ARCHIVED" && data.status !== "DRAFT" && data.status !== "PENDING") {
-      return NextResponse.json(
-        { error: "Archived invoices can only be restored to DRAFT or PENDING status" },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const parseResult = updateInvoiceSchema.safeParse(body);
 
@@ -227,6 +219,14 @@ export async function PATCH(
     }
 
     const data = parseResult.data;
+
+    // Archived invoices can only be unarchived, not edited
+    if (existingInvoice.status === "ARCHIVED" && data.status !== "DRAFT" && data.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Archived invoices can only be restored to DRAFT or PENDING status" },
+        { status: 400 }
+      );
+    }
 
     // If changing line items and not in editable status, reject
     if (data.lineItems && !canEditFully) {
