@@ -22,6 +22,7 @@ import {
   UserPlus,
   Clock,
   AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +84,14 @@ const EVENT_CATEGORIES: Record<string, { label: string; icon: React.ElementType;
       "ASSESSMENT_DUE",
       "ASSESSMENT_COMPLETED",
       "VISIT_NOTE_SUBMITTED",
+      "THRESHOLD_BREACH",
+    ],
+  },
+  MESSAGING: {
+    label: "Messaging",
+    icon: MessageSquare,
+    events: [
+      "NEW_INBOX_MESSAGE",
     ],
   },
   ADMIN: {
@@ -171,6 +180,7 @@ export default function NotificationPreferencesPage() {
     SHIFTS: true,
     AUTHORIZATIONS: false,
     CARE: false,
+    MESSAGING: false,
     ADMIN: false,
     SPONSOR_EMAILS: true,
   });
