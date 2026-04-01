@@ -78,12 +78,24 @@ export async function POST(request: Request) {
     // Get company info
     const company = await prisma.company.findUnique({
       where: { id: session.user.companyId },
+      select: {
+        name: true,
+        sponsorEmailInvite: true,
+      },
     });
 
     if (!company) {
       return NextResponse.json(
         { error: "Company not found" },
         { status: 500 }
+      );
+    }
+
+    // Check if sponsor invite emails are enabled
+    if (!company.sponsorEmailInvite) {
+      return NextResponse.json(
+        { error: "Sponsor invitation emails are disabled for this company. Please contact your administrator." },
+        { status: 400 }
       );
     }
 

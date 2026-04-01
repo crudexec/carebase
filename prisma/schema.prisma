@@ -490,6 +490,14 @@ model Company {
   // Invoice/Billing Settings
   currency String @default("USD") // Default currency for invoices (USD, GBP, CAD, NGN)
 
+  // Sponsor Email Settings (company-level toggles)
+  sponsorEmailInvite           Boolean @default(true) // SPONSOR_INVITED - invitation emails
+  sponsorEmailWelcome          Boolean @default(true) // USER_ACCOUNT_CREATED - welcome emails
+  sponsorEmailCheckIn          Boolean @default(true) // CHECK_IN_CONFIRMATION
+  sponsorEmailCheckOut         Boolean @default(true) // CHECK_OUT_CONFIRMATION
+  sponsorEmailShiftCompleted   Boolean @default(true) // SHIFT_COMPLETED
+  sponsorEmailIncidentReported Boolean @default(true) // INCIDENT_REPORTED
+
   // Relations - all tenant-scoped models
   users             User[]
   clients           Client[]

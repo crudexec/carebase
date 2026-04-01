@@ -129,20 +129,28 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send welcome notification
-    const appUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
-    sendNotification({
-      eventType: "USER_ACCOUNT_CREATED",
-      recipientIds: [sponsor.id],
-      data: {
-        firstName: sponsor.firstName,
-        email: sponsor.email,
-        tempPassword: "", // They set their own password
-        loginUrl: `${appUrl}/login`,
-      },
-    }).catch((err) => {
-      console.error("[Sponsor Accept] Failed to send welcome email:", err);
+    // Check if welcome emails are enabled for this company
+    const companySettings = await prisma.company.findUnique({
+      where: { id: inviteToken.companyId },
+      select: { sponsorEmailWelcome: true },
     });
+
+    // Send welcome notification (if enabled)
+    if (companySettings?.sponsorEmailWelcome !== false) {
+      const appUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
+      sendNotification({
+        eventType: "USER_ACCOUNT_CREATED",
+        recipientIds: [sponsor.id],
+        data: {
+          firstName: sponsor.firstName,
+          email: sponsor.email,
+          tempPassword: "", // They set their own password
+          loginUrl: `${appUrl}/login`,
+        },
+      }).catch((err) => {
+        console.error("[Sponsor Accept] Failed to send welcome email:", err);
+      });
+    }
 
     console.log(`[Sponsor Accept] Sponsor registered: ${sponsor.email}`);
 

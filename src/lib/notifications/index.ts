@@ -22,7 +22,7 @@
  * ```
  */
 
-import { NotificationEventType, NotificationChannel } from "@prisma/client";
+import { NotificationEventType, NotificationChannel, Company } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { dispatch, processScheduledNotifications, retryFailedNotifications } from "./dispatcher";
 import { getEventsForRole } from "./events";
@@ -32,6 +32,52 @@ import {
   UserNotificationPreferences,
   RecipientRole,
 } from "./types";
+
+// ============================================
+// Sponsor Email Settings
+// ============================================
+
+// Mapping from event types to company sponsor email setting fields
+const SPONSOR_EMAIL_SETTING_MAP: Partial<Record<NotificationEventType, keyof Pick<Company,
+  'sponsorEmailInvite' | 'sponsorEmailWelcome' | 'sponsorEmailCheckIn' |
+  'sponsorEmailCheckOut' | 'sponsorEmailShiftCompleted' | 'sponsorEmailIncidentReported'>>> = {
+  SPONSOR_INVITED: 'sponsorEmailInvite',
+  USER_ACCOUNT_CREATED: 'sponsorEmailWelcome',
+  CHECK_IN_CONFIRMATION: 'sponsorEmailCheckIn',
+  CHECK_OUT_CONFIRMATION: 'sponsorEmailCheckOut',
+  SHIFT_COMPLETED: 'sponsorEmailShiftCompleted',
+  INCIDENT_REPORTED: 'sponsorEmailIncidentReported',
+};
+
+/**
+ * Check if a sponsor email type is enabled for a company
+ */
+export async function isSponsorEmailEnabled(
+  companyId: string,
+  eventType: NotificationEventType
+): Promise<boolean> {
+  const settingKey = SPONSOR_EMAIL_SETTING_MAP[eventType];
+  if (!settingKey) {
+    // Not a sponsor-specific email, allow by default
+    return true;
+  }
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      sponsorEmailInvite: true,
+      sponsorEmailWelcome: true,
+      sponsorEmailCheckIn: true,
+      sponsorEmailCheckOut: true,
+      sponsorEmailShiftCompleted: true,
+      sponsorEmailIncidentReported: true,
+    },
+  });
+
+  if (!company) return true;
+
+  return company[settingKey] ?? true;
+}
 
 // ============================================
 // Main API
@@ -97,13 +143,20 @@ export async function sendNotificationToSponsor(
     relatedEntityId?: string;
   }
 ): Promise<SendNotificationResult> {
-  // Fetch the client's sponsor
+  // Fetch the client's sponsor and company ID
   const client = await prisma.client.findUnique({
     where: { id: clientId },
-    select: { sponsorId: true },
+    select: { sponsorId: true, companyId: true },
   });
 
   if (!client?.sponsorId) {
+    return { totalSent: 0, totalFailed: 0, results: [] };
+  }
+
+  // Check if this sponsor email type is enabled for the company
+  const isEnabled = await isSponsorEmailEnabled(client.companyId, eventType);
+  if (!isEnabled) {
+    console.log(`[Notification] Sponsor email ${eventType} disabled for company ${client.companyId}`);
     return { totalSent: 0, totalFailed: 0, results: [] };
   }
 

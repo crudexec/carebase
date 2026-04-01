@@ -19,6 +19,9 @@ import {
   Shield,
   Heart,
   Users,
+  UserPlus,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -107,8 +110,57 @@ const PRIORITY_COLORS: Record<string, string> = {
   CRITICAL: "bg-red-100 text-red-700",
 };
 
+// Sponsor email toggle configuration (admin only)
+const SPONSOR_EMAIL_TOGGLES = [
+  {
+    key: "sponsorEmailInvite",
+    label: "Sponsor Invitation",
+    description: "Send invitation emails when inviting new sponsors",
+    icon: Mail,
+  },
+  {
+    key: "sponsorEmailWelcome",
+    label: "Welcome Email",
+    description: "Send welcome emails when sponsors create their accounts",
+    icon: UserPlus,
+  },
+  {
+    key: "sponsorEmailCheckIn",
+    label: "Check-In Confirmation",
+    description: "Notify sponsors when caregivers check in for shifts",
+    icon: Clock,
+  },
+  {
+    key: "sponsorEmailCheckOut",
+    label: "Check-Out Confirmation",
+    description: "Notify sponsors when caregivers check out from shifts",
+    icon: Clock,
+  },
+  {
+    key: "sponsorEmailShiftCompleted",
+    label: "Shift Completed",
+    description: "Notify sponsors when shifts are fully completed",
+    icon: CheckCircle,
+  },
+  {
+    key: "sponsorEmailIncidentReported",
+    label: "Incident Reported",
+    description: "Notify sponsors when incidents involving their clients are reported",
+    icon: AlertTriangle,
+  },
+];
+
+interface SponsorEmailSettings {
+  sponsorEmailInvite: boolean;
+  sponsorEmailWelcome: boolean;
+  sponsorEmailCheckIn: boolean;
+  sponsorEmailCheckOut: boolean;
+  sponsorEmailShiftCompleted: boolean;
+  sponsorEmailIncidentReported: boolean;
+}
+
 export default function NotificationPreferencesPage() {
-  const { status: sessionStatus } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [preferences, setPreferences] = useState<EventPreference[]>([]);
   const [availableChannels, setAvailableChannels] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,8 +172,15 @@ export default function NotificationPreferencesPage() {
     AUTHORIZATIONS: false,
     CARE: false,
     ADMIN: false,
+    SPONSOR_EMAILS: true,
   });
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Sponsor email settings (admin only)
+  const [sponsorEmailSettings, setSponsorEmailSettings] = useState<SponsorEmailSettings | null>(null);
+  const [isSavingSponsorSettings, setIsSavingSponsorSettings] = useState(false);
+  const [sponsorSettingsHasChanges, setSponsorSettingsHasChanges] = useState(false);
+  const isAdmin = session?.user?.role === "ADMIN";
 
   // Fetch preferences
   const fetchPreferences = useCallback(async () => {
@@ -139,11 +198,27 @@ export default function NotificationPreferencesPage() {
     }
   }, []);
 
+  // Fetch sponsor email settings (admin only)
+  const fetchSponsorEmailSettings = useCallback(async () => {
+    if (!isAdmin) return;
+
+    try {
+      const response = await fetch("/api/settings/sponsor-emails");
+      if (response.ok) {
+        const data = await response.json();
+        setSponsorEmailSettings(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch sponsor email settings:", err);
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
     if (sessionStatus === "authenticated") {
       fetchPreferences();
+      fetchSponsorEmailSettings();
     }
-  }, [sessionStatus, fetchPreferences]);
+  }, [sessionStatus, fetchPreferences, fetchSponsorEmailSettings]);
 
   const toggleChannel = (eventType: string, channel: string) => {
     setPreferences((prev) =>
@@ -205,6 +280,35 @@ export default function NotificationPreferencesPage() {
       setError(err instanceof Error ? err.message : "Failed to save preferences");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Save sponsor email settings (admin only)
+  const handleSaveSponsorSettings = async () => {
+    if (!sponsorEmailSettings) return;
+
+    setIsSavingSponsorSettings(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/settings/sponsor-emails", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sponsorEmailSettings),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to save sponsor email settings");
+      }
+
+      setSuccess("Sponsor email settings saved successfully");
+      setSponsorSettingsHasChanges(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setIsSavingSponsorSettings(false);
     }
   };
 
@@ -292,6 +396,94 @@ export default function NotificationPreferencesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Sponsor Email Settings - Admin Only */}
+      {isAdmin && sponsorEmailSettings && (
+        <Card>
+          <CardHeader
+            className="cursor-pointer select-none"
+            onClick={() => toggleCategory("SPONSOR_EMAILS")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Users className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Sponsor Email Settings</CardTitle>
+                  <CardDescription>
+                    Company-wide controls for sponsor notifications
+                  </CardDescription>
+                </div>
+              </div>
+              {expandedCategories["SPONSOR_EMAILS"] ? (
+                <ChevronDown className="w-5 h-5 text-foreground-secondary" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-foreground-secondary" />
+              )}
+            </div>
+          </CardHeader>
+
+          {expandedCategories["SPONSOR_EMAILS"] && (
+            <CardContent className="pt-0">
+              <div className="divide-y divide-border">
+                {SPONSOR_EMAIL_TOGGLES.map((toggle) => {
+                  const Icon = toggle.icon;
+                  const settingKey = toggle.key as keyof SponsorEmailSettings;
+                  return (
+                    <div key={toggle.key} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4 text-foreground-tertiary" />
+                          <div>
+                            <span className="text-sm font-medium text-foreground">
+                              {toggle.label}
+                            </span>
+                            <p className="text-xs text-foreground-secondary mt-0.5">
+                              {toggle.description}
+                            </p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={sponsorEmailSettings[settingKey]}
+                          onCheckedChange={(checked) => {
+                            setSponsorEmailSettings((prev) =>
+                              prev ? { ...prev, [settingKey]: checked } : null
+                            );
+                            setSponsorSettingsHasChanges(true);
+                            setSuccess(null);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Save Button for Sponsor Settings */}
+              <div className="pt-4 mt-4 border-t border-border">
+                <Button
+                  onClick={handleSaveSponsorSettings}
+                  disabled={isSavingSponsorSettings || !sponsorSettingsHasChanges}
+                  size="sm"
+                >
+                  {isSavingSponsorSettings ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Sponsor Settings
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Preference Categories */}
       {Object.entries(EVENT_CATEGORIES).map(([categoryKey, category]) => {
