@@ -14,7 +14,8 @@ import {
   Breadcrumb,
   DatePicker,
 } from "@/components/ui";
-import { FormRenderer } from "@/components/visit-notes/form-renderer";
+import { FormRenderer, FormRendererHandle } from "@/components/visit-notes/form-renderer";
+import { SaveStateFooter, useSaveState } from "@/components/visit-notes/save-state-footer";
 import {
   ShiftSelectionCard,
   groupShiftsByDay,
@@ -114,6 +115,10 @@ export default function NewVisitNotePage() {
   const [validationResult, setValidationResult] = React.useState<TaskAlignmentResult | null>(null);
   const [showValidationWarning, setShowValidationWarning] = React.useState(false);
   const [pendingData, setPendingData] = React.useState<VisitNoteData | null>(null);
+
+  // Form ref and save state for sticky footer
+  const formRef = React.useRef<FormRendererHandle | null>(null);
+  const { saveState, markDirty, markSaving, markError, reset: resetSaveState } = useSaveState();
 
   // Derived state
   const groupedShifts = React.useMemo(() => groupShiftsByDay(shifts), [shifts]);
@@ -309,6 +314,7 @@ export default function NewVisitNotePage() {
     setError(null);
     setShowValidationWarning(false);
     setPendingData(null);
+    markSaving();
 
     try {
       // Merge goal tracking data into form data if care plan is selected
@@ -360,6 +366,7 @@ export default function NewVisitNotePage() {
       setError(errorMessage);
       toast.error(errorMessage);
       setIsSubmitting(false);
+      markError();
     }
   };
 
@@ -374,8 +381,22 @@ export default function NewVisitNotePage() {
     setPendingData(null);
   };
 
+  // Handle dirty state from form
+  const handleDirtyChange = (isDirty: boolean) => {
+    if (isDirty) {
+      markDirty();
+    } else {
+      resetSaveState();
+    }
+  };
+
+  // Handle save from sticky footer
+  const handleStickyFooterSave = () => {
+    formRef.current?.submit();
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Breadcrumb
@@ -524,7 +545,9 @@ export default function NewVisitNotePage() {
                     }}
                     onSubmit={handleSubmit}
                     disabled={isSubmitting}
-                    submitLabel="Submit Visit Note"
+                    formRef={formRef}
+                    onDirtyChange={handleDirtyChange}
+                    hideSubmitButton
                   />
                 </div>
               </div>
@@ -748,6 +771,18 @@ export default function NewVisitNotePage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Sticky Save Footer */}
+      {!isLoading && client && selectedTemplate && (
+        <SaveStateFooter
+          saveState={saveState}
+          onSave={handleStickyFooterSave}
+          disabled={isSubmitting}
+          submitLabel="Submit Visit Note"
+          savingLabel="Submitting..."
+          errorMessage={error || undefined}
+        />
       )}
     </div>
   );

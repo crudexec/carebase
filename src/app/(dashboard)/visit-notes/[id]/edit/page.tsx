@@ -14,7 +14,8 @@ import {
   Badge,
   Breadcrumb,
 } from "@/components/ui";
-import { FormRenderer } from "@/components/visit-notes/form-renderer";
+import { FormRenderer, FormRendererHandle } from "@/components/visit-notes/form-renderer";
+import { SaveStateFooter, useSaveState } from "@/components/visit-notes/save-state-footer";
 import { FormSchemaSnapshot, VisitNoteData, GoalTrackingData, CarePlanGoalInfo } from "@/lib/visit-notes/types";
 import { GoalTrackingContainer } from "@/components/visit-notes/goal-tracking";
 import { extractGoalsFromCarePlan } from "@/components/visit-notes/goal-tracking/goal-tracking-viewer";
@@ -79,6 +80,10 @@ export default function EditVisitNotePage() {
   const [goalTrackingData, setGoalTrackingData] = React.useState<Record<number, GoalTrackingData>>({});
   const [carePlanGoals, setCarePlanGoals] = React.useState<CarePlanGoalInfo[]>([]);
 
+  // Form ref and save state for sticky footer
+  const formRef = React.useRef<FormRendererHandle | null>(null);
+  const { saveState, markDirty, markSaving, markError, reset: resetSaveState } = useSaveState();
+
   // Redirect sponsors away from edit page
   React.useEffect(() => {
     if (status === "authenticated" && session?.user?.role === "SPONSOR") {
@@ -130,6 +135,7 @@ export default function EditVisitNotePage() {
   const handleSubmit = async (data: VisitNoteData) => {
     setIsSubmitting(true);
     setError(null);
+    markSaving();
 
     try {
       // Merge goal tracking data if present
@@ -167,7 +173,22 @@ export default function EditVisitNotePage() {
       setError(errorMessage);
       toast.error(errorMessage);
       setIsSubmitting(false);
+      markError();
     }
+  };
+
+  // Handle dirty state from form
+  const handleDirtyChange = (isDirty: boolean) => {
+    if (isDirty) {
+      markDirty();
+    } else {
+      resetSaveState();
+    }
+  };
+
+  // Handle save from sticky footer
+  const handleStickyFooterSave = () => {
+    formRef.current?.submit();
   };
 
   const formatDate = (dateString: string) => {
@@ -262,7 +283,7 @@ export default function EditVisitNotePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
@@ -381,11 +402,9 @@ export default function EditVisitNotePage() {
               initialValues={visitNote.data}
               onSubmit={handleSubmit}
               disabled={isSubmitting}
-              submitLabel={
-                resubmitForReview
-                  ? "Save & Resubmit for Review"
-                  : "Save Changes"
-              }
+              formRef={formRef}
+              onDirtyChange={handleDirtyChange}
+              hideSubmitButton
             />
 
             {/* Goal Tracking Section */}
@@ -432,6 +451,18 @@ export default function EditVisitNotePage() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Sticky Save Footer */}
+      {!isApproved && visitNote && (
+        <SaveStateFooter
+          saveState={saveState}
+          onSave={handleStickyFooterSave}
+          disabled={isSubmitting}
+          submitLabel={resubmitForReview ? "Save & Resubmit" : "Save Changes"}
+          savingLabel="Saving..."
+          errorMessage={error || undefined}
+        />
       )}
     </div>
   );

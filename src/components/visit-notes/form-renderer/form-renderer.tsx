@@ -12,12 +12,21 @@ import { Button } from "@/components/ui";
 import { SectionRenderer } from "./section-renderer";
 import { Loader2 } from "lucide-react";
 
+export interface FormRendererHandle {
+  submit: () => void;
+  validate: () => boolean;
+  getValues: () => VisitNoteData;
+}
+
 interface FormRendererProps {
   template: FormTemplateData;
   initialValues?: VisitNoteData;
   onSubmit: (data: VisitNoteData) => Promise<void>;
   disabled?: boolean;
   submitLabel?: string;
+  onDirtyChange?: (isDirty: boolean) => void;
+  hideSubmitButton?: boolean;
+  formRef?: React.RefObject<FormRendererHandle | null>;
 }
 
 export function FormRenderer({
@@ -26,10 +35,24 @@ export function FormRenderer({
   onSubmit,
   disabled,
   submitLabel = "Submit",
+  onDirtyChange,
+  hideSubmitButton = false,
+  formRef,
 }: FormRendererProps) {
   const [values, setValues] = React.useState<VisitNoteData>(initialValues);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isDirty, setIsDirty] = React.useState(false);
+  const initialValuesRef = React.useRef(initialValues);
+
+  // Track dirty state
+  React.useEffect(() => {
+    const hasChanges = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (hasChanges !== isDirty) {
+      setIsDirty(hasChanges);
+      onDirtyChange?.(hasChanges);
+    }
+  }, [values, isDirty, onDirtyChange]);
 
   const handleFieldChange = (fieldId: string, value: FieldValue) => {
     setValues((prev) => ({ ...prev, [fieldId]: value }));
@@ -65,9 +88,7 @@ export function FormRenderer({
     return newErrors;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const submitForm = async () => {
     const validationErrors = validateForm();
     const errorKeys = Object.keys(validationErrors);
 
@@ -84,10 +105,26 @@ export function FormRenderer({
     setIsSubmitting(true);
     try {
       await onSubmit(values);
+      // Reset dirty state after successful submission
+      initialValuesRef.current = values;
+      setIsDirty(false);
+      onDirtyChange?.(false);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitForm();
+  };
+
+  // Expose submit function via ref
+  React.useImperativeHandle(formRef, () => ({
+    submit: submitForm,
+    validate: () => Object.keys(validateForm()).length === 0,
+    getValues: () => values,
+  }), [values]);
 
   const sortedSections = [...template.sections].sort((a, b) => a.order - b.order);
 
@@ -104,12 +141,14 @@ export function FormRenderer({
         />
       ))}
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={disabled || isSubmitting} size="lg">
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitLabel}
-        </Button>
-      </div>
+      {!hideSubmitButton && (
+        <div className="flex justify-end">
+          <Button type="submit" disabled={disabled || isSubmitting} size="lg">
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {submitLabel}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }
