@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { VisitNoteListItem } from "@/lib/visit-notes/types";
 import { toast } from "sonner";
+import { useTerminology } from "@/components/providers/terminology-provider";
 
 interface Client {
   id: string;
@@ -146,6 +147,7 @@ function TemplateCell({ note }: { note: VisitNoteListItem }) {
 export default function VisitNotesPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const { terms } = useTerminology();
   const [visitNotes, setVisitNotes] = React.useState<VisitNoteListItem[]>([]);
 
   // Check if user is a sponsor (GUARDIAN role)
@@ -278,7 +280,7 @@ export default function VisitNotesPage() {
         });
       }, 450);
 
-      toast.success(`Visit note for ${clientName} deleted`);
+      toast.success(`${terms.visitNote.singular} for ${clientName} deleted`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete visit note";
       toast.error(errorMessage);
@@ -505,14 +507,14 @@ export default function VisitNotesPage() {
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
-      <Breadcrumb items={[{ label: "Visit Notes" }]} />
+      <Breadcrumb items={[{ label: terms.visitNote.plural }]} />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Visit Notes</h1>
+          <h1 className="text-2xl font-bold text-foreground">{terms.visitNote.plural}</h1>
           <p className="text-foreground-secondary text-sm mt-1">
-            Track and document care activities for your shifts
+            Track and document care activities for your {terms.shift.plural.toLowerCase()}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -600,8 +602,8 @@ export default function VisitNotesPage() {
         emptyIcon={<FileText className="h-12 w-12" />}
         emptyMessage={
           searchQuery || selectedClientId
-            ? "No visit notes match your filters"
-            : "No visit notes yet. Create one to get started."
+            ? `No ${terms.visitNote.plural.toLowerCase()} match your filters`
+            : `No ${terms.visitNote.plural.toLowerCase()} yet. Create one to get started.`
         }
         sortColumn={sortColumn}
         sortDirection={sortDirection}
@@ -620,9 +622,9 @@ export default function VisitNotesPage() {
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
         onConfirm={handleDeleteNote}
-        title="Delete Visit Note"
-        description="Are you sure you want to delete this visit note? All associated data including comments and files will be permanently removed."
-        itemName={deleteModal.clientName ? `Visit note for ${deleteModal.clientName}` : undefined}
+        title={`Delete ${terms.visitNote.singular}`}
+        description={`Are you sure you want to delete this ${terms.visitNote.singular.toLowerCase()}? All associated data including comments and files will be permanently removed.`}
+        itemName={deleteModal.clientName ? `${terms.visitNote.singular} for ${deleteModal.clientName}` : undefined}
       />
 
       {/* Client Selection Modal */}
@@ -699,7 +701,7 @@ export default function VisitNotesPage() {
                               {client.firstName} {client.lastName}
                             </p>
                             <p className="text-xs text-foreground-secondary">
-                              Create visit note
+                              Create {terms.visitNote.singular.toLowerCase()}
                             </p>
                           </div>
                           <ChevronRight className="w-4 h-4 text-foreground-tertiary flex-shrink-0" />

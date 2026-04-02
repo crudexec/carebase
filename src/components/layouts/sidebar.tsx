@@ -45,7 +45,9 @@ import {
   PanelLeft,
   GraduationCap,
   BookCheck,
+  Languages,
 } from "lucide-react";
+import { useTerminology } from "@/components/providers/terminology-provider";
 
 interface NavItem {
   label: string;
@@ -221,7 +223,7 @@ const navigation: NavEntry[] = [
         label: "QA Manager",
         href: "/qa",
         icon: ClipboardCheck,
-        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR"],
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"],
       },
     ],
   },
@@ -336,6 +338,12 @@ const navigation: NavEntry[] = [
         href: "/settings/notifications",
         icon: Bell,
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
+      },
+      {
+        label: "Terminology",
+        href: "/settings/terminology",
+        icon: Languages,
+        roles: ["ADMIN"],
       },
       {
         label: "EVV Settings",
@@ -524,6 +532,34 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
   const pathname = usePathname();
   const navRef = React.useRef<HTMLElement>(null);
   const [scrollState, setScrollState] = React.useState({ top: false, bottom: false });
+  const { terms } = useTerminology();
+
+  // Apply dynamic terminology to navigation labels
+  const dynamicNavigation = React.useMemo(() => {
+    const labelMap: Record<string, string> = {
+      "Clients": terms.client.plural,
+      "Client Management": `${terms.client.singular} Management`,
+      "Visit Notes": terms.visitNote.plural,
+      "Scheduling": terms.shift.plural === "Shifts" ? "Scheduling" : terms.shift.plural,
+    };
+
+    return navigation.map((entry) => {
+      if (isNavGroup(entry)) {
+        return {
+          ...entry,
+          label: labelMap[entry.label] || entry.label,
+          items: entry.items.map((item) => ({
+            ...item,
+            label: labelMap[item.label] || item.label,
+          })),
+        };
+      }
+      return {
+        ...entry,
+        label: labelMap[entry.label] || entry.label,
+      };
+    });
+  }, [terms]);
 
   // Track scroll position for gradient indicators
   React.useEffect(() => {
@@ -551,7 +587,7 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
     };
   }, []);
 
-  const filteredNavigation = navigation.filter((entry) => {
+  const filteredNavigation = dynamicNavigation.filter((entry) => {
     if (isNavGroup(entry)) {
       // Show group if user has access to at least one item
       return entry.items.some((item) => item.roles.includes(user.role));

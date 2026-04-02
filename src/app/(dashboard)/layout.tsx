@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { DashboardShell } from "@/components/layouts/dashboard-shell";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { TerminologyProvider } from "@/components/providers/terminology-provider";
+import { TerminologySettings, validateTerminologySettings } from "@/lib/terminology";
 
 export default async function DashboardLayout({
   children,
@@ -15,17 +17,24 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Fetch company name for sidebar
+  // Fetch company name and terminology settings for sidebar
   const company = await prisma.company.findUnique({
     where: { id: session.user.companyId },
-    select: { name: true },
+    select: { name: true, terminology: true },
   });
+
+  // Validate and extract terminology settings
+  const terminology = validateTerminologySettings(company?.terminology)
+    ? (company?.terminology as TerminologySettings)
+    : null;
 
   return (
     <SessionProvider>
-      <DashboardShell user={session.user} companyName={company?.name || "CareBase"}>
-        {children}
-      </DashboardShell>
+      <TerminologyProvider initialSettings={terminology}>
+        <DashboardShell user={session.user} companyName={company?.name || "CareBase"}>
+          {children}
+        </DashboardShell>
+      </TerminologyProvider>
     </SessionProvider>
   );
 }

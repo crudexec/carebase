@@ -103,6 +103,17 @@ export async function processThresholdBreaches(
     data,
   } = params;
 
+  // Check if threshold alerts are enabled for this company
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { thresholdAlertsEnabled: true },
+  });
+
+  if (!company?.thresholdAlertsEnabled) {
+    console.log(`[Threshold Breach] Threshold alerts disabled for company ${companyId}, skipping`);
+    return;
+  }
+
   // Detect breaches
   const breaches = detectThresholdBreaches(formSchemaSnapshot, data);
 

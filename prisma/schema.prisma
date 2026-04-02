@@ -490,6 +490,11 @@ model Company {
   // Invoice/Billing Settings
   currency String @default("USD") // Default currency for invoices (USD, GBP, CAD, NGN)
 
+  // Terminology Settings (customize labels for different care models)
+  // Keys: visitNote, client, carer, shift
+  // Values: preset option keys (e.g., "daily_report", "patient", "caregiver", "visit")
+  terminology Json?
+
   // Sponsor Email Settings (company-level toggles)
   sponsorEmailInvite           Boolean @default(true) // SPONSOR_INVITED - invitation emails
   sponsorEmailWelcome          Boolean @default(true) // USER_ACCOUNT_CREATED - welcome emails
@@ -497,6 +502,9 @@ model Company {
   sponsorEmailCheckOut         Boolean @default(true) // CHECK_OUT_CONFIRMATION
   sponsorEmailShiftCompleted   Boolean @default(true) // SHIFT_COMPLETED
   sponsorEmailIncidentReported Boolean @default(true) // INCIDENT_REPORTED
+
+  // Threshold Alert Settings (company-level)
+  thresholdAlertsEnabled Boolean @default(true) // Enable/disable threshold breach notifications for the company
 
   // Relations - all tenant-scoped models
   users             User[]

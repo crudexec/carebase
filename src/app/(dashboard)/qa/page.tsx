@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Eye,
 } from "lucide-react";
+import { useTerminology } from "@/components/providers/terminology-provider";
 
 interface QAItem {
   id: string;
@@ -116,6 +117,7 @@ function TableSkeleton() {
 }
 
 export default function QAManagerPage() {
+  const { terms } = useTerminology();
   const [items, setItems] = React.useState<QAItem[]>([]);
   const [stats, setStats] = React.useState<QAStats>({
     pendingAssessments: 0,
@@ -136,6 +138,11 @@ export default function QAManagerPage() {
 
   // Get selected client name for display
   const selectedClient = clients.find((c) => c.id === clientFilter);
+
+  // Get type label based on terminology
+  const getTypeLabel = (type: "assessment" | "visit-note") => {
+    return type === "assessment" ? "Assessment" : terms.visitNote.singular;
+  };
   const filteredClients = clients.filter((client) => {
     if (!clientSearch) return true;
     const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
@@ -301,7 +308,7 @@ export default function QAManagerPage() {
       <div>
         <h1 className="text-2xl font-bold">QA Manager</h1>
         <p className="text-foreground-secondary">
-          Review and approve assessments and visit notes
+          Review and approve assessments and {terms.visitNote.plural.toLowerCase()}
         </p>
       </div>
 
@@ -331,7 +338,7 @@ export default function QAManagerPage() {
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-secondary" />
             <span className="font-semibold">{stats.pendingVisitNotes}</span>
-            <span className="text-foreground-secondary">visit notes</span>
+            <span className="text-foreground-secondary">{terms.visitNote.plural.toLowerCase()}</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-success" />
@@ -437,7 +444,7 @@ export default function QAManagerPage() {
             >
               <option value="">All Types</option>
               <option value="assessments">Assessments</option>
-              <option value="visit-notes">Visit Notes</option>
+              <option value="visit-notes">{terms.visitNote.plural}</option>
             </Select>
             <Select
               value={statusFilter}
@@ -524,7 +531,7 @@ export default function QAManagerPage() {
                             ) : (
                               <FileText className="w-3 h-3 mr-1" />
                             )}
-                            {typeConfig.label}
+                            {getTypeLabel(item.type)}
                           </Badge>
                         </td>
 
@@ -667,7 +674,7 @@ export default function QAManagerPage() {
                 <div>
                   <CardTitle>
                     {reviewModal.action === "approve" ? "Approve" : "Reject"}{" "}
-                    {reviewModal.item.type === "assessment" ? "Assessment" : "Visit Note"}
+                    {getTypeLabel(reviewModal.item.type)}
                   </CardTitle>
                   <CardDescription>{reviewModal.item.templateName}</CardDescription>
                 </div>

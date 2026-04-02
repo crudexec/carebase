@@ -192,6 +192,11 @@ export default function NotificationPreferencesPage() {
   const [sponsorSettingsHasChanges, setSponsorSettingsHasChanges] = useState(false);
   const isAdmin = session?.user?.role === "ADMIN";
 
+  // Threshold alerts settings (admin only)
+  const [thresholdAlertsEnabled, setThresholdAlertsEnabled] = useState<boolean | null>(null);
+  const [isSavingThresholdSettings, setIsSavingThresholdSettings] = useState(false);
+  const [thresholdSettingsHasChanges, setThresholdSettingsHasChanges] = useState(false);
+
   // Fetch preferences
   const fetchPreferences = useCallback(async () => {
     try {
@@ -223,12 +228,28 @@ export default function NotificationPreferencesPage() {
     }
   }, [isAdmin]);
 
+  // Fetch threshold alert settings (admin only)
+  const fetchThresholdAlertSettings = useCallback(async () => {
+    if (!isAdmin) return;
+
+    try {
+      const response = await fetch("/api/settings/threshold-alerts");
+      if (response.ok) {
+        const data = await response.json();
+        setThresholdAlertsEnabled(data.thresholdAlertsEnabled);
+      }
+    } catch (err) {
+      console.error("Failed to fetch threshold alert settings:", err);
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
     if (sessionStatus === "authenticated") {
       fetchPreferences();
       fetchSponsorEmailSettings();
+      fetchThresholdAlertSettings();
     }
-  }, [sessionStatus, fetchPreferences, fetchSponsorEmailSettings]);
+  }, [sessionStatus, fetchPreferences, fetchSponsorEmailSettings, fetchThresholdAlertSettings]);
 
   const toggleChannel = (eventType: string, channel: string) => {
     setPreferences((prev) =>
@@ -319,6 +340,35 @@ export default function NotificationPreferencesPage() {
       setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setIsSavingSponsorSettings(false);
+    }
+  };
+
+  // Save threshold alert settings (admin only)
+  const handleSaveThresholdSettings = async () => {
+    if (thresholdAlertsEnabled === null) return;
+
+    setIsSavingThresholdSettings(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/settings/threshold-alerts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thresholdAlertsEnabled }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to save threshold alert settings");
+      }
+
+      setSuccess("Threshold alert settings saved successfully");
+      setThresholdSettingsHasChanges(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setIsSavingThresholdSettings(false);
     }
   };
 
@@ -492,6 +542,71 @@ export default function NotificationPreferencesPage() {
               </div>
             </CardContent>
           )}
+        </Card>
+      )}
+
+      {/* Threshold Alert Settings - Admin Only */}
+      {isAdmin && thresholdAlertsEnabled !== null && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-100">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Threshold Alert Settings</CardTitle>
+                <CardDescription>
+                  Company-wide controls for threshold breach notifications
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-4 h-4 text-foreground-tertiary" />
+                  <div>
+                    <span className="text-sm font-medium text-foreground">
+                      Enable Threshold Alerts
+                    </span>
+                    <p className="text-xs text-foreground-secondary mt-0.5">
+                      Send notifications when visit note values exceed configured thresholds (e.g., vital signs, pain levels)
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={thresholdAlertsEnabled}
+                  onCheckedChange={(checked) => {
+                    setThresholdAlertsEnabled(checked);
+                    setThresholdSettingsHasChanges(true);
+                    setSuccess(null);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Save Button for Threshold Settings */}
+            <div className="pt-4 mt-4 border-t border-border">
+              <Button
+                onClick={handleSaveThresholdSettings}
+                disabled={isSavingThresholdSettings || !thresholdSettingsHasChanges}
+                size="sm"
+              >
+                {isSavingThresholdSettings ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Threshold Settings
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       )}
 
