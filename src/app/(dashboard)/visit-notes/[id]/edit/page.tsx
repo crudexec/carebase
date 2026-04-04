@@ -459,8 +459,8 @@ export default function EditVisitNotePage() {
           saveState={saveState}
           onSave={handleStickyFooterSave}
           disabled={isSubmitting}
-          submitLabel={resubmitForReview ? "Save & Resubmit" : "Save Changes"}
-          savingLabel="Saving..."
+          submitLabel={resubmitForReview ? "Resubmit" : "Submit"}
+          savingLabel="Submitting..."
           errorMessage={error || undefined}
         />
       )}

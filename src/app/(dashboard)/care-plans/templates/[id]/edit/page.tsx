@@ -8,6 +8,7 @@ import { TemplateBuilder } from "@/components/care-plans/template-builder/templa
 import { Button, Badge } from "@/components/ui";
 import { ArrowLeft, Save, Eye, RefreshCw, Power, PowerOff } from "lucide-react";
 import Link from "next/link";
+import { SaveStateFooter, useSaveState } from "@/components/visit-notes/save-state-footer";
 
 export default function EditCarePlanTemplatePage() {
   const params = useParams();
@@ -17,6 +18,8 @@ export default function EditCarePlanTemplatePage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [hasChanges, setHasChanges] = React.useState(false);
+  const { saveState, markDirty, markSaving, markSaved, markError } = useSaveState();
 
   React.useEffect(() => {
     const fetchTemplate = async () => {
@@ -42,11 +45,18 @@ export default function EditCarePlanTemplatePage() {
     fetchTemplate();
   }, [templateId]);
 
+  const handleChange = (updatedTemplate: CarePlanTemplateData) => {
+    setTemplate(updatedTemplate);
+    setHasChanges(true);
+    markDirty();
+  };
+
   const handleSave = async (publish = false) => {
     if (!template) return;
 
     setIsSaving(true);
     setError(null);
+    markSaving();
 
     try {
       const payload = {
@@ -83,10 +93,13 @@ export default function EditCarePlanTemplatePage() {
       }
 
       setTemplate(data.template);
+      setHasChanges(false);
+      markSaved();
       toast.success(publish ? "Template saved and published" : "Template saved successfully");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to save template";
       setError(errorMessage);
+      markError();
       toast.error(errorMessage);
     } finally {
       setIsSaving(false);
@@ -149,7 +162,7 @@ export default function EditCarePlanTemplatePage() {
   const statusVariant = isDraft ? "warning" : template.status === "ACTIVE" ? "success" : "default";
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex h-[calc(100vh-4rem)] flex-col pb-16">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-4">
@@ -170,6 +183,9 @@ export default function EditCarePlanTemplatePage() {
                 <Badge variant="success" className="text-xs">Enabled</Badge>
               ) : (
                 <Badge variant="default" className="text-xs">Disabled</Badge>
+              )}
+              {hasChanges && (
+                <span className="text-xs text-warning">Unsaved changes</span>
               )}
             </div>
           </div>
@@ -222,8 +238,18 @@ export default function EditCarePlanTemplatePage() {
 
       {/* Builder */}
       <div className="flex-1 overflow-hidden">
-        <TemplateBuilder template={template} onChange={setTemplate} />
+        <TemplateBuilder template={template} onChange={handleChange} />
       </div>
+
+      {/* Sticky Save Footer */}
+      <SaveStateFooter
+        saveState={saveState}
+        onSave={() => handleSave(false)}
+        disabled={!isValid || isSaving}
+        submitLabel={isDraft ? "Save Draft" : "Save Changes"}
+        savingLabel="Saving..."
+        errorMessage={error || undefined}
+      />
     </div>
   );
 }

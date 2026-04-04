@@ -127,26 +127,29 @@ async function getRecipientChannels(
     return overrideChannels.filter((channel) => isChannelAvailable(channel));
   }
 
-  // Fetch user preferences
-  const preferences = await prisma.notificationPreference.findMany({
+  // Fetch ALL user preferences for this event type (both enabled and disabled)
+  const allPreferences = await prisma.notificationPreference.findMany({
     where: {
       userId,
       eventType,
-      enabled: true,
     },
     select: {
       channel: true,
+      enabled: true,
     },
   });
 
-  // If user has preferences, use them
-  if (preferences.length > 0) {
-    return preferences
+  // If user has any preferences set for this event type
+  if (allPreferences.length > 0) {
+    // Return only the enabled channels (may be empty if user disabled all)
+    const enabledChannels = allPreferences
+      .filter((p) => p.enabled)
       .map((p) => p.channel)
       .filter((channel) => isChannelAvailable(channel));
+    return enabledChannels;
   }
 
-  // Fall back to default channels for this event type
+  // Only fall back to defaults if user has NO preferences set at all
   const defaultChannels = getDefaultChannels(eventType);
   return defaultChannels.filter((channel) => isChannelAvailable(channel));
 }

@@ -7,6 +7,7 @@ import { FormBuilder } from "@/components/visit-notes/form-builder";
 import { Button, Badge } from "@/components/ui";
 import { ArrowLeft, Save, Eye, Power, PowerOff, Loader2, Users, User } from "lucide-react";
 import Link from "next/link";
+import { SaveStateFooter, useSaveState } from "@/components/visit-notes/save-state-footer";
 
 const TYPE_LABELS: Record<string, string> = {
   STAFF_PROFILE: "Staff Profile",
@@ -30,6 +31,8 @@ export default function EditProfileTemplatePage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [hasChanges, setHasChanges] = React.useState(false);
+  const { saveState, markDirty, markSaving, markSaved, markError } = useSaveState();
 
   React.useEffect(() => {
     fetchTemplate();
@@ -77,10 +80,17 @@ export default function EditProfileTemplatePage() {
     }
   };
 
+  const handleChange = (updatedTemplate: FormTemplateData) => {
+    setTemplate(updatedTemplate);
+    setHasChanges(true);
+    markDirty();
+  };
+
   const handleSave = async (publish = false) => {
     if (!template) return;
     setIsSaving(true);
     setError(null);
+    markSaving();
 
     try {
       const payload = {
@@ -119,8 +129,11 @@ export default function EditProfileTemplatePage() {
 
       // Update local state with saved data
       await fetchTemplate();
+      setHasChanges(false);
+      markSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save template");
+      markError();
     } finally {
       setIsSaving(false);
     }
@@ -169,8 +182,10 @@ export default function EditProfileTemplatePage() {
   const isValid = template.name.trim().length > 0;
   const Icon = TYPE_ICONS[templateType] || Users;
 
+  const isDraft = template.status === "DRAFT";
+
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex h-[calc(100vh-4rem)] flex-col pb-16">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-4">
@@ -199,6 +214,9 @@ export default function EditProfileTemplatePage() {
               <span className="text-xs text-foreground-tertiary">
                 v{template.version}
               </span>
+              {hasChanges && (
+                <span className="text-xs text-warning">Unsaved changes</span>
+              )}
             </div>
           </div>
         </div>
@@ -244,8 +262,18 @@ export default function EditProfileTemplatePage() {
 
       {/* Builder */}
       <div className="flex-1 overflow-hidden">
-        <FormBuilder template={template} onChange={setTemplate} />
+        <FormBuilder template={template} onChange={handleChange} />
       </div>
+
+      {/* Sticky Save Footer */}
+      <SaveStateFooter
+        saveState={saveState}
+        onSave={() => handleSave(false)}
+        disabled={!isValid || isSaving}
+        submitLabel={isDraft ? "Save Draft" : "Save Changes"}
+        savingLabel="Saving..."
+        errorMessage={error || undefined}
+      />
     </div>
   );
 }

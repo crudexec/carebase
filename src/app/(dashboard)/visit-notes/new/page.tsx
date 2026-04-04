@@ -779,7 +779,7 @@ export default function NewVisitNotePage() {
           saveState={saveState}
           onSave={handleStickyFooterSave}
           disabled={isSubmitting}
-          submitLabel="Submit Visit Note"
+          submitLabel="Submit"
           savingLabel="Submitting..."
           errorMessage={error || undefined}
         />
