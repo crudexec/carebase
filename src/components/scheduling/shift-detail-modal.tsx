@@ -115,9 +115,12 @@ export function ShiftDetailModal({
   const canEditShift = canManage && ["SCHEDULED", "IN_PROGRESS"].includes(displayShift.status);
   const canMarkAsMissed = ["SCHEDULED", "IN_PROGRESS"].includes(displayShift.status);
 
-  // Check-in/out status
-  const isCheckedIn = !!displayShift.actualStart;
-  const isCheckedOut = !!displayShift.actualEnd;
+  // Multi-day shifts track daily attendance separately from the lifetime shift fields.
+  const todayAttendance = displayShift.todayAttendance;
+  const todayCheckInTime = todayAttendance?.checkInTime ?? null;
+  const todayCheckOutTime = todayAttendance?.checkOutTime ?? null;
+  const isCheckedIn = isMultiDay ? !!todayCheckInTime : !!displayShift.actualStart;
+  const isCheckedOut = isMultiDay ? !!todayCheckOutTime : !!displayShift.actualEnd;
   const visitNotes = displayShift.visitNotes || [];
 
   // Check if current user can perform check-in/check-out
@@ -273,9 +276,9 @@ export function ShiftDetailModal({
                 )}>
                   {isCheckedIn ? "Checked In" : "Not Checked In"}
                 </div>
-                {isCheckedIn && displayShift.actualStart ? (
+                {isCheckedIn && (isMultiDay ? todayCheckInTime : displayShift.actualStart) ? (
                   <div className="text-xs text-green-600">
-                    {new Date(displayShift.actualStart).toLocaleString("en-US", {
+                    {new Date(isMultiDay ? todayCheckInTime! : displayShift.actualStart!).toLocaleString("en-US", {
                       weekday: "short",
                       month: "short",
                       day: "numeric",
@@ -338,9 +341,9 @@ export function ShiftDetailModal({
                 )}>
                   {isCheckedOut ? "Checked Out" : "Not Checked Out"}
                 </div>
-                {isCheckedOut && displayShift.actualEnd ? (
+                {isCheckedOut && (isMultiDay ? todayCheckOutTime : displayShift.actualEnd) ? (
                   <div className="text-xs text-green-600">
-                    {new Date(displayShift.actualEnd).toLocaleString("en-US", {
+                    {new Date(isMultiDay ? todayCheckOutTime! : displayShift.actualEnd!).toLocaleString("en-US", {
                       weekday: "short",
                       month: "short",
                       day: "numeric",

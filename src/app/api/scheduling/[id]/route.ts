@@ -16,6 +16,11 @@ const updateShiftSchema = z.object({
   status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "MISSED"]).optional(),
 });
 
+function getTodayDate(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
 // GET /api/scheduling/[id] - Get shift details
 export async function GET(
   request: Request,
@@ -28,6 +33,7 @@ export async function GET(
     }
 
     const { id } = await params;
+    const today = getTodayDate();
 
     const shift = await prisma.shift.findFirst({
       where: { id, companyId: session.user.companyId },
@@ -70,6 +76,13 @@ export async function GET(
           },
           orderBy: { submittedAt: "desc" },
         },
+        attendanceRecords: {
+          where: {
+            date: today,
+          },
+          orderBy: { date: "desc" },
+          take: 1,
+        },
       },
     });
 
@@ -82,7 +95,12 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    return NextResponse.json({ shift });
+    return NextResponse.json({
+      shift: {
+        ...shift,
+        todayAttendance: shift.attendanceRecords[0] ?? null,
+      },
+    });
   } catch (error) {
     console.error("Error fetching shift:", error);
     return NextResponse.json({ error: "Failed to fetch shift" }, { status: 500 });

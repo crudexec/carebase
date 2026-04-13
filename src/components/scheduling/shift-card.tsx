@@ -26,6 +26,12 @@ export interface ShiftData {
   scheduledEnd: string;
   actualStart?: string | null;
   actualEnd?: string | null;
+  todayAttendance?: {
+    id: string;
+    date: string;
+    checkInTime: string | null;
+    checkOutTime: string | null;
+  } | null;
   status: ShiftStatus;
   carer: {
     id: string;
