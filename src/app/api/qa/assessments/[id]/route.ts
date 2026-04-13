@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  parseAssessmentTemplateSnapshot,
+  snapshotToRenderedTemplate,
+} from "@/lib/assessments/snapshots";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -96,6 +101,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
       },
     });
 
+    const snapshot = parseAssessmentTemplateSnapshot(
+      updatedAssessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
@@ -113,7 +122,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
     });
 
     return NextResponse.json({
-      assessment: updatedAssessment,
+      assessment: {
+        ...updatedAssessment,
+        template: snapshot
+          ? {
+              id: snapshot.templateId,
+              name: snapshot.templateName,
+            }
+          : updatedAssessment.template,
+      },
       message: `Assessment ${status.toLowerCase()}`,
     });
   } catch (error) {
@@ -196,7 +213,18 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    return NextResponse.json({ assessment });
+    const snapshot = parseAssessmentTemplateSnapshot(
+      assessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+
+    return NextResponse.json({
+      assessment: {
+        ...assessment,
+        template: snapshot
+          ? snapshotToRenderedTemplate(snapshot)
+          : assessment.template,
+      },
+    });
   } catch (error) {
     console.error("Error fetching assessment for QA:", error);
     return NextResponse.json(

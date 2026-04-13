@@ -3,7 +3,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyPermission, PERMISSIONS } from "@/lib/permissions";
 import { sendFax } from "@/lib/sinch";
+import { Prisma } from "@prisma/client";
 import jsPDF from "jspdf";
+import {
+  parseAssessmentTemplateSnapshot,
+  snapshotToRenderedTemplate,
+} from "@/lib/assessments/snapshots";
 
 interface AssessmentItem {
   id: string;
@@ -147,7 +152,36 @@ export async function POST(
     }
 
     // Extract included relations with proper typing
-    const { company, client, assessor, template, responses } = assessment;
+    const { company, client, assessor, responses } = assessment;
+    const snapshot = parseAssessmentTemplateSnapshot(
+      assessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+    const template = snapshot ? snapshotToRenderedTemplate(snapshot) : {
+      id: assessment.template.id,
+      name: assessment.template.name,
+      description: assessment.template.description,
+      version: assessment.template.version,
+      maxScore: assessment.template.maxScore ? Number(assessment.template.maxScore) : null,
+      sections: assessment.template.sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        description: section.description,
+        sectionType: section.sectionType,
+        displayOrder: section.displayOrder,
+        items: section.items.map((item) => ({
+          id: item.id,
+          code: item.code,
+          question: item.question,
+          description: item.description,
+          responseType: item.responseType,
+          responseOptions: item.responseOptions,
+          minValue: item.minValue,
+          maxValue: item.maxValue,
+          isRequired: item.isRequired,
+          displayOrder: item.displayOrder,
+        })),
+      })),
+    };
 
     // Format fax number to E.164
     const formattedFaxNumber = formatToE164(toNumber);

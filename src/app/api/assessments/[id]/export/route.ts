@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import jsPDF from "jspdf";
+import {
+  parseAssessmentTemplateSnapshot,
+  snapshotToRenderedTemplate,
+} from "@/lib/assessments/snapshots";
 
 // GET - Export assessment as PDF download
 export async function GET(
@@ -74,9 +79,39 @@ export async function GET(
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
     }
 
+    const snapshot = parseAssessmentTemplateSnapshot(
+      assessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+    const template = snapshot ? snapshotToRenderedTemplate(snapshot) : {
+      id: assessment.template.id,
+      name: assessment.template.name,
+      description: assessment.template.description,
+      version: assessment.template.version,
+      maxScore: assessment.template.maxScore ? Number(assessment.template.maxScore) : null,
+      sections: assessment.template.sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        description: section.description,
+        sectionType: section.sectionType,
+        displayOrder: section.displayOrder,
+        items: section.items.map((item) => ({
+          id: item.id,
+          code: item.code,
+          question: item.question,
+          description: item.description,
+          responseType: item.responseType,
+          responseOptions: item.responseOptions,
+          minValue: item.minValue,
+          maxValue: item.maxValue,
+          isRequired: item.isRequired,
+          displayOrder: item.displayOrder,
+        })),
+      })),
+    };
+
     // Calculate percentage score if total score and max score exist
     const totalScore = assessment.totalScore ? Number(assessment.totalScore) : null;
-    const maxScore = assessment.template.maxScore ? Number(assessment.template.maxScore) : null;
+    const maxScore = template.maxScore ?? null;
     const percentageScore = totalScore !== null && maxScore !== null && maxScore > 0
       ? (totalScore / maxScore) * 100
       : null;
@@ -94,10 +129,10 @@ export async function GET(
       notes: assessment.notes,
       company: assessment.company,
       template: {
-        name: assessment.template.name,
-        description: assessment.template.description,
+        name: template.name,
+        description: template.description,
         maxScore,
-        sections: assessment.template.sections.map(section => ({
+        sections: template.sections.map(section => ({
           id: section.id,
           title: section.title,
           description: section.description,
@@ -131,7 +166,7 @@ export async function GET(
 
     // Return PDF as download
     const clientName = `${assessment.client.firstName} ${assessment.client.lastName}`.replace(/\s+/g, "-");
-    const filename = `Assessment-${assessment.template.name.replace(/\s+/g, "-")}-${clientName}.pdf`;
+    const filename = `Assessment-${template.name.replace(/\s+/g, "-")}-${clientName}.pdf`;
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {

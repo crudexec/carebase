@@ -1,59 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { ScoringMethod } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import {
+  parseAssessmentTemplateSnapshot,
+  snapshotToTemplateData,
+} from "@/lib/assessments/snapshots";
+import { calculateAssessmentScore } from "@/lib/assessments/validation";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
-}
-
-// Calculate score based on scoring method
-function calculateScore(
-  responses: { score: number | null }[],
-  scoringMethod: ScoringMethod,
-  maxScore: number | null
-): { totalScore: number; percentageScore: number | null } {
-  const validResponses = responses.filter((r) => r.score !== null);
-
-  if (validResponses.length === 0) {
-    return { totalScore: 0, percentageScore: null };
-  }
-
-  let totalScore = 0;
-
-  switch (scoringMethod) {
-    case "SUM":
-    case "WEIGHTED_SUM":
-      // Sum all scores (weights already applied when storing individual scores)
-      totalScore = validResponses.reduce(
-        (sum, r) => sum + (r.score || 0),
-        0
-      );
-      break;
-
-    case "AVERAGE":
-      totalScore =
-        validResponses.reduce((sum, r) => sum + (r.score || 0), 0) /
-        validResponses.length;
-      break;
-
-    case "THRESHOLD":
-      // Count responses meeting threshold (typically >= 1)
-      totalScore = validResponses.filter((r) => (r.score || 0) >= 1).length;
-      break;
-
-    case "CUSTOM":
-    default:
-      // Default to sum for custom
-      totalScore = validResponses.reduce(
-        (sum, r) => sum + (r.score || 0),
-        0
-      );
-  }
-
-  const percentageScore = maxScore ? (totalScore / maxScore) * 100 : null;
-
-  return { totalScore, percentageScore };
 }
 
 // Get interpretation based on score and template
@@ -171,8 +127,61 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
+    const snapshot = parseAssessmentTemplateSnapshot(
+      assessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+    const templateData = snapshot
+      ? snapshotToTemplateData(snapshot)
+      : {
+          id: assessment.template.id,
+          name: assessment.template.name,
+          description: assessment.template.description || undefined,
+          status: "ACTIVE" as const,
+          version: assessment.template.version,
+          isRequired: false,
+          scoringConfig: {
+            method: assessment.template.scoringMethod,
+            maxScore: assessment.template.maxScore
+              ? Number(assessment.template.maxScore)
+              : undefined,
+            passingScore: assessment.template.passingScore
+              ? Number(assessment.template.passingScore)
+              : undefined,
+            thresholds: (assessment.template.scoringThresholds as Record<string, number> | undefined) || undefined,
+          },
+          sections: assessment.template.sections.map((section) => ({
+            id: section.id,
+            sectionType: section.sectionType,
+            title: section.title,
+            description: section.description || undefined,
+            instructions: section.instructions || undefined,
+            order: section.displayOrder,
+            scoringConfig: section.scoringMethod
+              ? {
+                  method: section.scoringMethod,
+                  maxScore: section.maxScore ? Number(section.maxScore) : undefined,
+                  weight: section.weight ? Number(section.weight) : undefined,
+                }
+              : undefined,
+            items: section.items.map((item) => ({
+              id: item.id,
+              code: item.code,
+              questionText: item.question,
+              description: item.description || undefined,
+              responseType: item.responseType,
+              required: item.isRequired,
+              order: item.displayOrder,
+              responseOptions: item.responseOptions as { value: string; label: string; score?: number }[] | undefined,
+              minValue: item.minValue ?? undefined,
+              maxValue: item.maxValue ?? undefined,
+              scoreMapping: item.scoreMapping as Record<string, number> | undefined,
+              showIf: item.showIf as undefined,
+            })),
+          })),
+        };
+
     // Check if all required items have responses
-    const requiredItems = assessment.template.sections.flatMap((s) =>
+    const requiredItems = templateData.sections.flatMap((s) =>
       s.items.filter((i) => i.isRequired)
     );
 
@@ -187,7 +196,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           error: "Missing required responses",
           missingItems: missingRequired.map((i) => ({
             id: i.id,
-            question: i.question,
+            question: i.questionText,
           })),
         },
         { status: 400 }
@@ -195,17 +204,40 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // Calculate scores
-    const { totalScore, percentageScore } = calculateScore(
-      assessment.responses.map((r) => ({
-        score: r.score ? Number(r.score) : null,
+    const scoreResult = calculateAssessmentScore(
+      assessment.responses.map((response) => ({
+        itemId: response.itemId,
+        value:
+          response.valueJson ??
+          response.valueText ??
+          response.valueNumber?.toNumber() ??
+          response.valueBoolean ??
+          response.valueDate ??
+          null,
       })),
-      assessment.template.scoringMethod,
-      assessment.template.maxScore ? Number(assessment.template.maxScore) : null
+      templateData.sections.flatMap((section) =>
+        section.items.map((item) => ({
+          id: item.id,
+          responseType: item.responseType,
+          scoreMapping: item.scoreMapping ?? null,
+          responseOptions: Array.isArray(item.responseOptions)
+            ? item.responseOptions.map((option) => ({
+                value: String(option.value),
+                score: option.score,
+              }))
+            : null,
+        }))
+      ),
+      templateData.scoringConfig.method
     );
+    const totalScore = scoreResult.totalScore;
+    const percentageScore = templateData.scoringConfig.maxScore
+      ? (totalScore / templateData.scoringConfig.maxScore) * 100
+      : null;
 
     // Get interpretation
     const interpretation = getScoreInterpretation(
-      assessment.template.name,
+      templateData.name,
       totalScore
     );
 
@@ -262,7 +294,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         entityType: "Assessment",
         entityId: assessment.id,
         changes: {
-          templateName: assessment.template.name,
+          templateName: templateData.name,
+          templateVersion: assessment.templateVersion ?? templateData.version,
           clientName: `${assessment.client.firstName} ${assessment.client.lastName}`,
           totalScore,
           interpretation,
@@ -275,7 +308,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       scoring: {
         totalScore,
         percentageScore,
-        maxScore: assessment.template.maxScore,
+        maxScore: templateData.scoringConfig.maxScore ?? null,
         interpretation,
       },
     });

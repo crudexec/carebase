@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  parseAssessmentTemplateSnapshot,
+  snapshotToRenderedTemplate,
+} from "@/lib/assessments/snapshots";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -73,9 +78,16 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
+    const snapshot = parseAssessmentTemplateSnapshot(
+      assessment.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+
     // Transform responses to use frontend field names
     const transformedAssessment = {
       ...assessment,
+      template: snapshot
+        ? snapshotToRenderedTemplate(snapshot)
+        : assessment.template,
       responses: assessment.responses.map((r) => ({
         itemId: r.itemId,
         numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,
@@ -256,9 +268,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       },
     });
 
+    const snapshot = parseAssessmentTemplateSnapshot(
+      updatedAssessment?.formSchemaSnapshot as Prisma.JsonValue | null
+    );
+
     // Transform responses to use frontend field names
     const transformedAssessment = updatedAssessment ? {
       ...updatedAssessment,
+      template: snapshot
+        ? snapshotToRenderedTemplate(snapshot)
+        : updatedAssessment.template,
       responses: updatedAssessment.responses.map((r) => ({
         itemId: r.itemId,
         numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,

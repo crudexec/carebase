@@ -2496,6 +2496,10 @@ model Assessment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Template snapshot for historical accuracy
+  templateVersion    Int?
+  formSchemaSnapshot Json?
+
   // Relations
   templateId String
   template   AssessmentTemplate @relation(fields: [templateId], references: [id])

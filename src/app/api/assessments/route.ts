@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  buildAssessmentTemplateSnapshot,
+  parseAssessmentTemplateSnapshot,
+} from "@/lib/assessments/snapshots";
 
 // GET /api/assessments - List assessments
 export async function GET(request: Request) {
@@ -39,6 +43,8 @@ export async function GET(request: Request) {
               maxScore: true,
             },
           },
+          formSchemaSnapshot: true,
+          templateVersion: true,
           client: {
             select: {
               id: true,
@@ -61,7 +67,30 @@ export async function GET(request: Request) {
       prisma.assessment.count({ where }),
     ]);
 
-    return NextResponse.json({ assessments, total });
+    return NextResponse.json({
+      assessments: assessments.map((assessment) => {
+        const snapshot = parseAssessmentTemplateSnapshot(
+          assessment.formSchemaSnapshot as Prisma.JsonValue | null
+        );
+
+        return {
+          ...assessment,
+          template: snapshot
+            ? {
+                id: snapshot.templateId,
+                name: snapshot.templateName,
+                description: snapshot.description || null,
+                maxScore: snapshot.scoringConfig.maxScore ?? null,
+                version: snapshot.version,
+              }
+            : {
+                ...assessment.template,
+                version: assessment.templateVersion ?? null,
+              },
+        };
+      }),
+      total,
+    });
   } catch (error) {
     console.error("Error fetching assessments:", error);
     return NextResponse.json(
@@ -110,6 +139,16 @@ export async function POST(request: Request) {
     // Verify template exists
     const template = await prisma.assessmentTemplate.findUnique({
       where: { id: templateId },
+      include: {
+        sections: {
+          orderBy: { displayOrder: "asc" },
+          include: {
+            items: {
+              orderBy: { displayOrder: "asc" },
+            },
+          },
+        },
+      },
     });
 
     if (!template) {
@@ -131,11 +170,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
+    const snapshot = buildAssessmentTemplateSnapshot(template);
+
     // Create assessment
     const assessment = await prisma.assessment.create({
       data: {
         companyId: session.user.companyId,
         templateId,
+        templateVersion: template.version,
+        formSchemaSnapshot: snapshot as unknown as Prisma.InputJsonValue,
         clientId,
         intakeId,
         assessorId: session.user.id,
@@ -188,7 +231,13 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ assessment }, { status: 201 });
+    return NextResponse.json({
+      assessment: {
+        ...assessment,
+        templateVersion: assessment.templateVersion,
+        formSchemaSnapshot: snapshot,
+      },
+    }, { status: 201 });
   } catch (error) {
     console.error("Error creating assessment:", error);
     return NextResponse.json(

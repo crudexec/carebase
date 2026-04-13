@@ -161,6 +161,7 @@ export interface AssessmentTemplateData {
 export interface AssessmentTemplateSnapshot {
   templateId: string;
   templateName: string;
+  description?: string;
   version: number;
   scoringConfig: ScoringConfig;
   sections: {
@@ -170,6 +171,7 @@ export interface AssessmentTemplateSnapshot {
     description?: string;
     instructions?: string;
     order: number;
+    scoringConfig?: SectionScoringConfig;
     items: {
       id: string;
       code: string;
@@ -178,10 +180,13 @@ export interface AssessmentTemplateSnapshot {
       responseType: AssessmentResponseType;
       required: boolean;
       order: number;
-      responseOptions?: ChoiceOption[];
+      responseOptions?: unknown;
       minValue?: number;
       maxValue?: number;
       scoreMapping?: Record<string, number>;
+      showIf?: ConditionalLogic;
+      listConfig?: ListResponseConfig;
+      repeaterConfig?: RepeaterResponseConfig;
     }[];
   }[];
 }

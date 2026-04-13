@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { AssessmentSectionType, AssessmentResponseType } from "@prisma/client";
+import { AssessmentSectionType, AssessmentResponseType, Prisma } from "@prisma/client";
 import { z } from "zod";
 
 interface RouteParams {
@@ -45,6 +45,122 @@ const updateTemplateSchema = z.object({
   scoringConfig: z.any().optional(),
   sections: z.array(sectionSchema).optional(),
 });
+
+async function createTemplateSections(
+  tx: Prisma.TransactionClient,
+  templateId: string,
+  sections: z.infer<typeof sectionSchema>[]
+) {
+  for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+    const section = sections[sectionIndex];
+
+    const newSection = await tx.assessmentTemplateSection.create({
+      data: {
+        templateId,
+        sectionType: section.sectionType as AssessmentSectionType,
+        title: section.title,
+        description: section.description || null,
+        instructions: section.instructions || null,
+        displayOrder: section.order ?? sectionIndex,
+      },
+    });
+
+    for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
+      const item = section.items[itemIndex];
+
+      let responseOptions = item.responseOptions || null;
+      if (item.listConfig || item.repeaterConfig) {
+        responseOptions = {
+          ...(item.responseOptions ? { options: item.responseOptions } : {}),
+          ...(item.listConfig ? { listConfig: item.listConfig } : {}),
+          ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
+        };
+      }
+
+      await tx.assessmentTemplateItem.create({
+        data: {
+          sectionId: newSection.id,
+          code: item.code,
+          question: item.questionText,
+          description: item.description || null,
+          responseType: item.responseType as AssessmentResponseType,
+          isRequired: item.required ?? true,
+          displayOrder: item.order ?? itemIndex,
+          responseOptions,
+          minValue: item.minValue ?? null,
+          maxValue: item.maxValue ?? null,
+          scoreMapping: item.scoreMapping || null,
+          showIf: item.showIf || null,
+        },
+      });
+    }
+  }
+}
+
+function mapExistingSections(
+  sections: Array<{
+    sectionType: string;
+    title: string;
+    description: string | null;
+    instructions: string | null;
+    displayOrder: number;
+    items: Array<{
+      code: string;
+      question: string;
+      description: string | null;
+      responseType: string;
+      isRequired: boolean;
+      displayOrder: number;
+      responseOptions: Prisma.JsonValue | null;
+      minValue: number | null;
+      maxValue: number | null;
+      scoreMapping: Prisma.JsonValue | null;
+      showIf: Prisma.JsonValue | null;
+    }>;
+  }>
+): z.infer<typeof sectionSchema>[] {
+  return sections.map((section) => {
+    return {
+      sectionType: section.sectionType,
+      title: section.title,
+      description: section.description || null,
+      instructions: section.instructions || null,
+      order: section.displayOrder,
+      scoringConfig: null,
+      items: section.items.map((item) => {
+        const responseOptions =
+          item.responseOptions && typeof item.responseOptions === "object" && !Array.isArray(item.responseOptions)
+            ? item.responseOptions
+            : item.responseOptions ?? null;
+
+        return {
+          code: item.code,
+          questionText: item.question,
+          description: item.description || null,
+          responseType: item.responseType,
+          required: item.isRequired,
+          order: item.displayOrder,
+          responseOptions:
+            responseOptions && typeof responseOptions === "object" && !Array.isArray(responseOptions) && "options" in responseOptions
+              ? (responseOptions.options as z.infer<typeof itemSchema>["responseOptions"])
+              : (responseOptions as z.infer<typeof itemSchema>["responseOptions"]),
+          minValue: item.minValue ?? null,
+          maxValue: item.maxValue ?? null,
+          scoreMapping: item.scoreMapping || null,
+          showIf: item.showIf || null,
+          listConfig:
+            responseOptions && typeof responseOptions === "object" && !Array.isArray(responseOptions) && "listConfig" in responseOptions
+              ? responseOptions.listConfig
+              : null,
+          repeaterConfig:
+            responseOptions && typeof responseOptions === "object" && !Array.isArray(responseOptions) && "repeaterConfig" in responseOptions
+              ? responseOptions.repeaterConfig
+              : null,
+        };
+      }),
+    };
+  });
+}
 
 // GET /api/assessments/templates/[id] - Get single template with full details
 export async function GET(request: Request, { params }: RouteParams) {
@@ -164,6 +280,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         _count: {
           select: { assessments: true },
         },
+        sections: {
+          orderBy: { displayOrder: "asc" },
+          include: {
+            items: {
+              orderBy: { displayOrder: "asc" },
+            },
+          },
+        },
       },
     });
 
@@ -174,11 +298,65 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
-    // If sections are being updated and template has assessments, warn user
-    if (sections && existingTemplate._count.assessments > 0) {
-      console.log("WARNING: Template has existing assessments, but allowing edit");
-      // For now, allow editing but log a warning
-      // In production, you might want to create a new version instead
+    const hasVersionedChanges =
+      name !== undefined ||
+      description !== undefined ||
+      isRequired !== undefined ||
+      scoringConfig !== undefined ||
+      sections !== undefined;
+
+    if (existingTemplate._count.assessments > 0 && hasVersionedChanges) {
+      const nextVersion = existingTemplate.version + 1;
+      const clonedSections = sections ?? mapExistingSections(existingTemplate.sections);
+      const shouldPublishNewVersion = isActive ?? existingTemplate.isActive;
+
+      const newTemplate = await prisma.$transaction(async (tx) => {
+        const created = await tx.assessmentTemplate.create({
+          data: {
+            name: name ?? existingTemplate.name,
+            description: description !== undefined ? description : existingTemplate.description,
+            version: nextVersion,
+            isRequired: isRequired ?? existingTemplate.isRequired,
+            isActive: shouldPublishNewVersion,
+            scoringMethod: scoringConfig?.method || existingTemplate.scoringMethod,
+            maxScore: scoringConfig?.maxScore ?? existingTemplate.maxScore,
+            passingScore: scoringConfig?.passingScore ?? existingTemplate.passingScore,
+            scoringThresholds: scoringConfig?.thresholds ?? existingTemplate.scoringThresholds,
+            companyId: existingTemplate.companyId,
+            stateConfigId: existingTemplate.stateConfigId,
+            displayOrder: existingTemplate.displayOrder,
+          },
+        });
+
+        if (shouldPublishNewVersion) {
+          await tx.assessmentTemplate.update({
+            where: { id: existingTemplate.id },
+            data: { isActive: false },
+          });
+        }
+
+        await createTemplateSections(tx, created.id, clonedSections);
+
+        return tx.assessmentTemplate.findUnique({
+          where: { id: created.id },
+          include: {
+            sections: {
+              orderBy: { displayOrder: "asc" },
+              include: {
+                items: {
+                  orderBy: { displayOrder: "asc" },
+                },
+              },
+            },
+          },
+        });
+      });
+
+      return NextResponse.json({
+        template: newTemplate,
+        versioned: true,
+        message: `Created version ${nextVersion}. Existing assessments remain attached to version ${existingTemplate.version}.`,
+      });
     }
 
     // Update template with sections in a transaction

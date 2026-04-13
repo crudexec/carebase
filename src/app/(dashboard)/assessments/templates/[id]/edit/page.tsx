@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { AssessmentTemplateData } from "@/lib/assessments/types";
@@ -11,6 +12,7 @@ import Link from "next/link";
 import { SaveStateFooter, useSaveState } from "@/components/visit-notes/save-state-footer";
 
 export default function EditAssessmentTemplatePage() {
+  const router = useRouter();
   const params = useParams();
   const templateId = params.id as string;
 
@@ -170,6 +172,9 @@ export default function EditAssessmentTemplatePage() {
         prev
           ? {
               ...prev,
+              id: data.template.id,
+              name: data.template.name,
+              description: data.template.description,
               version: data.template.version,
               status: data.template.isActive ? "ACTIVE" : "DRAFT",
             }
@@ -178,7 +183,12 @@ export default function EditAssessmentTemplatePage() {
       setIsActive(data.template.isActive);
       setHasChanges(false);
       markSaved();
-      toast.success(publish ? "Template saved and published" : "Template saved successfully");
+      if (data.versioned) {
+        toast.success(data.message || `Template saved as version ${data.template.version}`);
+        router.replace(`/assessments/templates/${data.template.id}/edit`);
+      } else {
+        toast.success(publish ? "Template saved and published" : "Template saved successfully");
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to save template";
       setError(errorMessage);
