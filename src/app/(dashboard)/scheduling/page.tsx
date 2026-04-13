@@ -108,7 +108,10 @@ export default function SchedulingPage() {
     const response = await fetch("/api/scheduling", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        timezoneOffset: new Date().getTimezoneOffset(),
+      }),
     });
 
     if (!response.ok) {
@@ -126,7 +129,10 @@ export default function SchedulingPage() {
     const response = await fetch(`/api/scheduling/${selectedShift.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        timezoneOffset: new Date().getTimezoneOffset(),
+      }),
     });
 
     if (!response.ok) {

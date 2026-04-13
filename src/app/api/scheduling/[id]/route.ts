@@ -14,11 +14,25 @@ const updateShiftSchema = z.object({
   scheduledStart: z.string().optional(),
   scheduledEnd: z.string().optional(),
   status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "MISSED"]).optional(),
+  timezoneOffset: z.number().optional(),
 });
 
 function getTodayDate(): Date {
   const now = new Date();
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
+function parseLocalDateTime(value: string, timezoneOffsetMinutes?: number): Date {
+  if (timezoneOffsetMinutes === undefined) {
+    return new Date(value);
+  }
+
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
+  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + timezoneOffsetMinutes);
+  return utcDate;
 }
 
 // GET /api/scheduling/[id] - Get shift details
@@ -167,10 +181,16 @@ export async function PATCH(
       updateData.clientId = validation.data.clientId;
     }
     if (validation.data.scheduledStart) {
-      updateData.scheduledStart = new Date(validation.data.scheduledStart);
+      updateData.scheduledStart = parseLocalDateTime(
+        validation.data.scheduledStart,
+        validation.data.timezoneOffset
+      );
     }
     if (validation.data.scheduledEnd) {
-      updateData.scheduledEnd = new Date(validation.data.scheduledEnd);
+      updateData.scheduledEnd = parseLocalDateTime(
+        validation.data.scheduledEnd,
+        validation.data.timezoneOffset
+      );
     }
     if (validation.data.status) {
       updateData.status = validation.data.status;

@@ -39,6 +39,7 @@ export interface ShiftFormData {
   scheduledStart: string;
   scheduledEnd: string;
   status?: ShiftStatus;
+  timezoneOffset?: number;
 }
 
 export function ShiftFormModal({

@@ -12,7 +12,21 @@ const createShiftSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   scheduledStart: z.string().min(1, "Start time is required"),
   scheduledEnd: z.string().min(1, "End time is required"),
+  timezoneOffset: z.number().optional(),
 });
+
+function parseLocalDateTime(value: string, timezoneOffsetMinutes?: number): Date {
+  if (timezoneOffsetMinutes === undefined) {
+    return new Date(value);
+  }
+
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
+  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + timezoneOffsetMinutes);
+  return utcDate;
+}
 
 // GET /api/scheduling - List shifts
 export async function GET(request: Request) {
@@ -147,11 +161,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { carerId, clientId, scheduledStart, scheduledEnd } = validation.data;
+    const { carerId, clientId, scheduledStart, scheduledEnd, timezoneOffset } = validation.data;
 
     // Validate dates
-    const start = new Date(scheduledStart);
-    const end = new Date(scheduledEnd);
+    const start = parseLocalDateTime(scheduledStart, timezoneOffset);
+    const end = parseLocalDateTime(scheduledEnd, timezoneOffset);
 
     if (end <= start) {
       return NextResponse.json(
