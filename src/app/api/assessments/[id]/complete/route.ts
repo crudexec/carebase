@@ -175,7 +175,6 @@ export async function POST(request: Request, { params }: RouteParams) {
               minValue: item.minValue ?? undefined,
               maxValue: item.maxValue ?? undefined,
               scoreMapping: item.scoreMapping as Record<string, number> | undefined,
-              showIf: item.showIf as undefined,
             })),
           })),
         };
