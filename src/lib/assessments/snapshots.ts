@@ -68,7 +68,9 @@ export function buildAssessmentTemplateSnapshot(
       order: section.displayOrder,
       scoringConfig: section.scoringMethod
         ? {
-            method: section.scoringMethod as AssessmentTemplateSnapshot["sections"][number]["scoringConfig"]["method"],
+            method: section.scoringMethod as NonNullable<
+              AssessmentTemplateSnapshot["sections"][number]["scoringConfig"]
+            >["method"],
             maxScore: toNumber(section.maxScore),
             weight: toNumber(section.weight),
           }
@@ -85,7 +87,9 @@ export function buildAssessmentTemplateSnapshot(
         minValue: item.minValue ?? undefined,
         maxValue: item.maxValue ?? undefined,
         scoreMapping: (item.scoreMapping as Record<string, number> | null) || undefined,
-        showIf: (item.showIf as AssessmentTemplateSnapshot["sections"][number]["items"][number]["showIf"]) || undefined,
+        showIf: item.showIf
+          ? (item.showIf as unknown as AssessmentTemplateSnapshot["sections"][number]["items"][number]["showIf"])
+          : undefined,
       })),
     })),
   };

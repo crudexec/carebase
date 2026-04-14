@@ -181,7 +181,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Check if all required items have responses
     const requiredItems = templateData.sections.flatMap((s) =>
-      s.items.filter((i) => i.isRequired)
+      s.items.filter((i) => i.required)
     );
 
     const respondedItemIds = new Set(assessment.responses.map((r) => r.itemId));

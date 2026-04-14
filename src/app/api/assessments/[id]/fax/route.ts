@@ -125,6 +125,7 @@ export async function POST(
             id: true,
             name: true,
             description: true,
+            version: true,
             maxScore: true,
             sections: {
               orderBy: { displayOrder: "asc" },

@@ -43,8 +43,6 @@ export async function GET(request: Request) {
               maxScore: true,
             },
           },
-          formSchemaSnapshot: true,
-          templateVersion: true,
           client: {
             select: {
               id: true,
