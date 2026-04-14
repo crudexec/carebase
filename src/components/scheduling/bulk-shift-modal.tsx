@@ -156,6 +156,22 @@ export function BulkShiftModal({
     return () => clearTimeout(timer);
   }, [fetchPreview]);
 
+  // Prevent background page from scrolling while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscroll;
+    };
+  }, [isOpen]);
+
   // Toggle day selection
   const toggleDay = (day: number) => {
     setSelectedDays((prev) =>
@@ -232,39 +248,40 @@ export function BulkShiftModal({
     hoursPerShift > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
       />
 
-      {/* Modal */}
-      <Card className="relative z-10 w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <CalendarPlus className="w-5 h-5 text-primary" />
+      <div className="relative z-10 flex min-h-full items-center justify-center p-4">
+        {/* Modal */}
+        <Card className="w-full max-w-4xl max-h-[calc(100dvh-2rem)] overflow-hidden flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CalendarPlus className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Bulk Schedule Shifts</CardTitle>
+                <p className="text-sm text-foreground-secondary mt-0.5">
+                  Create recurring shifts across multiple weeks
+                </p>
+              </div>
             </div>
-            <div>
-              <CardTitle>Bulk Schedule Shifts</CardTitle>
-              <p className="text-sm text-foreground-secondary mt-0.5">
-                Create recurring shifts across multiple weeks
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleClose} className="h-8 w-8 p-0">
-            <X className="w-4 h-4" />
-          </Button>
-        </CardHeader>
+            <Button variant="ghost" size="sm" onClick={handleClose} className="h-8 w-8 p-0">
+              <X className="w-4 h-4" />
+            </Button>
+          </CardHeader>
 
-        <CardContent className="flex-1 overflow-hidden p-0">
-          <div className="flex flex-col lg:flex-row h-full">
-            {/* Left Panel - Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="flex-1 p-6 overflow-y-auto border-r border-border"
-            >
+          <CardContent className="flex-1 overflow-hidden p-0">
+            <div className="flex flex-col lg:flex-row h-full">
+              {/* Left Panel - Form */}
+              <form
+                onSubmit={handleSubmit}
+                className="flex-1 p-6 overflow-y-auto overscroll-contain border-r border-border"
+              >
               {/* Error/Success Messages */}
               {error && (
                 <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/30 text-error text-sm flex items-start gap-2">
@@ -469,8 +486,8 @@ export function BulkShiftModal({
               </div>
             </form>
 
-            {/* Right Panel - Preview */}
-            <div className="w-full lg:w-96 bg-background-secondary p-6 overflow-y-auto">
+              {/* Right Panel - Preview */}
+              <div className="w-full lg:w-96 bg-background-secondary p-6 overflow-y-auto overscroll-contain">
               <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 Preview
@@ -592,10 +609,11 @@ export function BulkShiftModal({
                   </div>
                 </div>
               )}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
