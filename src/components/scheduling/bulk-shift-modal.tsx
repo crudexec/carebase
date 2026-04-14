@@ -257,7 +257,7 @@ export function BulkShiftModal({
 
       <div className="relative z-10 flex min-h-full items-center justify-center p-4">
         {/* Modal */}
-        <Card className="w-full max-w-4xl max-h-[calc(100dvh-2rem)] overflow-hidden flex flex-col">
+        <Card className="w-full max-w-4xl max-h-[calc(100dvh-2rem)] overflow-hidden flex flex-col min-h-0">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
@@ -275,13 +275,14 @@ export function BulkShiftModal({
             </Button>
           </CardHeader>
 
-          <CardContent className="flex-1 overflow-hidden p-0">
-            <div className="flex flex-col lg:flex-row h-full">
+          <CardContent className="flex-1 overflow-hidden p-0 min-h-0">
+            <div className="flex flex-col lg:flex-row h-full min-h-0">
               {/* Left Panel - Form */}
               <form
                 onSubmit={handleSubmit}
-                className="flex-1 p-6 overflow-y-auto overscroll-contain border-r border-border"
+                className="flex flex-1 min-h-0 flex-col border-r border-border"
               >
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6">
               {/* Error/Success Messages */}
               {error && (
                 <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/30 text-error text-sm flex items-start gap-2">
@@ -461,9 +462,11 @@ export function BulkShiftModal({
                   </label>
                 </div>
               )}
+                </div>
 
               {/* Submit Button */}
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="shrink-0 border-t border-border bg-background p-4">
+                <div className="flex gap-3">
                 <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
                   Cancel
                 </Button>
@@ -483,11 +486,12 @@ export function BulkShiftModal({
                     "Create Shifts"
                   )}
                 </Button>
+                </div>
               </div>
             </form>
 
               {/* Right Panel - Preview */}
-              <div className="w-full lg:w-96 bg-background-secondary p-6 overflow-y-auto overscroll-contain">
+              <div className="w-full lg:w-96 bg-background-secondary p-6 overflow-y-auto overscroll-contain min-h-0">
               <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 Preview
