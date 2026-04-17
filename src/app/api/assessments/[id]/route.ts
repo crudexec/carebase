@@ -233,7 +233,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         let valueNumber: number | null = null;
         let valueText: string | null = null;
         let valueBoolean: boolean | null = null;
-        let valueJson: Prisma.JsonValue | null = null;
+        let valueJson: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput | undefined;
 
         const value = response.value;
         const responseType = itemTypeById.get(response.itemId);
@@ -278,7 +278,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               }
             } else if (isJsonType) {
               try {
-                valueJson = JSON.parse(value) as Prisma.JsonValue;
+                const parsed = JSON.parse(value) as Prisma.JsonValue;
+                valueJson = parsed === null
+                  ? Prisma.JsonNull
+                  : (parsed as Prisma.InputJsonValue);
                 valueText = value;
               } catch {
                 valueText = value;
@@ -287,7 +290,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               valueText = value;
             }
           } else if (Array.isArray(value)) {
-            valueJson = value as Prisma.JsonValue;
+            valueJson = value as Prisma.InputJsonValue;
             valueText = JSON.stringify(value);
           }
         }
@@ -297,7 +300,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           valueNumber !== null ||
           valueText !== null ||
           valueBoolean !== null ||
-          valueJson !== null
+          valueJson !== undefined
         ) {
           await prisma.assessmentResponse.upsert({
             where: {
