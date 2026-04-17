@@ -143,6 +143,25 @@ const RESPONSE_TYPE_ICONS: Record<string, React.ElementType> = {
   REPEATER: Repeat,
 };
 
+const TEXT_PRIORITY_RESPONSE_TYPES = new Set([
+  "TEXT",
+  "TEXT_SHORT",
+  "TEXT_LONG",
+  "DATE",
+  "TIME",
+  "DATETIME",
+  "SINGLE_SELECT",
+  "SINGLE_CHOICE",
+  "MULTI_SELECT",
+  "MULTIPLE_CHOICE",
+  "LIST",
+  "REPEATER",
+  "SIGNATURE",
+  "PHOTO",
+  "BODY_MAP",
+  "ICD10_DIAGNOSIS",
+]);
+
 export function AssessmentRenderer({
   template,
   responses,
@@ -160,15 +179,18 @@ export function AssessmentRenderer({
   const sections = template.sections || [];
 
   // Get response value for an item
-  const getResponseValue = (itemId: string): string | number => {
-    const response = responses.find((r) => r.itemId === itemId);
+  const getResponseValue = (item: AssessmentItem): string | number => {
+    const response = responses.find((r) => r.itemId === item.id);
     if (!response) return "";
+    if (TEXT_PRIORITY_RESPONSE_TYPES.has(item.responseType)) {
+      return response.textValue ?? response.numericValue ?? "";
+    }
     return response.numericValue ?? response.textValue ?? "";
   };
 
   // Check if an item has a response
-  const hasResponse = (itemId: string): boolean => {
-    const value = getResponseValue(itemId);
+  const hasResponse = (item: AssessmentItem): boolean => {
+    const value = getResponseValue(item);
     return value !== "" && value !== null && value !== undefined;
   };
 
@@ -176,14 +198,14 @@ export function AssessmentRenderer({
   const isSectionComplete = (section: AssessmentSection): boolean => {
     const items = section.items || [];
     const requiredItems = items.filter((i) => i.isRequired);
-    return requiredItems.every((item) => hasResponse(item.id));
+    return requiredItems.every((item) => hasResponse(item));
   };
 
   // Get section progress
   const getSectionProgress = (section: AssessmentSection): { completed: number; total: number } => {
     const items = section.items || [];
     const requiredItems = items.filter((i) => i.isRequired);
-    const completed = requiredItems.filter((item) => hasResponse(item.id)).length;
+    const completed = requiredItems.filter((item) => hasResponse(item)).length;
     return { completed, total: requiredItems.length };
   };
 
@@ -192,7 +214,7 @@ export function AssessmentRenderer({
     (s.items || []).filter((i) => i.isRequired)
   ).length;
   const completedRequired = sections.flatMap((s) =>
-    (s.items || []).filter((i) => i.isRequired && hasResponse(i.id))
+    (s.items || []).filter((i) => i.isRequired && hasResponse(i))
   ).length;
   const progressPercent = totalRequired > 0 ? (completedRequired / totalRequired) * 100 : 0;
 
@@ -222,10 +244,10 @@ export function AssessmentRenderer({
 
   // Render form field based on response type
   const renderFormField = (item: AssessmentItem, questionNumber: number) => {
-    const value = getResponseValue(item.id);
+    const value = getResponseValue(item);
     const options = (item.responseOptions || item.options) as { value: number | string; label: string }[] | null;
     const Icon = RESPONSE_TYPE_ICONS[item.responseType] || FileText;
-    const answered = hasResponse(item.id);
+    const answered = hasResponse(item);
 
     return (
       <div

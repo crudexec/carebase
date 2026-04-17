@@ -12,6 +12,32 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+const NUMERIC_RESPONSE_TYPES = new Set([
+  "NUMBER",
+  "SCALE",
+  "RATING_SCALE",
+  "CLOCK_DRAWING",
+]);
+
+const BOOLEAN_RESPONSE_TYPES = new Set(["YES_NO"]);
+
+const JSON_RESPONSE_TYPES = new Set([
+  "MULTI_SELECT",
+  "MULTIPLE_CHOICE",
+  "LIST",
+  "REPEATER",
+]);
+
+function toNumericResponseValue(valueNumber: Prisma.Decimal | null, valueBoolean: boolean | null): number | null {
+  if (valueNumber !== null) {
+    return parseFloat(valueNumber.toString());
+  }
+  if (valueBoolean !== null) {
+    return valueBoolean ? 1 : 0;
+  }
+  return null;
+}
+
 // GET /api/assessments/[id] - Get single assessment with responses
 export async function GET(request: Request, { params }: RouteParams) {
   try {
@@ -90,8 +116,8 @@ export async function GET(request: Request, { params }: RouteParams) {
         : assessment.template,
       responses: assessment.responses.map((r) => ({
         itemId: r.itemId,
-        numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,
-        textValue: r.valueText,
+        numericValue: toNumericResponseValue(r.valueNumber, r.valueBoolean),
+        textValue: r.valueText ?? (r.valueJson !== null ? JSON.stringify(r.valueJson) : null),
         notes: r.notes,
       })),
     };
@@ -149,13 +175,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
-    if (assessment.status === "COMPLETED") {
-      return NextResponse.json(
-        { error: "Cannot modify a completed assessment" },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const validation = updateAssessmentSchema.safeParse(body);
 
@@ -170,6 +189,42 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Update responses
     if (responses && responses.length > 0) {
+      const itemIds = [...new Set(
+        responses
+          .map((response) => response.itemId)
+          .filter((itemId): itemId is string => Boolean(itemId))
+      )];
+
+      const templateItems = itemIds.length > 0
+        ? await prisma.assessmentTemplateItem.findMany({
+            where: {
+              id: { in: itemIds },
+              section: {
+                templateId: assessment.templateId,
+              },
+            },
+            select: {
+              id: true,
+              responseType: true,
+            },
+          })
+        : [];
+
+      const itemTypeById = new Map(
+        templateItems.map((item) => [item.id, item.responseType])
+      );
+
+      const invalidItemIds = itemIds.filter((itemId) => !itemTypeById.has(itemId));
+      if (invalidItemIds.length > 0) {
+        return NextResponse.json(
+          {
+            error: "Invalid assessment item(s) provided",
+            invalidItemIds,
+          },
+          { status: 400 }
+        );
+      }
+
       for (const response of responses) {
         // Skip responses without itemId
         if (!response.itemId) continue;
@@ -177,27 +232,73 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         // Convert value to appropriate format
         let valueNumber: number | null = null;
         let valueText: string | null = null;
+        let valueBoolean: boolean | null = null;
+        let valueJson: Prisma.JsonValue | null = null;
 
         const value = response.value;
+        const responseType = itemTypeById.get(response.itemId);
+        const isNumericType = responseType ? NUMERIC_RESPONSE_TYPES.has(responseType) : false;
+        const isBooleanType = responseType ? BOOLEAN_RESPONSE_TYPES.has(responseType) : false;
+        const isJsonType = responseType ? JSON_RESPONSE_TYPES.has(responseType) : false;
 
         if (value !== null && value !== undefined) {
           if (typeof value === "number") {
-            valueNumber = value;
-          } else if (typeof value === "boolean") {
-            valueNumber = value ? 1 : 0;
-          } else if (typeof value === "string") {
-            const parsed = parseFloat(value);
-            if (!isNaN(parsed) && value.trim() !== "") {
-              valueNumber = parsed;
+            if (isBooleanType) {
+              valueBoolean = value === 1;
+            } else if (isNumericType) {
+              valueNumber = value;
+            } else {
+              valueText = String(value);
             }
-            valueText = value;
+          } else if (typeof value === "boolean") {
+            if (isBooleanType) {
+              valueBoolean = value;
+            } else if (isNumericType) {
+              valueNumber = value ? 1 : 0;
+            } else {
+              valueText = value ? "true" : "false";
+            }
+          } else if (typeof value === "string") {
+            if (isNumericType) {
+              const trimmed = value.trim();
+              if (trimmed !== "") {
+                const parsed = Number(trimmed);
+                if (!Number.isNaN(parsed)) {
+                  valueNumber = parsed;
+                }
+              }
+            } else if (isBooleanType) {
+              const normalized = value.trim().toLowerCase();
+              if (normalized === "true" || normalized === "1" || normalized === "yes") {
+                valueBoolean = true;
+              } else if (normalized === "false" || normalized === "0" || normalized === "no") {
+                valueBoolean = false;
+              } else {
+                valueText = value;
+              }
+            } else if (isJsonType) {
+              try {
+                valueJson = JSON.parse(value) as Prisma.JsonValue;
+                valueText = value;
+              } catch {
+                valueText = value;
+              }
+            } else {
+              valueText = value;
+            }
           } else if (Array.isArray(value)) {
+            valueJson = value as Prisma.JsonValue;
             valueText = JSON.stringify(value);
           }
         }
 
         // Only upsert if we have a value to save
-        if (valueNumber !== null || valueText !== null) {
+        if (
+          valueNumber !== null ||
+          valueText !== null ||
+          valueBoolean !== null ||
+          valueJson !== null
+        ) {
           await prisma.assessmentResponse.upsert({
             where: {
               assessmentId_itemId: {
@@ -210,11 +311,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               itemId: response.itemId,
               valueNumber,
               valueText,
+              valueBoolean,
+              valueJson,
               notes: response.notes ?? null,
             },
             update: {
               valueNumber,
               valueText,
+              valueBoolean,
+              valueJson,
               notes: response.notes ?? null,
             },
           });
@@ -280,8 +385,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         : updatedAssessment.template,
       responses: updatedAssessment.responses.map((r) => ({
         itemId: r.itemId,
-        numericValue: r.valueNumber ? parseFloat(r.valueNumber.toString()) : null,
-        textValue: r.valueText,
+        numericValue: toNumericResponseValue(r.valueNumber, r.valueBoolean),
+        textValue: r.valueText ?? (r.valueJson !== null ? JSON.stringify(r.valueJson) : null),
         notes: r.notes,
       })),
     } : null;

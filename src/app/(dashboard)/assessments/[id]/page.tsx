@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -98,6 +99,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 export default function AssessmentDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { data: session } = useSession();
   const assessmentId = params.id as string;
 
   const [assessment, setAssessment] = React.useState<Assessment | null>(null);
@@ -374,6 +376,11 @@ export default function AssessmentDetailPage() {
 
   const statusConfig = STATUS_CONFIG[assessment.status] || STATUS_CONFIG.IN_PROGRESS;
   const isCompleted = assessment.status === "COMPLETED";
+  const canEditCompletedAssessment = Boolean(
+    session?.user?.role &&
+    ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR", "STAFF", "CARER"].includes(session.user.role)
+  );
+  const isReadOnly = isCompleted && !canEditCompletedAssessment;
 
   return (
     <div className="space-y-6">
@@ -635,10 +642,10 @@ export default function AssessmentDetailPage() {
           <AssessmentRenderer
             template={assessment.template}
             responses={localResponses}
-            isReadOnly={isCompleted}
+            isReadOnly={isReadOnly}
             onResponseChange={handleResponseChange}
             onSave={handleSave}
-            onComplete={handleComplete}
+            onComplete={isCompleted ? undefined : handleComplete}
             isSaving={isSaving}
             isCompleting={isCompleting}
           />
