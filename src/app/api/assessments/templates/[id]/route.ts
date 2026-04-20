@@ -65,8 +65,19 @@ async function createTemplateSections(
       },
     });
 
-    for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
-      const item = section.items[itemIndex];
+    // Deduplicate items by code within this section (keep first occurrence)
+    const seenCodes = new Set<string>();
+    const uniqueItems = section.items.filter((item) => {
+      if (seenCodes.has(item.code)) {
+        console.log(`WARNING: Duplicate code "${item.code}" in section "${section.title}", skipping duplicate`);
+        return false;
+      }
+      seenCodes.add(item.code);
+      return true;
+    });
+
+    for (let itemIndex = 0; itemIndex < uniqueItems.length; itemIndex++) {
+      const item = uniqueItems[itemIndex];
 
       let responseOptions = item.responseOptions || null;
       if (item.listConfig || item.repeaterConfig) {
@@ -93,6 +104,11 @@ async function createTemplateSections(
           showIf: item.showIf || null,
         },
       });
+    }
+
+    const skippedCount = section.items.length - uniqueItems.length;
+    if (skippedCount > 0) {
+      console.log(`Created section "${section.title}" with ${uniqueItems.length} items (${skippedCount} duplicates skipped)`);
     }
   }
 }
@@ -559,6 +575,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("Error updating assessment template:", error);
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        {
+          error: "Duplicate question codes found in a section. Please ensure each item code is unique within its section.",
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to update assessment template" },
       { status: 500 }
