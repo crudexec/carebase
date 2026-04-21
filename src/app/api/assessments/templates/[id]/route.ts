@@ -76,33 +76,33 @@ async function createTemplateSections(
       return true;
     });
 
-    for (let itemIndex = 0; itemIndex < uniqueItems.length; itemIndex++) {
-      const item = uniqueItems[itemIndex];
+    if (uniqueItems.length > 0) {
+      await tx.assessmentTemplateItem.createMany({
+        data: uniqueItems.map((item, itemIndex) => {
+          let responseOptions = item.responseOptions || null;
+          if (item.listConfig || item.repeaterConfig) {
+            responseOptions = {
+              ...(item.responseOptions ? { options: item.responseOptions } : {}),
+              ...(item.listConfig ? { listConfig: item.listConfig } : {}),
+              ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
+            };
+          }
 
-      let responseOptions = item.responseOptions || null;
-      if (item.listConfig || item.repeaterConfig) {
-        responseOptions = {
-          ...(item.responseOptions ? { options: item.responseOptions } : {}),
-          ...(item.listConfig ? { listConfig: item.listConfig } : {}),
-          ...(item.repeaterConfig ? { repeaterConfig: item.repeaterConfig } : {}),
-        };
-      }
-
-      await tx.assessmentTemplateItem.create({
-        data: {
-          sectionId: newSection.id,
-          code: item.code,
-          question: item.questionText,
-          description: item.description || null,
-          responseType: item.responseType as AssessmentResponseType,
-          isRequired: item.required ?? true,
-          displayOrder: item.order ?? itemIndex,
-          responseOptions,
-          minValue: item.minValue ?? null,
-          maxValue: item.maxValue ?? null,
-          scoreMapping: item.scoreMapping || null,
-          showIf: item.showIf || null,
-        },
+          return {
+            sectionId: newSection.id,
+            code: item.code,
+            question: item.questionText,
+            description: item.description || null,
+            responseType: item.responseType as AssessmentResponseType,
+            isRequired: item.required ?? true,
+            displayOrder: item.order ?? itemIndex,
+            responseOptions,
+            minValue: item.minValue ?? null,
+            maxValue: item.maxValue ?? null,
+            scoreMapping: item.scoreMapping || null,
+            showIf: item.showIf || null,
+          };
+        }),
       });
     }
 
@@ -326,47 +326,53 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       const clonedSections = sections ?? mapExistingSections(existingTemplate.sections);
       const shouldPublishNewVersion = isActive ?? existingTemplate.isActive;
 
-      const newTemplate = await prisma.$transaction(async (tx) => {
-        const created = await tx.assessmentTemplate.create({
-          data: {
-            name: name ?? existingTemplate.name,
-            description: description !== undefined ? description : existingTemplate.description,
-            version: nextVersion,
-            isRequired: isRequired ?? existingTemplate.isRequired,
-            isActive: shouldPublishNewVersion,
-            scoringMethod: scoringConfig?.method || existingTemplate.scoringMethod,
-            maxScore: scoringConfig?.maxScore ?? existingTemplate.maxScore,
-            passingScore: scoringConfig?.passingScore ?? existingTemplate.passingScore,
-            scoringThresholds: scoringConfig?.thresholds ?? existingTemplate.scoringThresholds,
-            companyId: existingTemplate.companyId,
-            stateConfigId: existingTemplate.stateConfigId,
-            displayOrder: existingTemplate.displayOrder,
-          },
-        });
-
-        if (shouldPublishNewVersion) {
-          await tx.assessmentTemplate.update({
-            where: { id: existingTemplate.id },
-            data: { isActive: false },
+      const newTemplate = await prisma.$transaction(
+        async (tx) => {
+          const created = await tx.assessmentTemplate.create({
+            data: {
+              name: name ?? existingTemplate.name,
+              description: description !== undefined ? description : existingTemplate.description,
+              version: nextVersion,
+              isRequired: isRequired ?? existingTemplate.isRequired,
+              isActive: shouldPublishNewVersion,
+              scoringMethod: scoringConfig?.method || existingTemplate.scoringMethod,
+              maxScore: scoringConfig?.maxScore ?? existingTemplate.maxScore,
+              passingScore: scoringConfig?.passingScore ?? existingTemplate.passingScore,
+              scoringThresholds: scoringConfig?.thresholds ?? existingTemplate.scoringThresholds,
+              companyId: existingTemplate.companyId,
+              stateConfigId: existingTemplate.stateConfigId,
+              displayOrder: existingTemplate.displayOrder,
+            },
           });
-        }
 
-        await createTemplateSections(tx, created.id, clonedSections);
+          if (shouldPublishNewVersion) {
+            await tx.assessmentTemplate.update({
+              where: { id: existingTemplate.id },
+              data: { isActive: false },
+            });
+          }
 
-        return tx.assessmentTemplate.findUnique({
-          where: { id: created.id },
-          include: {
-            sections: {
-              orderBy: { displayOrder: "asc" },
-              include: {
-                items: {
-                  orderBy: { displayOrder: "asc" },
+          await createTemplateSections(tx, created.id, clonedSections);
+
+          return tx.assessmentTemplate.findUnique({
+            where: { id: created.id },
+            include: {
+              sections: {
+                orderBy: { displayOrder: "asc" },
+                include: {
+                  items: {
+                    orderBy: { displayOrder: "asc" },
+                  },
                 },
               },
             },
-          },
-        });
-      });
+          });
+        },
+        {
+          maxWait: 10000,
+          timeout: 60000,
+        }
+      );
 
       return NextResponse.json({
         template: newTemplate,
