@@ -2,6 +2,7 @@ import { PrismaClient, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedMarylandConfiguration } from "./seeds/maryland-state-config";
 import { seedCredentialTypes } from "./seeds/credential-types";
+import { seedAirwayAndGTubeAssessmentTemplate } from "./seeds/airway-and-gtube-assessment-template";
 
 const prisma = new PrismaClient();
 
@@ -178,6 +179,10 @@ async function main() {
   // Seed credential types
   console.log("\n📜 Seeding credential types...");
   await seedCredentialTypes();
+
+  // Seed global specialty assessment templates
+  console.log("\n🩺 Seeding specialty assessment templates...");
+  await seedAirwayAndGTubeAssessmentTemplate(prisma);
 
   console.log("\n✨ Seeding complete!");
   console.log("\n📋 Test Credentials:");
