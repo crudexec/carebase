@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { seedMarylandConfiguration } from "./seeds/maryland-state-config";
 import { seedCredentialTypes } from "./seeds/credential-types";
 import { seedAirwayAndGTubeAssessmentTemplate } from "./seeds/airway-and-gtube-assessment-template";
+import { seedNursingFlowSheetTemplate } from "./seeds/nursing-flow-sheet-template";
 
 const prisma = new PrismaClient();
 
@@ -183,6 +184,7 @@ async function main() {
   // Seed global specialty assessment templates
   console.log("\n🩺 Seeding specialty assessment templates...");
   await seedAirwayAndGTubeAssessmentTemplate(prisma);
+  await seedNursingFlowSheetTemplate(prisma);
 
   console.log("\n✨ Seeding complete!");
   console.log("\n📋 Test Credentials:");
