@@ -46,8 +46,10 @@ import {
   GraduationCap,
   BookCheck,
   Languages,
+  Building2,
 } from "lucide-react";
 import { useTerminology } from "@/components/providers/terminology-provider";
+import { isInternalAdminClient } from "@/lib/internal-admin";
 
 interface NavItem {
   label: string;
@@ -340,6 +342,12 @@ const navigation: NavEntry[] = [
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
       },
       {
+        label: "Companies",
+        href: "/settings/companies",
+        icon: Building2,
+        roles: ["ADMIN"],
+      },
+      {
         label: "Terminology",
         href: "/settings/terminology",
         icon: Languages,
@@ -397,17 +405,24 @@ function Tooltip({ children, label }: { children: React.ReactNode; label: string
 function NavGroupItem({
   group,
   userRole,
+  userEmail,
   pathname,
   onClose,
   isCollapsed,
 }: {
   group: NavGroup;
   userRole: UserRole;
+  userEmail: string;
   pathname: string;
   onClose?: () => void;
   isCollapsed?: boolean;
 }) {
-  const filteredItems = group.items.filter((item) => item.roles.includes(userRole));
+  const filteredItems = group.items.filter((item) => {
+    if (item.href === "/settings/companies" && !isInternalAdminClient(userEmail)) {
+      return false;
+    }
+    return item.roles.includes(userRole);
+  });
 
   // Check if any child is active
   const hasActiveChild = filteredItems.some(
@@ -590,7 +605,15 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
   const filteredNavigation = dynamicNavigation.filter((entry) => {
     if (isNavGroup(entry)) {
       // Show group if user has access to at least one item
-      return entry.items.some((item) => item.roles.includes(user.role));
+      return entry.items.some((item) => {
+        if (item.href === "/settings/companies" && !isInternalAdminClient(user.email)) {
+          return false;
+        }
+        return item.roles.includes(user.role);
+      });
+    }
+    if (entry.href === "/settings/companies" && !isInternalAdminClient(user.email)) {
+      return false;
     }
     return entry.roles.includes(user.role);
   });
@@ -646,6 +669,7 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
                   key={entry.label}
                   group={entry}
                   userRole={user.role}
+                  userEmail={user.email}
                   pathname={pathname}
                   onClose={onClose}
                   isCollapsed={isCollapsed}
