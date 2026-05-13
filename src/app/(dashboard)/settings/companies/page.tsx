@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Building2, Check, Copy, Loader2, Plus, Save } from "lucide-react";
+import {
+  Building2,
+  Check,
+  Copy,
+  Loader2,
+  Pencil,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   Button,
   Card,
@@ -14,6 +24,7 @@ import {
   Label,
   Select,
 } from "@/components/ui";
+import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { isInternalAdminClient } from "@/lib/internal-admin";
 
 type Currency = "USD" | "GBP" | "CAD" | "NGN";
@@ -34,6 +45,13 @@ interface CompanyRow {
   };
 }
 
+interface CreatedCredentials {
+  companyName: string;
+  adminName: string;
+  email: string;
+  password: string;
+}
+
 const currencyOptions: Currency[] = ["USD", "GBP", "CAD", "NGN"];
 
 export default function InternalCompaniesPage() {
@@ -43,16 +61,19 @@ export default function InternalCompaniesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<CreatedCredentials | null>(null);
+  const [copiedCredentials, setCopiedCredentials] = useState(false);
+  const [deletingCompanyId, setDeletingCompanyId] = useState<string | null>(null);
   const [createForm, setCreateForm] = useState({
     name: "",
     address: "",
     phone: "",
     faxNumber: "",
     currency: "USD" as Currency,
-    adminInviteEmail: "",
-    expiresInDays: 7,
+    adminFirstName: "",
+    adminLastName: "",
+    adminEmail: "",
+    adminPassword: "",
   });
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Record<string, Partial<CompanyRow>>>({});
@@ -86,6 +107,8 @@ export default function InternalCompaniesPage() {
   }, [status, canManage, fetchCompanies]);
 
   const startEdit = (company: CompanyRow) => {
+    setError(null);
+    setSuccess(null);
     setEditingCompanyId(company.id);
     setEditForm({
       [company.id]: {
@@ -103,17 +126,14 @@ export default function InternalCompaniesPage() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    setCreatedInviteUrl(null);
+    setCreatedCredentials(null);
     setIsCreating(true);
 
     try {
       const response = await fetch("/api/internal/companies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...createForm,
-          adminInviteEmail: createForm.adminInviteEmail || null,
-        }),
+        body: JSON.stringify(createForm),
       });
       const data = await response.json();
 
@@ -121,16 +141,23 @@ export default function InternalCompaniesPage() {
         throw new Error(data.error || "Failed to create company");
       }
 
-      setSuccess(`Created company: ${data.company.name}`);
-      setCreatedInviteUrl(data.inviteUrl || null);
+      setSuccess(`Created company: ${data.company.name}.`);
+      setCreatedCredentials({
+        companyName: data.company.name,
+        adminName: `${data.adminUser.firstName} ${data.adminUser.lastName}`,
+        email: data.credentials.email,
+        password: data.credentials.password,
+      });
       setCreateForm({
         name: "",
         address: "",
         phone: "",
         faxNumber: "",
         currency: "USD",
-        adminInviteEmail: "",
-        expiresInDays: 7,
+        adminFirstName: "",
+        adminLastName: "",
+        adminEmail: "",
+        adminPassword: "",
       });
       fetchCompanies();
     } catch (err) {
@@ -146,6 +173,7 @@ export default function InternalCompaniesPage() {
 
     setError(null);
     setSuccess(null);
+    setCreatedCredentials(null);
 
     try {
       const response = await fetch(`/api/internal/companies/${companyId}`, {
@@ -167,11 +195,62 @@ export default function InternalCompaniesPage() {
     }
   };
 
-  const copyInviteUrl = async () => {
-    if (!createdInviteUrl) return;
-    await navigator.clipboard.writeText(createdInviteUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const cancelEdit = () => {
+    setEditingCompanyId(null);
+  };
+
+  const handleDelete = async (company: CompanyRow) => {
+    const confirmation = window.prompt(
+      `Type "${company.name}" to permanently delete this company and all associated data.`
+    );
+
+    if (confirmation === null) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setCreatedCredentials(null);
+    setDeletingCompanyId(company.id);
+
+    try {
+      const response = await fetch(
+        `/api/internal/companies/${company.id}?confirm=${encodeURIComponent(confirmation)}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete company");
+      }
+
+      setSuccess(`Deleted company: ${data.deletedCompanyName}`);
+      if (editingCompanyId === company.id) {
+        setEditingCompanyId(null);
+      }
+      setCompanies((prev) => prev.filter((entry) => entry.id !== company.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete company");
+    } finally {
+      setDeletingCompanyId(null);
+    }
+  };
+
+  const copyLoginCredentials = async () => {
+    if (!createdCredentials) return;
+
+    const text = [
+      `Company: ${createdCredentials.companyName}`,
+      `Admin: ${createdCredentials.adminName}`,
+      `Email: ${createdCredentials.email}`,
+      `Password: ${createdCredentials.password}`,
+    ].join("\n");
+
+    await navigator.clipboard.writeText(text);
+    setCopiedCredentials(true);
+    setTimeout(() => setCopiedCredentials(false), 2000);
   };
 
   if (status === "loading" || isLoading) {
@@ -189,6 +268,188 @@ export default function InternalCompaniesPage() {
       </div>
     );
   }
+
+  const columns: ColumnDef<CompanyRow>[] = [
+    {
+      id: "name",
+      header: "Company",
+      minWidth: "220px",
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        return (
+          <div className="space-y-1">
+            {isEditing ? (
+              <Input
+                value={current.name ?? ""}
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    [company.id]: { ...prev[company.id], name: e.target.value },
+                  }))
+                }
+              />
+            ) : (
+              <>
+                <div className="font-medium text-gray-900">{company.name}</div>
+                <div className="text-[10px] text-gray-500">{company.id}</div>
+              </>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "counts",
+      header: "Usage",
+      minWidth: "150px",
+      hideOnMobile: true,
+      cell: (company) => (
+        <div className="text-[11px] text-gray-600">
+          {company._count.users} users
+          <br />
+          {company._count.clients} clients
+          <br />
+          {company._count.invites} invites
+        </div>
+      ),
+    },
+    {
+      id: "currency",
+      header: "Currency",
+      width: "110px",
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        if (!isEditing) {
+          return company.currency;
+        }
+
+        return (
+          <Select
+            value={(current.currency as Currency) ?? company.currency}
+            onChange={(e) =>
+              setEditForm((prev) => ({
+                ...prev,
+                [company.id]: {
+                  ...prev[company.id],
+                  currency: e.target.value as Currency,
+                },
+              }))
+            }
+          >
+            {currencyOptions.map((currency) => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
+          </Select>
+        );
+      },
+    },
+    {
+      id: "address",
+      header: "Address",
+      minWidth: "220px",
+      hideOnMobile: true,
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        return isEditing ? (
+          <Input
+            value={current.address ?? ""}
+            onChange={(e) =>
+              setEditForm((prev) => ({
+                ...prev,
+                [company.id]: { ...prev[company.id], address: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          company.address || <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      id: "phone",
+      header: "Phone",
+      minWidth: "140px",
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        return isEditing ? (
+          <Input
+            value={current.phone ?? ""}
+            onChange={(e) =>
+              setEditForm((prev) => ({
+                ...prev,
+                [company.id]: { ...prev[company.id], phone: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          company.phone || <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      id: "faxNumber",
+      header: "Fax",
+      minWidth: "150px",
+      hideOnMobile: true,
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        return isEditing ? (
+          <Input
+            value={current.faxNumber ?? ""}
+            onChange={(e) =>
+              setEditForm((prev) => ({
+                ...prev,
+                [company.id]: { ...prev[company.id], faxNumber: e.target.value },
+              }))
+            }
+          />
+        ) : (
+          company.faxNumber || <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      id: "active",
+      header: "Active",
+      width: "100px",
+      align: "center",
+      cell: (company) => {
+        const isEditing = editingCompanyId === company.id;
+        const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+
+        return isEditing ? (
+          <label className="inline-flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={Boolean(current.isActive)}
+              onChange={(e) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  [company.id]: { ...prev[company.id], isActive: e.target.checked },
+                }))
+              }
+            />
+          </label>
+        ) : company.isActive ? (
+          "Yes"
+        ) : (
+          "No"
+        );
+      },
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -209,7 +470,7 @@ export default function InternalCompaniesPage() {
             <CardTitle className="text-base">Create Company</CardTitle>
           </div>
           <CardDescription>
-            Optionally generate the first admin invite at creation time.
+            Create the tenant and its first admin account directly.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -267,30 +528,57 @@ export default function InternalCompaniesPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="adminInviteEmail">Initial Admin Invite Email</Label>
+              <Label htmlFor="adminFirstName" required>
+                Initial Admin First Name
+              </Label>
               <Input
-                id="adminInviteEmail"
-                type="email"
-                value={createForm.adminInviteEmail}
+                id="adminFirstName"
+                value={createForm.adminFirstName}
                 onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, adminInviteEmail: e.target.value }))
+                  setCreateForm((prev) => ({ ...prev, adminFirstName: e.target.value }))
                 }
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expiresInDays">Invite Expires In (Days)</Label>
+              <Label htmlFor="adminLastName" required>
+                Initial Admin Last Name
+              </Label>
               <Input
-                id="expiresInDays"
-                type="number"
-                min={1}
-                max={30}
-                value={createForm.expiresInDays}
+                id="adminLastName"
+                value={createForm.adminLastName}
                 onChange={(e) =>
-                  setCreateForm((prev) => ({
-                    ...prev,
-                    expiresInDays: Number(e.target.value) || 7,
-                  }))
+                  setCreateForm((prev) => ({ ...prev, adminLastName: e.target.value }))
                 }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="adminEmail" required>
+                Initial Admin Email
+              </Label>
+              <Input
+                id="adminEmail"
+                type="email"
+                value={createForm.adminEmail}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, adminEmail: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="adminPassword" required>
+                Initial Admin Password
+              </Label>
+              <Input
+                id="adminPassword"
+                type="password"
+                value={createForm.adminPassword}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, adminPassword: e.target.value }))
+                }
+                required
               />
             </div>
             <div className="md:col-span-2 flex items-center gap-3">
@@ -302,155 +590,98 @@ export default function InternalCompaniesPage() {
                 )}
                 Create Company
               </Button>
-              {createdInviteUrl && (
-                <Button type="button" variant="secondary" onClick={copyInviteUrl}>
-                  {copied ? (
+            </div>
+            <div className="md:col-span-2 text-xs text-gray-500">
+              Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+            </div>
+          </form>
+          {createdCredentials && (
+            <div className="mt-4 rounded border bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">Login Credentials</div>
+                  <div className="text-xs text-gray-500">
+                    Copy these now if you need to share them with the new company admin.
+                  </div>
+                </div>
+                <Button type="button" variant="secondary" onClick={copyLoginCredentials}>
+                  {copiedCredentials ? (
                     <Check className="mr-2 h-4 w-4" />
                   ) : (
                     <Copy className="mr-2 h-4 w-4" />
                   )}
-                  Copy Admin Invite Link
+                  {copiedCredentials ? "Copied" : "Copy Login Credentials"}
                 </Button>
-              )}
-            </div>
-            {createdInviteUrl && (
-              <div className="md:col-span-2 break-all rounded border bg-gray-50 p-3 text-xs text-gray-700">
-                {createdInviteUrl}
               </div>
-            )}
-          </form>
+              <div className="space-y-1 text-sm text-gray-700">
+                <div><strong>Company:</strong> {createdCredentials.companyName}</div>
+                <div><strong>Admin:</strong> {createdCredentials.adminName}</div>
+                <div><strong>Email:</strong> {createdCredentials.email}</div>
+                <div><strong>Password:</strong> {createdCredentials.password}</div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">All Companies</CardTitle>
-          <CardDescription>Update core tenant details and active status.</CardDescription>
+          <CardDescription>
+            Update tenant details in a table view, or permanently delete a tenant and all associated data.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {companies.map((company) => {
-            const isEditing = editingCompanyId === company.id;
-            const current = (editForm[company.id] || {}) as Partial<CompanyRow>;
+        <CardContent>
+          <DataTable
+            data={companies}
+            columns={columns}
+            getRowKey={(company) => company.id}
+            clickableRows={false}
+            emptyMessage="No companies found."
+            rowActions={(company) => {
+              const isEditing = editingCompanyId === company.id;
+              const isDeleting = deletingCompanyId === company.id;
 
-            return (
-              <div key={company.id} className="rounded border p-4">
-                <div className="mb-3 flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-medium text-gray-900">{company.name}</div>
-                    <div className="text-xs text-gray-500">{company.id}</div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {company._count.users} users • {company._count.clients} clients •{" "}
-                      {company._count.invites} invites
-                    </div>
-                  </div>
-                  {!isEditing ? (
-                    <Button variant="secondary" size="sm" onClick={() => startEdit(company)}>
+              return (
+                <div className="flex items-center justify-center gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button size="sm" onClick={() => handleSave(company.id)}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save
+                      </Button>
+                      <Button variant="secondary" size="sm" onClick={cancelEdit}>
+                        <X className="mr-2 h-4 w-4" />
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => startEdit(company)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </Button>
-                  ) : (
-                    <Button size="sm" onClick={() => handleSave(company.id)}>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save
-                    </Button>
                   )}
+                  <Button
+                    variant="error"
+                    size="sm"
+                    onClick={() => handleDelete(company)}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
+                    Delete
+                  </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <Label>Name</Label>
-                    <Input
-                      value={isEditing ? (current.name ?? "") : company.name}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: { ...prev[company.id], name: e.target.value },
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Currency</Label>
-                    <Select
-                      value={
-                        isEditing
-                          ? ((current.currency as Currency) ?? company.currency)
-                          : company.currency
-                      }
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: {
-                            ...prev[company.id],
-                            currency: e.target.value as Currency,
-                          },
-                        }))
-                      }
-                    >
-                      {currencyOptions.map((currency) => (
-                        <option key={currency} value={currency}>
-                          {currency}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <Label>Address</Label>
-                    <Input
-                      value={isEditing ? (current.address ?? "") : (company.address || "")}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: { ...prev[company.id], address: e.target.value },
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Phone</Label>
-                    <Input
-                      value={isEditing ? (current.phone ?? "") : (company.phone || "")}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: { ...prev[company.id], phone: e.target.value },
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Fax Number</Label>
-                    <Input
-                      value={isEditing ? (current.faxNumber ?? "") : (company.faxNumber || "")}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: { ...prev[company.id], faxNumber: e.target.value },
-                        }))
-                      }
-                    />
-                  </div>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={isEditing ? Boolean(current.isActive) : company.isActive}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          [company.id]: { ...prev[company.id], isActive: e.target.checked },
-                        }))
-                      }
-                    />
-                    Active
-                  </label>
-                </div>
-              </div>
-            );
-          })}
+              );
+            }}
+          />
         </CardContent>
       </Card>
     </div>

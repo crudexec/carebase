@@ -4,6 +4,7 @@ import { UserRole } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { requireInternalAdmin } from "@/lib/internal-admin";
+import { hashPassword, validatePassword } from "@/lib/password";
 
 const createCompanySchema = z.object({
   name: z.string().min(1, "Company name is required"),
@@ -11,8 +12,10 @@ const createCompanySchema = z.object({
   phone: z.string().optional().nullable(),
   faxNumber: z.string().optional().nullable(),
   currency: z.enum(["USD", "GBP", "CAD", "NGN"]).default("USD"),
-  adminInviteEmail: z.string().email().optional().nullable(),
-  expiresInDays: z.number().min(1).max(30).default(7),
+  adminFirstName: z.string().min(1, "Admin first name is required").max(100),
+  adminLastName: z.string().min(1, "Admin last name is required").max(100),
+  adminEmail: z.string().email("A valid admin email is required"),
+  adminPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export async function GET() {
@@ -71,8 +74,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, address, phone, faxNumber, currency, adminInviteEmail, expiresInDays } =
-      validation.data;
+    const {
+      name,
+      address,
+      phone,
+      faxNumber,
+      currency,
+      adminFirstName,
+      adminLastName,
+      adminEmail,
+      adminPassword,
+    } = validation.data;
 
     if (faxNumber && !/^\+?[1-9]\d{1,14}$/.test(faxNumber.trim())) {
       return NextResponse.json(
@@ -81,8 +93,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    const passwordValidation = validatePassword(adminPassword);
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { error: passwordValidation.errors[0] || "Password does not meet requirements" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedAdminEmail = adminEmail.toLowerCase().trim();
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedAdminEmail },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Admin email is already in use" },
+        { status: 400 }
+      );
+    }
+
+    const adminPasswordHash = await hashPassword(adminPassword);
 
     const result = await prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
@@ -95,24 +127,23 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      let invite = null;
-      let inviteUrl: string | null = null;
-
-      if (adminInviteEmail) {
-        invite = await tx.invite.create({
-          data: {
-            email: adminInviteEmail.toLowerCase(),
-            role: UserRole.ADMIN,
-            expiresAt,
-            companyId: company.id,
-            createdById: session.user.id,
-          },
-        });
-
-        const appUrl =
-          process.env.APP_URL || process.env.NEXTAUTH_URL || "https://app.carebasehealth.com";
-        inviteUrl = `${appUrl}/register/invite?token=${invite.token}`;
-      }
+      const adminUser = await tx.user.create({
+        data: {
+          companyId: company.id,
+          email: normalizedAdminEmail,
+          passwordHash: adminPasswordHash,
+          firstName: adminFirstName.trim(),
+          lastName: adminLastName.trim(),
+          role: UserRole.ADMIN,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      });
 
       await tx.auditLog.create({
         data: {
@@ -127,15 +158,27 @@ export async function POST(request: NextRequest) {
             phone: company.phone,
             faxNumber: company.faxNumber,
             currency: company.currency,
-            adminInviteEmail: adminInviteEmail || null,
+            createdByInternalAdminId: session.user.id,
+            adminEmail: normalizedAdminEmail,
+            adminFirstName: adminFirstName.trim(),
+            adminLastName: adminLastName.trim(),
           },
         },
       });
 
-      return { company, invite, inviteUrl };
+      return { company, adminUser };
     });
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(
+      {
+        ...result,
+        credentials: {
+          email: normalizedAdminEmail,
+          password: adminPassword,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating company:", error);
     return NextResponse.json({ error: "Failed to create company" }, { status: 500 });
