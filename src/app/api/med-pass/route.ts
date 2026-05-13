@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { medPassQuerySchema } from "@/lib/emar/validation";
 import {
+  AdministrationResult,
   MedPassDose,
   MedPassResponse,
   MED_PASS_TIME_SLOTS,
@@ -31,14 +32,32 @@ function getTimeSlotForHour(hour: number): (typeof MED_PASS_TIME_SLOTS)[number] 
 }
 
 // Helper to check if a dose is overdue
-function isDoseOverdue(scheduledTime: Date, windowEnd: Date): boolean {
+function isDoseOverdue(_scheduledTime: Date, windowEnd: Date): boolean {
   return new Date() > windowEnd;
 }
 
-// Helper to check if a dose is within its administration window
-function isDoseInWindow(scheduledTime: Date, windowStart: Date, windowEnd: Date): boolean {
-  const now = new Date();
-  return now >= windowStart && now <= windowEnd;
+function getDoseStatus(
+  administration:
+    | {
+        result: AdministrationResult;
+        administeredAt: Date | null;
+      }
+    | undefined,
+  scheduledTime: Date,
+  windowEnd: Date
+): MedPassStatus {
+  if (!administration) {
+    return isDoseOverdue(scheduledTime, windowEnd) ? "MISSED" : "PENDING";
+  }
+
+  if (
+    administration.result === "GIVEN" ||
+    administration.result === "SELF_ADMINISTERED"
+  ) {
+    return "COMPLETED";
+  }
+
+  return "MISSED";
 }
 
 /**
@@ -145,15 +164,7 @@ export async function GET(request: NextRequest) {
           );
         });
 
-        // Determine status
-        let status: MedPassStatus = "PENDING";
-        if (existingAdmin) {
-          status = "COMPLETED";
-        } else if (isDoseOverdue(scheduledTime, windowEnd)) {
-          status = "MISSED";
-        } else if (isDoseInWindow(scheduledTime, windowStart, windowEnd)) {
-          status = "PENDING";
-        }
+        const status = getDoseStatus(existingAdmin, scheduledTime, windowEnd);
 
         const dose: MedPassDose = {
           id: `${medication.id}-${timeStr}`,

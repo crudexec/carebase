@@ -9,6 +9,14 @@ import {
   parseAssessmentTemplateSnapshot,
   snapshotToRenderedTemplate,
 } from "@/lib/assessments/snapshots";
+import {
+  formatAssessmentResponseForPdf,
+  getAssessmentFieldLabel,
+} from "@/lib/assessments/pdf-format";
+import type {
+  PdfAssessmentItem,
+  PdfAssessmentResponse,
+} from "@/lib/assessments/pdf-format";
 
 interface AssessmentItem {
   id: string;
@@ -47,6 +55,8 @@ interface AssessmentResponse {
   itemId: string;
   valueNumber: number | null;
   valueText: string | null;
+  valueBoolean?: boolean | null;
+  valueJson?: unknown;
   notes: string | null;
 }
 
@@ -198,6 +208,8 @@ export async function POST(
       itemId: r.itemId,
       valueNumber: r.valueNumber ? Number(r.valueNumber) : null,
       valueText: r.valueText,
+      valueBoolean: r.valueBoolean,
+      valueJson: r.valueJson,
       notes: r.notes,
     }));
 
@@ -512,10 +524,50 @@ async function generateAssessmentPDF(assessment: {
   }
 
   // Create a map of responses by itemId
-  const responseMap = new Map<string, AssessmentResponse>();
+  const responseMap = new Map<string, PdfAssessmentResponse>();
   for (const response of assessment.responses) {
     responseMap.set(response.itemId, response);
   }
+
+  const renderFieldBox = (item: PdfAssessmentItem, response?: PdfAssessmentResponse) => {
+    const fieldLabel = getAssessmentFieldLabel(item);
+    const valueLines = formatAssessmentResponseForPdf(item, response);
+    const noteLines = response?.notes
+      ? doc.splitTextToSize(`Notes: ${response.notes}`, pageWidth - 2 * margin - 16)
+      : [];
+    const renderedValueLines = valueLines.flatMap((line) =>
+      doc.splitTextToSize(line, pageWidth - 2 * margin - 16)
+    );
+    const lineCount = Math.max(renderedValueLines.length + noteLines.length, 1);
+    const boxHeight = Math.max(14, lineCount * 4 + 8);
+
+    checkPageBreak(boxHeight + 12);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const labelLines = doc.splitTextToSize(fieldLabel, pageWidth - 2 * margin - 5);
+    doc.text(labelLines, margin + 3, y);
+    y += labelLines.length * 4 + 2;
+
+    doc.setDrawColor(215, 220, 227);
+    doc.setFillColor(250, 251, 252);
+    doc.roundedRect(margin + 2, y, pageWidth - 2 * margin - 4, boxHeight, 2, 2, "FD");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(20, 24, 28);
+    doc.text(renderedValueLines.length > 0 ? renderedValueLines : ["Not answered"], margin + 6, y + 5);
+
+    if (noteLines.length > 0) {
+      const notesY = y + 5 + renderedValueLines.length * 4 + 2;
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(98, 108, 123);
+      doc.text(noteLines, margin + 6, notesY);
+    }
+
+    doc.setTextColor(0, 0, 0);
+    y += boxHeight + 6;
+  };
 
   // Form Sections
   for (const section of assessment.template.sections) {
@@ -540,54 +592,7 @@ async function generateAssessmentPDF(assessment: {
 
     // Items/Questions
     for (const item of section.items) {
-      const response = responseMap.get(item.id);
-
-      checkPageBreak(15);
-
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      const questionText = item.question || item.label || item.code;
-      doc.text(`${questionText}${item.isRequired ? " *" : ""}`, margin + 3, y);
-      y += 4;
-
-      doc.setFont("helvetica", "normal");
-
-      // Format value based on response
-      let displayValue = "";
-
-      if (!response || (response.valueNumber === null && response.valueText === null)) {
-        displayValue = "No response";
-        doc.setTextColor(128, 128, 128);
-      } else {
-        doc.setTextColor(0, 0, 0);
-
-        if (response.valueNumber !== null) {
-          displayValue = String(response.valueNumber);
-          // If there are response options, try to find the label
-          const options = item.responseOptions || item.options;
-          if (options && Array.isArray(options)) {
-            const option = options.find((opt: { value: number; label?: string }) =>
-              opt.value === response.valueNumber
-            );
-            if (option && option.label) {
-              displayValue = `${option.label} (${response.valueNumber})`;
-            }
-          }
-        } else if (response.valueText !== null) {
-          displayValue = response.valueText;
-        }
-
-        // Add notes if present
-        if (response.notes) {
-          displayValue += ` [Note: ${response.notes}]`;
-        }
-      }
-
-      // Wrap long text
-      const valueLines = doc.splitTextToSize(displayValue, pageWidth - 2 * margin - 10);
-      doc.text(valueLines, margin + 3, y);
-      doc.setTextColor(0, 0, 0);
-      y += valueLines.length * 4 + 4;
+      renderFieldBox(item, responseMap.get(item.id));
     }
 
     y += 5;

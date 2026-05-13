@@ -7,6 +7,14 @@ import {
   parseAssessmentTemplateSnapshot,
   snapshotToRenderedTemplate,
 } from "@/lib/assessments/snapshots";
+import {
+  formatAssessmentResponseForPdf,
+  getAssessmentFieldLabel,
+} from "@/lib/assessments/pdf-format";
+import type {
+  PdfAssessmentItem,
+  PdfAssessmentResponse,
+} from "@/lib/assessments/pdf-format";
 
 // GET - Export assessment as PDF download
 export async function GET(
@@ -152,8 +160,10 @@ export async function GET(
       },
       responses: assessment.responses.map(r => ({
         itemId: r.itemId,
-        valueNumber: r.valueNumber,
+        valueNumber: r.valueNumber ? Number(r.valueNumber) : null,
         valueText: r.valueText,
+        valueBoolean: r.valueBoolean,
+        valueJson: r.valueJson,
         notes: r.notes,
         item: {
           code: r.item.code,
@@ -219,8 +229,10 @@ async function generateAssessmentPDF(assessment: {
   };
   responses: Array<{
     itemId: string;
-    valueNumber: unknown;
+    valueNumber: number | null;
     valueText: string | null;
+    valueBoolean: boolean | null;
+    valueJson: unknown;
     notes: string | null;
     item: {
       code: string;
@@ -278,14 +290,56 @@ async function generateAssessmentPDF(assessment: {
   };
 
   // Create a response lookup map
-  const responseMap = new Map<string, { valueNumber: unknown; valueText: string | null; notes: string | null }>();
+  const responseMap = new Map<string, PdfAssessmentResponse>();
   for (const response of assessment.responses) {
     responseMap.set(response.itemId, {
       valueNumber: response.valueNumber,
       valueText: response.valueText,
+      valueBoolean: response.valueBoolean,
+      valueJson: response.valueJson,
       notes: response.notes,
     });
   }
+
+  const renderFieldBox = (item: PdfAssessmentItem, response?: PdfAssessmentResponse) => {
+    const fieldLabel = getAssessmentFieldLabel(item);
+    const valueLines = formatAssessmentResponseForPdf(item, response);
+    const noteLines = response?.notes
+      ? doc.splitTextToSize(`Notes: ${response.notes}`, pageWidth - 2 * margin - 16)
+      : [];
+    const renderedValueLines = valueLines.flatMap((line) =>
+      doc.splitTextToSize(line, pageWidth - 2 * margin - 16)
+    );
+    const lineCount = Math.max(renderedValueLines.length + noteLines.length, 1);
+    const boxHeight = Math.max(14, lineCount * 4 + 8);
+
+    checkPageBreak(boxHeight + 12);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const labelLines = doc.splitTextToSize(fieldLabel, pageWidth - 2 * margin - 5);
+    doc.text(labelLines, margin + 3, y);
+    y += labelLines.length * 4 + 2;
+
+    doc.setDrawColor(215, 220, 227);
+    doc.setFillColor(250, 251, 252);
+    doc.roundedRect(margin + 2, y, pageWidth - 2 * margin - 4, boxHeight, 2, 2, "FD");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(20, 24, 28);
+    doc.text(renderedValueLines.length > 0 ? renderedValueLines : ["Not answered"], margin + 6, y + 5);
+
+    if (noteLines.length > 0) {
+      const notesY = y + 5 + renderedValueLines.length * 4 + 2;
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(98, 108, 123);
+      doc.text(noteLines, margin + 6, notesY);
+    }
+
+    doc.setTextColor(0, 0, 0);
+    y += boxHeight + 6;
+  };
 
   // Header - Company Info
   doc.setFontSize(18);
@@ -424,64 +478,7 @@ async function generateAssessmentPDF(assessment: {
     for (const item of section.items) {
       checkPageBreak(20);
 
-      const response = responseMap.get(item.id);
-      const hasResponse = response && (response.valueNumber !== null || response.valueText !== null);
-
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-
-      // Question text
-      const questionText = item.question || item.code;
-      const questionLines = doc.splitTextToSize(`${item.code}: ${questionText}`, pageWidth - 2 * margin - 5);
-      doc.text(questionLines, margin + 3, y);
-      y += questionLines.length * 4;
-
-      // Response value
-      doc.setFont("helvetica", "normal");
-      if (hasResponse) {
-        let responseText = "";
-        if (response.valueNumber !== null) {
-          const numVal = typeof response.valueNumber === "object" && response.valueNumber !== null
-            ? parseFloat(String(response.valueNumber))
-            : response.valueNumber;
-          responseText = `Answer: ${numVal}`;
-        } else if (response.valueText) {
-          // Check if it's a JSON array (multi-select)
-          try {
-            const parsed = JSON.parse(response.valueText);
-            if (Array.isArray(parsed)) {
-              responseText = `Answer: ${parsed.join(", ")}`;
-            } else {
-              responseText = `Answer: ${response.valueText}`;
-            }
-          } catch {
-            responseText = `Answer: ${response.valueText}`;
-          }
-        }
-
-        doc.setTextColor(0, 100, 0);
-        const responseLines = doc.splitTextToSize(responseText, pageWidth - 2 * margin - 10);
-        doc.text(responseLines, margin + 8, y);
-        y += responseLines.length * 4;
-        doc.setTextColor(0, 0, 0);
-
-        // Notes if present
-        if (response.notes) {
-          doc.setFont("helvetica", "italic");
-          doc.setTextColor(100, 100, 100);
-          const notesLines = doc.splitTextToSize(`Notes: ${response.notes}`, pageWidth - 2 * margin - 10);
-          doc.text(notesLines, margin + 8, y);
-          y += notesLines.length * 4;
-          doc.setTextColor(0, 0, 0);
-        }
-      } else {
-        doc.setTextColor(150, 150, 150);
-        doc.text("Answer: Not answered", margin + 8, y);
-        y += 4;
-        doc.setTextColor(0, 0, 0);
-      }
-
-      y += 3;
+      renderFieldBox(item, responseMap.get(item.id));
     }
 
     y += 5;

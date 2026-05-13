@@ -1,10 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import {
   createAdministrationSchema,
   administrationsQuerySchema,
 } from "@/lib/emar/validation";
+
+function parseControlledInventoryUnits(rawAmount: string | null | undefined) {
+  if (!rawAmount) {
+    return null;
+  }
+
+  const match = rawAmount.match(/(\d+(?:\.\d+)?)/);
+  if (!match) {
+    return null;
+  }
+
+  const parsed = Number(match[1]);
+  if (!Number.isFinite(parsed) || parsed <= 0 || !Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
 
 /**
  * GET /api/administrations
@@ -25,6 +44,10 @@ export async function GET(request: NextRequest) {
         { error: "User not associated with a company" },
         { status: 400 }
       );
+    }
+
+    if (!hasPermission(session.user.role, PERMISSIONS.EMAR_VIEW)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Parse query parameters
@@ -139,6 +162,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!hasPermission(session.user.role, PERMISSIONS.EMAR_ADMINISTER)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
     const validatedData = createAdministrationSchema.parse(body);
 
@@ -152,6 +179,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        doseAmount: true,
         controlledSchedule: true,
         requiresWitness: true,
       },
@@ -164,126 +192,238 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const existingAdministration = await prisma.medicationAdministration.findFirst({
+      where: {
+        companyId,
+        medicationId: validatedData.medicationId,
+        clientId: validatedData.clientId,
+        scheduledTime: validatedData.scheduledTime,
+      },
+      select: { id: true },
+    });
+
+    if (existingAdministration) {
+      return NextResponse.json(
+        { error: "This dose has already been documented" },
+        { status: 409 }
+      );
+    }
+
+    let witnessSignature = validatedData.witnessSignature || null;
+    const witnessId = validatedData.witnessId || null;
+
     // Check if witness is required for controlled substances
     if (
       medication.controlledSchedule !== "NOT_CONTROLLED" &&
       medication.requiresWitness &&
       validatedData.result === "GIVEN" &&
-      !validatedData.witnessId
+      !witnessId
     ) {
       return NextResponse.json(
-        { error: "Witness signature required for controlled substances" },
+        { error: "A witness is required for controlled substances" },
         { status: 400 }
       );
     }
 
-    // Create the administration record
-    const administration = await prisma.medicationAdministration.create({
-      data: {
-        medicationId: validatedData.medicationId,
-        clientId: validatedData.clientId,
-        companyId,
-        scheduledDoseId: validatedData.scheduledDoseId || null,
-        shiftId: validatedData.shiftId || null,
-        scheduledTime: validatedData.scheduledTime,
-        administeredAt:
-          validatedData.result === "GIVEN"
-            ? validatedData.administeredAt || new Date()
-            : null,
-        administeredById:
-          validatedData.result === "GIVEN" ? userId : null,
-        result: validatedData.result,
-        resultNotes: validatedData.resultNotes || null,
-        amountGiven: validatedData.amountGiven || null,
-        witnessId: validatedData.witnessId || null,
-        witnessSignature: validatedData.witnessSignature || null,
-        administrationSite: validatedData.administrationSite || null,
-        ...(validatedData.vitalsBeforeAdmin && {
-          vitalsBeforeAdmin: validatedData.vitalsBeforeAdmin,
-        }),
-        prnAssessment: validatedData.prnAssessment || null,
-        prnFollowupTime: validatedData.prnFollowupTime || null,
-      },
-      include: {
-        medication: {
-          select: {
-            id: true,
-            name: true,
-            strength: true,
-            form: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        administeredBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
+    if (witnessId) {
+      if (witnessId === userId) {
+        return NextResponse.json(
+          { error: "You cannot witness your own administration" },
+          { status: 400 }
+        );
+      }
 
-    // Update scheduled dose status if applicable
-    if (validatedData.scheduledDoseId) {
-      await prisma.scheduledDose.update({
-        where: { id: validatedData.scheduledDoseId },
-        data: {
-          status:
-            validatedData.result === "GIVEN"
-              ? "COMPLETED"
-              : validatedData.result === "REFUSED" ||
-                validatedData.result === "NOT_AVAILABLE"
-              ? "MISSED"
-              : "PENDING",
+      const witness = await prisma.user.findFirst({
+        where: {
+          id: witnessId,
+          companyId,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          role: true,
         },
       });
+
+      if (!witness) {
+        return NextResponse.json(
+          { error: "Witness not found" },
+          { status: 404 }
+        );
+      }
+
+      if (!hasPermission(witness.role, PERMISSIONS.EMAR_NARCOTIC_WITNESS)) {
+        return NextResponse.json(
+          { error: "Selected witness is not authorized for narcotic witnessing" },
+          { status: 400 }
+        );
+      }
+
+      if (!witnessSignature) {
+        witnessSignature = `${witness.firstName} ${witness.lastName}`;
+      }
     }
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        companyId,
-        action: "MEDICATION_ADMINISTERED",
-        entityType: "MedicationAdministration",
-        entityId: administration.id,
-        changes: {
-          medicationName: medication.name,
-          result: validatedData.result,
-          scheduledTime: validatedData.scheduledTime,
-          administeredAt: administration.administeredAt,
-        },
-      },
-    });
-
-    // If controlled substance was administered, update inventory
-    if (
+    const isControlledAdministration =
       medication.controlledSchedule !== "NOT_CONTROLLED" &&
-      validatedData.result === "GIVEN"
-    ) {
-      const inventory = await prisma.medicationInventory.findFirst({
-        where: {
-          medicationId: medication.id,
+      validatedData.result === "GIVEN";
+
+    let controlledInventoryUnits: number | null = null;
+
+    if (isControlledAdministration) {
+      controlledInventoryUnits = parseControlledInventoryUnits(
+        validatedData.amountGiven || medication.doseAmount
+      );
+
+      if (!controlledInventoryUnits) {
+        return NextResponse.json(
+          {
+            error:
+              "Controlled substance administrations require a whole-number amount that can be deducted from inventory",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    const administration = await prisma.$transaction(async (tx) => {
+      if (isControlledAdministration) {
+        const inventory = await tx.medicationInventory.findFirst({
+          where: {
+            medicationId: medication.id,
+            companyId,
+          },
+          select: {
+            id: true,
+            quantityOnHand: true,
+          },
+        });
+
+        if (!inventory) {
+          throw new Error(
+            "Controlled substance inventory record not found for this medication"
+          );
+        }
+
+        if (inventory.quantityOnHand < (controlledInventoryUnits || 0)) {
+          throw new Error("Insufficient controlled substance inventory on hand");
+        }
+      }
+
+      const createdAdministration = await tx.medicationAdministration.create({
+        data: {
+          medicationId: validatedData.medicationId,
+          clientId: validatedData.clientId,
           companyId,
+          scheduledDoseId: validatedData.scheduledDoseId || null,
+          shiftId: validatedData.shiftId || null,
+          scheduledTime: validatedData.scheduledTime,
+          administeredAt:
+            validatedData.result === "GIVEN"
+              ? validatedData.administeredAt || new Date()
+              : null,
+          administeredById:
+            validatedData.result === "GIVEN" ? userId : null,
+          result: validatedData.result,
+          resultNotes: validatedData.resultNotes || null,
+          amountGiven: validatedData.amountGiven || null,
+          witnessId,
+          witnessSignature,
+          witnessedAt: witnessId ? new Date() : null,
+          administrationSite: validatedData.administrationSite || null,
+          ...(validatedData.vitalsBeforeAdmin && {
+            vitalsBeforeAdmin: validatedData.vitalsBeforeAdmin,
+          }),
+          prnAssessment: validatedData.prnAssessment || null,
+          prnFollowupTime: validatedData.prnFollowupTime || null,
+        },
+        include: {
+          medication: {
+            select: {
+              id: true,
+              name: true,
+              strength: true,
+              form: true,
+            },
+          },
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          administeredBy: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
         },
       });
 
-      if (inventory) {
-        await prisma.medicationInventory.update({
-          where: { id: inventory.id },
+      if (validatedData.scheduledDoseId) {
+        await tx.scheduledDose.update({
+          where: { id: validatedData.scheduledDoseId },
           data: {
-            quantityOnHand: { decrement: 1 },
+            status:
+              validatedData.result === "GIVEN"
+                ? "COMPLETED"
+                : validatedData.result === "REFUSED" ||
+                  validatedData.result === "NOT_AVAILABLE"
+                ? "MISSED"
+                : "PENDING",
           },
         });
       }
-    }
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          companyId,
+          action: "MEDICATION_ADMINISTERED",
+          entityType: "MedicationAdministration",
+          entityId: createdAdministration.id,
+          changes: {
+            medicationName: medication.name,
+            result: validatedData.result,
+            scheduledTime: validatedData.scheduledTime,
+            administeredAt: createdAdministration.administeredAt,
+            controlledInventoryUnits,
+          },
+        },
+      });
+
+      if (isControlledAdministration) {
+        const inventory = await tx.medicationInventory.findFirst({
+          where: {
+            medicationId: medication.id,
+            companyId,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!inventory) {
+          throw new Error(
+            "Controlled substance inventory record not found for this medication"
+          );
+        }
+
+        await tx.medicationInventory.update({
+          where: { id: inventory.id },
+          data: {
+            quantityOnHand: { decrement: controlledInventoryUnits || 0 },
+          },
+        });
+      }
+
+      return createdAdministration;
+    });
 
     return NextResponse.json(administration, { status: 201 });
   } catch (error) {

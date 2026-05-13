@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
+  AdministrationResult,
   MedPassDose,
   MED_PASS_TIME_SLOTS,
 } from "@/lib/emar/types";
@@ -25,6 +26,29 @@ function getTimeSlotForHour(hour: number): (typeof MED_PASS_TIME_SLOTS)[number] 
     return MED_PASS_TIME_SLOTS[1]; // Afternoon
   }
   return MED_PASS_TIME_SLOTS[2]; // Evening
+}
+
+function getDoseStatus(
+  administration:
+    | {
+        result: AdministrationResult;
+        administeredAt: Date | null;
+      }
+    | undefined,
+  windowEnd: Date
+): MedPassStatus {
+  if (!administration) {
+    return new Date() > windowEnd ? "MISSED" : "PENDING";
+  }
+
+  if (
+    administration.result === "GIVEN" ||
+    administration.result === "SELF_ADMINISTERED"
+  ) {
+    return "COMPLETED";
+  }
+
+  return "MISSED";
 }
 
 interface RouteContext {
@@ -140,13 +164,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           );
         });
 
-        // Determine status
-        let status: MedPassStatus = "PENDING";
-        if (existingAdmin) {
-          status = "COMPLETED";
-        } else if (new Date() > windowEnd) {
-          status = "MISSED";
-        }
+        const status = getDoseStatus(existingAdmin, windowEnd);
 
         allDoses.push({
           id: `${medication.id}-${timeStr}`,

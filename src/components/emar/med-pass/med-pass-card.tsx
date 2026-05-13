@@ -23,6 +23,11 @@ export function MedPassCard({ dose, onAdminister }: MedPassCardProps) {
   const isCompleted = dose.status === "COMPLETED";
   const isMissed = dose.status === "MISSED";
   const isPending = dose.status === "PENDING";
+  const isDocumentedException =
+    isMissed &&
+    !!dose.administration &&
+    dose.administration.result !== "GIVEN" &&
+    dose.administration.result !== "SELF_ADMINISTERED";
 
   // Check if within administration window
   const now = new Date();
@@ -99,10 +104,17 @@ export function MedPassCard({ dose, onAdminister }: MedPassCardProps) {
               </Badge>
             )}
 
-            {isMissed && (
+            {isMissed && !isDocumentedException && (
               <Badge variant="error">
                 <X className="h-3 w-3 mr-1" />
                 Missed
+              </Badge>
+            )}
+
+            {isDocumentedException && dose.administration && (
+              <Badge variant="error">
+                <X className="h-3 w-3 mr-1" />
+                {ADMINISTRATION_RESULT_LABELS[dose.administration.result]}
               </Badge>
             )}
 
@@ -121,7 +133,7 @@ export function MedPassCard({ dose, onAdminister }: MedPassCardProps) {
             </p>
 
             {/* Action Button */}
-            {!isCompleted && (
+            {!isCompleted && !isDocumentedException && (
               <Button
                 variant={isMissed ? "error" : "default"}
                 onClick={() => onAdminister(dose)}

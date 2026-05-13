@@ -21,6 +21,12 @@ interface AdministrationModalProps {
   onSuccess: () => void;
 }
 
+interface WitnessOption {
+  id: string;
+  fullName: string;
+  role: string;
+}
+
 export function AdministrationModal({
   dose,
   isOpen,
@@ -35,7 +41,10 @@ export function AdministrationModal({
   const [resultNotes, setResultNotes] = React.useState("");
   const [amountGiven, setAmountGiven] = React.useState("");
   const [administrationSite, setAdministrationSite] = React.useState("");
+  const [witnessId, setWitnessId] = React.useState("");
   const [witnessSignature, setWitnessSignature] = React.useState("");
+  const [availableWitnesses, setAvailableWitnesses] = React.useState<WitnessOption[]>([]);
+  const [isLoadingWitnesses, setIsLoadingWitnesses] = React.useState(false);
 
   // Vitals
   const [bpSystolic, setBpSystolic] = React.useState("");
@@ -56,7 +65,9 @@ export function AdministrationModal({
       setResultNotes("");
       setAmountGiven(dose.medication.doseAmount);
       setAdministrationSite("");
+      setWitnessId("");
       setWitnessSignature("");
+      setAvailableWitnesses([]);
       setBpSystolic("");
       setBpDiastolic("");
       setPulse("");
@@ -66,6 +77,44 @@ export function AdministrationModal({
       setShowVitals(false);
     }
   }, [isOpen, dose]);
+
+  React.useEffect(() => {
+    const fetchWitnesses = async () => {
+      if (!isOpen || !dose?.medication.requiresWitness) {
+        return;
+      }
+
+      setIsLoadingWitnesses(true);
+      try {
+        const response = await fetch("/api/emar/witnesses");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to load witnesses");
+        }
+
+        setAvailableWitnesses(data.witnesses || []);
+      } catch (error) {
+        console.error("Error fetching witnesses:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to load witnesses"
+        );
+      } finally {
+        setIsLoadingWitnesses(false);
+      }
+    };
+
+    fetchWitnesses();
+  }, [isOpen, dose]);
+
+  const handleClose = React.useCallback(() => {
+    if (isSubmitting) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 150);
+  }, [isSubmitting, onClose]);
 
   // Handle escape key
   React.useEffect(() => {
@@ -84,16 +133,7 @@ export function AdministrationModal({
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
     };
-  }, [isOpen, isSubmitting]);
-
-  const handleClose = () => {
-    if (isSubmitting) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 150);
-  };
+  }, [handleClose, isOpen, isSubmitting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,8 +141,13 @@ export function AdministrationModal({
     if (!dose) return;
 
     // Validate witness for controlled substances
-    if (requiresWitness && !witnessSignature) {
-      toast.error("Please provide witness signature for controlled substances");
+    if (requiresWitness && !witnessId) {
+      toast.error("Please select a witness for this controlled substance");
+      return;
+    }
+
+    if (requiresWitness && !witnessSignature.trim()) {
+      toast.error("Please record witness attestation for this controlled substance");
       return;
     }
 
@@ -140,6 +185,7 @@ export function AdministrationModal({
           resultNotes: resultNotes || undefined,
           amountGiven: amountGiven || undefined,
           administrationSite: administrationSite || undefined,
+          witnessId: witnessId || undefined,
           witnessSignature: witnessSignature || undefined,
           vitalsBeforeAdmin,
         }),
@@ -397,12 +443,32 @@ export function AdministrationModal({
                   This is a controlled substance and requires witness verification.
                 </p>
                 <div>
-                  <Label htmlFor="witnessSignature">Witness Name/Signature *</Label>
+                  <Label htmlFor="witnessId">Witness *</Label>
+                  <Select
+                    id="witnessId"
+                    value={witnessId}
+                    onChange={(e) => setWitnessId(e.target.value)}
+                    disabled={isLoadingWitnesses}
+                  >
+                    <option value="">
+                      {isLoadingWitnesses
+                        ? "Loading witnesses..."
+                        : "Select a witness..."}
+                    </option>
+                    {availableWitnesses.map((witness) => (
+                      <option key={witness.id} value={witness.id}>
+                        {witness.fullName} ({witness.role})
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="witnessSignature">Witness Attestation *</Label>
                   <Input
                     id="witnessSignature"
                     value={witnessSignature}
                     onChange={(e) => setWitnessSignature(e.target.value)}
-                    placeholder="Enter witness name"
+                    placeholder="Enter witness initials or signature note"
                   />
                   <p className="text-xs text-orange-600 mt-1">
                     The witness verifies the medication administration
