@@ -6,6 +6,7 @@ import {
   Input,
   DateInput,
   Label,
+  SignaturePad,
   Textarea,
   Select,
 } from "@/components/ui";
@@ -719,11 +720,37 @@ export function AssessmentRenderer({
         );
 
       case "SIGNATURE":
+        if (isReadOnly) {
+          return typeof value === "string" && value ? (
+            <div className="rounded-lg border border-border bg-background p-4">
+              <img
+                src={value}
+                alt="Captured signature"
+                className="max-h-32 rounded border border-border bg-white"
+              />
+              <p className="mt-2 text-sm text-foreground-secondary">
+                Signature captured
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-6 text-center">
+              <Pen className="mx-auto mb-2 h-8 w-8 text-foreground-tertiary" />
+              <p className="text-sm text-foreground-secondary">
+                No signature captured
+              </p>
+            </div>
+          );
+        }
+
         return (
-          <div className="rounded-lg border border-dashed border-border p-6 text-center">
-            <Pen className="mx-auto h-8 w-8 text-foreground-tertiary mb-2" />
+          <div className="space-y-3">
+            <SignaturePad
+              value={typeof value === "string" ? value : undefined}
+              onChange={(signature) => onResponseChange?.(item.id, signature || "")}
+              height={120}
+            />
             <p className="text-sm text-foreground-secondary">
-              {isReadOnly ? "Signature captured" : "Tap to add signature"}
+              Tap or draw in the signature area above.
             </p>
           </div>
         );
