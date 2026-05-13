@@ -3,10 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
-  Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui";
@@ -21,6 +19,7 @@ import { SponsorDashboard } from "@/components/dashboard/sponsor-dashboard";
 import { ShiftsWidget } from "@/components/dashboard/shifts-widget";
 import { CredentialAlertsWidget } from "@/components/dashboard/credential-alerts-widget";
 import { MissingVisitNotesWidget } from "@/components/dashboard/missing-visit-notes-widget";
+import { ClientLookupWidget } from "@/components/dashboard/client-lookup-widget";
 import {
   ClipboardList,
   FilePenLine,
@@ -38,48 +37,50 @@ export default async function DashboardPage() {
   const { user } = session;
   const userRole = user.role as string;
   const roleLabel = ROLE_LABELS[user.role];
+  const canViewClients =
+    user.role === "SPONSOR" ||
+    hasAnyPermission(user.role, [
+      PERMISSIONS.USER_VIEW,
+      PERMISSIONS.SCHEDULING_VIEW,
+      PERMISSIONS.ONBOARDING_VIEW,
+    ]);
   const quickActions = [
     hasAnyPermission(user.role, [
       PERMISSIONS.ASSESSMENT_CREATE,
-      PERMISSIONS.ASSESSMENT_EDIT,
-      PERMISSIONS.ASSESSMENT_FULL,
+    PERMISSIONS.ASSESSMENT_EDIT,
+    PERMISSIONS.ASSESSMENT_FULL,
     ]) && {
-      title: "New Assessment",
-      description: "Start a fresh assessment from your active templates.",
+      title: "Assessment",
       href: "/assessments/new",
       icon: ClipboardList,
     },
     hasAnyPermission(user.role, [
-      PERMISSIONS.CARE_PLAN_MANAGE,
-      PERMISSIONS.CARE_PLAN_FULL,
+    PERMISSIONS.CARE_PLAN_MANAGE,
+    PERMISSIONS.CARE_PLAN_FULL,
     ]) && {
-      title: "New Care Plan",
-      description: "Choose a client and open a new plan of care.",
+      title: "Care Plan",
       href: "/care-plans",
       icon: FilePenLine,
     },
     hasAnyPermission(user.role, [
-      PERMISSIONS.VISIT_NOTE_CREATE,
-      PERMISSIONS.VISIT_NOTE_MANAGE,
-      PERMISSIONS.VISIT_NOTE_FULL,
+    PERMISSIONS.VISIT_NOTE_CREATE,
+    PERMISSIONS.VISIT_NOTE_MANAGE,
+    PERMISSIONS.VISIT_NOTE_FULL,
     ]) && {
-      title: "New Visit Note",
-      description: "Document a visit note without leaving the dashboard.",
+      title: "Visit Note",
       href: "/visit-notes/new",
       icon: FileText,
     },
     hasAnyPermission(user.role, [
-      PERMISSIONS.INCIDENT_CREATE,
-      PERMISSIONS.INCIDENT_FULL,
+    PERMISSIONS.INCIDENT_CREATE,
+    PERMISSIONS.INCIDENT_FULL,
     ]) && {
-      title: "New Incident Report",
-      description: "Capture a new incident report and route it for review.",
+      title: "Incident",
       href: "/incidents/new",
       icon: PlusCircle,
     },
   ].filter(Boolean) as Array<{
     title: string;
-    description: string;
     href: string;
     icon: typeof ClipboardList;
   }>;
@@ -114,48 +115,38 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {quickActions.length > 0 && (
-        <Card className="border-border/80">
-          <CardHeader className="pb-3">
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Jump straight into the most common documentation workflows.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
+      {(quickActions.length > 0 || canViewClients) && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {quickActions.length > 0 && (
+            <Card className="border-border/80">
+              <CardHeader className="pb-2">
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  {quickActions.map((action) => {
+                    const Icon = action.icon;
 
-                return (
-                  <Card
-                    key={action.title}
-                    className="border-border/70 bg-background-secondary/40 shadow-none"
-                  >
-                    <CardContent className="flex h-full flex-col gap-4 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-md bg-primary/10 p-2 text-primary">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-semibold text-foreground">
-                            {action.title}
-                          </h3>
-                          <p className="text-sm text-foreground-secondary">
-                            {action.description}
-                          </p>
-                        </div>
-                      </div>
-                      <Button asChild className="w-full justify-center">
-                        <Link href={action.href}>{action.title}</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                    return (
+                      <Link
+                        key={action.title}
+                        href={action.href}
+                        className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-lg border border-border/70 bg-background-secondary/40 px-4 py-5 text-center transition-colors hover:bg-background-secondary"
+                      >
+                        <Icon className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-medium text-foreground">
+                          {action.title}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {canViewClients && <ClientLookupWidget />}
+        </div>
       )}
 
       {/* Carer Widgets - Check-in widget and combined shifts widget */}
