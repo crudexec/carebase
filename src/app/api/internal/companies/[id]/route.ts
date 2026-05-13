@@ -86,6 +86,8 @@ const COMPANY_SCOPED_MODELS = [
   "GoalHierarchy",
 ] as const;
 
+const PURGE_PASSES = 4;
+
 function toDelegateName(modelName: string) {
   return modelName.charAt(0).toLowerCase() + modelName.slice(1);
 }
@@ -110,7 +112,7 @@ async function purgeCompanyData(
     }
   >;
 
-  for (let pass = 0; pass < delegates.length; pass += 1) {
+  for (let pass = 0; pass < PURGE_PASSES; pass += 1) {
     let deletedInPass = 0;
 
     for (const delegateName of delegates) {
@@ -137,7 +139,19 @@ async function purgeCompanyData(
       break;
     }
   }
+}
 
+async function collectRemainingCompanyData(
+  tx: Prisma.TransactionClient,
+  companyId: string
+) {
+  const delegates = COMPANY_SCOPED_MODELS.map(toDelegateName);
+  const prismaTx = tx as unknown as Record<
+    string,
+    {
+      count?: (args: { where: { companyId: string } }) => Promise<number>;
+    }
+  >;
   const leftovers: string[] = [];
 
   for (const delegateName of delegates) {
@@ -157,10 +171,10 @@ async function purgeCompanyData(
   }
 
   if (leftovers.length > 0) {
-    throw new Error(
-      `Unable to fully purge company data. Remaining records: ${leftovers.join(", ")}`
-    );
+    return leftovers;
   }
+
+  return [];
 }
 
 export async function PATCH(
@@ -282,12 +296,35 @@ export async function DELETE(
       );
     }
 
-    await prisma.$transaction(async (tx) => {
-      await purgeCompanyData(tx, id);
-      await tx.company.delete({
-        where: { id },
-      });
-    });
+    await prisma.$transaction(
+      async (tx) => {
+        await purgeCompanyData(tx, id);
+
+        try {
+          await tx.company.delete({
+            where: { id },
+          });
+        } catch (error) {
+          if (!isForeignKeyConstraintError(error)) {
+            throw error;
+          }
+
+          const leftovers = await collectRemainingCompanyData(tx, id);
+
+          if (leftovers.length > 0) {
+            throw new Error(
+              `Unable to fully purge company data. Remaining records: ${leftovers.join(", ")}`
+            );
+          }
+
+          throw error;
+        }
+      },
+      {
+        maxWait: 10_000,
+        timeout: 60_000,
+      }
+    );
 
     return NextResponse.json({
       success: true,

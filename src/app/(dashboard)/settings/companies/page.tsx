@@ -58,6 +58,7 @@ export default function InternalCompaniesPage() {
   const { data: session, status } = useSession();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -122,6 +123,19 @@ export default function InternalCompaniesPage() {
     });
   };
 
+  const openCreateModal = () => {
+    setError(null);
+    setSuccess(null);
+    setCreatedCredentials(null);
+    setCopiedCredentials(false);
+    setIsCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    if (isCreating) return;
+    setIsCreateModalOpen(false);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -159,6 +173,7 @@ export default function InternalCompaniesPage() {
         adminEmail: "",
         adminPassword: "",
       });
+      setCopiedCredentials(false);
       fetchCompanies();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create company");
@@ -453,176 +468,21 @@ export default function InternalCompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold text-gray-900">Companies</h1>
-        <p className="text-sm text-gray-500">
-          Internal admin tools for creating and managing tenant companies.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">Companies</h1>
+          <p className="text-sm text-gray-500">
+            Internal admin tools for creating and managing tenant companies.
+          </p>
+        </div>
+        <Button onClick={openCreateModal}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Company
+        </Button>
       </div>
 
       {error && <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {success && <div className="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Plus className="h-4 w-4 text-primary" />
-            <CardTitle className="text-base">Create Company</CardTitle>
-          </div>
-          <CardDescription>
-            Create the tenant and its first admin account directly.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name" required>
-                Company Name
-              </Label>
-              <Input
-                id="name"
-                value={createForm.name}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
-              <Select
-                id="currency"
-                value={createForm.currency}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, currency: e.target.value as Currency }))
-                }
-              >
-                {currencyOptions.map((currency) => (
-                  <option key={currency} value={currency}>
-                    {currency}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={createForm.address}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={createForm.phone}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="faxNumber">Fax Number</Label>
-              <Input
-                id="faxNumber"
-                placeholder="+12025551234"
-                value={createForm.faxNumber}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, faxNumber: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="adminFirstName" required>
-                Initial Admin First Name
-              </Label>
-              <Input
-                id="adminFirstName"
-                value={createForm.adminFirstName}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, adminFirstName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="adminLastName" required>
-                Initial Admin Last Name
-              </Label>
-              <Input
-                id="adminLastName"
-                value={createForm.adminLastName}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, adminLastName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="adminEmail" required>
-                Initial Admin Email
-              </Label>
-              <Input
-                id="adminEmail"
-                type="email"
-                value={createForm.adminEmail}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, adminEmail: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="adminPassword" required>
-                Initial Admin Password
-              </Label>
-              <Input
-                id="adminPassword"
-                type="password"
-                value={createForm.adminPassword}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, adminPassword: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="md:col-span-2 flex items-center gap-3">
-              <Button type="submit" disabled={isCreating}>
-                {isCreating ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Building2 className="mr-2 h-4 w-4" />
-                )}
-                Create Company
-              </Button>
-            </div>
-            <div className="md:col-span-2 text-xs text-gray-500">
-              Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
-            </div>
-          </form>
-          {createdCredentials && (
-            <div className="mt-4 rounded border bg-gray-50 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Login Credentials</div>
-                  <div className="text-xs text-gray-500">
-                    Copy these now if you need to share them with the new company admin.
-                  </div>
-                </div>
-                <Button type="button" variant="secondary" onClick={copyLoginCredentials}>
-                  {copiedCredentials ? (
-                    <Check className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Copy className="mr-2 h-4 w-4" />
-                  )}
-                  {copiedCredentials ? "Copied" : "Copy Login Credentials"}
-                </Button>
-              </div>
-              <div className="space-y-1 text-sm text-gray-700">
-                <div><strong>Company:</strong> {createdCredentials.companyName}</div>
-                <div><strong>Admin:</strong> {createdCredentials.adminName}</div>
-                <div><strong>Email:</strong> {createdCredentials.email}</div>
-                <div><strong>Password:</strong> {createdCredentials.password}</div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -684,6 +544,187 @@ export default function InternalCompaniesPage() {
           />
         </CardContent>
       </Card>
+
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={closeCreateModal}
+          />
+          <div className="relative z-10 w-full max-w-3xl rounded-xl bg-background shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-4 border-b p-6">
+              <div>
+                <h2 className="text-lg font-semibold">Create Company</h2>
+                <p className="text-sm text-gray-500">
+                  Create the tenant and its first admin account directly.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeCreateModal}
+                disabled={isCreating}
+                className="rounded-lg p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="name" required>
+                    Company Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select
+                    id="currency"
+                    value={createForm.currency}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, currency: e.target.value as Currency }))
+                    }
+                  >
+                    {currencyOptions.map((currency) => (
+                      <option key={currency} value={currency}>
+                        {currency}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={createForm.address}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={createForm.phone}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="faxNumber">Fax Number</Label>
+                  <Input
+                    id="faxNumber"
+                    placeholder="+12025551234"
+                    value={createForm.faxNumber}
+                    onChange={(e) => setCreateForm((prev) => ({ ...prev, faxNumber: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="adminFirstName" required>
+                    Initial Admin First Name
+                  </Label>
+                  <Input
+                    id="adminFirstName"
+                    value={createForm.adminFirstName}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, adminFirstName: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="adminLastName" required>
+                    Initial Admin Last Name
+                  </Label>
+                  <Input
+                    id="adminLastName"
+                    value={createForm.adminLastName}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, adminLastName: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="adminEmail" required>
+                    Initial Admin Email
+                  </Label>
+                  <Input
+                    id="adminEmail"
+                    type="email"
+                    value={createForm.adminEmail}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, adminEmail: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="adminPassword" required>
+                    Initial Admin Password
+                  </Label>
+                  <Input
+                    id="adminPassword"
+                    type="password"
+                    value={createForm.adminPassword}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, adminPassword: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2 text-xs text-gray-500">
+                  Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                </div>
+                <div className="md:col-span-2 flex items-center gap-3">
+                  <Button type="button" variant="secondary" onClick={closeCreateModal} disabled={isCreating}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isCreating}>
+                    {isCreating ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Building2 className="mr-2 h-4 w-4" />
+                    )}
+                    Create Company
+                  </Button>
+                </div>
+              </form>
+
+              {createdCredentials && (
+                <div className="mt-4 rounded border bg-gray-50 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Login Credentials</div>
+                      <div className="text-xs text-gray-500">
+                        Copy these now if you need to share them with the new company admin.
+                      </div>
+                    </div>
+                    <Button type="button" variant="secondary" onClick={copyLoginCredentials}>
+                      {copiedCredentials ? (
+                        <Check className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Copy className="mr-2 h-4 w-4" />
+                      )}
+                      {copiedCredentials ? "Copied" : "Copy Login Credentials"}
+                    </Button>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-700">
+                    <div><strong>Company:</strong> {createdCredentials.companyName}</div>
+                    <div><strong>Admin:</strong> {createdCredentials.adminName}</div>
+                    <div><strong>Email:</strong> {createdCredentials.email}</div>
+                    <div><strong>Password:</strong> {createdCredentials.password}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
