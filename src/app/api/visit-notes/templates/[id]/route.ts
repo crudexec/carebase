@@ -8,6 +8,7 @@ import {
   updateFormTemplateSchema,
   validateFieldConfig,
 } from "@/lib/visit-notes/validation";
+import { clientFormTemplateSettingsSchema } from "@/lib/client-forms/validation";
 
 // Helper to convert FieldConfig to Prisma JSON input
 function configToPrisma(
@@ -17,6 +18,18 @@ function configToPrisma(
     return Prisma.DbNull;
   }
   return config as Prisma.InputJsonValue;
+}
+
+function settingsToPrisma(
+  settings: Record<string, unknown> | null | undefined
+): Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue | undefined {
+  if (settings === undefined) {
+    return undefined;
+  }
+  if (settings === null) {
+    return Prisma.DbNull;
+  }
+  return settings as Prisma.InputJsonValue;
 }
 
 // GET /api/visit-notes/templates/[id] - Get template details
@@ -34,6 +47,8 @@ export async function GET(
     const canView =
       hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_VIEW) ||
       hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE) ||
+      hasPermission(user.role, PERMISSIONS.CLIENT_FORM_TEMPLATE_VIEW) ||
+      hasPermission(user.role, PERMISSIONS.CLIENT_FORM_TEMPLATE_MANAGE) ||
       user.role === "CARER";
 
     if (!canView) {
@@ -89,10 +104,6 @@ export async function PATCH(
     }
 
     // Check permissions
-    if (!hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const { id } = await params;
     const body = await request.json();
     const validation = updateFormTemplateSchema.safeParse(body);
@@ -119,7 +130,30 @@ export async function PATCH(
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
 
-    const { name, description, status, isEnabled, sections } = validation.data;
+    const canManageGeneric = hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE);
+    const canManageClientForms = hasPermission(
+      user.role,
+      PERMISSIONS.CLIENT_FORM_TEMPLATE_MANAGE
+    );
+
+    if (
+      (existingTemplate.type === "CLIENT_FORM" && !canManageClientForms && !canManageGeneric) ||
+      (existingTemplate.type !== "CLIENT_FORM" && !canManageGeneric)
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { name, description, status, isEnabled, settings, sections } = validation.data;
+
+    if (existingTemplate.type === "CLIENT_FORM" && settings !== undefined) {
+      const settingsValidation = clientFormTemplateSettingsSchema.safeParse(settings);
+      if (!settingsValidation.success) {
+        return NextResponse.json(
+          { error: "Invalid client form settings", details: settingsValidation.error.issues },
+          { status: 400 }
+        );
+      }
+    }
 
     // If sections are provided, validate field configs
     if (sections) {
@@ -199,6 +233,7 @@ export async function PATCH(
           ...(description !== undefined && { description }),
           ...(status !== undefined && { status }),
           ...(isEnabled !== undefined && { isEnabled }),
+          ...(settings !== undefined && { settings: settingsToPrisma(settings) }),
           ...(shouldIncrementVersion && { version: existingTemplate.version + 1 }),
         },
         include: {
@@ -235,12 +270,14 @@ export async function PATCH(
             status: existingTemplate.status,
             version: existingTemplate.version,
             isEnabled: existingTemplate.isEnabled,
+            settings: existingTemplate.settings,
           },
           updated: {
             name: template.name,
             status: template.status,
             version: template.version,
             isEnabled: template.isEnabled,
+            settings: template.settings,
             sectionsUpdated: sections !== undefined,
           },
         },
@@ -269,10 +306,6 @@ export async function DELETE(
     }
 
     // Check permissions
-    if (!hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const { id } = await params;
 
     const existingTemplate = await prisma.formTemplate.findFirst({
@@ -281,6 +314,19 @@ export async function DELETE(
 
     if (!existingTemplate) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
+    }
+
+    const canManageGeneric = hasPermission(user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE);
+    const canManageClientForms = hasPermission(
+      user.role,
+      PERMISSIONS.CLIENT_FORM_TEMPLATE_MANAGE
+    );
+
+    if (
+      (existingTemplate.type === "CLIENT_FORM" && !canManageClientForms && !canManageGeneric) ||
+      (existingTemplate.type !== "CLIENT_FORM" && !canManageGeneric)
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Check if template has visit notes

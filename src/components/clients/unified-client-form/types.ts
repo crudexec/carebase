@@ -3,6 +3,7 @@
 export interface BasicInfoData {
   firstName: string;
   lastName: string;
+  status: "PROSPECT" | "ONBOARDING" | "ACTIVE" | "INACTIVE";
   dateOfBirth: string;
   phone: string;
   address: string;
@@ -106,10 +107,18 @@ export const URGENCY_OPTIONS = [
   { value: "STAT", label: "STAT (Immediate)" },
 ] as const;
 
+export const CLIENT_STATUS_OPTIONS = [
+  { value: "PROSPECT", label: "Prospect" },
+  { value: "ONBOARDING", label: "Onboarding" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "Inactive" },
+] as const;
+
 export const DEFAULT_FORM_DATA: UnifiedFormData = {
   // Basic Info
   firstName: "",
   lastName: "",
+  status: "PROSPECT",
   dateOfBirth: "",
   phone: "",
   address: "",

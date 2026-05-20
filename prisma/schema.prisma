@@ -141,18 +141,18 @@ enum FormFieldType {
   BODY_MAP
   ICD10_DIAGNOSIS
   // OASIS-specific field types
-  CODE_ENTRY            // Single/multi-digit code input (M0100 style)
-  MATRIX_GRID           // Row/column grid selector (M1100)
-  DATE_PARTS            // MM-DD-YYYY boxes
+  CODE_ENTRY // Single/multi-digit code input (M0100 style)
+  MATRIX_GRID // Row/column grid selector (M1100)
+  DATE_PARTS // MM-DD-YYYY boxes
   HIERARCHICAL_CHECKBOX // Parent/child checkboxes (O0110)
-  CALCULATED_SCORE      // Auto-computed totals (BIMS, PHQ)
-  NUMERIC_COUNTER       // Count entry with bounds
-  STRUCTURED_ID         // Formatted IDs (NPI, SSN)
-  MULTI_DIAGNOSIS       // Multiple ICD-10 with ratings (M1021/M1023)
+  CALCULATED_SCORE // Auto-computed totals (BIMS, PHQ)
+  NUMERIC_COUNTER // Count entry with bounds
+  STRUCTURED_ID // Formatted IDs (NPI, SSN)
+  MULTI_DIAGNOSIS // Multiple ICD-10 with ratings (M1021/M1023)
   // Cascading dependent select (for treatment plan goals, etc.)
-  CASCADING_SELECT      // Multi-level dependent dropdowns with hierarchical data
+  CASCADING_SELECT // Multi-level dependent dropdowns with hierarchical data
   // Repeatable group for dynamic lists (goals, medications, etc.)
-  REPEATABLE_GROUP      // Group of fields that can be repeated/added dynamically
+  REPEATABLE_GROUP // Group of fields that can be repeated/added dynamically
 }
 
 enum FormTemplateStatus {
@@ -166,12 +166,12 @@ enum FormTemplateStatus {
 // ============================================
 
 enum OasisTimePoint {
-  SOC   // Start of Care
-  ROC   // Resumption of Care
-  FU    // Follow-up/Recertification
-  TRN   // Transfer to inpatient facility
-  DC    // Discharge from agency
-  DAH   // Death at Home
+  SOC // Start of Care
+  ROC // Resumption of Care
+  FU // Follow-up/Recertification
+  TRN // Transfer to inpatient facility
+  DC // Discharge from agency
+  DAH // Death at Home
 }
 
 enum OasisStatus {
@@ -186,29 +186,29 @@ enum OasisStatus {
 }
 
 enum OasisAssessorDiscipline {
-  RN    // Registered Nurse
-  PT    // Physical Therapist
-  OT    // Occupational Therapist
-  ST    // Speech Therapist
+  RN // Registered Nurse
+  PT // Physical Therapist
+  OT // Occupational Therapist
+  ST // Speech Therapist
 }
 
 enum OasisSectionCode {
-  A     // Administrative Information
-  B     // Hearing, Speech, and Vision
-  C     // Cognitive Patterns
-  D     // Mood
-  E     // Behavior
-  F     // Preferences for Customary Routine
-  G     // Functional Status
-  GG    // Functional Abilities
-  H     // Bladder and Bowel
-  I     // Active Diagnoses
-  J     // Health Conditions
-  K     // Swallowing/Nutritional Status
-  M     // Skin Conditions
-  N     // Medications
-  O     // Special Treatments
-  Q     // Participation in Assessment
+  A // Administrative Information
+  B // Hearing, Speech, and Vision
+  C // Cognitive Patterns
+  D // Mood
+  E // Behavior
+  F // Preferences for Customary Routine
+  G // Functional Status
+  GG // Functional Abilities
+  H // Bladder and Bowel
+  I // Active Diagnoses
+  J // Health Conditions
+  K // Swallowing/Nutritional Status
+  M // Skin Conditions
+  N // Medications
+  O // Special Treatments
+  Q // Participation in Assessment
 }
 
 // ============================================
@@ -507,22 +507,24 @@ model Company {
   thresholdAlertsEnabled Boolean @default(true) // Enable/disable threshold breach notifications for the company
 
   // Relations - all tenant-scoped models
-  users             User[]
-  clients           Client[]
-  shifts            Shift[]
-  shiftAttendances  ShiftAttendance[]
-  dailyReports      DailyReport[]
-  incidentReports   IncidentReport[]
-  payrollRecords    PayrollRecord[]
-  invoices          Invoice[]
-  chatMessages      ChatMessage[]
-  escalations       Escalation[]
-  onboardingRecords OnboardingRecord[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
-  formTemplates     FormTemplate[]
-  carePlanTemplates CarePlanTemplate[]
-  visitNotes        VisitNote[]
+  users                 User[]
+  clients               Client[]
+  shifts                Shift[]
+  shiftAttendances      ShiftAttendance[]
+  dailyReports          DailyReport[]
+  incidentReports       IncidentReport[]
+  payrollRecords        PayrollRecord[]
+  invoices              Invoice[]
+  chatMessages          ChatMessage[]
+  escalations           Escalation[]
+  onboardingRecords     OnboardingRecord[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  formTemplates         FormTemplate[]
+  carePlanTemplates     CarePlanTemplate[]
+  visitNotes            VisitNote[]
+  clientFormRequests    ClientFormRequest[]
+  clientFormSubmissions ClientFormSubmission[]
 
   // Billing relations
   serviceTypes     ServiceType[]
@@ -571,15 +573,15 @@ model Company {
   remediationPlans           RemediationPlan[]
 
   // HR Compliance - Training & Education
-  trainingCourses        TrainingCourse[]
-  trainingSessions       TrainingSession[]
-  trainingAttendances    TrainingAttendance[]
-  trainingAssignments    TrainingAssignment[]
-  courseLessons          CourseLesson[]
-  courseLessonProgress   CourseLessonProgress[]
-  courseQuizzes          CourseQuiz[]
-  quizAttempts           QuizAttempt[]
-  courseProgress         CourseProgress[]
+  trainingCourses      TrainingCourse[]
+  trainingSessions     TrainingSession[]
+  trainingAttendances  TrainingAttendance[]
+  trainingAssignments  TrainingAssignment[]
+  courseLessons        CourseLesson[]
+  courseLessonProgress CourseLessonProgress[]
+  courseQuizzes        CourseQuiz[]
+  quizAttempts         QuizAttempt[]
+  courseProgress       CourseProgress[]
 
   // HR Compliance - Supervision
   supervisoryRelationships SupervisoryRelationship[]
@@ -678,10 +680,12 @@ model User {
   auditLogs AuditLog[]
 
   // Form Builder
-  createdFormTemplates     FormTemplate[]     @relation("FormTemplateCreator")
-  createdCarePlanTemplates CarePlanTemplate[] @relation("CarePlanTemplateCreator")
-  visitNotes               VisitNote[]        @relation("CarerVisitNotes")
-  submittedVisitNotes      VisitNote[]        @relation("VisitNoteSubmitter")
+  createdFormTemplates      FormTemplate[]         @relation("FormTemplateCreator")
+  createdCarePlanTemplates  CarePlanTemplate[]     @relation("CarePlanTemplateCreator")
+  visitNotes                VisitNote[]            @relation("CarerVisitNotes")
+  submittedVisitNotes       VisitNote[]            @relation("VisitNoteSubmitter")
+  createdClientFormRequests ClientFormRequest[]    @relation("ClientFormRequestCreator")
+  submittedClientForms      ClientFormSubmission[] @relation("ClientFormSubmitter")
 
   // Comments
   comments VisitNoteComment[] @relation("CommentAuthor")
@@ -730,11 +734,11 @@ model User {
   remediationActivitiesCompleted RemediationActivity[] @relation("ActivityCompleter")
 
   // HR Compliance - Training & Education
-  trainingSessions           TrainingSession[]    @relation("TrainingInstructor")
+  trainingSessions           TrainingSession[]      @relation("TrainingInstructor")
   trainingAttendances        TrainingAttendance[]
   trainingAssignments        TrainingAssignment[]
-  trainingAssignmentsGiven   TrainingAssignment[] @relation("TrainingAssigner")
-  trainingExtensionsApproved TrainingAssignment[] @relation("ExtensionApprover")
+  trainingAssignmentsGiven   TrainingAssignment[]   @relation("TrainingAssigner")
+  trainingExtensionsApproved TrainingAssignment[]   @relation("ExtensionApprover")
   courseLessonProgress       CourseLessonProgress[]
   quizAttempts               QuizAttempt[]
   courseProgress             CourseProgress[]
@@ -767,10 +771,10 @@ model User {
   signatureRequestsSent CarePlanSignatureRequest[] @relation("SignatureRequestSender")
 
   // OASIS assessments
-  oasisTemplatesCreated   OasisTemplate[]    @relation("OasisTemplateCreator")
-  oasisAssessmentsGiven   OasisAssessment[]  @relation("OasisAssessor")
-  oasisAssessmentsQAd     OasisAssessment[]  @relation("OasisQAReviewer")
-  oasisResponsesModified  OasisResponse[]    @relation("OasisResponseModifier")
+  oasisTemplatesCreated  OasisTemplate[]   @relation("OasisTemplateCreator")
+  oasisAssessmentsGiven  OasisAssessment[] @relation("OasisAssessor")
+  oasisAssessmentsQAd    OasisAssessment[] @relation("OasisQAReviewer")
+  oasisResponsesModified OasisResponse[]   @relation("OasisResponseModifier")
 
   // Invitations
   invitesCreated Invite[] @relation("InvitesCreated")
@@ -1028,15 +1032,17 @@ model Client {
   billingRate   BillingRate? @relation(fields: [billingRateId], references: [id])
 
   // Related records
-  onboardingRecord OnboardingRecord?
-  shifts           Shift[]
-  dailyReports     DailyReport[]
-  incidentReports  IncidentReport[]
-  invoices         Invoice[]
-  chatMessages     ChatMessage[]
-  escalations      Escalation[]
-  visitNotes       VisitNote[]
-  claims           Claim[]
+  onboardingRecord      OnboardingRecord?
+  shifts                Shift[]
+  dailyReports          DailyReport[]
+  incidentReports       IncidentReport[]
+  invoices              Invoice[]
+  chatMessages          ChatMessage[]
+  escalations           Escalation[]
+  visitNotes            VisitNote[]
+  clientFormRequests    ClientFormRequest[]
+  clientFormSubmissions ClientFormSubmission[]
+  claims                Claim[]
 
   // Patient Intake relations
   assessments       Assessment[]
@@ -1637,6 +1643,18 @@ enum FormTemplateType {
   VISIT_NOTE
   STAFF_PROFILE
   CLIENT_PROFILE
+  CLIENT_FORM
+}
+
+enum ClientFormRequestStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
+}
+
+enum ClientFormSubmissionStatus {
+  SUBMITTED
 }
 
 model FormTemplate {
@@ -1647,6 +1665,7 @@ model FormTemplate {
   status      FormTemplateStatus @default(DRAFT)
   version     Int                @default(1)
   isEnabled   Boolean            @default(false)
+  settings    Json?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
@@ -1659,8 +1678,10 @@ model FormTemplate {
   createdBy   User   @relation("FormTemplateCreator", fields: [createdById], references: [id])
 
   // Relations
-  sections   FormSection[]
-  visitNotes VisitNote[]
+  sections              FormSection[]
+  visitNotes            VisitNote[]
+  clientFormRequests    ClientFormRequest[]
+  clientFormSubmissions ClientFormSubmission[]
 
   @@index([companyId])
   @@index([status])
@@ -1707,12 +1728,12 @@ model FormField {
 }
 
 model VisitNote {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   formSchemaSnapshot Json // Complete form structure at submission
   data               Json // { [fieldId]: value }
   visitDate          DateTime? // The actual date of the visit (null for legacy records)
   submittedAt        DateTime  @default(now())
-  updatedAt          DateTime @updatedAt
+  updatedAt          DateTime  @updatedAt
 
   // Company relation
   companyId String
@@ -1843,6 +1864,86 @@ model VisitNoteComment {
   @@index([authorId])
   @@index([companyId])
   @@index([createdAt])
+}
+
+model ClientFormRequest {
+  id              String                  @id @default(cuid())
+  status          ClientFormRequestStatus @default(ACTIVE)
+  tokenHash       String                  @unique
+  expiresAt       DateTime?
+  maxSubmissions  Int?
+  submissionCount Int                     @default(0)
+  recipientName   String?
+  recipientEmail  String?
+  notes           String?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Template relation
+  templateId String
+  template   FormTemplate @relation(fields: [templateId], references: [id])
+
+  // Request creator
+  createdById String
+  createdBy   User   @relation("ClientFormRequestCreator", fields: [createdById], references: [id])
+
+  submissions ClientFormSubmission[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([templateId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model ClientFormSubmission {
+  id                 String                     @id @default(cuid())
+  status             ClientFormSubmissionStatus @default(SUBMITTED)
+  formSchemaSnapshot Json
+  data               Json
+  templateVersion    Int
+  isPublicSubmission Boolean                    @default(false)
+  submittedByName    String?
+  submittedByEmail   String?
+  ipAddress          String?
+  userAgent          String?
+  submittedAt        DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  // Company relation
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Client relation
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  // Template relation
+  templateId String
+  template   FormTemplate @relation(fields: [templateId], references: [id])
+
+  // Public request relation (optional)
+  requestId String?
+  request   ClientFormRequest? @relation(fields: [requestId], references: [id])
+
+  // Authenticated submitter (optional)
+  submittedById String?
+  submittedBy   User?   @relation("ClientFormSubmitter", fields: [submittedById], references: [id])
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([templateId])
+  @@index([requestId])
+  @@index([status])
+  @@index([submittedAt])
 }
 
 model CommentMention {
@@ -3044,10 +3145,10 @@ model CarePlanSignatureRequest {
   signerPhone String?
 
   // Request tracking
-  sentAt     DateTime  @default(now()) // When the request was sent
-  viewedAt   DateTime? // When the signer first viewed the document
-  signedAt   DateTime? // When the signature was submitted
-  expiresAt  DateTime // When the request expires
+  sentAt    DateTime  @default(now()) // When the request was sent
+  viewedAt  DateTime? // When the signer first viewed the document
+  signedAt  DateTime? // When the signature was submitted
+  expiresAt DateTime // When the request expires
 
   // Signature data (when signed)
   signatureData     String? @db.Text // Base64 encoded signature image
@@ -3059,8 +3160,8 @@ model CarePlanSignatureRequest {
   customMessage String? @db.Text
 
   // Reminder tracking
-  reminderSentAt   DateTime?
-  reminderCount    Int       @default(0)
+  reminderSentAt DateTime?
+  reminderCount  Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3092,25 +3193,25 @@ model CarePlanSignatureRequest {
 // A goal hierarchy defines a multi-level cascading structure
 // Used for treatment plan goals: Goal Area → Target Skill → Short Term Objective → Steps
 model GoalHierarchy {
-  id          String   @id @default(cuid())
-  name        String   // "Autism Waiver IISS Goals", "FC Goals", etc.
+  id          String  @id @default(cuid())
+  name        String // "Autism Waiver IISS Goals", "FC Goals", etc.
   description String?
 
   // Which template types this hierarchy applies to (for filtering)
   // e.g., ["IISS", "FC", "ITI", "ALP", "Respite"]
   templateTypes String[]
 
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Company relation - each company can have their own hierarchies
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   // Level 1: Goal Areas
-  goalAreas   GoalArea[]
+  goalAreas GoalArea[]
 
   @@index([companyId])
   @@index([isActive])
@@ -3118,18 +3219,18 @@ model GoalHierarchy {
 
 // Level 1: Goal Area (e.g., "Improving Compliance", "Community Safety")
 model GoalArea {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   description  String?
-  displayOrder Int      @default(0)
-  isActive     Boolean  @default(true)
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Parent hierarchy
-  hierarchyId  String
-  hierarchy    GoalHierarchy @relation(fields: [hierarchyId], references: [id], onDelete: Cascade)
+  hierarchyId String
+  hierarchy   GoalHierarchy @relation(fields: [hierarchyId], references: [id], onDelete: Cascade)
 
   // Level 2: Target Skills
   targetSkills TargetSkill[]
@@ -3141,21 +3242,21 @@ model GoalArea {
 
 // Level 2: Target Skill (e.g., "Task Engagement", "Self Regulation")
 model TargetSkill {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   description  String?
-  displayOrder Int      @default(0)
-  isActive     Boolean  @default(true)
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Parent goal area
-  goalAreaId   String
-  goalArea     GoalArea @relation(fields: [goalAreaId], references: [id], onDelete: Cascade)
+  goalAreaId String
+  goalArea   GoalArea @relation(fields: [goalAreaId], references: [id], onDelete: Cascade)
 
   // Level 3: Short Term Objectives
-  objectives   ShortTermObjective[]
+  objectives ShortTermObjective[]
 
   @@index([goalAreaId])
   @@index([displayOrder])
@@ -3164,21 +3265,21 @@ model TargetSkill {
 
 // Level 3: Short Term Objective (e.g., "Attend to an activity from 5 to 20 minutes")
 model ShortTermObjective {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   description  String?
-  displayOrder Int      @default(0)
-  isActive     Boolean  @default(true)
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Parent target skill
   targetSkillId String
   targetSkill   TargetSkill @relation(fields: [targetSkillId], references: [id], onDelete: Cascade)
 
   // Level 4: Task Analysis Steps
-  steps        TaskAnalysisStep[]
+  steps TaskAnalysisStep[]
 
   @@index([targetSkillId])
   @@index([displayOrder])
@@ -3187,18 +3288,18 @@ model ShortTermObjective {
 
 // Level 4: Task Analysis Step (e.g., "Present schedule to technician")
 model TaskAnalysisStep {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   description  String?
-  displayOrder Int      @default(0)
-  isActive     Boolean  @default(true)
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Parent objective
-  objectiveId  String
-  objective    ShortTermObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  objectiveId String
+  objective   ShortTermObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
 
   @@index([objectiveId])
   @@index([displayOrder])
@@ -4173,16 +4274,16 @@ model TrainingAssignment {
 
 // Course Lessons/Content
 model CourseLesson {
-  id       String @id @default(cuid())
+  id       String         @id @default(cuid())
   courseId String
   course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  title       String
-  content     String   @db.Text // Rich text/markdown content
-  orderIndex  Int      @default(0)
+  title      String
+  content    String @db.Text // Rich text/markdown content
+  orderIndex Int    @default(0)
 
   // Optional video/media
-  videoUrl    String?
+  videoUrl String?
 
   // Estimated reading time in minutes
   estimatedMinutes Int @default(5)
@@ -4203,11 +4304,11 @@ model CourseLesson {
 
 // Track user progress through lessons
 model CourseLessonProgress {
-  id       String @id @default(cuid())
+  id       String       @id @default(cuid())
   lessonId String
   lesson   CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   userId   String
-  user     User @relation(fields: [userId], references: [id])
+  user     User         @relation(fields: [userId], references: [id])
 
   completedAt DateTime?
 
@@ -4225,15 +4326,15 @@ model CourseLessonProgress {
 
 // Course Quiz
 model CourseQuiz {
-  id       String @id @default(cuid())
+  id       String         @id @default(cuid())
   courseId String
   course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   title        String
   description  String?
   passingScore Int     @default(70) // Percentage
-  maxAttempts  Int?    // null = unlimited
-  timeLimit    Int?    // Minutes, null = no limit
+  maxAttempts  Int? // null = unlimited
+  timeLimit    Int? // Minutes, null = no limit
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4257,17 +4358,17 @@ enum QuizQuestionType {
 }
 
 model QuizQuestion {
-  id     String @id @default(cuid())
+  id     String     @id @default(cuid())
   quizId String
   quiz   CourseQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   question    String
   type        QuizQuestionType @default(MULTIPLE_CHOICE)
-  options     Json   // Array of { id: string, text: string }
+  options     Json // Array of { id: string, text: string }
   correctIds  String[] // IDs of correct options
   explanation String? // Explanation shown after answering
-  orderIndex  Int     @default(0)
-  points      Int     @default(1)
+  orderIndex  Int              @default(0)
+  points      Int              @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4276,17 +4377,17 @@ model QuizQuestion {
 }
 
 model QuizAttempt {
-  id     String @id @default(cuid())
+  id     String     @id @default(cuid())
   quizId String
   quiz   CourseQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   User       @relation(fields: [userId], references: [id])
 
-  answers   Json // { questionId: string, selectedIds: string[] }[]
-  score     Int  // Percentage score
-  passed    Boolean
+  answers Json // { questionId: string, selectedIds: string[] }[]
+  score   Int // Percentage score
+  passed  Boolean
 
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
 
   // Company relation
@@ -4300,18 +4401,18 @@ model QuizAttempt {
 
 // Track overall course progress
 model CourseProgress {
-  id       String @id @default(cuid())
+  id       String         @id @default(cuid())
   courseId String
   course   TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
   userId   String
-  user     User @relation(fields: [userId], references: [id])
+  user     User           @relation(fields: [userId], references: [id])
 
   // Progress tracking
-  lessonsCompleted Int @default(0)
+  lessonsCompleted Int     @default(0)
   quizPassed       Boolean @default(false)
   bestQuizScore    Int?
 
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
 
   // Company relation
@@ -4585,22 +4686,22 @@ model DevelopmentGoal {
 // ============================================
 
 model Medication {
-  id        String           @id @default(cuid())
-  name      String // Brand or generic name
+  id          String           @id @default(cuid())
+  name        String // Brand or generic name
   genericName String?
-  ndc       String? // National Drug Code
-  strength  String // e.g., "500mg", "10mg/5ml"
-  form      String // e.g., "tablet", "capsule", "liquid"
-  route     MedicationRoute
-  status    MedicationStatus @default(ACTIVE)
+  ndc         String? // National Drug Code
+  strength    String // e.g., "500mg", "10mg/5ml"
+  form        String // e.g., "tablet", "capsule", "liquid"
+  route       MedicationRoute
+  status      MedicationStatus @default(ACTIVE)
 
   // Dosing
-  doseAmount      String // e.g., "1 tablet", "5ml"
-  frequency       MedicationFrequency
-  frequencyOther  String? // If frequency is OTHER
-  scheduledTimes  String[] // ["08:00", "12:00", "18:00"]
-  prnReason       String? // Required if frequency is PRN
-  maxDailyDoses   Int? // For PRN medications
+  doseAmount     String // e.g., "1 tablet", "5ml"
+  frequency      MedicationFrequency
+  frequencyOther String? // If frequency is OTHER
+  scheduledTimes String[] // ["08:00", "12:00", "18:00"]
+  prnReason      String? // Required if frequency is PRN
+  maxDailyDoses  Int? // For PRN medications
 
   // Date range
   startDate DateTime
@@ -4619,7 +4720,7 @@ model Medication {
 
   // Clinical info
   indication          String? // Reason for medication
-  specialInstructions String?   @db.Text
+  specialInstructions String?  @db.Text
   interactions        String[] // Drug interaction warnings
   sideEffects         String[] // Common side effects to watch
 
@@ -4706,10 +4807,10 @@ model MedicationAdministration {
   amountGiven String? // e.g., "1 tablet", "half dose"
 
   // PRN effectiveness tracking
-  prnAssessment       String? // e.g., "Pain level before: 7"
-  prnFollowupTime     DateTime? // When to reassess
+  prnAssessment         String? // e.g., "Pain level before: 7"
+  prnFollowupTime       DateTime? // When to reassess
   prnFollowupAssessment String? // e.g., "Pain level after: 3"
-  prnEffective        Boolean?
+  prnEffective          Boolean?
 
   // Site for injections/topicals
   administrationSite String?
@@ -4810,11 +4911,11 @@ model NarcoticCountRecord {
   verifiedAt          DateTime?
 
   // Discrepancy handling
-  discrepancyNotes      String? @db.Text
+  discrepancyNotes      String?   @db.Text
   discrepancyResolution String?
   resolvedAt            DateTime?
   resolvedById          String?
-  resolvedBy            User?   @relation("DiscrepancyResolver", fields: [resolvedById], references: [id])
+  resolvedBy            User?     @relation("DiscrepancyResolver", fields: [resolvedById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4839,10 +4940,10 @@ model RefillRequest {
   status RefillRequestStatus @default(PENDING)
 
   // Request details
-  requestedAt     DateTime @default(now())
-  requestedById   String
-  requestedBy     User     @relation("RefillRequester", fields: [requestedById], references: [id])
-  requestNotes    String?
+  requestedAt       DateTime @default(now())
+  requestedById     String
+  requestedBy       User     @relation("RefillRequester", fields: [requestedById], references: [id])
+  requestNotes      String?
   quantityRequested Int?
 
   // Pharmacy info
@@ -4861,7 +4962,7 @@ model RefillRequest {
   expectedDelivery DateTime?
   receivedAt       DateTime?
   receivedById     String?
-  receivedBy       User?    @relation("RefillReceiver", fields: [receivedById], references: [id])
+  receivedBy       User?     @relation("RefillReceiver", fields: [receivedById], references: [id])
   quantityReceived Int?
 
   // Fax integration
@@ -4896,10 +4997,10 @@ model RefillRequest {
 
 model OasisTemplate {
   id            String             @id @default(cuid())
-  version       String             // e.g., "E2-2026"
-  name          String             // e.g., "OASIS-E2 All Items"
+  version       String // e.g., "E2-2026"
+  name          String // e.g., "OASIS-E2 All Items"
   description   String?
-  effectiveDate DateTime           // CMS effective date
+  effectiveDate DateTime // CMS effective date
   status        FormTemplateStatus @default(DRAFT)
   isDefault     Boolean            @default(false)
 
@@ -4926,12 +5027,12 @@ model OasisTemplate {
 }
 
 model OasisSection {
-  id         String           @id @default(cuid())
+  id         String        @id @default(cuid())
   templateId String
-  template   OasisTemplate    @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template   OasisTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   code        OasisSectionCode // A, B, C, etc.
-  name        String           // Full section name
+  name        String // Full section name
   description String?
   order       Int
 
@@ -4964,7 +5065,7 @@ model OasisItem {
 
   // Field configuration
   fieldType FormFieldType
-  config    Json          // Type-specific configuration
+  config    Json // Type-specific configuration
   required  Boolean       @default(false)
 
   // Time point visibility
@@ -4978,9 +5079,9 @@ model OasisItem {
   skipLogic Json?
 
   // Scoring configuration
-  scoreMapping       Json?   // Value → Score mapping for scored items
+  scoreMapping       Json? // Value → Score mapping for scored items
   contributesToScore String? // Code of calculated field this contributes to
-  maxScore           Float?  // Maximum possible score for this item
+  maxScore           Float? // Maximum possible score for this item
 
   // Validation rules
   validationRules Json? // Additional validation beyond type validation
@@ -5009,11 +5110,11 @@ model OasisAssessment {
   client   Client @relation(fields: [clientId], references: [id])
 
   // Time point and key dates
-  timePoint          OasisTimePoint
-  m0030SocDate       DateTime?       // Start of Care date
-  m0032RocDate       DateTime?       // Resumption of Care date
-  m0090AssessmentDate DateTime?      // Date assessment completed
-  m0906DischargeDate DateTime?       // Discharge/Transfer/Death date
+  timePoint           OasisTimePoint
+  m0030SocDate        DateTime? // Start of Care date
+  m0032RocDate        DateTime? // Resumption of Care date
+  m0090AssessmentDate DateTime? // Date assessment completed
+  m0906DischargeDate  DateTime? // Discharge/Transfer/Death date
 
   // Assessment reason (M0100)
   assessmentReason String? // Code from M0100
@@ -5032,24 +5133,24 @@ model OasisAssessment {
   status      OasisStatus @default(DRAFT)
   startedAt   DateTime    @default(now())
   completedAt DateTime?
-  lockedAt    DateTime?   // When locked for editing
+  lockedAt    DateTime? // When locked for editing
 
   // Progress tracking
-  currentSection   String?  // Current section being worked on
+  currentSection    String? // Current section being worked on
   completedSections String[] // Sections marked complete
 
   // QA workflow
-  qaStatus       QAStatus?
-  qaComment      String?
-  qaReviewedAt   DateTime?
-  qaReviewedById String?
-  qaReviewedBy   User?     @relation("OasisQAReviewer", fields: [qaReviewedById], references: [id])
+  qaStatus         QAStatus?
+  qaComment        String?
+  qaReviewedAt     DateTime?
+  qaReviewedById   String?
+  qaReviewedBy     User?     @relation("OasisQAReviewer", fields: [qaReviewedById], references: [id])
   submittedForQaAt DateTime?
 
   // Export tracking
   exportedAt    DateTime?
-  exportFormat  String?   // File format used
-  exportFileUrl String?   // URL to exported file
+  exportFormat  String? // File format used
+  exportFileUrl String? // URL to exported file
 
   // Calculated scores (stored for quick access)
   scores Json? // { bims: number, phq9: number, etc. }
@@ -5085,7 +5186,7 @@ model OasisResponse {
   valueNumber  Float?
   valueBoolean Boolean?
   valueDate    DateTime?
-  valueJson    Json?     // For complex types (matrix, multi-select, hierarchical)
+  valueJson    Json? // For complex types (matrix, multi-select, hierarchical)
 
   // Computed score for this response
   score Float?
@@ -5096,7 +5197,7 @@ model OasisResponse {
 
   // Validation
   isValid          Boolean @default(true)
-  validationErrors Json?   // Array of validation error messages
+  validationErrors Json? // Array of validation error messages
 
   // Audit trail
   lastModifiedById String?

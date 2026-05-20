@@ -131,6 +131,12 @@ const navigation: NavEntry[] = [
         roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"],
       },
       {
+        label: "Client Forms",
+        href: "/client-forms",
+        icon: FileEdit,
+        roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR"],
+      },
+      {
         label: "Sponsors",
         href: "/sponsors",
         icon: Heart,

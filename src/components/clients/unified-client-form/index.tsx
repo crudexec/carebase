@@ -89,6 +89,7 @@ export function UnifiedClientForm({
           ...DEFAULT_FORM_DATA,
           firstName: referral.prospectFirstName || "",
           lastName: referral.prospectLastName || "",
+          status: "ONBOARDING",
           dateOfBirth: referral.prospectDob ? referral.prospectDob.split("T")[0] : "",
           phone: referral.prospectPhone || "",
           address: referral.prospectAddress || "",

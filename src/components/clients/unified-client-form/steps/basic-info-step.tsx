@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Input, DateInput, Label, Select } from "@/components/ui";
 import { User } from "lucide-react";
-import { StepProps, US_STATES } from "../types";
+import { CLIENT_STATUS_OPTIONS, StepProps, US_STATES } from "../types";
 
 export function BasicInfoStep({ data, onChange, errors }: StepProps) {
   return (
@@ -54,8 +54,22 @@ export function BasicInfoStep({ data, onChange, errors }: StepProps) {
         </div>
       </div>
 
-      {/* DOB and Phone */}
+      {/* Status and DOB */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            id="status"
+            value={data.status}
+            onChange={(e) => onChange({ status: e.target.value as typeof data.status })}
+          >
+            {CLIENT_STATUS_OPTIONS.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth">Date of Birth</Label>
           <DateInput
@@ -64,6 +78,10 @@ export function BasicInfoStep({ data, onChange, errors }: StepProps) {
             onChange={(e) => onChange({ dateOfBirth: e.target.value })}
           />
         </div>
+      </div>
+
+      {/* Phone */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phone">Phone Number</Label>
           <Input

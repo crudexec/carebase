@@ -195,19 +195,23 @@ export function AssessmentRenderer({
     return value !== "" && value !== null && value !== undefined;
   };
 
+  const getTrackedSectionItems = (section: AssessmentSection): AssessmentItem[] => {
+    const items = section.items || [];
+    const requiredItems = items.filter((item) => item.isRequired);
+    return requiredItems.length > 0 ? requiredItems : items;
+  };
+
   // Check if section has all required responses
   const isSectionComplete = (section: AssessmentSection): boolean => {
-    const items = section.items || [];
-    const requiredItems = items.filter((i) => i.isRequired);
-    return requiredItems.every((item) => hasResponse(item));
+    const trackedItems = getTrackedSectionItems(section);
+    return trackedItems.length > 0 && trackedItems.every((item) => hasResponse(item));
   };
 
   // Get section progress
   const getSectionProgress = (section: AssessmentSection): { completed: number; total: number } => {
-    const items = section.items || [];
-    const requiredItems = items.filter((i) => i.isRequired);
-    const completed = requiredItems.filter((item) => hasResponse(item)).length;
-    return { completed, total: requiredItems.length };
+    const trackedItems = getTrackedSectionItems(section);
+    const completed = trackedItems.filter((item) => hasResponse(item)).length;
+    return { completed, total: trackedItems.length };
   };
 
   // Calculate overall progress

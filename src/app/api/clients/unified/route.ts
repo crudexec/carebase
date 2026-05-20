@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { ClientStatus } from "@prisma/client";
 import { z } from "zod";
 
 // Generate referral number
@@ -26,6 +27,7 @@ const unifiedFormSchema = z.object({
     // Basic Info (Step 1)
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
+    status: z.nativeEnum(ClientStatus).optional(),
     dateOfBirth: z.string().optional(),
     phone: z.string().optional(),
     address: z.string().optional(),
@@ -225,7 +227,7 @@ export async function POST(request: Request) {
             referralSource: referral.referralSource?.name || data.referralSourceOther,
             referralDate: referral.receivedDate,
             referralNotes: data.reason,
-            status: "ONBOARDING",
+            status: data.status || "ONBOARDING",
           },
         });
 
@@ -315,7 +317,7 @@ export async function POST(request: Request) {
         referralSource: data.referralSourceOther || undefined,
         referralDate: data.referralDate ? new Date(data.referralDate) : undefined,
         referralNotes: data.reason,
-        status: "PROSPECT",
+        status: data.status || "PROSPECT",
       },
     });
 

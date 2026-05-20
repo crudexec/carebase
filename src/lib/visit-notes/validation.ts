@@ -86,6 +86,7 @@ export const createFormTemplateSchema = z.object({
   type: formTemplateTypeSchema.default("VISIT_NOTE"),
   status: formTemplateStatusSchema.default("DRAFT"),
   isEnabled: z.boolean().default(false),
+  settings: z.record(z.string(), z.unknown()).nullable().optional(),
   sections: z.array(formSectionSchema), // Use formSectionSchema to allow IDs
 });
 
@@ -94,6 +95,7 @@ export const updateFormTemplateSchema = z.object({
   description: z.string().max(1000).optional().nullable(),
   status: formTemplateStatusSchema.optional(),
   isEnabled: z.boolean().optional(),
+  settings: z.record(z.string(), z.unknown()).nullable().optional(),
   sections: z.array(formSectionSchema).optional(),
 });
 

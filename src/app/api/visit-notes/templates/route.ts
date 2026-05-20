@@ -9,6 +9,7 @@ import {
   templateListQuerySchema,
   validateFieldConfig,
 } from "@/lib/visit-notes/validation";
+import { clientFormTemplateSettingsSchema } from "@/lib/client-forms/validation";
 
 // Helper to convert FieldConfig to Prisma JSON input
 function configToPrisma(
@@ -18,6 +19,18 @@ function configToPrisma(
     return Prisma.DbNull;
   }
   return config as Prisma.InputJsonValue;
+}
+
+function settingsToPrisma(
+  settings: Record<string, unknown> | null | undefined
+): Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue | undefined {
+  if (settings === undefined) {
+    return undefined;
+  }
+  if (settings === null) {
+    return Prisma.DbNull;
+  }
+  return settings as Prisma.InputJsonValue;
 }
 
 // GET /api/visit-notes/templates - List form templates
@@ -31,7 +44,9 @@ export async function GET(request: Request) {
     // Check permissions
     if (
       !hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_VIEW) &&
-      !hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)
+      !hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE) &&
+      !hasPermission(session.user.role, PERMISSIONS.CLIENT_FORM_TEMPLATE_VIEW) &&
+      !hasPermission(session.user.role, PERMISSIONS.CLIENT_FORM_TEMPLATE_MANAGE)
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -115,6 +130,7 @@ export async function GET(request: Request) {
       status: template.status,
       version: template.version,
       isEnabled: template.isEnabled,
+      settings: template.settings,
       sectionsCount: template._count.sections,
       fieldsCount: template.sections.reduce(
         (sum, section) => sum + section._count.fields,
@@ -152,7 +168,13 @@ export async function POST(request: Request) {
     }
 
     // Check permissions
-    if (!hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE)) {
+    const canManageGeneric = hasPermission(session.user.role, PERMISSIONS.FORM_TEMPLATE_MANAGE);
+    const canManageClientForms = hasPermission(
+      session.user.role,
+      PERMISSIONS.CLIENT_FORM_TEMPLATE_MANAGE
+    );
+
+    if (!canManageGeneric && !canManageClientForms) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -169,7 +191,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, description, type, status, isEnabled, sections } = validation.data;
+    const { name, description, type, status, isEnabled, settings, sections } = validation.data;
+
+    if (type === "CLIENT_FORM" && !canManageClientForms && !canManageGeneric) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (type === "CLIENT_FORM") {
+      const settingsValidation = clientFormTemplateSettingsSchema.safeParse(settings);
+      if (!settingsValidation.success) {
+        return NextResponse.json(
+          { error: "Invalid client form settings", details: settingsValidation.error.issues },
+          { status: 400 }
+        );
+      }
+    }
 
     // Validate field configs
     for (const section of sections) {
@@ -209,6 +245,7 @@ export async function POST(request: Request) {
         type,
         status,
         isEnabled,
+        settings: settingsToPrisma(settings),
         sections: {
           create: sections.map((section, sectionIndex) => ({
             title: section.title,

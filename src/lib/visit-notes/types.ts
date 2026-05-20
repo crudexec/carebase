@@ -83,6 +83,7 @@ export interface FormTemplateData {
   status: FormTemplateStatus;
   version: number;
   isEnabled: boolean;
+  settings?: unknown;
   sections: FormSectionData[];
 }
 

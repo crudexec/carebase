@@ -604,6 +604,24 @@ export default function ClientDetailPage() {
               <Button
                 variant="secondary"
                 size="sm"
+                onClick={() => router.push(`/client-forms/new?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Client Form
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => router.push(`/client-forms/requests/new?clientId=${clientId}`)}
+                className="bg-background hover:bg-background-secondary"
+              >
+                <FileCheck className="w-4 h-4 mr-2" />
+                Public Form Link
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => router.push(`/scheduling?clientId=${clientId}`)}
                 className="bg-background hover:bg-background-secondary"
               >
