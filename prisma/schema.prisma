@@ -1923,8 +1923,8 @@ model ClientFormSubmission {
   company   Company @relation(fields: [companyId], references: [id])
 
   // Client relation
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id])
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
 
   // Template relation
   templateId String

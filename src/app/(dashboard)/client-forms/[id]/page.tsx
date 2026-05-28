@@ -20,7 +20,7 @@ interface SubmissionDetail {
     firstName: string;
     lastName: string;
     dateOfBirth?: string | null;
-  };
+  } | null;
   template: {
     id: string;
     name: string;
@@ -64,7 +64,10 @@ export default function ClientFormDetailPage() {
       <div>
         <h1 className="text-2xl font-bold">{submission.template.name}</h1>
         <p className="text-foreground-secondary">
-          {submission.client.firstName} {submission.client.lastName} • {new Date(submission.submittedAt).toLocaleString()}
+          {submission.client
+            ? `${submission.client.firstName} ${submission.client.lastName}`
+            : "Template-only public submission"}{" "}
+          • {new Date(submission.submittedAt).toLocaleString()}
         </p>
       </div>
 

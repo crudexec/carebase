@@ -94,7 +94,7 @@ export interface ClientFormSubmissionListItem {
     id: string;
     firstName: string;
     lastName: string;
-  };
+  } | null;
   submittedBy: {
     id: string;
     firstName: string;

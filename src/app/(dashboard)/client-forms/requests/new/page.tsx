@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@/components/ui";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
 import type { FormTemplateData } from "@/lib/visit-notes/types";
+import { toast } from "sonner";
 
 interface ClientInfo {
   id: string;
@@ -15,6 +16,7 @@ interface ClientInfo {
 export default function NewClientFormRequestPage() {
   const searchParams = useSearchParams();
   const preselectedClientId = searchParams.get("clientId");
+  const preselectedTemplateId = searchParams.get("templateId");
   const [selectedClient, setSelectedClient] = React.useState<ClientInfo | null>(null);
   const [templates, setTemplates] = React.useState<FormTemplateData[]>([]);
   const [templateId, setTemplateId] = React.useState("");
@@ -35,11 +37,19 @@ export default function NewClientFormRequestPage() {
             (template.settings as { access?: { isPublic?: boolean } } | undefined)?.access?.isPublic
         );
         setTemplates(publicTemplates);
+        if (preselectedTemplateId) {
+          const matchedTemplate = publicTemplates.find(
+            (template: FormTemplateData) => template.id === preselectedTemplateId
+          );
+          if (matchedTemplate?.id) {
+            setTemplateId(matchedTemplate.id);
+          }
+        }
       }
     };
 
     fetchTemplates();
-  }, []);
+  }, [preselectedTemplateId]);
 
   const handleCreate = async () => {
     if (!(selectedClient?.id || preselectedClientId) || !templateId) {
@@ -68,6 +78,18 @@ export default function NewClientFormRequestPage() {
 
     setPublicUrl(data.publicUrl);
     setError(null);
+    toast.success("Public link generated");
+  };
+
+  const handleCopyLink = async () => {
+    if (!publicUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast.success("Public link copied");
+    } catch {
+      toast.error("Failed to copy public link");
+    }
   };
 
   return (
@@ -96,7 +118,12 @@ export default function NewClientFormRequestPage() {
 
           <div className="space-y-2">
             <Label>Template</Label>
-            <div className="grid gap-2">
+            {templates.length === 0 ? (
+              <div className="rounded-md border border-dashed border-border p-4 text-sm text-foreground-secondary">
+                No public-enabled client form templates are available yet.
+              </div>
+            ) : (
+              <div className="grid gap-2">
               {templates.map((template) => (
                 <button
                   key={template.id}
@@ -112,7 +139,8 @@ export default function NewClientFormRequestPage() {
                   )}
                 </button>
               ))}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -145,7 +173,7 @@ export default function NewClientFormRequestPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <Input value={publicUrl} readOnly />
-            <Button variant="ghost" onClick={() => navigator.clipboard.writeText(publicUrl)}>
+            <Button variant="ghost" onClick={handleCopyLink}>
               Copy Link
             </Button>
           </CardContent>

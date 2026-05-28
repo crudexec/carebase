@@ -3,12 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Copy, Save } from "lucide-react";
 import { Button } from "@/components/ui";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import type { FormTemplateData } from "@/lib/visit-notes/types";
 import { DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS } from "@/lib/client-forms/types";
 import { TemplateSettingsPanel } from "@/components/client-forms/template-settings-panel";
+import { toast } from "sonner";
 
 function normalizeTemplate(data: Record<string, unknown>): FormTemplateData {
   return {
@@ -86,6 +87,21 @@ export default function EditClientFormTemplatePage() {
     return <div className="text-sm text-error">{error || "Template not found"}</div>;
   }
 
+  const clientFormSettings =
+    ((template.settings as unknown) as typeof DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS) ||
+    DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS;
+  const canGeneratePublicLink =
+    template.status === "ACTIVE" && template.isEnabled && clientFormSettings.access.isPublic;
+
+  const copyPublicLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/f/templates/${templateId}`);
+      toast.success("Public template link copied");
+    } catch {
+      toast.error("Failed to copy public template link");
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
@@ -102,6 +118,17 @@ export default function EditClientFormTemplatePage() {
         </div>
         <div className="flex items-center gap-2">
           {error && <span className="text-sm text-error">{error}</span>}
+          {canGeneratePublicLink ? (
+            <Button variant="ghost" onClick={copyPublicLink}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Public Link
+            </Button>
+          ) : (
+            <Button variant="ghost" disabled>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Public Link
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => save(false)} disabled={isSaving}>
             <Save className="mr-2 h-4 w-4" />
             Save
@@ -117,7 +144,7 @@ export default function EditClientFormTemplatePage() {
         </div>
         <div className="w-[380px] bg-background">
           <TemplateSettingsPanel
-            settings={((template.settings as unknown) as typeof DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS) || DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS}
+            settings={clientFormSettings}
             onChange={(settings) => setTemplate((current) => (current ? { ...current, settings } : current))}
           />
         </div>

@@ -46,7 +46,7 @@ export function TemplateSettingsPanel({ settings, onChange }: TemplateSettingsPa
         <CardContent className="space-y-3">
           <ToggleRow
             label="Public Access"
-            description="Allow this template to be shared through request-based public links."
+            description="Allow anyone with the public template link to submit this form."
             checked={settings.access.isPublic}
             onChange={(checked) => onChange({ ...settings, access: { ...settings.access, isPublic: checked } })}
           />
