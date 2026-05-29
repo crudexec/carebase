@@ -183,86 +183,91 @@ export async function PATCH(
       sections !== undefined && existingTemplate.status === "ACTIVE";
 
     // Use a transaction to update everything atomically
-    const template = await prisma.$transaction(async (tx) => {
-      // When enabling a template, disable all other templates for the same company
-      if (isEnabled === true) {
-        await tx.formTemplate.updateMany({
-          where: {
-            companyId: user.companyId,
-            isEnabled: true,
-            id: { not: id },
-          },
-          data: {
-            isEnabled: false,
-          },
-        });
-      }
-
-      // If sections are provided, delete existing and recreate
-      if (sections) {
-        // Delete existing sections (cascades to fields)
-        await tx.formSection.deleteMany({
-          where: { templateId: id },
-        });
-
-        // Create new sections and fields
-        for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
-          const section = sections[sectionIndex];
-          await tx.formSection.create({
+    const template = await prisma.$transaction(
+      async (tx) => {
+        // When enabling a template, disable all other templates for the same company
+        if (isEnabled === true) {
+          await tx.formTemplate.updateMany({
+            where: {
+              companyId: user.companyId,
+              isEnabled: true,
+              id: { not: id },
+            },
             data: {
-              id: section.id || undefined,
-              templateId: id,
-              title: section.title,
-              description: section.description,
-              order: section.order ?? sectionIndex,
-              fields: {
-                create: section.fields.map((field, fieldIndex) => ({
-                  id: field.id || undefined,
-                  label: field.label,
-                  description: field.description,
-                  type: field.type,
-                  required: field.required,
-                  order: field.order ?? fieldIndex,
-                  config: configToPrisma(field.config),
-                })),
-              },
+              isEnabled: false,
             },
           });
         }
-      }
 
-      // Update template metadata
-      return tx.formTemplate.update({
-        where: { id },
-        data: {
-          ...(name !== undefined && { name }),
-          ...(description !== undefined && { description }),
-          ...(status !== undefined && { status }),
-          ...(isEnabled !== undefined && { isEnabled }),
-          ...(normalizedSettings !== undefined && {
-            settings: settingsToPrisma(normalizedSettings as Record<string, unknown> | null),
-          }),
-          ...(shouldIncrementVersion && { version: existingTemplate.version + 1 }),
-        },
-        include: {
-          createdBy: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
+        // If sections are provided, delete existing and recreate
+        if (sections) {
+          // Delete existing sections (cascades to fields)
+          await tx.formSection.deleteMany({
+            where: { templateId: id },
+          });
+
+          // Create new sections and fields
+          for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+            const section = sections[sectionIndex];
+            await tx.formSection.create({
+              data: {
+                id: section.id || undefined,
+                templateId: id,
+                title: section.title,
+                description: section.description,
+                order: section.order ?? sectionIndex,
+                fields: {
+                  create: section.fields.map((field, fieldIndex) => ({
+                    id: field.id || undefined,
+                    label: field.label,
+                    description: field.description,
+                    type: field.type,
+                    required: field.required,
+                    order: field.order ?? fieldIndex,
+                    config: configToPrisma(field.config),
+                  })),
+                },
+              },
+            });
+          }
+        }
+
+        // Update template metadata
+        return tx.formTemplate.update({
+          where: { id },
+          data: {
+            ...(name !== undefined && { name }),
+            ...(description !== undefined && { description }),
+            ...(status !== undefined && { status }),
+            ...(isEnabled !== undefined && { isEnabled }),
+            ...(normalizedSettings !== undefined && {
+              settings: settingsToPrisma(normalizedSettings as Record<string, unknown> | null),
+            }),
+            ...(shouldIncrementVersion && { version: existingTemplate.version + 1 }),
           },
-          sections: {
-            include: {
-              fields: {
-                orderBy: { order: "asc" },
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
               },
             },
-            orderBy: { order: "asc" },
+            sections: {
+              include: {
+                fields: {
+                  orderBy: { order: "asc" },
+                },
+              },
+              orderBy: { order: "asc" },
+            },
           },
-        },
-      });
-    });
+        });
+      },
+      {
+        timeout: 20000,
+      }
+    );
 
     // Create audit log
     await prisma.auditLog.create({
