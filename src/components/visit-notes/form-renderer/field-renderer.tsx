@@ -32,6 +32,10 @@ export function FieldRenderer({
 }: FieldRendererProps) {
   const config = field.config as Record<string, unknown> | null;
 
+  if (field.type === "TEXT_DISPLAY") {
+    return <TextDisplay content={(config?.content as string) || ""} />;
+  }
+
   return (
     <div className="space-y-2">
       <Label htmlFor={field.id}>
@@ -47,6 +51,69 @@ export function FieldRenderer({
       {error && <p className="text-xs text-error">{error}</p>}
     </div>
   );
+}
+
+function TextDisplay({ content }: { content: string }) {
+  return (
+    <div
+      className="rounded-md border border-border bg-background-secondary px-4 py-3 text-sm leading-6 text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_p:not(:last-child)]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+      dangerouslySetInnerHTML={{ __html: sanitizeTextDisplayHtml(content) }}
+    />
+  );
+}
+
+function sanitizeTextDisplayHtml(html: string): string {
+  if (!html.trim()) {
+    return "";
+  }
+
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  const allowedTags = new Set([
+    "A",
+    "B",
+    "BLOCKQUOTE",
+    "BR",
+    "DIV",
+    "EM",
+    "I",
+    "LI",
+    "OL",
+    "P",
+    "STRONG",
+    "U",
+    "UL",
+  ]);
+
+  const cleanNode = (node: Node) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const element = child as HTMLElement;
+        const href = element.tagName === "A" ? element.getAttribute("href") || "" : "";
+        if (!allowedTags.has(element.tagName)) {
+          element.replaceWith(...Array.from(element.childNodes));
+          continue;
+        }
+
+        for (const attribute of Array.from(element.attributes)) {
+          element.removeAttribute(attribute.name);
+        }
+
+        if (element.tagName === "A") {
+          if (/^https?:\/\//i.test(href) || href.startsWith("mailto:")) {
+            element.setAttribute("href", href);
+            element.setAttribute("target", "_blank");
+            element.setAttribute("rel", "noreferrer");
+          }
+        }
+      }
+
+      cleanNode(child);
+    }
+  };
+
+  cleanNode(template.content);
+  return template.innerHTML;
 }
 
 function renderFieldInput(

@@ -112,7 +112,7 @@ export function FormBuilder({ template, onChange }: FormBuilderProps) {
 
     const newField: FormFieldData = {
       id: `field-${Date.now()}`,
-      label: "New Field",
+      label: fieldType === "TEXT_DISPLAY" ? "Text" : "New Field",
       type: fieldType,
       required: false,
       order: section.fields.length,

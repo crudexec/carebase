@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { ArrowLeft, Copy, Save } from "lucide-react";
 import { Button } from "@/components/ui";
 import { FormBuilder } from "@/components/visit-notes/form-builder";
 import type { FormTemplateData } from "@/lib/visit-notes/types";
-import { DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS } from "@/lib/client-forms/types";
+import { getClientFormTemplateSettings } from "@/lib/client-forms/snapshots";
 import { TemplateSettingsPanel } from "@/components/client-forms/template-settings-panel";
 import { toast } from "sonner";
 
@@ -19,7 +20,7 @@ function normalizeTemplate(data: Record<string, unknown>): FormTemplateData {
     status: data.status as FormTemplateData["status"],
     version: data.version as number,
     isEnabled: Boolean(data.isEnabled),
-    settings: (data.settings as unknown) || DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS,
+    settings: getClientFormTemplateSettings(data.settings as Prisma.JsonValue | null),
     sections: (data.sections as FormTemplateData["sections"]) || [],
   };
 }
@@ -69,7 +70,7 @@ export default function EditClientFormTemplatePage() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save template");
+        throw new Error(data.detail || data.error || "Failed to save template");
       }
       setTemplate(normalizeTemplate(data.template));
     } catch (err) {
@@ -87,9 +88,9 @@ export default function EditClientFormTemplatePage() {
     return <div className="text-sm text-error">{error || "Template not found"}</div>;
   }
 
-  const clientFormSettings =
-    ((template.settings as unknown) as typeof DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS) ||
-    DEFAULT_CLIENT_FORM_TEMPLATE_SETTINGS;
+  const clientFormSettings = getClientFormTemplateSettings(
+    template.settings as Prisma.JsonValue | null
+  );
   const canGeneratePublicLink =
     template.status === "ACTIVE" && template.isEnabled && clientFormSettings.access.isPublic;
 

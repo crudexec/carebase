@@ -9,6 +9,7 @@ import {
   validateFieldConfig,
 } from "@/lib/visit-notes/validation";
 import { clientFormTemplateSettingsSchema } from "@/lib/client-forms/validation";
+import { getClientFormTemplateSettings } from "@/lib/client-forms/snapshots";
 
 // Helper to convert FieldConfig to Prisma JSON input
 function configToPrisma(
@@ -145,8 +146,13 @@ export async function PATCH(
 
     const { name, description, status, isEnabled, settings, sections } = validation.data;
 
-    if (existingTemplate.type === "CLIENT_FORM" && settings !== undefined) {
-      const settingsValidation = clientFormTemplateSettingsSchema.safeParse(settings);
+    const normalizedSettings =
+      existingTemplate.type === "CLIENT_FORM" && settings !== undefined
+        ? getClientFormTemplateSettings(settings as Prisma.JsonValue | null)
+        : settings;
+
+    if (existingTemplate.type === "CLIENT_FORM" && normalizedSettings !== undefined) {
+      const settingsValidation = clientFormTemplateSettingsSchema.safeParse(normalizedSettings);
       if (!settingsValidation.success) {
         return NextResponse.json(
           { error: "Invalid client form settings", details: settingsValidation.error.issues },
@@ -233,7 +239,9 @@ export async function PATCH(
           ...(description !== undefined && { description }),
           ...(status !== undefined && { status }),
           ...(isEnabled !== undefined && { isEnabled }),
-          ...(settings !== undefined && { settings: settingsToPrisma(settings) }),
+          ...(normalizedSettings !== undefined && {
+            settings: settingsToPrisma(normalizedSettings as Record<string, unknown> | null),
+          }),
           ...(shouldIncrementVersion && { version: existingTemplate.version + 1 }),
         },
         include: {
@@ -287,8 +295,9 @@ export async function PATCH(
     return NextResponse.json({ template });
   } catch (error) {
     console.error("Error updating form template:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to update form template";
     return NextResponse.json(
-      { error: "Failed to update form template" },
+      { error: "Failed to update form template", detail: errorMessage },
       { status: 500 }
     );
   }

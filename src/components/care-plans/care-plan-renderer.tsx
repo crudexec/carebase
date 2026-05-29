@@ -24,6 +24,7 @@ import {
   Calendar,
   Clock,
   Type,
+  Pilcrow,
   ListChecks,
   ToggleLeft,
   Star,
@@ -104,6 +105,7 @@ interface CarePlanRendererProps {
 const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: string }>> = {
   TEXT_SHORT: Type,
   TEXT_LONG: AlignLeft,
+  TEXT_DISPLAY: Pilcrow,
   NUMBER: Hash,
   YES_NO: ToggleLeft,
   SINGLE_CHOICE: ListChecks,

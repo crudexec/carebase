@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   Type,
   AlignLeft,
+  Pilcrow,
   Hash,
   ToggleLeft,
   CircleDot,
@@ -34,6 +35,7 @@ import {
 const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: string }>> = {
   TEXT_SHORT: Type,
   TEXT_LONG: AlignLeft,
+  TEXT_DISPLAY: Pilcrow,
   NUMBER: Hash,
   YES_NO: ToggleLeft,
   SINGLE_CHOICE: CircleDot,

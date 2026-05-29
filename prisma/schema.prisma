@@ -128,6 +128,7 @@ enum InviteStatus {
 enum FormFieldType {
   TEXT_SHORT
   TEXT_LONG
+  TEXT_DISPLAY
   NUMBER
   YES_NO
   SINGLE_CHOICE

@@ -10,6 +10,10 @@ export const textFieldConfigSchema = z.object({
   placeholder: z.string().optional(),
 });
 
+export const textDisplayFieldConfigSchema = z.object({
+  content: z.string().max(20000).optional(),
+});
+
 export const numberFieldConfigSchema = z.object({
   min: z.number().optional(), // Min threshold for alerts
   max: z.number().optional(), // Max threshold for alerts
@@ -32,6 +36,7 @@ export const ratingFieldConfigSchema = z.object({
 // Union of all config types - use passthrough to allow additional properties
 export const fieldConfigSchema = z.union([
   textFieldConfigSchema.passthrough(),
+  textDisplayFieldConfigSchema.passthrough(),
   numberFieldConfigSchema.passthrough(),
   choiceFieldConfigSchema.passthrough(),
   ratingFieldConfigSchema.passthrough(),
@@ -223,6 +228,12 @@ export function validateFieldConfig(
         ? { valid: true }
         : { valid: false, error: "Invalid text field config" };
     }
+    case "TEXT_DISPLAY": {
+      const result = textDisplayFieldConfigSchema.safeParse(config ?? {});
+      return result.success
+        ? { valid: true }
+        : { valid: false, error: "Invalid display text config" };
+    }
     default:
       return { valid: true };
   }
@@ -237,6 +248,10 @@ export function validateFieldValue(
   required: boolean,
   config?: unknown
 ): { valid: boolean; error?: string } {
+  if (type === "TEXT_DISPLAY") {
+    return { valid: true };
+  }
+
   // Check required
   if (required && (value === null || value === undefined || value === "")) {
     return { valid: false, error: "This field is required" };

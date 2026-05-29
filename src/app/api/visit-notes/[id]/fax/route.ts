@@ -468,6 +468,20 @@ async function generateVisitNotePDF(visitNote: {
 
     // Fields
     for (const field of section.fields.sort((a, b) => a.order - b.order)) {
+      if (field.type === "TEXT_DISPLAY") {
+        const content = stripHtml(String((field.config as { content?: string } | null)?.content || ""));
+        if (content) {
+          checkPageBreak(15);
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          const contentLines = doc.splitTextToSize(content, pageWidth - 2 * margin - 10);
+          doc.text(contentLines, margin + 3, y);
+          y += contentLines.length * 4 + 4;
+        }
+        continue;
+      }
+
       const value = data[field.id];
 
       checkPageBreak(15);
@@ -583,4 +597,16 @@ async function generateVisitNotePDF(visitNote: {
   );
 
   return Buffer.from(doc.output("arraybuffer"));
+}
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .trim();
 }

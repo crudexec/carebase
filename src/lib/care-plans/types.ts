@@ -191,6 +191,7 @@ export interface CarePlanTemplateListItem {
 export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   TEXT_SHORT: "Short Text",
   TEXT_LONG: "Long Text",
+  TEXT_DISPLAY: "Text",
   NUMBER: "Number",
   YES_NO: "Yes/No",
   SINGLE_CHOICE: "Single Choice",
@@ -220,6 +221,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   TEXT_SHORT: "Single line text input",
   TEXT_LONG: "Multi-line text area",
+  TEXT_DISPLAY: "Formatted text, instructions, or headings shown in the form",
   NUMBER: "Numeric input with optional min/max",
   YES_NO: "Boolean yes/no toggle",
   SINGLE_CHOICE: "Select one option from a list",
@@ -249,6 +251,7 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
 export const DEFAULT_FIELD_CONFIGS: Partial<Record<FormFieldType, FieldConfig>> = {
   TEXT_SHORT: { maxLength: 255 },
   TEXT_LONG: { maxLength: 5000 },
+  TEXT_DISPLAY: { content: "<p>Add formatted text here.</p>" },
   NUMBER: { min: 0 },
   SINGLE_CHOICE: { options: [] },
   MULTIPLE_CHOICE: { options: [] },

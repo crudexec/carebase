@@ -19,6 +19,10 @@ export interface TextFieldConfig {
   placeholder?: string;
 }
 
+export interface TextDisplayFieldConfig {
+  content?: string;
+}
+
 export interface NumberFieldConfig {
   min?: number; // Min threshold - alerts if value is below this
   max?: number; // Max threshold - alerts if value is above this
@@ -40,6 +44,7 @@ export interface RatingFieldConfig {
 
 export type FieldConfig =
   | TextFieldConfig
+  | TextDisplayFieldConfig
   | NumberFieldConfig
   | ChoiceFieldConfig
   | RatingFieldConfig
@@ -423,6 +428,7 @@ export const GOAL_TRACKING_OPTIONS = {
 export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   TEXT_SHORT: "Short Text",
   TEXT_LONG: "Long Text",
+  TEXT_DISPLAY: "Text",
   NUMBER: "Number",
   YES_NO: "Yes/No",
   SINGLE_CHOICE: "Single Choice",
@@ -451,6 +457,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
 export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   TEXT_SHORT: "Single line text input",
   TEXT_LONG: "Multi-line text area",
+  TEXT_DISPLAY: "Formatted text, instructions, or headings shown in the form",
   NUMBER: "Numeric input with optional threshold alerts",
   YES_NO: "Simple yes or no toggle",
   SINGLE_CHOICE: "Select one option from a list",
@@ -506,6 +513,8 @@ export function getDefaultFieldConfig(type: FormFieldType): FieldConfig {
       return { maxLength: 100 };
     case "TEXT_LONG":
       return { maxLength: 2000 };
+    case "TEXT_DISPLAY":
+      return { content: "<p>Add formatted text here.</p>" };
     case "NUMBER":
       return { min: 0, max: 100, thresholdEnabled: true };
     // OASIS field type defaults
