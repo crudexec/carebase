@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldData, FieldValue, BodyMapMarker, ICD10DiagnosisValue } from "@/lib/visit-notes/types";
+import {
+  FormFieldData,
+  FieldValue,
+  BodyMapMarker,
+  ICD10DiagnosisValue,
+  TableFieldConfig,
+  TableFieldValue,
+} from "@/lib/visit-notes/types";
 import {
   Input,
   DateInput,
@@ -14,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { BodyMapField } from "./body-map-field";
 import { ICD10DiagnosisField } from "./icd10-diagnosis-field";
+import { Plus, Trash2 } from "lucide-react";
 
 interface FieldRendererProps {
   field: FormFieldData;
@@ -271,6 +279,17 @@ function renderFieldInput(
         />
       );
 
+    case "TABLE":
+      return (
+        <TableField
+          value={(value as TableFieldValue) || []}
+          onChange={(v) => onChange(v)}
+          disabled={disabled}
+          error={!!error}
+          config={config as TableFieldConfig | null}
+        />
+      );
+
     case "BODY_MAP":
       return (
         <BodyMapField
@@ -341,6 +360,123 @@ function YesNoField({
       >
         No
       </button>
+    </div>
+  );
+}
+
+function TableField({
+  value,
+  onChange,
+  disabled,
+  error,
+  config,
+}: {
+  value: TableFieldValue;
+  onChange: (value: TableFieldValue) => void;
+  disabled?: boolean;
+  error?: boolean;
+  config?: TableFieldConfig | null;
+}) {
+  const columns = config?.columns?.length
+    ? config.columns
+    : [
+        { id: "column_1", label: "Column 1" },
+        { id: "column_2", label: "Column 2" },
+      ];
+  const minRows = config?.minRows ?? 1;
+  const maxRows = config?.maxRows;
+  const visibleRows: TableFieldValue =
+    value.length > 0 ? value : Array.from({ length: minRows }, () => ({}));
+  const canAddRow = !disabled && (maxRows === undefined || visibleRows.length < maxRows);
+  const canRemoveRow = !disabled && visibleRows.length > minRows;
+
+  const updateCell = (rowIndex: number, columnId: string, cellValue: string) => {
+    const nextRows = [...visibleRows].map((row) => ({ ...row }));
+    nextRows[rowIndex] = { ...nextRows[rowIndex], [columnId]: cellValue };
+    onChange(nextRows);
+  };
+
+  const addRow = () => {
+    if (!canAddRow) return;
+    onChange([...visibleRows, {}]);
+  };
+
+  const removeRow = (rowIndex: number) => {
+    if (!canRemoveRow) return;
+    onChange(visibleRows.filter((_, index) => index !== rowIndex));
+  };
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-md border border-border",
+        error && "ring-1 ring-error ring-offset-2"
+      )}
+    >
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-sm">
+          <thead className="bg-background-secondary">
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.id}
+                  scope="col"
+                  className="min-w-40 border-b border-border px-3 py-2 text-left font-medium text-foreground"
+                >
+                  {column.label}
+                </th>
+              ))}
+              {!disabled && (
+                <th scope="col" className="w-10 border-b border-border px-2 py-2">
+                  <span className="sr-only">Actions</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b border-border last:border-b-0">
+                {columns.map((column) => (
+                  <td key={column.id} className="p-2 align-top">
+                    <Input
+                      value={row[column.id] || ""}
+                      onChange={(event) => updateCell(rowIndex, column.id, event.target.value)}
+                      disabled={disabled}
+                      aria-label={`${column.label}, row ${rowIndex + 1}`}
+                    />
+                  </td>
+                ))}
+                {!disabled && (
+                  <td className="p-2 align-middle">
+                    <button
+                      type="button"
+                      onClick={() => removeRow(rowIndex)}
+                      disabled={!canRemoveRow}
+                      className="rounded p-1 text-foreground-tertiary hover:bg-background-secondary hover:text-error disabled:opacity-40"
+                      aria-label={`Remove row ${rowIndex + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!disabled && (
+        <div className="border-t border-border bg-background-secondary px-3 py-2">
+          <button
+            type="button"
+            onClick={addRow}
+            disabled={!canAddRow}
+            className="inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Add row
+          </button>
+        </div>
+      )}
     </div>
   );
 }

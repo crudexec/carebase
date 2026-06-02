@@ -18,6 +18,7 @@ import {
   PenTool,
   Camera,
   Star,
+  Table,
   User,
   Stethoscope,
   // OASIS field type icons
@@ -46,6 +47,7 @@ const FIELD_TYPE_ICONS: Record<FormFieldType, React.ComponentType<{ className?: 
   SIGNATURE: PenTool,
   PHOTO: Camera,
   RATING_SCALE: Star,
+  TABLE: Table,
   BODY_MAP: User,
   ICD10_DIAGNOSIS: Stethoscope,
   CASCADING_SELECT: GitBranch,

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FormFieldData, FIELD_TYPE_LABELS } from "@/lib/visit-notes/types";
+import { FormFieldData, FIELD_TYPE_LABELS, TableFieldConfig } from "@/lib/visit-notes/types";
 import { Input, Label, Textarea, Checkbox, Button } from "@/components/ui";
 import { Bold, Italic, List, ListOrdered, Plus, Quote, Trash2, Underline, X } from "lucide-react";
 import { FieldTypeIcon } from "./field-type-selector";
@@ -217,6 +217,9 @@ function renderConfigEditor(
           </div>
         </div>
       );
+
+    case "TABLE":
+      return <TableConfigEditor field={field} updateConfig={updateConfig} />;
 
     default:
       return null;
@@ -492,6 +495,113 @@ function ChoiceConfigEditor({
         <Plus className="mr-2 h-4 w-4" />
         Add option
       </Button>
+    </div>
+  );
+}
+
+function TableConfigEditor({
+  field,
+  updateConfig,
+}: {
+  field: FormFieldData;
+  updateConfig: (config: Record<string, unknown>) => void;
+}) {
+  const config = (field.config as TableFieldConfig | null) || { columns: [] };
+  const columns = config.columns?.length
+    ? config.columns
+    : [
+        { id: "column_1", label: "Column 1" },
+        { id: "column_2", label: "Column 2" },
+      ];
+
+  const updateColumns = (nextColumns: TableFieldConfig["columns"]) => {
+    updateConfig({ columns: nextColumns });
+  };
+
+  const addColumn = () => {
+    const nextIndex = columns.length + 1;
+    updateColumns([
+      ...columns,
+      { id: `column_${Date.now()}`, label: `Column ${nextIndex}` },
+    ]);
+  };
+
+  const updateColumn = (columnId: string, label: string) => {
+    updateColumns(
+      columns.map((column) =>
+        column.id === columnId ? { ...column, label } : column
+      )
+    );
+  };
+
+  const removeColumn = (columnId: string) => {
+    updateColumns(columns.filter((column) => column.id !== columnId));
+  };
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-border">
+      <h4 className="text-sm font-medium">Table Options</h4>
+
+      <div className="space-y-2">
+        <Label>Columns</Label>
+        <div className="space-y-2">
+          {columns.map((column, index) => (
+            <div key={column.id} className="flex items-center gap-2">
+              <Input
+                value={column.label}
+                onChange={(event) => updateColumn(column.id, event.target.value)}
+                placeholder={`Column ${index + 1}`}
+              />
+              <button
+                type="button"
+                onClick={() => removeColumn(column.id)}
+                disabled={columns.length <= 1}
+                className="rounded p-1 text-foreground-tertiary hover:bg-background-secondary hover:text-error disabled:opacity-50"
+                aria-label={`Remove ${column.label || `Column ${index + 1}`}`}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <Button type="button" variant="ghost" size="sm" onClick={addColumn}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add column
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="table-min-rows">Minimum rows</Label>
+          <Input
+            id="table-min-rows"
+            type="number"
+            min={0}
+            value={config.minRows ?? ""}
+            onChange={(event) =>
+              updateConfig({
+                minRows: event.target.value ? parseInt(event.target.value, 10) : undefined,
+              })
+            }
+            placeholder="0"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="table-max-rows">Maximum rows</Label>
+          <Input
+            id="table-max-rows"
+            type="number"
+            min={1}
+            value={config.maxRows ?? ""}
+            onChange={(event) =>
+              updateConfig({
+                maxRows: event.target.value ? parseInt(event.target.value, 10) : undefined,
+              })
+            }
+            placeholder="No limit"
+          />
+        </div>
+      </div>
     </div>
   );
 }

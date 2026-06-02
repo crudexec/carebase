@@ -202,6 +202,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature",
   PHOTO: "Photo",
   RATING_SCALE: "Rating Scale",
+  TABLE: "Table",
   BODY_MAP: "Body Map",
   ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
   CASCADING_SELECT: "Cascading Select",
@@ -232,6 +233,7 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature capture",
   PHOTO: "Photo upload",
   RATING_SCALE: "Numeric scale (e.g., 1-5)",
+  TABLE: "Fillable rows and columns",
   BODY_MAP: "Interactive body diagram for documenting pain and wounds",
   ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
   CASCADING_SELECT: "Linked dropdowns for hierarchical selections (Goal Area → Target Skill → Objective → Steps)",
@@ -256,4 +258,11 @@ export const DEFAULT_FIELD_CONFIGS: Partial<Record<FormFieldType, FieldConfig>> 
   SINGLE_CHOICE: { options: [] },
   MULTIPLE_CHOICE: { options: [] },
   RATING_SCALE: { min: 1, max: 5 },
+  TABLE: {
+    columns: [
+      { id: "column_1", label: "Column 1" },
+      { id: "column_2", label: "Column 2" },
+    ],
+    minRows: 1,
+  },
 };

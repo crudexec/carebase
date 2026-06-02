@@ -42,12 +42,26 @@ export interface RatingFieldConfig {
   labels?: Record<number, string>;
 }
 
+export interface TableFieldColumn {
+  id: string;
+  label: string;
+}
+
+export interface TableFieldConfig {
+  columns: TableFieldColumn[];
+  minRows?: number;
+  maxRows?: number;
+}
+
+export type TableFieldValue = Record<string, string>[];
+
 export type FieldConfig =
   | TextFieldConfig
   | TextDisplayFieldConfig
   | NumberFieldConfig
   | ChoiceFieldConfig
   | RatingFieldConfig
+  | TableFieldConfig
   // OASIS field configs
   | CodeEntryFieldConfig
   | MatrixGridFieldConfig
@@ -134,6 +148,7 @@ export type FieldValue =
   | number // NUMBER, RATING_SCALE
   | boolean // YES_NO
   | string[] // MULTIPLE_CHOICE
+  | TableFieldValue // TABLE
   | FileValue // SIGNATURE, PHOTO
   | BodyMapMarker[] // BODY_MAP
   | ICD10DiagnosisValue[] // ICD10_DIAGNOSIS
@@ -439,6 +454,7 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   SIGNATURE: "Signature",
   PHOTO: "Photo",
   RATING_SCALE: "Rating Scale",
+  TABLE: "Table",
   BODY_MAP: "Body Map",
   ICD10_DIAGNOSIS: "ICD-10 Diagnosis",
   CASCADING_SELECT: "Cascading Select",
@@ -468,6 +484,7 @@ export const FIELD_TYPE_DESCRIPTIONS: Record<FormFieldType, string> = {
   SIGNATURE: "Digital signature capture",
   PHOTO: "Photo upload",
   RATING_SCALE: "Star or number rating",
+  TABLE: "Fillable rows and columns",
   BODY_MAP: "Interactive body diagram for documenting pain and wounds",
   ICD10_DIAGNOSIS: "Search and select ICD-10 diagnosis codes",
   CASCADING_SELECT: "Linked dropdowns for hierarchical selections (Goal Area → Target Skill → Objective → Steps)",
@@ -489,6 +506,7 @@ export function fieldTypeRequiresConfig(type: FormFieldType): boolean {
     "SINGLE_CHOICE",
     "MULTIPLE_CHOICE",
     "RATING_SCALE",
+    "TABLE",
     // OASIS field types that require config
     "CODE_ENTRY",
     "MATRIX_GRID",
@@ -509,6 +527,14 @@ export function getDefaultFieldConfig(type: FormFieldType): FieldConfig {
       return { options: ["Option 1", "Option 2"] };
     case "RATING_SCALE":
       return { min: 1, max: 5 };
+    case "TABLE":
+      return {
+        columns: [
+          { id: "column_1", label: "Column 1" },
+          { id: "column_2", label: "Column 2" },
+        ],
+        minRows: 1,
+      };
     case "TEXT_SHORT":
       return { maxLength: 100 };
     case "TEXT_LONG":

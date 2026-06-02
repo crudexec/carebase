@@ -33,6 +33,17 @@ export const ratingFieldConfigSchema = z.object({
   labels: z.record(z.number(), z.string()).optional(),
 });
 
+export const tableFieldConfigSchema = z.object({
+  columns: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+    })
+  ).min(1, "At least one table column is required"),
+  minRows: z.number().int().min(0).optional(),
+  maxRows: z.number().int().positive().optional(),
+});
+
 // Union of all config types - use passthrough to allow additional properties
 export const fieldConfigSchema = z.union([
   textFieldConfigSchema.passthrough(),
@@ -40,6 +51,7 @@ export const fieldConfigSchema = z.union([
   numberFieldConfigSchema.passthrough(),
   choiceFieldConfigSchema.passthrough(),
   ratingFieldConfigSchema.passthrough(),
+  tableFieldConfigSchema.passthrough(),
   z.object({}).passthrough(), // Allow any object config
   z.null(),
 ]);
@@ -209,6 +221,17 @@ export function validateFieldConfig(
       }
       return { valid: true };
     }
+    case "TABLE": {
+      const result = tableFieldConfigSchema.safeParse(config);
+      if (!result.success) {
+        return { valid: false, error: "Table fields require at least one column" };
+      }
+      const { minRows, maxRows } = result.data;
+      if (minRows !== undefined && maxRows !== undefined && minRows > maxRows) {
+        return { valid: false, error: "Minimum rows cannot exceed maximum rows" };
+      }
+      return { valid: true };
+    }
     case "NUMBER": {
       const result = numberFieldConfigSchema.safeParse(config);
       if (!result.success) {
@@ -249,6 +272,41 @@ export function validateFieldValue(
   config?: unknown
 ): { valid: boolean; error?: string } {
   if (type === "TEXT_DISPLAY") {
+    return { valid: true };
+  }
+
+  if (type === "TABLE") {
+    const tableConfig = config as { columns?: { id: string; label: string }[]; minRows?: number; maxRows?: number } | null;
+    const rows = Array.isArray(value) ? value : [];
+    const nonEmptyRows = rows.filter((row) =>
+      row &&
+      typeof row === "object" &&
+      tableConfig?.columns?.some((column) => {
+        const cell = (row as Record<string, unknown>)[column.id];
+        return typeof cell === "string" ? cell.trim() !== "" : cell !== null && cell !== undefined;
+      })
+    );
+
+    if (required && nonEmptyRows.length === 0) {
+      return { valid: false, error: "This field is required" };
+    }
+
+    if (value === null || value === undefined || value === "") {
+      return { valid: true };
+    }
+
+    if (!Array.isArray(value)) {
+      return { valid: false, error: "Must be table rows" };
+    }
+
+    if (tableConfig?.minRows !== undefined && nonEmptyRows.length < tableConfig.minRows) {
+      return { valid: false, error: `Enter at least ${tableConfig.minRows} row(s)` };
+    }
+
+    if (tableConfig?.maxRows !== undefined && nonEmptyRows.length > tableConfig.maxRows) {
+      return { valid: false, error: `Enter no more than ${tableConfig.maxRows} row(s)` };
+    }
+
     return { valid: true };
   }
 

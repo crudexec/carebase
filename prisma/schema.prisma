@@ -139,6 +139,7 @@ enum FormFieldType {
   SIGNATURE
   PHOTO
   RATING_SCALE
+  TABLE
   BODY_MAP
   ICD10_DIAGNOSIS
   // OASIS-specific field types
