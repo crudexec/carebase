@@ -47,6 +47,7 @@ import {
   BookCheck,
   Languages,
   Building2,
+  FileSignature,
 } from "lucide-react";
 import { useTerminology } from "@/components/providers/terminology-provider";
 import { isInternalAdminClient } from "@/lib/internal-admin";
@@ -161,6 +162,12 @@ const navigation: NavEntry[] = [
         label: "Credentials",
         href: "/credentials",
         icon: Award,
+        roles: ["ADMIN", "OPS_MANAGER"],
+      },
+      {
+        label: "Offer Letters",
+        href: "/offer-letters",
+        icon: FileSignature,
         roles: ["ADMIN", "OPS_MANAGER"],
       },
       {

@@ -111,10 +111,23 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const whereClause: Prisma.InvoiceWhereInput = { companyId };
+    const addAndFilter = (filter: Prisma.InvoiceWhereInput) => {
+      whereClause.AND = Array.isArray(whereClause.AND)
+        ? [...whereClause.AND, filter]
+        : whereClause.AND
+          ? [whereClause.AND, filter]
+          : [filter];
+    };
+    const sponsorAccessFilter: Prisma.InvoiceWhereInput = {
+      OR: [
+        { sponsorId: userId },
+        { client: { sponsorId: userId } },
+      ],
+    };
 
-    // Sponsors can only see their own invoices
+    // Sponsors can see invoices addressed to them or tied to clients assigned to them.
     if (isSponsor) {
-      whereClause.sponsorId = userId;
+      addAndFilter(sponsorAccessFilter);
     } else if (sponsorId) {
       whereClause.sponsorId = sponsorId;
     }
@@ -143,11 +156,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      whereClause.OR = [
-        { invoiceNumber: { contains: search, mode: "insensitive" } },
-        { client: { firstName: { contains: search, mode: "insensitive" } } },
-        { client: { lastName: { contains: search, mode: "insensitive" } } },
-      ];
+      addAndFilter({
+        OR: [
+          { invoiceNumber: { contains: search, mode: "insensitive" } },
+          { client: { firstName: { contains: search, mode: "insensitive" } } },
+          { client: { lastName: { contains: search, mode: "insensitive" } } },
+        ],
+      });
     }
 
     const [invoices, total] = await Promise.all([
@@ -184,9 +199,14 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Calculate summary stats
+    const summaryWhere: Prisma.InvoiceWhereInput = { companyId };
+    if (isSponsor) {
+      summaryWhere.AND = [sponsorAccessFilter];
+    }
+
     const stats = await prisma.invoice.groupBy({
       by: ["status"],
-      where: { companyId, ...(isSponsor ? { sponsorId: userId } : {}) },
+      where: summaryWhere,
       _count: true,
       _sum: {
         total: true,
@@ -196,7 +216,7 @@ export async function GET(request: NextRequest) {
 
     // Get totals
     const totals = await prisma.invoice.aggregate({
-      where: { companyId, ...(isSponsor ? { sponsorId: userId } : {}) },
+      where: summaryWhere,
       _sum: {
         total: true,
         amountDue: true,

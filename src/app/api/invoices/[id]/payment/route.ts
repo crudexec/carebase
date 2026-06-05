@@ -230,7 +230,14 @@ export async function GET(
       where: {
         id,
         companyId,
-        ...(isSponsor ? { sponsorId: userId } : {}),
+        ...(isSponsor
+          ? {
+              OR: [
+                { sponsorId: userId },
+                { client: { sponsorId: userId } },
+              ],
+            }
+          : {}),
       },
     });
 

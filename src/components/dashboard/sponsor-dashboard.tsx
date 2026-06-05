@@ -37,11 +37,15 @@ interface Client {
   } | null;
 }
 
-interface VisitNote {
+interface CareReport {
   id: string;
-  templateName: string;
-  visitDate: string;
+  source: "visit-note" | "daily-report";
+  title: string;
+  statusLabel: string;
+  date: string;
   submittedAt: string;
+  href: string | null;
+  summary: string | null;
   shift: {
     id: string;
     scheduledStart: string;
@@ -56,21 +60,35 @@ interface VisitNote {
     firstName: string;
     lastName: string;
   };
+  details?: {
+    activities: string | null;
+    medications: string | null;
+    concerns: string | null;
+  };
 }
 
-interface UpcomingShift {
+interface Invoice {
   id: string;
-  scheduledStart: string;
-  scheduledEnd: string;
+  invoiceNumber: string;
+  periodStart: string;
+  periodEnd: string;
+  currency: "USD" | "GBP" | "CAD" | "NGN";
+  total: number;
+  amountPaid: number;
+  amountDue: number;
   status: string;
-  carer: {
-    firstName: string;
-    lastName: string;
-  } | null;
+  dueDate: string | null;
   client: {
+    id: string;
     firstName: string;
     lastName: string;
   };
+  sponsor: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
 }
 
 interface SponsorDashboardProps {
@@ -81,14 +99,7 @@ interface SponsorDashboardProps {
   };
 }
 
-type TabType = "overview" | "visits" | "notes" | "invoices";
-
-const STATUS_COLORS: Record<string, "primary" | "success" | "warning" | "error" | "default"> = {
-  SCHEDULED: "default",
-  IN_PROGRESS: "warning",
-  COMPLETED: "success",
-  CANCELLED: "error",
-};
+type TabType = "overview" | "notes" | "invoices";
 
 // Format helpers
 function formatDate(dateString: string) {
@@ -104,6 +115,20 @@ function formatTime(dateString: string) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function formatCurrency(amount: number, currency: Invoice["currency"] = "USD") {
+  const locales: Record<Invoice["currency"], string> = {
+    USD: "en-US",
+    GBP: "en-GB",
+    CAD: "en-CA",
+    NGN: "en-NG",
+  };
+
+  return new Intl.NumberFormat(locales[currency], {
+    style: "currency",
+    currency,
+  }).format(amount);
 }
 
 function calculateAge(dateOfBirth: string | null) {
@@ -129,13 +154,18 @@ function getRelativeTime(dateString: string) {
   return formatDate(dateString);
 }
 
-function ReportCard({ note }: { note: VisitNote }) {
+function ReportCard({ report }: { report: CareReport }) {
   const router = useRouter();
+  const isClickable = Boolean(report.href);
 
   return (
     <div
-      className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border hover:bg-background-secondary/50 cursor-pointer"
-      onClick={() => router.push(`/visit-notes/${note.id}`)}
+      className={`flex items-start justify-between gap-4 p-4 rounded-lg border border-border ${
+        isClickable ? "hover:bg-background-secondary/50 cursor-pointer" : ""
+      }`}
+      onClick={() => {
+        if (report.href) router.push(report.href);
+      }}
     >
       <div className="flex items-start gap-4 min-w-0">
         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -143,25 +173,71 @@ function ReportCard({ note }: { note: VisitNote }) {
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-medium text-foreground">{note.templateName}</p>
-            <Badge variant="success" className="text-[10px]">Approved</Badge>
+            <p className="font-medium text-foreground">{report.title}</p>
+            <Badge variant={report.source === "visit-note" ? "success" : "default"} className="text-[10px]">
+              {report.statusLabel}
+            </Badge>
           </div>
           <p className="text-sm text-foreground-secondary mt-1">
-            {note.client.firstName} {note.client.lastName} &bull; Visit date {formatDate(note.visitDate)}
+            {report.client.firstName} {report.client.lastName} &bull; Report date {formatDate(report.date)}
           </p>
           <p className="text-sm text-foreground-secondary">
-            {note.carer.firstName} {note.carer.lastName}
-            {note.shift && ` &bull; ${formatTime(note.shift.scheduledStart)} - ${formatTime(note.shift.scheduledEnd)}`}
+            {report.carer.firstName} {report.carer.lastName}
+            {report.shift && ` &bull; ${formatTime(report.shift.scheduledStart)} - ${formatTime(report.shift.scheduledEnd)}`}
           </p>
+          {report.summary && (
+            <p className="text-sm text-foreground-secondary mt-2 line-clamp-2">
+              {report.summary}
+            </p>
+          )}
           <p className="text-xs text-foreground-tertiary mt-1">
-            Submitted {getRelativeTime(note.submittedAt)}
+            Submitted {getRelativeTime(report.submittedAt)}
           </p>
         </div>
       </div>
-      <Button variant="ghost" size="sm" className="flex-shrink-0">
-        <Eye className="w-4 h-4 mr-2" />
-        View
-      </Button>
+      {isClickable && (
+        <Button variant="ghost" size="sm" className="flex-shrink-0">
+          <Eye className="w-4 h-4 mr-2" />
+          View
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function InvoiceCard({ invoice }: { invoice: Invoice }) {
+  const router = useRouter();
+
+  return (
+    <div
+      className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border hover:bg-background-secondary/50 cursor-pointer"
+      onClick={() => router.push(`/invoices/${invoice.id}`)}
+    >
+      <div className="flex items-start gap-4 min-w-0">
+        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <DollarSign className="w-5 h-5 text-blue-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
+            <Badge variant={invoice.status === "PAID" ? "success" : invoice.status === "OVERDUE" ? "error" : "default"} className="text-[10px]">
+              {invoice.status}
+            </Badge>
+          </div>
+          <p className="text-sm text-foreground-secondary mt-1">
+            {invoice.client.firstName} {invoice.client.lastName} &bull; {formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)}
+          </p>
+          <p className="text-sm text-foreground-secondary">
+            Due {invoice.dueDate ? formatDate(invoice.dueDate) : "-"} &bull; Balance {formatCurrency(invoice.amountDue, invoice.currency)}
+          </p>
+        </div>
+      </div>
+      <div className="text-right flex-shrink-0">
+        <p className="font-semibold text-foreground">{formatCurrency(invoice.total, invoice.currency)}</p>
+        <Button variant="ghost" size="sm" className="mt-1">
+          View
+        </Button>
+      </div>
     </div>
   );
 }
@@ -169,22 +245,25 @@ function ReportCard({ note }: { note: VisitNote }) {
 export function SponsorDashboard({ user }: SponsorDashboardProps) {
   const router = useRouter();
   const [clients, setClients] = React.useState<Client[]>([]);
-  const [visitNotes, setVisitNotes] = React.useState<VisitNote[]>([]);
-  const [upcomingShifts, setUpcomingShifts] = React.useState<UpcomingShift[]>([]);
+  const [careReports, setCareReports] = React.useState<CareReport[]>([]);
+  const [invoices, setInvoices] = React.useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [activeTab, setActiveTab] = React.useState<TabType>("overview");
+
+  const fetchInvoices = React.useCallback(async () => {
+    const response = await fetch("/api/invoices");
+    if (response.ok) {
+      const data = await response.json();
+      setInvoices(data.invoices || []);
+    }
+  }, []);
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const startDate = today.toISOString();
-
-        const [clientsRes, notesRes, shiftsRes] = await Promise.all([
+        const [clientsRes, reportsRes] = await Promise.all([
           fetch("/api/clients"),
-          fetch("/api/visit-notes?limit=20"),
-          fetch(`/api/scheduling?startDate=${startDate}`),
+          fetch("/api/dashboard/sponsor-reports?limit=50"),
         ]);
 
         if (clientsRes.ok) {
@@ -192,15 +271,12 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
           setClients(data.clients || []);
         }
 
-        if (notesRes.ok) {
-          const data = await notesRes.json();
-          setVisitNotes(data.visitNotes || []);
+        if (reportsRes.ok) {
+          const data = await reportsRes.json();
+          setCareReports(data.reports || []);
         }
 
-        if (shiftsRes.ok) {
-          const data = await shiftsRes.json();
-          setUpcomingShifts((data.shifts || []).slice(0, 10));
-        }
+        await fetchInvoices();
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -209,7 +285,15 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
     };
 
     fetchData();
-  }, []);
+  }, [fetchInvoices]);
+
+  React.useEffect(() => {
+    if (activeTab === "invoices") {
+      fetchInvoices().catch((error) => {
+        console.error("Failed to fetch invoices:", error);
+      });
+    }
+  }, [activeTab, fetchInvoices]);
 
   const client = clients[0];
   const age = client ? calculateAge(client.dateOfBirth) : null;
@@ -285,22 +369,6 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
             Overview
           </button>
           <button
-            onClick={() => setActiveTab("visits")}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "visits"
-                ? "border-primary text-primary"
-                : "border-transparent text-foreground-secondary hover:text-foreground"
-            }`}
-          >
-            <Calendar className="w-4 h-4 inline mr-2" />
-            Visits
-            {upcomingShifts.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
-                {upcomingShifts.length}
-              </span>
-            )}
-          </button>
-          <button
             onClick={() => setActiveTab("notes")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "notes"
@@ -309,10 +377,10 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
             }`}
           >
             <ClipboardList className="w-4 h-4 inline mr-2" />
-            Care Reports
-            {visitNotes.length > 0 && (
+            Daily Reports
+            {careReports.length > 0 && (
               <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
-                {visitNotes.length}
+                {careReports.length}
               </span>
             )}
           </button>
@@ -326,6 +394,11 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
           >
             <DollarSign className="w-4 h-4 inline mr-2" />
             Invoices
+            {invoices.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-background-secondary text-xs">
+                {invoices.length}
+              </span>
+            )}
           </button>
         </nav>
       </div>
@@ -374,25 +447,25 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
               </CardContent>
             </Card>
 
-            {/* Recent Care Reports */}
+            {/* Recent Daily Reports */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Recent Care Reports</CardTitle>
+                  <CardTitle>Recent Daily Reports</CardTitle>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab("notes")}>
                     View All
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {visitNotes.length === 0 ? (
+                {careReports.length === 0 ? (
                   <p className="text-center text-foreground-secondary py-8">
-                    No care reports yet.
+                    No daily reports yet.
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {visitNotes.slice(0, 5).map((note) => (
-                      <ReportCard key={note.id} note={note} />
+                    {careReports.slice(0, 5).map((report) => (
+                      <ReportCard key={`${report.source}-${report.id}`} report={report} />
                     ))}
                   </div>
                 )}
@@ -433,62 +506,13 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
               </Card>
             )}
 
-            {/* Upcoming Visits */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Upcoming Visits
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {upcomingShifts.length === 0 ? (
-                  <p className="text-foreground-tertiary text-sm">No upcoming visits</p>
-                ) : (
-                  <div className="space-y-3">
-                    {upcomingShifts.slice(0, 3).map((shift) => (
-                      <div
-                        key={shift.id}
-                        className="flex items-center gap-3 p-2 rounded-md hover:bg-background-secondary"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 flex flex-col items-center justify-center">
-                          <span className="text-sm font-bold text-blue-700">
-                            {new Date(shift.scheduledStart).getDate()}
-                          </span>
-                          <span className="text-[10px] text-blue-600 uppercase">
-                            {new Date(shift.scheduledStart).toLocaleDateString("en-US", { month: "short" })}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">
-                            {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
-                          </p>
-                          <p className="text-xs text-foreground-secondary">
-                            {shift.carer ? `${shift.carer.firstName} ${shift.carer.lastName}` : "Unassigned"}
-                          </p>
-                        </div>
-                        <Badge variant={STATUS_COLORS[shift.status] || "default"} className="text-[10px]">
-                          {shift.status}
-                        </Badge>
-                      </div>
-                    ))}
-                    {upcomingShifts.length > 3 && (
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => setActiveTab("visits")}>
-                        View all {upcomingShifts.length} visits
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="secondary" className="w-full justify-start" onClick={() => router.push("/visit-notes")}>
+                <Button variant="secondary" className="w-full justify-start" onClick={() => setActiveTab("notes")}>
                   <FileText className="w-4 h-4 mr-2" />
                   View All Reports
                 </Button>
@@ -506,46 +530,6 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
         </div>
       )}
 
-      {activeTab === "visits" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Scheduled Visits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingShifts.length === 0 ? (
-              <p className="text-center text-foreground-secondary py-8">
-                No visits scheduled.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingShifts.map((shift) => (
-                  <div
-                    key={shift.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{formatDate(shift.scheduledStart)}</p>
-                        <p className="text-sm text-foreground-secondary">
-                          {formatTime(shift.scheduledStart)} - {formatTime(shift.scheduledEnd)}
-                          {shift.carer && ` • ${shift.carer.firstName} ${shift.carer.lastName}`}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={STATUS_COLORS[shift.status] || "default"}>
-                      {shift.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {activeTab === "notes" && (
         <Card>
           <CardHeader>
@@ -556,21 +540,21 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
                   Approved reports for clients associated with your account.
                 </p>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => router.push("/visit-notes")}>
+              <Button variant="secondary" size="sm" onClick={() => setActiveTab("notes")}>
                 Full List
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            {visitNotes.length === 0 ? (
+            {careReports.length === 0 ? (
               <p className="text-center text-foreground-secondary py-8">
-                No care reports submitted yet.
+                No daily reports submitted yet.
               </p>
             ) : (
               <div className="space-y-3">
-                {visitNotes.map((note) => (
-                  <ReportCard key={note.id} note={note} />
+                {careReports.map((report) => (
+                  <ReportCard key={`${report.source}-${report.id}`} report={report} />
                 ))}
               </div>
             )}
@@ -584,9 +568,17 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
             <CardTitle>Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-foreground-secondary py-8">
-              No invoices yet.
-            </p>
+            {invoices.length === 0 ? (
+              <p className="text-center text-foreground-secondary py-8">
+                No invoices yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {invoices.map((invoice) => (
+                  <InvoiceCard key={invoice.id} invoice={invoice} />
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

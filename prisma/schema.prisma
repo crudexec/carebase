@@ -125,6 +125,22 @@ enum InviteStatus {
   REVOKED
 }
 
+enum OfferLetterTemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OfferLetterStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
 enum FormFieldType {
   TEXT_SHORT
   TEXT_LONG
@@ -613,6 +629,10 @@ model Company {
   // Staff invitations
   invites Invite[]
 
+  // HR offer letters
+  offerLetterTemplates OfferLetterTemplate[]
+  offerLetters         OfferLetter[]
+
   @@index([isActive])
 }
 
@@ -781,6 +801,11 @@ model User {
   // Invitations
   invitesCreated Invite[] @relation("InvitesCreated")
   invitesUsed    Invite[] @relation("InvitesUsed")
+
+  // HR offer letters
+  offerLetterTemplatesCreated OfferLetterTemplate[] @relation("OfferLetterTemplateCreator")
+  offerLettersSent            OfferLetter[]         @relation("OfferLetterSender")
+  offerLettersReceived        OfferLetter[]         @relation("OfferLetterEmployee")
 
   @@index([email])
   @@index([role])
@@ -1587,6 +1612,80 @@ model Invite {
   @@index([email])
   @@index([companyId])
   @@index([status])
+}
+
+model OfferLetterTemplate {
+  id          String                    @id @default(cuid())
+  name        String
+  description String?
+  subject     String
+  bodyHtml    String                    @db.Text
+  status      OfferLetterTemplateStatus @default(DRAFT)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("OfferLetterTemplateCreator", fields: [createdById], references: [id])
+
+  offerLetters OfferLetter[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([createdById])
+}
+
+model OfferLetter {
+  id     String            @id @default(cuid())
+  token  String            @unique @default(uuid())
+  status OfferLetterStatus @default(DRAFT)
+
+  recipientEmail     String
+  recipientFirstName String
+  recipientLastName  String
+  recipientPhone     String?
+  recipientRole      UserRole?
+  recipientSnapshot  Json
+  offerData          Json
+
+  renderedSubject  String
+  renderedBodyHtml String @db.Text
+
+  sentAt     DateTime?
+  viewedAt   DateTime?
+  acceptedAt DateTime?
+  declinedAt DateTime?
+  expiresAt  DateTime
+
+  signatureData   String? @db.Text
+  signedIpAddress String?
+  declineReason   String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  templateId String
+  template   OfferLetterTemplate @relation(fields: [templateId], references: [id])
+
+  employeeId String?
+  employee   User?   @relation("OfferLetterEmployee", fields: [employeeId], references: [id])
+
+  sentById String
+  sentBy   User   @relation("OfferLetterSender", fields: [sentById], references: [id])
+
+  @@index([companyId])
+  @@index([templateId])
+  @@index([employeeId])
+  @@index([sentById])
+  @@index([token])
+  @@index([status])
+  @@index([recipientEmail])
+  @@index([expiresAt])
 }
 
 model AuditLog {

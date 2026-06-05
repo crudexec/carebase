@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 // Routes that don't require authentication
 const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
+const publicRoutePrefixes = ["/offers"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
@@ -16,7 +17,10 @@ export default auth((req) => {
   const pathname = nextUrl.pathname;
 
   // Allow public routes
-  if (publicRoutes.some((route) => pathname === route)) {
+  if (
+    publicRoutes.some((route) => pathname === route) ||
+    publicRoutePrefixes.some((route) => pathname.startsWith(route))
+  ) {
     // Redirect logged-in users away from login page
     if (isLoggedIn && pathname === "/login") {
       return NextResponse.redirect(new URL("/dashboard", nextUrl));
