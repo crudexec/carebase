@@ -132,10 +132,12 @@ export default function ViewVisitNotePage() {
 
   // Check if user can review QA
   const canReviewQA = session?.user?.role && ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "SUPERVISOR"].includes(session.user.role);
+  const isSponsor = session?.user?.role === "SPONSOR";
 
   // Check if user is the carer who owns the note
   const isOwner = session?.user?.id === visitNote?.carer?.id;
   const canResubmit = isOwner && visitNote?.qaStatus === "REJECTED";
+  const canEditVisitNote = !isSponsor && visitNote?.qaStatus !== "APPROVED";
 
   const fetchVisitNote = React.useCallback(async () => {
     try {
@@ -168,9 +170,11 @@ export default function ViewVisitNotePage() {
 
   React.useEffect(() => {
     fetchVisitNote();
-    fetchComments();
-    fetchStaffMembers();
-  }, [fetchVisitNote, fetchComments]);
+    if (!isSponsor) {
+      fetchComments();
+      fetchStaffMembers();
+    }
+  }, [fetchVisitNote, fetchComments, isSponsor]);
 
   const fetchStaffMembers = async () => {
     try {
@@ -595,7 +599,7 @@ export default function ViewVisitNotePage() {
         </div>
         <div className="flex items-center gap-2">
           {/* Edit button - only for non-approved notes */}
-          {visitNote.qaStatus !== "APPROVED" && (
+          {canEditVisitNote && (
             <Link href={`/visit-notes/${noteId}/edit`}>
               <Button variant="secondary">
                 <Edit2 className="w-4 h-4 mr-2" />
@@ -620,13 +624,15 @@ export default function ViewVisitNotePage() {
               </>
             )}
           </Button>
-          <Button
-            variant="secondary"
-            onClick={openFaxModal}
-          >
-            <Printer className="w-4 h-4 mr-2" />
-            Send Fax
-          </Button>
+          {!isSponsor && (
+            <Button
+              variant="secondary"
+              onClick={openFaxModal}
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Send Fax
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1022,165 +1028,167 @@ export default function ViewVisitNotePage() {
       )}
 
       {/* Comments Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Comments
-            {comments.length > 0 && (
-              <span className="text-sm font-normal text-foreground-secondary">
-                ({comments.length})
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Existing Comments */}
-          {comments.length === 0 ? (
-            <p className="text-center text-foreground-tertiary py-4">
-              No comments yet. Be the first to comment!
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className={`flex gap-3 p-3 rounded-lg bg-background-secondary transition-all duration-300 ${
-                    deletingCommentId === comment.id ? "opacity-0 scale-95" : ""
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-medium text-primary">
-                      {comment.author.firstName[0]}
-                      {comment.author.lastName[0]}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm">
-                        {comment.author.firstName} {comment.author.lastName}
+      {!isSponsor && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Comments
+              {comments.length > 0 && (
+                <span className="text-sm font-normal text-foreground-secondary">
+                  ({comments.length})
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Existing Comments */}
+            {comments.length === 0 ? (
+              <p className="text-center text-foreground-tertiary py-4">
+                No comments yet. Be the first to comment!
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className={`flex gap-3 p-3 rounded-lg bg-background-secondary transition-all duration-300 ${
+                      deletingCommentId === comment.id ? "opacity-0 scale-95" : ""
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-medium text-primary">
+                        {comment.author.firstName[0]}
+                        {comment.author.lastName[0]}
                       </span>
-                      <span className="text-xs text-foreground-tertiary">
-                        {formatCommentTime(comment.createdAt)}
-                      </span>
-                      {comment.createdAt !== comment.updatedAt && (
-                        <span className="text-xs text-foreground-tertiary">
-                          (edited)
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">
+                          {comment.author.firstName} {comment.author.lastName}
                         </span>
+                        <span className="text-xs text-foreground-tertiary">
+                          {formatCommentTime(comment.createdAt)}
+                        </span>
+                        {comment.createdAt !== comment.updatedAt && (
+                          <span className="text-xs text-foreground-tertiary">
+                            (edited)
+                          </span>
+                        )}
+                      </div>
+                      {editingCommentId === comment.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            rows={2}
+                            className="text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditComment(comment.id)}
+                              disabled={isSubmitting}
+                            >
+                              <Check className="w-3 h-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={cancelEditing}
+                            >
+                              <X className="w-3 h-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">
+                          {renderCommentContent(comment.content)}
+                        </p>
                       )}
                     </div>
-                    {editingCommentId === comment.id ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          rows={2}
-                          className="text-sm"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleEditComment(comment.id)}
-                            disabled={isSubmitting}
+                    {session?.user?.id === comment.author.id &&
+                      editingCommentId !== comment.id && (
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => startEditing(comment)}
+                            className="p-1 text-foreground-tertiary hover:text-foreground rounded"
                           >
-                            <Check className="w-3 h-3 mr-1" />
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={cancelEditing}
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCommentClick(comment.id)}
+                            className="p-1 text-foreground-tertiary hover:text-error rounded"
                           >
-                            <X className="w-3 h-3 mr-1" />
-                            Cancel
-                          </Button>
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm whitespace-pre-wrap">
-                        {renderCommentContent(comment.content)}
-                      </p>
-                    )}
+                      )}
                   </div>
-                  {session?.user?.id === comment.author.id &&
-                    editingCommentId !== comment.id && (
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => startEditing(comment)}
-                          className="p-1 text-foreground-tertiary hover:text-foreground rounded"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCommentClick(comment.id)}
-                          className="p-1 text-foreground-tertiary hover:text-error rounded"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
+                ))}
+              </div>
+            )}
+
+            {/* Add Comment Form */}
+            <form onSubmit={handleSubmitComment} className="relative">
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-medium text-primary">
+                    {session?.user?.firstName?.[0] || "?"}
+                    {session?.user?.lastName?.[0] || "?"}
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="flex-1 relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={newComment}
+                    onChange={handleCommentChange}
+                    placeholder="Add a comment... Use @ to mention someone"
+                    rows={2}
+                    className="pr-12"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="absolute bottom-2 right-2"
+                    disabled={!newComment.trim() || isSubmitting}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
 
-          {/* Add Comment Form */}
-          <form onSubmit={handleSubmitComment} className="relative">
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-primary">
-                  {session?.user?.firstName?.[0] || "?"}
-                  {session?.user?.lastName?.[0] || "?"}
-                </span>
+                  {/* Mention Picker */}
+                  {showMentionPicker && filteredStaff.length > 0 && (
+                    <div className="absolute bottom-full left-0 mb-1 w-64 max-h-48 overflow-y-auto bg-background border border-border rounded-lg shadow-lg z-10">
+                      {filteredStaff.slice(0, 5).map((staff) => (
+                        <button
+                          key={staff.id}
+                          type="button"
+                          onClick={() => insertMention(staff)}
+                          className="w-full px-3 py-2 text-left hover:bg-background-secondary flex items-center gap-2"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-medium text-primary">
+                              {staff.firstName[0]}
+                              {staff.lastName[0]}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {staff.firstName} {staff.lastName}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={newComment}
-                  onChange={handleCommentChange}
-                  placeholder="Add a comment... Use @ to mention someone"
-                  rows={2}
-                  className="pr-12"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="absolute bottom-2 right-2"
-                  disabled={!newComment.trim() || isSubmitting}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-
-                {/* Mention Picker */}
-                {showMentionPicker && filteredStaff.length > 0 && (
-                  <div className="absolute bottom-full left-0 mb-1 w-64 max-h-48 overflow-y-auto bg-background border border-border rounded-lg shadow-lg z-10">
-                    {filteredStaff.slice(0, 5).map((staff) => (
-                      <button
-                        key={staff.id}
-                        type="button"
-                        onClick={() => insertMention(staff)}
-                        className="w-full px-3 py-2 text-left hover:bg-background-secondary flex items-center gap-2"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary">
-                            {staff.firstName[0]}
-                            {staff.lastName[0]}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {staff.firstName} {staff.lastName}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delete Comment Modal */}
       <ConfirmActionModal

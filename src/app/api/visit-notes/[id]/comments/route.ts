@@ -20,6 +20,43 @@ function parseMentions(content: string): string[] {
   return mentions;
 }
 
+async function canAccessVisitNoteComments({
+  visitNoteId,
+  companyId,
+  userId,
+  role,
+}: {
+  visitNoteId: string;
+  companyId: string;
+  userId: string;
+  role: string;
+}) {
+  if (role === "SPONSOR") {
+    return { allowed: false, missing: false };
+  }
+
+  const visitNote = await prisma.visitNote.findFirst({
+    where: {
+      id: visitNoteId,
+      companyId,
+    },
+    select: {
+      id: true,
+      carerId: true,
+    },
+  });
+
+  if (!visitNote) {
+    return { allowed: false, missing: true };
+  }
+
+  if (role === "CARER" && visitNote.carerId !== userId) {
+    return { allowed: false, missing: false };
+  }
+
+  return { allowed: true, missing: false };
+}
+
 // GET /api/visit-notes/[id]/comments - List comments for a visit note
 export async function GET(
   request: Request,
@@ -33,20 +70,22 @@ export async function GET(
 
     const { id: visitNoteId } = await params;
 
-    // Verify the visit note exists and belongs to the user's company
-    const visitNote = await prisma.visitNote.findFirst({
-      where: {
-        id: visitNoteId,
-        companyId: session.user.companyId,
-      },
-      select: { id: true },
+    const access = await canAccessVisitNoteComments({
+      visitNoteId,
+      companyId: session.user.companyId,
+      userId: session.user.id,
+      role: session.user.role,
     });
 
-    if (!visitNote) {
+    if (access.missing) {
       return NextResponse.json(
         { error: "Visit note not found" },
         { status: 404 }
       );
+    }
+
+    if (!access.allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Fetch comments with author info and mentions
@@ -111,6 +150,24 @@ export async function POST(
     }
 
     const { id: visitNoteId } = await params;
+
+    const access = await canAccessVisitNoteComments({
+      visitNoteId,
+      companyId: session.user.companyId,
+      userId: session.user.id,
+      role: session.user.role,
+    });
+
+    if (access.missing) {
+      return NextResponse.json(
+        { error: "Visit note not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!access.allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Verify the visit note exists and belongs to the user's company
     const visitNote = await prisma.visitNote.findFirst({

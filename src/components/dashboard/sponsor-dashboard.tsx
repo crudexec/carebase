@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Heart,
   FileText,
+  Eye,
   MessageCircle,
   Calendar,
   User,
@@ -39,10 +40,17 @@ interface Client {
 interface VisitNote {
   id: string;
   templateName: string;
+  visitDate: string;
   submittedAt: string;
   shift: {
+    id: string;
     scheduledStart: string;
     scheduledEnd: string;
+  } | null;
+  client: {
+    id: string;
+    firstName: string;
+    lastName: string;
   };
   carer: {
     firstName: string;
@@ -98,15 +106,6 @@ function formatTime(dateString: string) {
   });
 }
 
-function formatDateTime(dateString: string) {
-  return new Date(dateString).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 function calculateAge(dateOfBirth: string | null) {
   if (!dateOfBirth) return null;
   const today = new Date();
@@ -130,6 +129,43 @@ function getRelativeTime(dateString: string) {
   return formatDate(dateString);
 }
 
+function ReportCard({ note }: { note: VisitNote }) {
+  const router = useRouter();
+
+  return (
+    <div
+      className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border hover:bg-background-secondary/50 cursor-pointer"
+      onClick={() => router.push(`/visit-notes/${note.id}`)}
+    >
+      <div className="flex items-start gap-4 min-w-0">
+        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+          <ClipboardList className="w-5 h-5 text-green-600" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium text-foreground">{note.templateName}</p>
+            <Badge variant="success" className="text-[10px]">Approved</Badge>
+          </div>
+          <p className="text-sm text-foreground-secondary mt-1">
+            {note.client.firstName} {note.client.lastName} &bull; Visit date {formatDate(note.visitDate)}
+          </p>
+          <p className="text-sm text-foreground-secondary">
+            {note.carer.firstName} {note.carer.lastName}
+            {note.shift && ` &bull; ${formatTime(note.shift.scheduledStart)} - ${formatTime(note.shift.scheduledEnd)}`}
+          </p>
+          <p className="text-xs text-foreground-tertiary mt-1">
+            Submitted {getRelativeTime(note.submittedAt)}
+          </p>
+        </div>
+      </div>
+      <Button variant="ghost" size="sm" className="flex-shrink-0">
+        <Eye className="w-4 h-4 mr-2" />
+        View
+      </Button>
+    </div>
+  );
+}
+
 export function SponsorDashboard({ user }: SponsorDashboardProps) {
   const router = useRouter();
   const [clients, setClients] = React.useState<Client[]>([]);
@@ -147,7 +183,7 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
 
         const [clientsRes, notesRes, shiftsRes] = await Promise.all([
           fetch("/api/clients"),
-          fetch("/api/visit-notes?limit=10"),
+          fetch("/api/visit-notes?limit=20"),
           fetch(`/api/scheduling?startDate=${startDate}`),
         ]);
 
@@ -356,24 +392,7 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
                 ) : (
                   <div className="space-y-3">
                     {visitNotes.slice(0, 5).map((note) => (
-                      <div
-                        key={note.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-background-secondary/50 cursor-pointer"
-                        onClick={() => router.push(`/visit-notes/${note.id}`)}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                            <ClipboardList className="w-5 h-5 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{note.templateName}</p>
-                            <p className="text-sm text-foreground-secondary">
-                              by {note.carer.firstName} {note.carer.lastName} &bull; {getRelativeTime(note.submittedAt)}
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-foreground-tertiary" />
-                      </div>
+                      <ReportCard key={note.id} note={note} />
                     ))}
                   </div>
                 )}
@@ -530,7 +549,18 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
       {activeTab === "notes" && (
         <Card>
           <CardHeader>
-            <CardTitle>Care Reports</CardTitle>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle>Daily Reports</CardTitle>
+                <p className="text-sm text-foreground-secondary mt-1">
+                  Approved reports for clients associated with your account.
+                </p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={() => router.push("/visit-notes")}>
+                Full List
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {visitNotes.length === 0 ? (
@@ -540,24 +570,7 @@ export function SponsorDashboard({ user }: SponsorDashboardProps) {
             ) : (
               <div className="space-y-3">
                 {visitNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-background-secondary/50 cursor-pointer"
-                    onClick={() => router.push(`/visit-notes/${note.id}`)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <ClipboardList className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{note.templateName}</p>
-                        <p className="text-sm text-foreground-secondary">
-                          {note.carer.firstName} {note.carer.lastName} &bull; {formatDateTime(note.submittedAt)}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-foreground-tertiary" />
-                  </div>
+                  <ReportCard key={note.id} note={note} />
                 ))}
               </div>
             )}

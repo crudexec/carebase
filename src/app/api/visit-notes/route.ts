@@ -79,6 +79,7 @@ export async function GET(request: Request) {
     const where: Prisma.VisitNoteWhereInput = {
       companyId: user.companyId,
     };
+    let sponsorClientIds: string[] = [];
 
     // Carers can only see their own notes
     if (user.role === "CARER") {
@@ -92,15 +93,15 @@ export async function GET(request: Request) {
         },
         select: { id: true },
       });
-      const clientIds = sponsorClients.map((c) => c.id);
-      if (clientIds.length === 0) {
+      sponsorClientIds = sponsorClients.map((c) => c.id);
+      if (sponsorClientIds.length === 0) {
         // Sponsor has no associated clients - return empty result
         return NextResponse.json({
           visitNotes: [],
-          pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+          pagination: { page, limit, total: 0, totalPages: 0 },
         });
       }
-      where.clientId = { in: clientIds };
+      where.clientId = { in: sponsorClientIds };
       where.qaStatus = "APPROVED"; // Sponsors can only see approved notes
     } else {
       // Other roles can filter by carer
@@ -113,7 +114,15 @@ export async function GET(request: Request) {
       where.shiftId = shiftId;
     }
 
-    if (clientId) {
+    if (clientId && user.role === "SPONSOR") {
+      if (!sponsorClientIds.includes(clientId)) {
+        return NextResponse.json({
+          visitNotes: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        });
+      }
+      where.clientId = clientId;
+    } else if (clientId) {
       where.clientId = clientId;
     }
 
