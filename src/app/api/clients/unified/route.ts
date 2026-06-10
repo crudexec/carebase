@@ -73,6 +73,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Sponsors can view associated clients, but they cannot create clients or referrals.
+    if (session.user.role === "SPONSOR") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     // Check permissions
     if (
       !["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF"].includes(

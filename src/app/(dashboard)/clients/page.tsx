@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ClientStatus } from "@prisma/client";
 import {
   Button,
@@ -103,6 +104,7 @@ type SortDirection = "asc" | "desc";
 
 export default function ClientsPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [clients, setClients] = React.useState<ClientData[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -116,6 +118,8 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = React.useState<ClientData | null>(null);
   const [_selectedCarer, setSelectedCarer] = React.useState<CarerData | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const userRole = session?.user?.role;
+  const canCreateClient = Boolean(userRole) && userRole !== "SPONSOR";
 
   // Form state
   const [formData, setFormData] = React.useState({
@@ -450,14 +454,15 @@ export default function ClientsPage() {
             <RefreshCw className="h-3.5 w-3.5" />
           </button>
 
-          {/* Add Client */}
-          <button
-            onClick={() => router.push("/clients/new")}
-            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
-          >
-            <Plus className="h-3 w-3" />
-            Add Client
-          </button>
+          {canCreateClient && (
+            <button
+              onClick={() => router.push("/clients/new")}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+            >
+              <Plus className="h-3 w-3" />
+              Add Client
+            </button>
+          )}
         </div>
       </div>
 
@@ -484,10 +489,12 @@ export default function ClientsPage() {
           <CardContent className="p-12 text-center">
             <User className="w-12 h-12 mx-auto text-foreground-tertiary mb-4" />
             <p className="text-foreground-secondary">No clients found</p>
-            <Button className="mt-4" onClick={() => router.push("/clients/new")}>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Client
-            </Button>
+            {canCreateClient && (
+              <Button className="mt-4" onClick={() => router.push("/clients/new")}>
+                <Plus className="w-4 h-4 mr-1" />
+                Add Client
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

@@ -240,6 +240,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Sponsors can view their associated clients, but client creation is staff/admin only.
+    if ((user.role as string) === "SPONSOR") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     // Check permissions
     if (!hasPermission(user.role, PERMISSIONS.USER_MANAGE)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
