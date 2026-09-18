@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 // Routes that don't require authentication
 const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
-const publicRoutePrefixes = ["/offers"];
+const publicRoutePrefixes = ["/offers", "/certificates/verify"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {

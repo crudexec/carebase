@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -69,11 +69,7 @@ export default function CourseLearnPage() {
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId]);
-
-  const fetchCourse = async () => {
+  const fetchCourse = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -112,7 +108,11 @@ export default function CourseLearnPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [courseId]);
+
+  useEffect(() => {
+    fetchCourse();
+  }, [fetchCourse]);
 
   const markLessonComplete = async () => {
     if (!course || !course.lessons[currentLessonIndex]) return;
@@ -152,7 +152,7 @@ export default function CourseLearnPage() {
         };
       });
 
-      toast.success("Lesson completed!");
+      toast.success(data.isComplete ? "Course completed! Certificate issued." : "Lesson completed!");
       goToNextLesson();
     } catch {
       toast.error("Failed to mark lesson complete");
@@ -371,7 +371,14 @@ export default function CourseLearnPage() {
                 </Button>
 
                 <div className="flex items-center gap-2">
-                  {isLastLesson && allLessonsComplete && course.quiz && !course.quiz.hasPassed ? (
+                  {isLastLesson && allLessonsComplete && (!course.quiz || course.quiz.hasPassed) ? (
+                    <Button asChild>
+                      <Link href={`/training/courses/${course.id}`}>
+                        Course Complete
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Link>
+                    </Button>
+                  ) : isLastLesson && allLessonsComplete && course.quiz && !course.quiz.hasPassed ? (
                     <Button asChild>
                       <Link href={`/training/courses/${course.id}/quiz`}>
                         Take Quiz

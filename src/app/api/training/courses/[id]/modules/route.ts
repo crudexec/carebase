@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyPermission, PERMISSIONS } from "@/lib/permissions";
-import { z } from "zod";
 
-// Create lesson schema
 const createSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  content: z.string().min(1, "Content is required"),
-  moduleId: z.string().nullable().optional(),
+  description: z.string().optional(),
   orderIndex: z.number().int().min(0).optional(),
-  videoUrl: z.string().url().nullable().optional(),
-  estimatedMinutes: z.number().int().min(1).default(5),
+  isRequired: z.boolean().default(true),
 });
 
-// GET - List lessons for a course
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,43 +24,47 @@ export async function GET(
     const { companyId, id: userId } = session.user;
     const { id: courseId } = await params;
 
-    // Verify course exists
     const course = await prisma.trainingCourse.findFirst({
       where: { id: courseId, companyId },
+      select: { id: true },
     });
 
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    const lessons = await prisma.courseLesson.findMany({
+    const modules = await prisma.courseModule.findMany({
       where: { courseId, companyId },
       orderBy: { orderIndex: "asc" },
       include: {
-        progress: {
-          where: { userId },
+        lessons: {
+          orderBy: { orderIndex: "asc" },
+          include: {
+            progress: {
+              where: { userId },
+            },
+          },
         },
       },
     });
 
-    // Transform to include completion status
-    const lessonsWithProgress = lessons.map((lesson) => ({
-      ...lesson,
-      isCompleted: lesson.progress.length > 0 && lesson.progress[0].completedAt !== null,
-      progress: undefined, // Remove raw progress data
-    }));
-
-    return NextResponse.json(lessonsWithProgress);
+    return NextResponse.json(modules.map((module) => ({
+      ...module,
+      lessons: module.lessons.map((lesson) => ({
+        ...lesson,
+        isCompleted: lesson.progress.some((progress) => progress.completedAt),
+        progress: undefined,
+      })),
+    })));
   } catch (error) {
-    console.error("Error fetching lessons:", error);
+    console.error("Error fetching course modules:", error);
     return NextResponse.json(
-      { error: "Failed to fetch lessons" },
+      { error: "Failed to fetch course modules" },
       { status: 500 }
     );
   }
 }
 
-// POST - Create lesson
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -87,9 +87,9 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Verify course exists
     const course = await prisma.trainingCourse.findFirst({
       where: { id: courseId, companyId },
+      select: { id: true },
     });
 
     if (!course) {
@@ -107,45 +107,31 @@ export async function POST(
     }
 
     const data = parseResult.data;
-
-    if (data.moduleId) {
-      const courseModule = await prisma.courseModule.findFirst({
-        where: {
-          id: data.moduleId,
-          courseId,
-          companyId,
-        },
-      });
-
-      if (!courseModule) {
-        return NextResponse.json({ error: "Module not found" }, { status: 404 });
-      }
-    }
-
-    // Get max order index if not provided
     let orderIndex = data.orderIndex;
     if (orderIndex === undefined) {
-      const maxOrder = await prisma.courseLesson.aggregate({
-        where: { courseId, moduleId: data.moduleId ?? null },
+      const maxOrder = await prisma.courseModule.aggregate({
+        where: { courseId, companyId },
         _max: { orderIndex: true },
       });
       orderIndex = (maxOrder._max.orderIndex ?? -1) + 1;
     }
 
-    const lesson = await prisma.courseLesson.create({
+    const courseModule = await prisma.courseModule.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        isRequired: data.isRequired,
         orderIndex,
         courseId,
         companyId,
       },
     });
 
-    return NextResponse.json(lesson, { status: 201 });
+    return NextResponse.json(courseModule, { status: 201 });
   } catch (error) {
-    console.error("Error creating lesson:", error);
+    console.error("Error creating course module:", error);
     return NextResponse.json(
-      { error: "Failed to create lesson" },
+      { error: "Failed to create course module" },
       { status: 500 }
     );
   }

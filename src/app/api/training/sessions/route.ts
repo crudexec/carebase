@@ -13,21 +13,6 @@ const querySchema = z.object({
   instructorId: z.string().optional(),
 });
 
-// Create session schema
-const createSchema = z.object({
-  courseId: z.string().min(1, "Course is required"),
-  scheduledDate: z.string().transform((s) => new Date(s)),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
-  timezone: z.string().default("America/New_York"),
-  location: z.string().optional(),
-  isVirtual: z.boolean().default(false),
-  virtualMeetingUrl: z.string().url().optional(),
-  instructorId: z.string().optional(),
-  externalInstructor: z.string().optional(),
-  capacity: z.number().int().min(1).optional(),
-});
-
 // GET - List training sessions
 export async function GET(request: NextRequest) {
   try {
@@ -97,14 +82,14 @@ export async function GET(request: NextRequest) {
 }
 
 // POST - Create training session
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId, role } = session.user;
+    const { role } = session.user;
 
     const canManage = hasAnyPermission(role, [
       PERMISSIONS.USER_MANAGE,
@@ -115,58 +100,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const parseResult = createSchema.safeParse(body);
-
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid data", details: parseResult.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    const data = parseResult.data;
-
-    // Verify course exists
-    const course = await prisma.trainingCourse.findFirst({
-      where: { id: data.courseId, companyId },
-    });
-
-    if (!course) {
-      return NextResponse.json({ error: "Course not found" }, { status: 404 });
-    }
-
-    // Verify instructor if provided
-    if (data.instructorId) {
-      const instructor = await prisma.user.findFirst({
-        where: { id: data.instructorId, companyId },
-      });
-      if (!instructor) {
-        return NextResponse.json({ error: "Instructor not found" }, { status: 404 });
-      }
-    }
-
-    const trainingSession = await prisma.trainingSession.create({
-      data: {
-        ...data,
-        status: TrainingSessionStatus.SCHEDULED,
-        companyId,
-      },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            category: true,
-          },
-        },
-        instructor: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-      },
-    });
-
-    return NextResponse.json(trainingSession, { status: 201 });
+    return NextResponse.json(
+      { error: "Live training sessions have been removed. Training courses are self-paced only." },
+      { status: 410 }
+    );
   } catch (error) {
     console.error("Error creating training session:", error);
     return NextResponse.json(

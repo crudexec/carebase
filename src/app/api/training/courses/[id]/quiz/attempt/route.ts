@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { syncCourseCompletion } from "@/lib/training/completion";
 
 // Submit quiz attempt schema
 const submitSchema = z.object({
@@ -101,67 +103,18 @@ export async function POST(
         quizId: quiz.id,
         userId,
         companyId,
-        answers: answers as any,
+        answers: answers as Prisma.InputJsonValue,
         score,
         passed,
         completedAt: new Date(),
       },
     });
 
-    // Update course progress if passed
-    if (passed) {
-      await prisma.courseProgress.upsert({
-        where: {
-          courseId_userId: {
-            courseId,
-            userId,
-          },
-        },
-        update: {
-          quizPassed: true,
-          bestQuizScore: {
-            set: score,
-          },
-        },
-        create: {
-          courseId,
-          userId,
-          companyId,
-          quizPassed: true,
-          bestQuizScore: score,
-        },
-      });
-    } else {
-      // Update best score if this is better
-      const existingProgress = await prisma.courseProgress.findUnique({
-        where: {
-          courseId_userId: {
-            courseId,
-            userId,
-          },
-        },
-      });
-
-      if (!existingProgress || (existingProgress.bestQuizScore ?? 0) < score) {
-        await prisma.courseProgress.upsert({
-          where: {
-            courseId_userId: {
-              courseId,
-              userId,
-            },
-          },
-          update: {
-            bestQuizScore: score,
-          },
-          create: {
-            courseId,
-            userId,
-            companyId,
-            bestQuizScore: score,
-          },
-        });
-      }
-    }
+    const completion = await syncCourseCompletion({
+      companyId,
+      courseId,
+      userId,
+    });
 
     return NextResponse.json({
       attempt: {
@@ -170,6 +123,7 @@ export async function POST(
         passed,
         passingScore: quiz.passingScore,
       },
+      completion,
       results,
       totalPoints,
       earnedPoints,

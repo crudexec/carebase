@@ -3,14 +3,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyPermission, PERMISSIONS } from "@/lib/permissions";
 import { z } from "zod";
-import { TrainingCategory, TrainingFormat, UserRole } from "@prisma/client";
+import { TrainingCategory, UserRole } from "@prisma/client";
 
 // Update course schema
 const updateSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   category: z.nativeEnum(TrainingCategory).optional(),
-  format: z.nativeEnum(TrainingFormat).optional(),
+  format: z.literal("ONLINE_SELF_PACED").optional(),
   durationMinutes: z.number().int().min(1).optional(),
   ceuCredits: z.number().min(0).optional(),
   contactHours: z.number().min(0).optional(),
@@ -38,12 +38,29 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId, id: userId } = session.user;
+    const { companyId, id: userId, role } = session.user;
     const { id } = await params;
+    const canManage = hasAnyPermission(role, [
+      PERMISSIONS.USER_MANAGE,
+      PERMISSIONS.USER_FULL,
+    ]);
 
     const course = await prisma.trainingCourse.findFirst({
       where: { id, companyId },
       include: {
+        modules: {
+          orderBy: { orderIndex: "asc" },
+          include: {
+            lessons: {
+              orderBy: { orderIndex: "asc" },
+              include: {
+                progress: {
+                  where: { userId },
+                },
+              },
+            },
+          },
+        },
         lessons: {
           orderBy: { orderIndex: "asc" },
           include: {
@@ -67,26 +84,11 @@ export async function GET(
         progress: {
           where: { userId },
         },
-        sessions: {
-          where: {
-            scheduledDate: { gte: new Date() },
-          },
-          orderBy: { scheduledDate: "asc" },
-          take: 5,
-          include: {
-            instructor: {
-              select: { id: true, firstName: true, lastName: true },
-            },
-            _count: {
-              select: { attendances: true },
-            },
-          },
-        },
         _count: {
           select: {
-            sessions: true,
             assignments: true,
             lessons: true,
+            modules: true,
           },
         },
       },
@@ -105,7 +107,20 @@ export async function GET(
       });
     }
 
-    return NextResponse.json({ ...course, prerequisiteDetails: prerequisites });
+    const safeCourse = {
+      ...course,
+      quizzes: course.quizzes.map((quiz) => ({
+        ...quiz,
+        questions: quiz.questions.map((question) => ({
+          ...question,
+          correctIds: canManage ? question.correctIds : undefined,
+          explanation: canManage ? question.explanation : undefined,
+        })),
+      })),
+      prerequisiteDetails: prerequisites,
+    };
+
+    return NextResponse.json(safeCourse);
   } catch (error) {
     console.error("Error fetching course:", error);
     return NextResponse.json(
@@ -158,11 +173,10 @@ export async function PATCH(
 
     const course = await prisma.trainingCourse.update({
       where: { id },
-      data: parseResult.data,
+      data: { ...parseResult.data, format: "ONLINE_SELF_PACED" },
       include: {
         _count: {
           select: {
-            sessions: true,
             assignments: true,
           },
         },

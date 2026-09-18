@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { syncCourseCompletion } from "@/lib/training/completion";
 
 // POST - Mark lesson as complete
 export async function POST(
@@ -44,42 +45,17 @@ export async function POST(
       },
     });
 
-    // Update course progress
-    const totalLessons = await prisma.courseLesson.count({
-      where: { courseId },
-    });
-
-    const completedLessons = await prisma.courseLessonProgress.count({
-      where: {
-        lesson: { courseId },
-        userId,
-        completedAt: { not: null },
-      },
-    });
-
-    await prisma.courseProgress.upsert({
-      where: {
-        courseId_userId: {
-          courseId,
-          userId,
-        },
-      },
-      update: {
-        lessonsCompleted: completedLessons,
-        completedAt: completedLessons === totalLessons ? new Date() : null,
-      },
-      create: {
-        courseId,
-        userId,
-        companyId,
-        lessonsCompleted: completedLessons,
-      },
+    const completion = await syncCourseCompletion({
+      companyId,
+      courseId,
+      userId,
     });
 
     return NextResponse.json({
       progress,
-      lessonsCompleted: completedLessons,
-      totalLessons,
+      lessonsCompleted: completion.completedLessons,
+      totalLessons: completion.totalLessons,
+      isComplete: completion.isComplete,
     });
   } catch (error) {
     console.error("Error marking lesson complete:", error);

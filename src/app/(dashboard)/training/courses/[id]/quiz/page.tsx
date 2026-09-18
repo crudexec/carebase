@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -86,11 +86,7 @@ export default function QuizPage() {
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [showingResults, setShowingResults] = useState(false);
 
-  useEffect(() => {
-    fetchQuiz();
-  }, [courseId]);
-
-  const fetchQuiz = async () => {
+  const fetchQuiz = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -121,7 +117,11 @@ export default function QuizPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [courseId]);
+
+  useEffect(() => {
+    fetchQuiz();
+  }, [fetchQuiz]);
 
   const startQuiz = () => {
     setQuizStarted(true);
@@ -169,7 +169,9 @@ export default function QuizPage() {
       setShowingResults(true);
 
       if (data.attempt.passed) {
-        toast.success("Congratulations! You passed the quiz!");
+        toast.success(data.completion?.isComplete
+          ? "Congratulations! Course completed and certificate issued."
+          : "Congratulations! You passed the quiz!");
       } else {
         toast.error(`You scored ${data.attempt.score}%. Try again!`);
       }

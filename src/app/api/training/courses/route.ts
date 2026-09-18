@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyPermission, PERMISSIONS } from "@/lib/permissions";
 import { z } from "zod";
-import { TrainingCategory, TrainingFormat, UserRole } from "@prisma/client";
+import { TrainingCategory, UserRole } from "@prisma/client";
 
 // Query validation schema
 const querySchema = z.object({
@@ -18,7 +18,7 @@ const createSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   category: z.nativeEnum(TrainingCategory),
-  format: z.nativeEnum(TrainingFormat),
+  format: z.literal("ONLINE_SELF_PACED").optional().default("ONLINE_SELF_PACED"),
   durationMinutes: z.number().int().min(1),
   ceuCredits: z.number().min(0).default(0),
   contactHours: z.number().min(0).default(0),
@@ -69,7 +69,6 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            sessions: true,
             assignments: true,
             lessons: true,
           },
@@ -86,10 +85,26 @@ export async function GET(request: NextRequest) {
         progress: {
           where: { userId },
           select: {
+            id: true,
             lessonsCompleted: true,
             quizPassed: true,
             bestQuizScore: true,
             completedAt: true,
+          },
+        },
+        certificates: {
+          where: {
+            userId,
+            revokedAt: null,
+          },
+          orderBy: { issuedAt: "desc" },
+          take: 1,
+          select: {
+            id: true,
+            certificateNumber: true,
+            issuedAt: true,
+            expiresAt: true,
+            pdfUrl: true,
           },
         },
       },
@@ -112,7 +127,7 @@ export async function GET(request: NextRequest) {
 
       // Determine status
       let status: "not_started" | "in_progress" | "completed" = "not_started";
-      if (lessonsCompleted === totalLessons && (!hasQuiz || quizPassed)) {
+      if (totalLessons > 0 && lessonsCompleted === totalLessons && (!hasQuiz || quizPassed)) {
         status = "completed";
       } else if (lessonsCompleted > 0 || bestQuizScore !== null) {
         status = "in_progress";
@@ -140,6 +155,7 @@ export async function GET(request: NextRequest) {
         bestQuizScore,
         progressPercent,
         status,
+        certificate: course.certificates[0] ?? null,
       };
     });
 
@@ -200,12 +216,12 @@ export async function POST(request: NextRequest) {
     const course = await prisma.trainingCourse.create({
       data: {
         ...data,
+        format: "ONLINE_SELF_PACED",
         companyId,
       },
       include: {
         _count: {
           select: {
-            sessions: true,
             assignments: true,
           },
         },

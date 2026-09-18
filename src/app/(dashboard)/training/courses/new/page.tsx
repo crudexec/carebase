@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { TrainingCategory, TrainingFormat, UserRole } from "@prisma/client";
+import { TrainingCategory, UserRole } from "@prisma/client";
 import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -34,15 +34,6 @@ const CATEGORY_OPTIONS: { value: TrainingCategory; label: string }[] = [
   { value: "TECHNOLOGY", label: "Technology" },
 ];
 
-const FORMAT_OPTIONS: { value: TrainingFormat; label: string }[] = [
-  { value: "IN_PERSON", label: "In-Person" },
-  { value: "ONLINE_SELF_PACED", label: "Online (Self-Paced)" },
-  { value: "ONLINE_LIVE", label: "Online (Live)" },
-  { value: "HYBRID", label: "Hybrid" },
-  { value: "ON_THE_JOB", label: "On-the-Job" },
-  { value: "SIMULATION", label: "Simulation" },
-];
-
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: "CARER", label: "Carer" },
   { value: "ADMIN", label: "Admin" },
@@ -60,7 +51,6 @@ export default function NewCoursePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<TrainingCategory>("ORIENTATION");
-  const [format, setFormat] = useState<TrainingFormat>("IN_PERSON");
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [ceuCredits, setCeuCredits] = useState(0);
   const [contactHours, setContactHours] = useState(0);
@@ -111,7 +101,7 @@ export default function NewCoursePage() {
           title: title.trim(),
           description: description.trim() || undefined,
           category,
-          format,
+          format: "ONLINE_SELF_PACED",
           durationMinutes,
           ceuCredits,
           contactHours,
@@ -153,9 +143,9 @@ export default function NewCoursePage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">New Training Course</h1>
+          <h1 className="text-2xl font-bold">New Self-Paced Course</h1>
           <p className="text-foreground-secondary mt-1">
-            Create a new training course for your staff
+            Create lessons, modules, quizzes, and completion requirements.
           </p>
         </div>
       </div>
@@ -187,7 +177,7 @@ export default function NewCoursePage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category *</label>
                 <Select
@@ -203,17 +193,10 @@ export default function NewCoursePage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Format *</label>
-                <Select
-                  value={format}
-                  onChange={(e) => setFormat(e.target.value as TrainingFormat)}
-                >
-                  {FORMAT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
+                <label className="text-sm font-medium">Delivery</label>
+                <div className="rounded-md border bg-background-secondary px-3 py-2 text-sm font-medium">
+                  Self-paced online course
+                </div>
               </div>
             </div>
 

@@ -184,7 +184,7 @@ export default function CredentialsPage() {
 
   // Caregiver search for add modal
   const [caregiverSearch, setCaregiverSearch] = React.useState("");
-  const [caregiverResults, setCaregiverResults] = React.useState<Array<{ id: string; name: string; profileId: string }>>([]);
+  const [caregiverResults, setCaregiverResults] = React.useState<Array<{ id: string; name: string; profileId: string; email: string }>>([]);
   const [showCaregiverDropdown, setShowCaregiverDropdown] = React.useState(false);
 
   // Form state
@@ -260,17 +260,10 @@ export default function CredentialsPage() {
       return;
     }
     try {
-      const response = await fetch(`/api/staff?search=${encodeURIComponent(query)}&role=CARER`);
+      const response = await fetch(`/api/credentials/caregivers?search=${encodeURIComponent(query)}`);
       if (!response.ok) return;
       const data = await response.json();
-      const results = data.staff
-        .filter((s: { caregiverProfile?: { id: string } }) => s.caregiverProfile)
-        .map((s: { id: string; firstName: string; lastName: string; caregiverProfile: { id: string } }) => ({
-          id: s.id,
-          name: `${s.firstName} ${s.lastName}`,
-          profileId: s.caregiverProfile.id,
-        }));
-      setCaregiverResults(results);
+      setCaregiverResults(data.caregivers ?? []);
     } catch {
       console.error("Failed to search caregivers");
     }
@@ -891,7 +884,8 @@ export default function CredentialsPage() {
                               setShowCaregiverDropdown(false);
                             }}
                           >
-                            {cg.name}
+                            <span className="block text-sm font-medium">{cg.name}</span>
+                            <span className="block text-xs text-foreground-secondary">{cg.email}</span>
                           </button>
                         ))}
                       </div>

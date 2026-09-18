@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { TrainingCategory, TrainingFormat } from "@prisma/client";
+import { TrainingCategory } from "@prisma/client";
 import {
   Plus,
   Loader2,
@@ -17,6 +17,7 @@ import {
   Trophy,
   Target,
   FileText,
+  Download,
 } from "lucide-react";
 import {
   Button,
@@ -34,7 +35,6 @@ interface TrainingCourse {
   title: string;
   description: string | null;
   category: TrainingCategory;
-  format: TrainingFormat;
   durationMinutes: number;
   ceuCredits: number;
   contactHours: number;
@@ -43,7 +43,6 @@ interface TrainingCourse {
   requiredForNewHires: boolean;
   isActive: boolean;
   _count: {
-    sessions: number;
     assignments: number;
     lessons: number;
   };
@@ -55,6 +54,11 @@ interface TrainingCourse {
   bestQuizScore: number | null;
   progressPercent: number;
   status: "not_started" | "in_progress" | "completed";
+  certificate: {
+    id: string;
+    certificateNumber: string;
+    pdfUrl: string | null;
+  } | null;
 }
 
 const CATEGORY_LABELS: Record<TrainingCategory, string> = {
@@ -336,12 +340,22 @@ function CourseCard({
     switch (course.status) {
       case "completed":
         return (
-          <Button variant="secondary" size="sm" asChild>
-            <Link href={`/training/courses/${course.id}`}>
-              Review
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {course.certificate?.pdfUrl && (
+              <Button variant="secondary" size="sm" asChild>
+                <a href={course.certificate.pdfUrl}>
+                  <Download className="h-4 w-4 mr-1" />
+                  Certificate
+                </a>
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" asChild>
+              <Link href={`/training/courses/${course.id}`}>
+                Review
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </div>
         );
       case "in_progress":
         return (

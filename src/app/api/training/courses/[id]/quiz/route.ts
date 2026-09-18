@@ -36,8 +36,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId, id: userId } = session.user;
+    const { companyId, id: userId, role } = session.user;
     const { id: courseId } = await params;
+    const canManage = hasAnyPermission(role, [
+      PERMISSIONS.USER_MANAGE,
+      PERMISSIONS.USER_FULL,
+    ]);
 
     // Verify course exists
     const course = await prisma.trainingCourse.findFirst({
@@ -76,8 +80,8 @@ export async function GET(
     const hasPassed = quiz.attempts.some(a => a.passed);
     const questionsForUser = quiz.questions.map(q => ({
       ...q,
-      correctIds: hasPassed ? q.correctIds : undefined,
-      explanation: hasPassed ? q.explanation : undefined,
+      correctIds: canManage || hasPassed ? q.correctIds : undefined,
+      explanation: canManage || hasPassed ? q.explanation : undefined,
     }));
 
     return NextResponse.json({
