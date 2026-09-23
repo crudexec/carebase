@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canManageSchedule } from "@/lib/scheduling";
+import { sendShiftAssignmentNotification } from "@/lib/scheduling-notifications";
 import { z } from "zod";
 import {
   generateBulkDates,
@@ -221,6 +222,34 @@ export async function POST(request: Request) {
         conflicts,
       };
     });
+
+    if (result.createdShifts.length > 0) {
+      const client = await prisma.client.findFirst({
+        where: {
+          id: clientId,
+          companyId: session.user.companyId,
+        },
+        select: {
+          firstName: true,
+          lastName: true,
+          address: true,
+        },
+      });
+
+      if (client) {
+        await Promise.allSettled(
+          result.createdShifts.map((shift) =>
+            sendShiftAssignmentNotification({
+              shiftId: shift.id,
+              carerId,
+              client,
+              scheduledStart: shift.scheduledStart,
+              scheduledEnd: shift.scheduledEnd,
+            })
+          )
+        );
+      }
+    }
 
     return NextResponse.json(
       {

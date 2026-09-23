@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canManageSchedule } from "@/lib/scheduling";
 import { sendNotification, sendNotificationToRole } from "@/lib/notifications";
+import { sendShiftAssignmentNotification } from "@/lib/scheduling-notifications";
 import { ShiftStatus } from "@prisma/client";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -328,21 +329,12 @@ export async function PATCH(
 
     // If carer was changed, notify both old and new carer
     if (updateData.carerId && updateData.carerId !== existingShift.carerId) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.carebasehealth.com";
-      // Notify new carer of assignment
-      sendNotification({
-        eventType: "SHIFT_ASSIGNED",
-        recipientIds: [updateData.carerId],
-        data: {
-          clientName: `${shift.client.firstName} ${shift.client.lastName}`,
-          shiftDate: format(shift.scheduledStart, "EEEE, MMMM d, yyyy"),
-          shiftTime: format(shift.scheduledStart, "h:mm a"),
-          shiftEndTime: format(shift.scheduledEnd, "h:mm a"),
-          address: shift.client.address || "Address not provided",
-          shiftUrl: `${appUrl}/scheduling?shift=${shift.id}`,
-        },
-        relatedEntityType: "Shift",
-        relatedEntityId: shift.id,
+      sendShiftAssignmentNotification({
+        shiftId: shift.id,
+        carerId: updateData.carerId,
+        client: shift.client,
+        scheduledStart: shift.scheduledStart,
+        scheduledEnd: shift.scheduledEnd,
       }).catch((err) => {
         console.error("Failed to send shift assignment notification:", err);
       });
