@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/db";
+import { ChecklistWidget } from "@/components/dashboard/checklist-widget";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -35,6 +37,8 @@ export default async function DashboardPage() {
   }
 
   const { user } = session;
+  const company = await prisma.company.findUnique({ where: { id: user.companyId }, select: { checklistsEnabled: true, checklistsDashboardVisible: true } });
+  const checklistWidget = company?.checklistsEnabled && company.checklistsDashboardVisible ? <ChecklistWidget /> : null;
   const userRole = user.role as string;
   const roleLabel = ROLE_LABELS[user.role];
   const canViewClients =
@@ -97,7 +101,7 @@ export default async function DashboardPage() {
 
   // Render dedicated sponsor dashboard for sponsors
   if (userRole === "SPONSOR") {
-    return <SponsorDashboard user={user} />;
+    return <div className="space-y-6">{checklistWidget}<SponsorDashboard user={user} /></div>;
   }
 
   return (
@@ -114,6 +118,8 @@ export default async function DashboardPage() {
           <Badge variant={roleBadgeVariant}>{roleLabel}</Badge>
         </div>
       </div>
+
+      {checklistWidget}
 
       {(quickActions.length > 0 || canViewClients) && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

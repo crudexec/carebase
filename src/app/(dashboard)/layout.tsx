@@ -20,7 +20,7 @@ export default async function DashboardLayout({
   // Fetch company name and terminology settings for sidebar
   const company = await prisma.company.findUnique({
     where: { id: session.user.companyId },
-    select: { name: true, terminology: true },
+    select: { name: true, terminology: true, checklistsEnabled: true },
   });
 
   // Validate and extract terminology settings
@@ -31,7 +31,7 @@ export default async function DashboardLayout({
   return (
     <SessionProvider>
       <TerminologyProvider initialSettings={terminology}>
-        <DashboardShell user={session.user} companyName={company?.name || "CareBase"}>
+        <DashboardShell checklistsEnabled={company?.checklistsEnabled ?? false} user={session.user} companyName={company?.name || "CareBase"}>
           {children}
         </DashboardShell>
       </TerminologyProvider>

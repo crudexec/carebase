@@ -43,10 +43,11 @@ interface DashboardShellProps {
     role: UserRole;
   };
   companyName: string;
+  checklistsEnabled?: boolean;
   children: React.ReactNode;
 }
 
-export function DashboardShell({ user, companyName, children }: DashboardShellProps) {
+export function DashboardShell({ user, companyName, children, checklistsEnabled = false }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -113,6 +114,7 @@ export function DashboardShell({ user, companyName, children }: DashboardShellPr
         )}
       >
         <Sidebar
+          checklistsEnabled={checklistsEnabled}
           user={user}
           companyName={companyName}
           onClose={() => setSidebarOpen(false)}

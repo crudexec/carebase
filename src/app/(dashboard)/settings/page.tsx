@@ -16,6 +16,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Select } from "@/components/ui";
+import { ChecklistSettings } from "@/components/checklists/checklist-settings";
 
 interface CompanyData {
   id: string;
@@ -138,6 +139,8 @@ export default function SettingsPage() {
           Manage your company settings
         </p>
       </div>
+
+      <ChecklistSettings isAdmin={isAdmin} />
 
       {/* Company Settings Card */}
       <Card>

@@ -82,6 +82,13 @@ const navigation: NavEntry[] = [
     roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
   },
 
+  {
+    label: "Checklists",
+    href: "/checklists",
+    icon: ClipboardCheck,
+    roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
+  },
+
   // Client Management Group
   {
     label: "Client Management",
@@ -396,6 +403,7 @@ interface SidebarProps {
     role: UserRole;
   };
   companyName: string;
+  checklistsEnabled?: boolean;
   onClose?: () => void;
   showClose?: boolean;
   isCollapsed?: boolean;
@@ -556,7 +564,7 @@ function NavGroupItem({
   );
 }
 
-export function Sidebar({ user, companyName, onClose, showClose = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
+export function Sidebar({ checklistsEnabled = false, user, companyName, onClose, showClose = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const navRef = React.useRef<HTMLElement>(null);
   const [scrollState, setScrollState] = React.useState({ top: false, bottom: false });
@@ -616,6 +624,7 @@ export function Sidebar({ user, companyName, onClose, showClose = false, isColla
   }, []);
 
   const filteredNavigation = dynamicNavigation.filter((entry) => {
+    if (!isNavGroup(entry) && entry.href === "/checklists" && !checklistsEnabled) return false;
     if (isNavGroup(entry)) {
       // Show group if user has access to at least one item
       return entry.items.some((item) => {

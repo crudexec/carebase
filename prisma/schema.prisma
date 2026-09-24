@@ -1,6 +1,94 @@
 // Prisma Schema for CareBase
 // Care Agency Management System
 
+enum ChecklistItemStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+}
+
+model ChecklistTemplate {
+  id String @id @default(cuid())
+  companyId String
+  company Company @relation(fields: [companyId], references: [id])
+  createdById String
+  createdBy User @relation("ChecklistTemplateCreator", fields: [createdById], references: [id])
+  title String
+  description String @default("")
+  items String[]
+  archived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  checklists Checklist[]
+
+  @@index([companyId, archived])
+}
+
+model Checklist {
+  id String @id @default(cuid())
+  companyId String
+  company Company @relation(fields: [companyId], references: [id])
+  templateId String
+  template ChecklistTemplate @relation(fields: [templateId], references: [id])
+  assigneeId String
+  assignee User @relation("ChecklistAssignee", fields: [assigneeId], references: [id])
+  createdById String
+  createdBy User @relation("ChecklistCreator", fields: [createdById], references: [id])
+  title String
+  description String @default("")
+  createdAt DateTime @default(now())
+  items ChecklistItem[]
+
+  @@index([companyId, assigneeId, createdAt])
+}
+
+model ChecklistItem {
+  id String @id @default(cuid())
+  checklistId String
+  checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  title String
+  position Int
+  status ChecklistItemStatus @default(PENDING)
+  submittedAt DateTime?
+  submittedById String?
+  submittedBy User? @relation("ChecklistSubmitter", fields: [submittedById], references: [id])
+  approvedAt DateTime?
+  approvedById String?
+  approvedBy User? @relation("ChecklistApprover", fields: [approvedById], references: [id])
+  comments ChecklistComment[]
+  attachments ChecklistAttachment[]
+
+  @@unique([checklistId, position])
+  @@index([checklistId, status])
+}
+
+model ChecklistComment {
+  id String @id @default(cuid())
+  itemId String
+  item ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  authorId String
+  author User @relation(fields: [authorId], references: [id])
+  body String
+  createdAt DateTime @default(now())
+
+  @@index([itemId, createdAt])
+}
+
+model ChecklistAttachment {
+  id String @id @default(cuid())
+  itemId String
+  item ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  authorId String
+  author User @relation(fields: [authorId], references: [id])
+  fileName String
+  contentType String
+  size Int
+  data Bytes
+  createdAt DateTime @default(now())
+
+  @@index([itemId, createdAt])
+}
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
@@ -524,6 +612,11 @@ model Company {
   // Threshold Alert Settings (company-level)
   thresholdAlertsEnabled Boolean @default(true) // Enable/disable threshold breach notifications for the company
 
+  checklistsEnabled         Boolean @default(false)
+  checklistsDashboardVisible Boolean @default(false)
+  checklistTemplates ChecklistTemplate[]
+  checklists Checklist[]
+
   // Relations - all tenant-scoped models
   users                 User[]
   clients               Client[]
@@ -662,6 +755,14 @@ model User {
 
   // Relations
   caregiverProfile CaregiverProfile?
+
+  checklistTemplates ChecklistTemplate[] @relation("ChecklistTemplateCreator")
+  assignedChecklists Checklist[] @relation("ChecklistAssignee")
+  createdChecklists Checklist[] @relation("ChecklistCreator")
+  checklistComments ChecklistComment[]
+  checklistAttachments ChecklistAttachment[]
+  submittedChecklistItems ChecklistItem[] @relation("ChecklistSubmitter")
+  approvedChecklistItems ChecklistItem[] @relation("ChecklistApprover")
 
   // As Sponsor
   sponsoredClients Client[] @relation("SponsorClients")
