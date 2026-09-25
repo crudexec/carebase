@@ -175,11 +175,13 @@ function ChecklistItem({
   isAdmin,
   refresh,
   compact = false,
+  rowIndex = 0,
 }: {
   item: ChecklistItemData;
   isAdmin: boolean;
   refresh: () => Promise<void>;
   compact?: boolean;
+  rowIndex?: number;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -244,52 +246,75 @@ function ChecklistItem({
   );
   return (
     <div
-      className={`${compact ? "rounded-none border-x-0 border-t-0 px-0 py-3" : "rounded-lg border p-4"} space-y-3 ${visibleStatus === "APPROVED" ? "border-green-200 bg-green-50/40" : visibleStatus === "SUBMITTED" ? "border-amber-200 bg-amber-50/40" : "border-border"}`}
+      className={compact
+        ? `grid grid-cols-[36px_minmax(0,1fr)_minmax(76px,auto)_minmax(92px,auto)] border-b border-gray-100 last:border-b-0 ${rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50/50"} hover:bg-blue-50`
+        : `space-y-3 rounded-lg border p-4 ${visibleStatus === "APPROVED" ? "border-green-200 bg-green-50/40" : visibleStatus === "SUBMITTED" ? "border-amber-200 bg-amber-50/40" : "border-border"}`}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
+      {compact ? (
+        <div className="col-span-full grid grid-cols-[36px_minmax(0,1fr)_minmax(76px,auto)_minmax(92px,auto)] items-center gap-x-2">
           <input
             type="checkbox"
             aria-label={`Mark ${item.title} complete`}
-            className={`mt-1 h-4 w-4 shrink-0 ${visibleStatus === "APPROVED" ? "accent-green-600" : "accent-amber-600"}`}
+            className={`mx-auto h-4 w-4 shrink-0 ${visibleStatus === "APPROVED" ? "accent-green-600" : "accent-amber-600"}`}
             checked={visibleStatus !== "PENDING"}
             disabled={busy || visibleStatus === "APPROVED"}
             onChange={() =>
               action(visibleStatus === "PENDING" ? "submit" : "uncheck")
             }
           />
-          {compact ? (
-            <button
-              type="button"
-              className="min-w-0 text-left text-sm font-medium break-words hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-haspopup="dialog"
-              onClick={() => setShowItemModal(true)}
-            >
-              {item.title}
-            </button>
-          ) : (
-            <span className="text-sm font-medium break-words min-w-0">
-              {item.title}
-            </span>
-          )}
+          <button
+            type="button"
+            className="min-w-0 truncate px-2 py-1.5 text-left text-xs font-medium text-gray-900 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-haspopup="dialog"
+            onClick={() => setShowItemModal(true)}
+            title={item.title}
+          >
+            {item.title}
+          </button>
+          <button
+            type="button"
+            className="flex min-w-0 items-center justify-center gap-1 px-1 py-1.5 text-[10px] text-gray-700 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-haspopup="dialog"
+            onClick={() => setShowItemModal(true)}
+            aria-label={`${item.comments.length} comments, ${item.attachments.length} attachments`}
+            title="View comments and attachments"
+          >
+            <MessageSquare className="h-3 w-3 shrink-0" />{item.comments.length}
+            <Paperclip className="ml-1 h-3 w-3 shrink-0" />{item.attachments.length}
+          </button>
+          <div className="flex justify-end pr-2"><ItemStatusBadge status={visibleStatus} /></div>
         </div>
-        <ItemStatusBadge status={visibleStatus} />
-      </div>
+      ) : (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <input
+              type="checkbox"
+              aria-label={`Mark ${item.title} complete`}
+              className={`mt-1 h-4 w-4 shrink-0 ${visibleStatus === "APPROVED" ? "accent-green-600" : "accent-amber-600"}`}
+              checked={visibleStatus !== "PENDING"}
+              disabled={busy || visibleStatus === "APPROVED"}
+              onChange={() => action(visibleStatus === "PENDING" ? "submit" : "uncheck")}
+            />
+            <span className="min-w-0 break-words text-sm font-medium">{item.title}</span>
+          </div>
+          <ItemStatusBadge status={visibleStatus} />
+        </div>
+      )}
       {item.approvedBy && (
-        <p className="text-xs text-foreground-secondary">
+        <p className={`${compact ? "col-span-full px-3 pb-2" : ""} text-xs text-foreground-secondary`}>
           Approved by {item.approvedBy.firstName} {item.approvedBy.lastName}
           {item.approvedAt &&
             ` · ${new Date(item.approvedAt).toLocaleString()}`}
         </p>
       )}
       {item.status === "SUBMITTED" && item.submittedBy && (
-        <p className="text-xs text-foreground-secondary">
+        <p className={`${compact ? "col-span-full px-3 pb-2" : ""} text-xs text-foreground-secondary`}>
           Checked off by {item.submittedBy.firstName}{" "}
           {item.submittedBy.lastName}
         </p>
       )}
       {isAdmin && (
-        <div className="flex flex-wrap gap-2">
+        <div className={`${compact ? "col-span-full px-3 pb-2" : ""} flex flex-wrap gap-2`}>
           {item.status === "SUBMITTED" && (
             <>
               <Button
@@ -327,19 +352,7 @@ function ChecklistItem({
           {error}
         </p>
       )}
-      {compact ? (
-        <button
-          type="button"
-          className="flex items-center gap-2 text-sm text-primary hover:underline"
-          aria-haspopup="dialog"
-          onClick={() => setShowItemModal(true)}
-        >
-          <MessageSquare className="h-4 w-4" />
-          {item.comments.length} comments
-          <Paperclip className="ml-2 h-4 w-4" />
-          {item.attachments.length} files
-        </button>
-      ) : (
+      {!compact && (
         <details className="text-sm">
           <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-foreground-secondary">
             <MessageSquare className="h-4 w-4" />
@@ -420,7 +433,7 @@ function ChecklistItem({
         </dialog>
       )}
       {busy && (
-        <p role="status" className="text-xs text-foreground-secondary">
+        <p role="status" className={`${compact ? "col-span-full px-3 pb-2" : ""} text-xs text-foreground-secondary`}>
           Saving…
         </p>
       )}
@@ -469,17 +482,32 @@ export function ChecklistContent({
           </p>
         )}
       </div>
-      <div className="space-y-2">
-        {checklist.items.map((item) => (
-          <ChecklistItem
-            key={item.id}
-            item={item}
-            isAdmin={isAdmin}
-            refresh={refresh}
-            compact={compact}
-          />
-        ))}
-      </div>
+      {compact ? (
+        <div className="overflow-hidden rounded border border-gray-200 bg-white">
+          <div className="grid grid-cols-[36px_minmax(0,1fr)_minmax(76px,auto)_minmax(92px,auto)] border-b border-gray-200 bg-gray-50 text-[10px] font-semibold text-gray-600">
+            <span className="px-2 py-1 text-center">Done</span>
+            <span className="px-2 py-1">Checklist item</span>
+            <span className="px-1 py-1 text-center">Notes</span>
+            <span className="px-2 py-1 text-right">Status</span>
+          </div>
+          {checklist.items.map((item, index) => (
+            <ChecklistItem
+              key={item.id}
+              item={item}
+              isAdmin={isAdmin}
+              refresh={refresh}
+              compact
+              rowIndex={index}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {checklist.items.map((item) => (
+            <ChecklistItem key={item.id} item={item} isAdmin={isAdmin} refresh={refresh} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
