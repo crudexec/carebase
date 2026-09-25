@@ -35,6 +35,12 @@ export const DEFAULT_OFFER_TAGS = [
   "company.name",
   "company.address",
   "company.phone",
+  "offer.position",
+  "offer.startDate",
+  "offer.employmentType",
+  "offer.payRate",
+  "offer.payFrequency",
+  "offer.managerName",
 ];
 
 export function extractOfferTags(content: string): string[] {

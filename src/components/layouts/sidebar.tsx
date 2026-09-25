@@ -303,12 +303,12 @@ const navigation: NavEntry[] = [
 
   // Settings Group
   {
-    label: "Settings",
+    label: "General",
     icon: Cog,
     roles: ["ADMIN", "OPS_MANAGER", "CLINICAL_DIRECTOR", "STAFF", "SUPERVISOR", "CARER", "SPONSOR"],
     items: [
       {
-        label: "General",
+        label: "Company",
         href: "/settings",
         icon: Settings,
         roles: ["ADMIN"],

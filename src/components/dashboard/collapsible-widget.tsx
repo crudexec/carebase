@@ -125,13 +125,13 @@ export function CollapsibleWidget({
       >
         <button
           onClick={toggleCollapsed}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex min-w-0 items-center gap-2 hover:opacity-80 transition-opacity"
           type="button"
           aria-expanded={!isCollapsed}
           aria-controls={`widget-content-${id}`}
         >
           <span className={styles.icon}>{icon}</span>
-          <h3 className="font-semibold text-foreground">{title}</h3>
+          <h3 className="min-w-0 truncate font-semibold text-foreground">{title}</h3>
           {badge}
           {isCollapsed ? (
             <ChevronDown className="w-4 h-4 text-foreground-secondary ml-1" />

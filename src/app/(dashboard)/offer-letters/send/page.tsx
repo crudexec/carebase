@@ -16,6 +16,7 @@ import {
   Select,
 } from "@/components/ui";
 import { Eye, Send } from "lucide-react";
+import { sanitizeOfferHtml } from "@/lib/offer-letters/html";
 
 interface Template {
   id: string;
@@ -57,7 +58,8 @@ export default function SendOfferLetterPage() {
     role: "CARER" as UserRole,
   });
   const [expiresInDays, setExpiresInDays] = React.useState(14);
-  const [preview, setPreview] = React.useState<{ subject: string; bodyHtml: string; unknownTags: string[] } | null>(null);
+  const [offerData, setOfferData] = React.useState({ position: "", startDate: "", employmentType: "", payRate: "", payFrequency: "", managerName: "" });
+  const [preview, setPreview] = React.useState<{ subject: string; bodyHtml: string; unknownTags: string[]; requestKey: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -80,6 +82,7 @@ export default function SendOfferLetterPage() {
   }, []);
 
   const selectedTemplate = templates.find((template) => template.id === templateId);
+  const previewKey = JSON.stringify({ templateId, recipientType, employeeId, candidate, offerData, expiresInDays });
 
   const buildPayload = () => ({
     templateId,
@@ -92,7 +95,7 @@ export default function SendOfferLetterPage() {
           recipientPhone: candidate.phone || undefined,
           recipientRole: candidate.role,
         }),
-    offerData: {},
+    offerData,
     expiresInDays,
   });
 
@@ -113,7 +116,7 @@ export default function SendOfferLetterPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to preview offer");
-      setPreview(data);
+      setPreview({ ...data, requestKey: previewKey });
       if (data.unknownTags?.length) {
         toast.error(`Unresolved tags: ${data.unknownTags.join(", ")}`);
       }
@@ -257,6 +260,15 @@ export default function SendOfferLetterPage() {
                   />
                 </div>
               </div>
+              <div className="space-y-3 border-t border-border pt-4">
+                <div><h3 className="font-medium">Offer details</h3><p className="text-xs text-foreground-secondary">These values fill matching offer fields in your template.</p></div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {([
+                    ["position", "Position"], ["startDate", "Start date"], ["employmentType", "Employment type"],
+                    ["payRate", "Pay rate"], ["payFrequency", "Pay frequency"], ["managerName", "Manager name"],
+                  ] as const).map(([key, label]) => <div key={key} className="space-y-2"><Label>{label}</Label><Input type={key === "startDate" ? "date" : "text"} value={offerData[key]} onChange={(event) => setOfferData((prev) => ({ ...prev, [key]: event.target.value }))} /></div>)}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -272,7 +284,7 @@ export default function SendOfferLetterPage() {
                 Generate Preview
               </Button>
 
-              {preview && (
+              {preview && preview.requestKey === previewKey && (
                 <div className="space-y-3 rounded-md border border-border p-4">
                   <div>
                     <p className="text-xs text-foreground-tertiary">Subject</p>
@@ -290,16 +302,14 @@ export default function SendOfferLetterPage() {
                       </div>
                     </div>
                   )}
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
-                    {preview.bodyHtml}
-                  </div>
+                  <div className="prose prose-sm max-w-none text-sm" dangerouslySetInnerHTML={{ __html: sanitizeOfferHtml(preview.bodyHtml) }} />
                 </div>
               )}
 
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isSubmitting || !templateId || Boolean(preview?.unknownTags.length)}
+                disabled={isSubmitting || !templateId || preview?.requestKey !== previewKey || Boolean(preview?.unknownTags.length)}
               >
                 <Send className="w-4 h-4 mr-2" />
                 {isSubmitting ? "Sending..." : "Send Offer Letter"}

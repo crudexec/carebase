@@ -4,6 +4,7 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Label, Textarea } from "@/components/ui";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { sanitizeOfferHtml } from "@/lib/offer-letters/html";
 import { CheckCircle2, FileSignature, Loader2, XCircle } from "lucide-react";
 
 interface PublicOffer {
@@ -147,9 +148,7 @@ export default function PublicOfferPage() {
             <CardTitle>Offer Letter</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-              {offer.renderedBodyHtml}
-            </div>
+            <div className="prose prose-sm max-w-none [&_li]:ml-6 [&_li]:list-disc [&_ol_li]:list-decimal" dangerouslySetInnerHTML={{ __html: sanitizeOfferHtml(offer.renderedBodyHtml) }} />
           </CardContent>
         </Card>
 

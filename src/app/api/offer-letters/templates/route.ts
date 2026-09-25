@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { OfferLetterTemplateStatus, Prisma } from "@prisma/client";
 import { removeLegacyOfferDetailTags } from "@/lib/offer-letters/legacy";
+import { offerBodyToEditorHtml } from "@/lib/offer-letters/html";
 
 const ALLOWED_ROLES = ["ADMIN", "OPS_MANAGER"] as const;
 
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       templates: templates.map((template) => ({
         ...template,
-        bodyHtml: removeLegacyOfferDetailTags(template.bodyHtml),
+        bodyHtml: offerBodyToEditorHtml(removeLegacyOfferDetailTags(template.bodyHtml)),
         createdAt: template.createdAt.toISOString(),
         updatedAt: template.updatedAt.toISOString(),
       })),
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
     const template = await prisma.offerLetterTemplate.create({
       data: {
         ...validation.data,
+        bodyHtml: offerBodyToEditorHtml(validation.data.bodyHtml),
         description: validation.data.description || null,
         companyId: session.user.companyId,
         createdById: session.user.id,

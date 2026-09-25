@@ -7,6 +7,7 @@ import { Menu, HelpCircle, PanelLeft } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { cn } from "@/lib/utils";
 import { AlertsDrawer, AlertsBellTrigger } from "@/components/alerts/alerts-drawer";
+import { GeneralSettingsTabs } from "@/components/layouts/general-settings-tabs";
 
 const SIDEBAR_COLLAPSED_KEY = "carebase-sidebar-collapsed";
 
@@ -185,7 +186,10 @@ export function DashboardShell({ user, companyName, children, checklistsEnabled 
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 lg:p-6">{children}</div>
+          <div className="p-4 lg:p-6">
+            <GeneralSettingsTabs role={user.role} email={user.email} />
+            {children}
+          </div>
         </main>
       </div>
 

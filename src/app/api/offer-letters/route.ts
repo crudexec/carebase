@@ -10,6 +10,7 @@ import {
 } from "@/lib/offer-letters/rendering";
 import { sendOfferLetterEmail } from "@/lib/offer-letters/email";
 import { removeLegacyOfferDetailTags } from "@/lib/offer-letters/legacy";
+import { offerBodyToEditorHtml } from "@/lib/offer-letters/html";
 
 const ALLOWED_ROLES = ["ADMIN", "OPS_MANAGER"] as const;
 
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
       offerData: data.offerData,
     });
 
-    const bodyHtml = removeLegacyOfferDetailTags(template.bodyHtml);
+    const bodyHtml = offerBodyToEditorHtml(removeLegacyOfferDetailTags(template.bodyHtml));
     const combinedTemplate = `${template.subject}\n${bodyHtml}`;
     const tagValidation = validateOfferTags(combinedTemplate, context);
     if (tagValidation.unknownTags.length > 0) {

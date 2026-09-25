@@ -8,6 +8,7 @@ import {
   validateOfferTags,
 } from "@/lib/offer-letters/rendering";
 import { removeLegacyOfferDetailTags } from "@/lib/offer-letters/legacy";
+import { offerBodyToEditorHtml } from "@/lib/offer-letters/html";
 
 const ALLOWED_ROLES = ["ADMIN", "OPS_MANAGER"] as const;
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       offerData: data.offerData,
     });
 
-    const bodyHtml = removeLegacyOfferDetailTags(data.bodyHtml);
+    const bodyHtml = offerBodyToEditorHtml(removeLegacyOfferDetailTags(data.bodyHtml));
     const combinedTemplate = `${data.subject}\n${bodyHtml}`;
     const tagValidation = validateOfferTags(combinedTemplate, context);
 

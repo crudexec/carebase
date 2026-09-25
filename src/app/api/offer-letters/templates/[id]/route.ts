@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { OfferLetterTemplateStatus } from "@prisma/client";
 import { removeLegacyOfferDetailTags } from "@/lib/offer-letters/legacy";
+import { offerBodyToEditorHtml } from "@/lib/offer-letters/html";
 
 const ALLOWED_ROLES = ["ADMIN", "OPS_MANAGER"] as const;
 
@@ -47,7 +48,7 @@ export async function GET(
     return NextResponse.json({
       template: {
         ...template,
-        bodyHtml: removeLegacyOfferDetailTags(template.bodyHtml),
+        bodyHtml: offerBodyToEditorHtml(removeLegacyOfferDetailTags(template.bodyHtml)),
         createdAt: template.createdAt.toISOString(),
         updatedAt: template.updatedAt.toISOString(),
       },
@@ -96,6 +97,7 @@ export async function PATCH(
       where: { id },
       data: {
         ...validation.data,
+        ...(validation.data.bodyHtml !== undefined ? { bodyHtml: offerBodyToEditorHtml(validation.data.bodyHtml) } : {}),
         ...(validation.data.description !== undefined
           ? { description: validation.data.description || null }
           : {}),

@@ -32,7 +32,7 @@ export function ChecklistWidget() {
   return (
     <CollapsibleWidget
       id="checklists"
-      title="My checklist"
+      title={data?.checklist?.title || "My checklist"}
       icon={<ListChecks className="h-5 w-5" />}
       headerActions={
         <Link className="text-sm text-primary" href="/checklists">
@@ -54,12 +54,9 @@ export function ChecklistWidget() {
       )}
       {data?.checklist && (
         <div className="space-y-3">
-          <Link
-            href={`/checklists/${data.checklist.id}`}
-            className="font-semibold text-primary"
-          >
-            {data.checklist.title}
-          </Link>
+          <p className="text-sm text-foreground-secondary">
+            Select an item to see its comments and attachments.
+          </p>
           <ChecklistContent
             key={data.checklist.id}
             checklist={data.checklist}

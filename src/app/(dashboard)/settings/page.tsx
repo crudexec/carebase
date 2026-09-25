@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,9 @@ const CURRENCY_OPTIONS: { value: Currency; label: string; symbol: string }[] = [
   { value: "NGN", label: "Nigerian Naira", symbol: "₦" },
 ];
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const isChecklistsTab = searchParams.get("tab") === "checklists";
   const { data: session, status: sessionStatus } = useSession();
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,16 +137,16 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Settings</h1>
+        <h1 className="text-xl font-semibold text-foreground">General</h1>
         <p className="text-sm text-foreground-secondary">
-          Manage your company settings
+          Manage company settings and tools
         </p>
       </div>
 
-      <ChecklistSettings isAdmin={isAdmin} />
+      {isChecklistsTab && <ChecklistSettings isAdmin={isAdmin} />}
 
-      {/* Company Settings Card */}
-      <Card>
+      {/* Company Details tab */}
+      <Card hidden={isChecklistsTab}>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-primary" />
@@ -310,5 +313,13 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }
