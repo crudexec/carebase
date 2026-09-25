@@ -82,6 +82,10 @@ describe("checklist dashboard item details", () => {
     expect(
       screen.getByRole("link", { name: "training-guide.pdf" }),
     ).toHaveAttribute("href", "/api/checklists/attachments/file-1");
+    expect(
+      screen.getByRole("button", { name: /Drop a file here or browse files/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Up to 10 MB/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Close item details" }));
     await waitFor(() =>

@@ -7,6 +7,8 @@ import {
   Circle,
   Paperclip,
   MessageSquare,
+  UploadCloud,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +72,28 @@ function ItemDetails({
   setComment: (value: string) => void;
   mutate: ItemMutation;
 }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachFile = (file?: File, input?: HTMLInputElement) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Maximum file size is 10 MB");
+      if (input) input.value = "";
+      return;
+    }
+    const body = new FormData();
+    body.append("file", file);
+    setUploadingFile(file.name);
+    void mutate(
+      `/api/checklists/items/${item.id}/attachments`,
+      { method: "POST", body },
+      () => {
+        if (input) input.value = "";
+      },
+    ).finally(() => setUploadingFile(""));
+  };
+
   return (
     <div className="space-y-4 text-sm">
       {error && (
@@ -133,38 +157,64 @@ function ItemDetails({
         </ul>
       )}
       <div className="space-y-1">
-        <label htmlFor={`file-${item.id}`} className="block font-medium">
-          Attach a file
+        <p className="mb-2 font-medium">Attach a file</p>
+        <label
+          htmlFor={`file-${item.id}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={(event) => {
+            event.preventDefault();
+            setIsDragging(false);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setIsDragging(false);
+            attachFile(event.dataTransfer.files?.[0]);
+          }}
+          role="button"
+          tabIndex={busy ? -1 : 0}
+          aria-disabled={busy}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isDragging ? "border-primary bg-primary/5" : "border-gray-300 bg-gray-50 hover:border-primary hover:bg-blue-50/60"} ${busy ? "cursor-wait opacity-60" : ""}`}
+        >
+          {uploadingFile ? (
+            <>
+              <FileText className="mb-2 h-6 w-6 text-primary" />
+              <span className="max-w-full truncate text-sm font-medium text-foreground">
+                Uploading {uploadingFile}…
+              </span>
+            </>
+          ) : (
+            <>
+              <UploadCloud className={`mb-2 h-7 w-7 ${isDragging ? "text-primary" : "text-foreground-secondary"}`} />
+              <span className="text-sm font-medium text-foreground">
+                Drop a file here or <span className="text-primary underline underline-offset-2">browse files</span>
+              </span>
+              <span className="mt-1 text-xs text-foreground-secondary">
+                PDF, images, Word, Excel, text, or CSV · Up to 10 MB
+              </span>
+            </>
+          )}
         </label>
         <input
+          ref={fileInputRef}
           id={`file-${item.id}`}
           type="file"
-          className="block w-full min-w-0 text-sm"
+          className="sr-only"
+          aria-label="Choose a file to attach"
           disabled={busy}
           accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.xls,.xlsx,.txt,.csv"
           onChange={(e) => {
-            const file = e.target.files?.[0];
-            const input = e.target;
-            if (!file) return;
-            if (file.size > 10 * 1024 * 1024) {
-              setError("Maximum file size is 10 MB");
-              input.value = "";
-              return;
-            }
-            const body = new FormData();
-            body.append("file", file);
-            void mutate(
-              `/api/checklists/items/${item.id}/attachments`,
-              { method: "POST", body },
-              () => {
-                input.value = "";
-              },
-            );
+            attachFile(e.target.files?.[0], e.target);
           }}
         />
-        <p className="text-xs text-foreground-secondary">
-          PDF, images, Word, Excel, text, or CSV. Up to 10 MB per file.
-        </p>
       </div>
     </div>
   );
