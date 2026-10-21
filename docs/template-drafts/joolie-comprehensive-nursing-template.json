@@ -1,0 +1,6124 @@
+{
+  "name": "Joolie Health Comprehensive Nursing Asset",
+  "description": "Comprehensive nursing assessment from the supplied form, including insurance, start of care, medical history, allergies, medications, directives and caregiver details. Uses existing body maps and repeatable assessments. Risk totals are entered manually.",
+  "status": "DRAFT",
+  "isEnabled": false,
+  "version": 1,
+  "sections": [
+    {
+      "title": "Insurance and start of care",
+      "description": "Record health insurance name, policy number and actual start-of-care date as shown in the patient record. These are assessment snapshots and do not update billing or intake records.",
+      "fields": [
+        {
+          "label": "Health insurance name",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Policy number",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Start-of-care (S.O.C.) date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 2
+        }
+      ],
+      "order": 0
+    },
+    {
+      "title": "Diagnoses and medical history",
+      "description": "Record diagnosis dates separately from onset dates. Surgical procedure codes are entered as text; the diagnosis picker is used for diagnoses.",
+      "fields": [
+        {
+          "label": "Primary diagnosis / ICD code",
+          "type": "ICD10_DIAGNOSIS",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Primary diagnosis date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Surgical procedures",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Surgical procedure",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Procedure / ICD code",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Procedure date",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Procedure",
+            "addButtonLabel": "Add procedure",
+            "collapsible": true
+          },
+          "order": 2
+        },
+        {
+          "label": "Recent hospitalization",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Number of prior hospitalizations",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 4
+        },
+        {
+          "label": "Hospitalization history",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Hospitalization type",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["Recent", "Prior"]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Admission date",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Discharge date",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Reason for hospitalization",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Hospitalization",
+            "addButtonLabel": "Add hospitalization",
+            "collapsible": true
+          },
+          "order": 5
+        },
+        {
+          "label": "New diagnosis / condition",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Specify new diagnosis / condition",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Pertinent medical history",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Hypertension",
+              "Cardiac disease",
+              "Diabetes",
+              "Respiratory disease",
+              "Osteoporosis",
+              "Fractures",
+              "Cancer",
+              "Infection",
+              "Immunosuppression",
+              "Open wounds",
+              "Surgeries",
+              "Other"
+            ]
+          },
+          "order": 8
+        },
+        {
+          "label": "Cancer site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Surgical history details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Other pertinent history / previous outcomes",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        }
+      ],
+      "order": 1
+    },
+    {
+      "title": "Immunization history",
+      "description": null,
+      "fields": [
+        {
+          "label": "Immunizations up to date",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Immunizations needed",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Influenza", "Pneumonia", "Tetanus", "Other"]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other immunization needs",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Immunization history",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        }
+      ],
+      "order": 2
+    },
+    {
+      "title": "Allergies",
+      "description": "Record the status explicitly. An unanswered field does not mean no known allergies. These entries are stored with this assessment.",
+      "fields": [
+        {
+          "label": "Allergy status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "None known / no allergy problem",
+              "Known allergies",
+              "Unknown / not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Known allergens",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Aspirin",
+              "Sulfa",
+              "Pollen",
+              "Penicillin",
+              "Eggs",
+              "Milk products",
+              "Insect bites",
+              "Other"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other allergies / allergy details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        }
+      ],
+      "order": 3
+    },
+    {
+      "title": "Standing medication regimen",
+      "description": "Document the medication regimen at the time of assessment. These entries do not create or change eMAR orders or synchronize automatically with the patient medication list.",
+      "fields": [
+        {
+          "label": "Current medication regimen",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Medication name",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Strength",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Dose",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Route",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_5",
+                "label": "Frequency / schedule",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_6",
+                "label": "Regimen instructions",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Medication",
+            "addButtonLabel": "Add medication",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ],
+      "order": 4
+    },
+    {
+      "title": "Advance directives and DNR",
+      "description": "Record directive and document status for this assessment. Documenting a status here does not create a directive or physician order.",
+      "fields": [
+        {
+          "label": "Living will",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Do not resuscitate (DNR)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Advance-directive copies on file",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Funeral arrangements made",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Advance-directive comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Directive document references / location",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "DNR physician-order status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Order on file",
+              "Order not on file",
+              "Unknown / not verified",
+              "Not applicable"
+            ]
+          },
+          "order": 6
+        },
+        {
+          "label": "DNR physician-order reference / details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        }
+      ],
+      "order": 5
+    },
+    {
+      "title": "Living arrangements and caregiver profile",
+      "description": null,
+      "fields": [
+        {
+          "label": "Home type",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["House", "Apartment", "Other"]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other home type",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "New environment",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Family present",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Household arrangement",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Lives alone", "Lives with others"]
+          },
+          "order": 4
+        },
+        {
+          "label": "Household details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Primary caregiver name",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Primary caregiver relationship",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Primary caregiver health status",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Primary caregiver assistance",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Assists with ADLs", "Provides physical care", "Other"]
+          },
+          "order": 9
+        },
+        {
+          "label": "Other caregiver assistance",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Secondary / other caregivers — names, relationships and roles",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        }
+      ],
+      "order": 6
+    },
+    {
+      "title": "Language, education and support contacts",
+      "description": null,
+      "fields": [
+        {
+          "label": "Primary language",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Educational level",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Spiritual resource",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Spiritual resource phone number",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Oxygen HME company",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Oxygen HME representative",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        }
+      ],
+      "order": 7
+    },
+    {
+      "title": "Visit and assessment context",
+      "description": "Record findings for this assessment. Insurance, history, medications, allergies, directives and support details are included in the preceding sections. Patient identity is linked through the client record.",
+      "order": 8,
+      "fields": [
+        {
+          "label": "Date of visit",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Time in",
+          "type": "TIME",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Time out",
+          "type": "TIME",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Present illness / current assessment narrative",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Primary reason for home care",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Physician last contacted",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Physician last visited",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Prognosis",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "1 - Poor",
+              "2 - Guarded",
+              "3 - Fair",
+              "4 - Good",
+              "5 - Excellent"
+            ]
+          },
+          "order": 7
+        },
+        {
+          "label": "Advance-directive education needed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Teaching / instructions provided",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        }
+      ]
+    },
+    {
+      "title": "Eyes and ears",
+      "description": null,
+      "order": 9,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Glasses",
+              "Glaucoma",
+              "Jaundice",
+              "Contact lenses",
+              "Blurred vision",
+              "Ptosis",
+              "Eye infection",
+              "Hard of hearing",
+              "Deafness",
+              "Hearing aid",
+              "Vertigo",
+              "Tinnitus"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Eye findings, side (right/left), and infection details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Hearing findings and aid side (right/left)",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Cataract surgery site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Cataract surgery date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 6
+        }
+      ]
+    },
+    {
+      "title": "Nose, throat and mouth",
+      "description": null,
+      "order": 10,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Nasal congestion",
+              "Epistaxis",
+              "Loss of smell",
+              "Sinus problem",
+              "Dysphagia",
+              "Hoarseness",
+              "Throat lesions",
+              "Sore throat",
+              "Dentures",
+              "Oral masses / tumors",
+              "Gingivitis",
+              "Ulcerations",
+              "Toothache"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Denture configuration",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Upper", "Lower", "Upper and lower", "Partial", "None"]
+          },
+          "order": 2
+        },
+        {
+          "label": "Nose / throat / mouth findings and locations",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        }
+      ]
+    },
+    {
+      "title": "Head and neck",
+      "description": null,
+      "order": 11,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Headache",
+              "Injuries / wounds",
+              "Masses / nodes",
+              "Alopecia"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Mass / node site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Mass / node size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Headache and wound assessment details / body-map reference",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        }
+      ]
+    },
+    {
+      "title": "Endocrine and hematology",
+      "description": null,
+      "order": 12,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Hyperglycemia symptoms",
+              "Glycosuria",
+              "Polyuria",
+              "Polydipsia",
+              "Hypoglycemia symptoms",
+              "Sweats",
+              "Polyphagia",
+              "Weakness",
+              "Fainting",
+              "Stupor",
+              "Enlarged thyroid",
+              "Fatigue",
+              "Intolerance to heat / cold",
+              "Anemia",
+              "Secondary bleeding",
+              "Hemophilia"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Blood sugar range",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Blood sugar information source",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Measured this assessment",
+              "Patient report",
+              "Caregiver report"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "label": "Blood sugar checks performed by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Self", "RN", "Caregiver"]
+          },
+          "order": 4
+        },
+        {
+          "label": "Current diabetes / glucose-management observations",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Bleeding site (GI/GU/GYN/unknown) and findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Diabetes type",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Type I", "Type II", "Other"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Other diabetes type",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Standing diabetes treatment",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Diet control", "Oral medication", "Insulin"]
+          },
+          "order": 10
+        },
+        {
+          "label": "Diet / oral control details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Standing insulin name",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Standing insulin dose",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Standing insulin frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 14
+        }
+      ]
+    },
+    {
+      "title": "Pain assessment",
+      "description": "Use the existing body map for location; enter numeric pain scores from 0 to 10. The supplied paper form has three pain sites.",
+      "order": 13,
+      "fields": [
+        {
+          "label": "Pain assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Pain present",
+              "No problem identified",
+              "Unable to assess"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Pain body map",
+          "type": "BODY_MAP",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Collected using",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Faces scale",
+              "0–10 subjective reporting",
+              "Non-verbal observation"
+            ]
+          },
+          "order": 2
+        },
+        {
+          "label": "Pain sites",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Site / location (match body map)",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Onset",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Present pain (0–10)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0,
+                  "max": 10
+                }
+              },
+              {
+                "key": "item_4",
+                "label": "Worst pain (0–10)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0,
+                  "max": 10
+                }
+              },
+              {
+                "key": "item_5",
+                "label": "Best pain (0–10)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0,
+                  "max": 10
+                }
+              },
+              {
+                "key": "item_6",
+                "label": "Pain description (aching, radiating, throbbing, etc.)",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "maxItems": 3,
+            "itemLabel": "Pain site",
+            "addButtonLabel": "Add pain site",
+            "collapsible": true
+          },
+          "order": 3
+        },
+        {
+          "label": "Unable to communicate",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Non-verbal signs",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Diaphoresis",
+              "Grimacing",
+              "Moaning / crying",
+              "Guarding",
+              "Irritability",
+              "Anger",
+              "Tense",
+              "Restlessness",
+              "Change in vital signs"
+            ]
+          },
+          "order": 5
+        },
+        {
+          "label": "Other non-verbal signs",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Self-assessment / implications",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Pain frequency",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Occasional", "Continuous", "Intermittent", "Other"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Other frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "What makes pain better",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Heat / ice",
+              "Massage",
+              "Repositioning",
+              "Rest / relaxation",
+              "Medication",
+              "Diversion",
+              "Other"
+            ]
+          },
+          "order": 10
+        },
+        {
+          "label": "Other relief measures",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Breakthrough medication needed",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Never",
+              "Less than daily",
+              "2–3 times/day",
+              "More than 3 times/day"
+            ]
+          },
+          "order": 12
+        },
+        {
+          "label": "Current pain-control medications adequate",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Other pain findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Implications for care plan",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 15
+        }
+      ]
+    },
+    {
+      "title": "Skin condition and wounds",
+      "description": "Match wound numbers to body-map notes. Up to five wounds, as on the supplied paper form.",
+      "order": 14,
+      "fields": [
+        {
+          "label": "Skin assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Wound / skin body map",
+          "type": "BODY_MAP",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Wound assessments",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Wound number / location (match body map)",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Wound type",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Diabetic ulcer",
+                    "Pressure ulcer",
+                    "Venous stasis ulcer",
+                    "Traumatic wound",
+                    "Surgical wound",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_3",
+                "label": "Other wound type",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Length (cm)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              },
+              {
+                "key": "item_5",
+                "label": "Width (cm)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              },
+              {
+                "key": "item_6",
+                "label": "Depth (cm)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              },
+              {
+                "key": "item_7",
+                "label": "Stage (pressure ulcers only)",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_8",
+                "label": "Tunneling / undermining",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_9",
+                "label": "Odor",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_10",
+                "label": "Surrounding skin",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_11",
+                "label": "Edema",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_12",
+                "label": "Stoma",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_13",
+                "label": "Appearance of wound bed",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_14",
+                "label": "Drainage amount",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["None", "Small", "Moderate", "Large"]
+                }
+              },
+              {
+                "key": "item_15",
+                "label": "Drainage color",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["Clear", "Tan", "Serosanguineous", "Other"]
+                }
+              },
+              {
+                "key": "item_16",
+                "label": "Other drainage color",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_17",
+                "label": "Drainage consistency",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["Thin", "Thick"]
+                }
+              },
+              {
+                "key": "item_18",
+                "label": "Reassessment frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "maxItems": 5,
+            "itemLabel": "Wound",
+            "addButtonLabel": "Add wound",
+            "collapsible": true
+          },
+          "order": 2
+        },
+        {
+          "label": "Skin temperature, color and turgor",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Skin within normal limits",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Wound care performed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Wound-care locations",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Soiled dressing removed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Dressing removed by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Patient", "Family / caregiver", "RN / PT"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Wound cleaned with",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Wound irrigated with",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Wound packed with",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Wound dressing applied",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Patient tolerance of procedure",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Other wound-care details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Satisfactory return demonstration",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Education provided",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 16
+        }
+      ]
+    },
+    {
+      "title": "Cardiopulmonary assessment",
+      "description": "Complete according to organizational policy. Units must accompany height, weight and temperature.",
+      "order": 15,
+      "fields": [
+        {
+          "label": "Height",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 0
+        },
+        {
+          "label": "Height unit",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Weight",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 2
+        },
+        {
+          "label": "Weight unit",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Blood pressure readings",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Position",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["Sitting / lying", "Standing"]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Arm",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": ["Right", "Left"]
+                }
+              },
+              {
+                "key": "item_3",
+                "label": "Systolic (mmHg)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              },
+              {
+                "key": "item_4",
+                "label": "Diastolic (mmHg)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Reading",
+            "addButtonLabel": "Add reading",
+            "collapsible": true
+          },
+          "order": 4
+        },
+        {
+          "label": "Temperature",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 5
+        },
+        {
+          "label": "Temperature unit",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["°F", "°C"]
+          },
+          "order": 6
+        },
+        {
+          "label": "Temperature route",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Oral", "Axillary", "Rectal", "Tympanic"]
+          },
+          "order": 7
+        },
+        {
+          "label": "Pulse (beats/min)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 8
+        },
+        {
+          "label": "Pulse site",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Apical", "Brachial", "Radial", "Carotid"]
+          },
+          "order": 9
+        },
+        {
+          "label": "Pulse rhythm",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Regular", "Irregular"]
+          },
+          "order": 10
+        },
+        {
+          "label": "Pulse context",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Rest", "Activity"]
+          },
+          "order": 11
+        },
+        {
+          "label": "Heart sounds",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Regular", "Irregular", "Murmur"]
+          },
+          "order": 12
+        },
+        {
+          "label": "Current pacemaker assessment / concerns",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Respirations (breaths/min)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 14
+        },
+        {
+          "label": "Respiratory pattern",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Regular",
+              "Irregular",
+              "Cheyne–Stokes",
+              "Death rattle",
+              "Apnea"
+            ]
+          },
+          "order": 15
+        },
+        {
+          "label": "Apnea duration (seconds)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 16
+        },
+        {
+          "label": "Breath sounds",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Clear",
+              "Crackles / rales",
+              "Wheezes / rhonchi",
+              "Diminished",
+              "Absent"
+            ]
+          },
+          "order": 17
+        },
+        {
+          "label": "Breath-sound assessment locations",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Anterior right upper",
+              "Anterior right lower",
+              "Anterior left upper",
+              "Anterior left lower",
+              "Posterior right upper",
+              "Posterior right lower",
+              "Posterior left upper",
+              "Posterior left lower"
+            ]
+          },
+          "order": 18
+        },
+        {
+          "label": "Accessory muscles used",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 19
+        },
+        {
+          "label": "Oxygen flow (L/min)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 20
+        },
+        {
+          "label": "Oxygen delivery device",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 21
+        },
+        {
+          "label": "Oxygen saturation (%)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0,
+            "max": 100
+          },
+          "order": 22
+        },
+        {
+          "label": "Other respiratory findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 23
+        },
+        {
+          "label": "Tracheostomy present",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 24
+        },
+        {
+          "label": "Tracheostomy managed by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Self", "RN", "Caregiver / family"]
+          },
+          "order": 25
+        },
+        {
+          "label": "Cough characteristics",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Dry", "Acute", "Chronic", "Productive"]
+          },
+          "order": 26
+        },
+        {
+          "label": "Sputum consistency",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Thick", "Thin"]
+          },
+          "order": 27
+        },
+        {
+          "label": "Sputum color",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 28
+        },
+        {
+          "label": "Sputum amount",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 29
+        },
+        {
+          "label": "Unable to cough up secretions",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 30
+        },
+        {
+          "label": "Dyspnea occurs",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "At rest",
+              "On exertion",
+              "With ambulation",
+              "During ADLs"
+            ]
+          },
+          "order": 31
+        },
+        {
+          "label": "Ambulation distance before dyspnea (feet)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 32
+        },
+        {
+          "label": "Orthopnea",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 33
+        },
+        {
+          "label": "Other dyspnea findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 34
+        },
+        {
+          "label": "Chest pain",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Anginal",
+              "Postural",
+              "Localized",
+              "Substernal",
+              "Radiating",
+              "Dull",
+              "Ache",
+              "Sharp",
+              "Vise-like"
+            ]
+          },
+          "order": 35
+        },
+        {
+          "label": "Chest-pain associations",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Shortness of breath", "Activity", "Sweats"]
+          },
+          "order": 36
+        },
+        {
+          "label": "Chest-pain frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 37
+        },
+        {
+          "label": "Other cardiopulmonary symptoms",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Palpitations", "Fatigue", "Cramps", "Claudication"]
+          },
+          "order": 38
+        },
+        {
+          "label": "Edema location",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Pedal right", "Pedal left", "Sacral", "Dependent"]
+          },
+          "order": 39
+        },
+        {
+          "label": "Dependent edema site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 40
+        },
+        {
+          "label": "Edema type / grade",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Non-pitting",
+              "Pitting +1",
+              "Pitting +2",
+              "Pitting +3",
+              "Pitting +4"
+            ]
+          },
+          "order": 41
+        },
+        {
+          "label": "Other edema site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 42
+        },
+        {
+          "label": "Capillary refill",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Less than 3 seconds",
+              "Greater than 3 seconds",
+              "3 seconds"
+            ]
+          },
+          "order": 43
+        },
+        {
+          "label": "Other cardiopulmonary findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 44
+        },
+        {
+          "label": "Pacemaker present",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 45
+        },
+        {
+          "label": "Pacemaker date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 46
+        },
+        {
+          "label": "Pacemaker type",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 47
+        }
+      ]
+    },
+    {
+      "title": "Nutritional status",
+      "description": null,
+      "order": 16,
+      "fields": [
+        {
+          "label": "Current dietary requirements",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "No added salt",
+              "NPO",
+              "No concentrated sweets",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other diet / nutritional requirements",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Increase fluids amount (mL)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 2
+        },
+        {
+          "label": "Restrict fluids amount (mL)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 3
+        },
+        {
+          "label": "Fluid instruction period / details",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Appetite",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Good", "Fair", "Poor", "Anorexic"]
+          },
+          "order": 5
+        },
+        {
+          "label": "Eating patterns",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Nausea / vomiting",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Nausea / vomiting frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Vomiting amount",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Heartburn / food intolerance",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Weight change",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Gain", "Loss", "None"]
+          },
+          "order": 11
+        },
+        {
+          "label": "Weight change (lb)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 12
+        },
+        {
+          "label": "Weight change over weeks / months / years",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Other nutritional observations",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 14
+        }
+      ]
+    },
+    {
+      "title": "Nutritional risk screening",
+      "description": "Source-form scoring: add points for yes responses. 0–2: reassess / provide information as appropriate. 3–5: educate, refer, monitor and reevaluate per patient situation and organization policy. 6+: coordinate with physician, dietician, social service professional or nurse; reassess and educate on the plan of care. Total is entered manually.",
+      "order": 17,
+      "fields": [
+        {
+          "label": "Illness or condition changes kind or amount of food eaten (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Eats fewer than two meals per day (3 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Eats few fruits, vegetables or milk products (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Has three or more drinks of beer, liquor or wine almost every day (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Tooth or mouth problems make eating hard (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Does not always have enough money for needed food (4 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Eats alone most of the time (1 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Takes three or more different prescribed or over-the-counter drugs per day (1 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Unintentional loss or gain of 10 lb in the last six months (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Not always physically able to shop, cook and/or feed self (2 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Total nutritional risk points (manual sum)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0,
+            "max": 22
+          },
+          "order": 10
+        },
+        {
+          "label": "Risk interpretation",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "0–2: Good",
+              "3–5: Moderate risk",
+              "6 or greater: High risk"
+            ]
+          },
+          "order": 11
+        },
+        {
+          "label": "Nutritional follow-up / interventions",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Nutritional problem status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Problem identified",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 13
+        }
+      ]
+    },
+    {
+      "title": "Elimination",
+      "description": null,
+      "order": 18,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Flatulence",
+              "Constipation / impaction",
+              "Diarrhea",
+              "Rectal bleeding",
+              "Hemorrhoids",
+              "Incontinence",
+              "Diapers / other"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Last bowel movement",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Frequency of stools",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Bowel regimen / program",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Laxative / enema frequency",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Daily", "Weekly", "Monthly"]
+          },
+          "order": 5
+        },
+        {
+          "label": "Laxative / enema details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Incontinence details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Diaper / containment details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Ileostomy / colostomy site and peristomal skin",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Other elimination site and surrounding skin",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        }
+      ]
+    },
+    {
+      "title": "Genitourinary",
+      "description": null,
+      "order": 19,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Urgency / frequency",
+              "Burning / pain",
+              "Hesitancy",
+              "Nocturia",
+              "Hematuria",
+              "Oliguria / anuria",
+              "Incontinence"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Incontinence details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Diapers / other",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Urine color",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Yellow / straw",
+              "Amber",
+              "Brown / gray",
+              "Blood-tinged",
+              "Other"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "label": "Other urine color",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Urine clarity",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Clear", "Cloudy", "Sediment / mucous"]
+          },
+          "order": 6
+        },
+        {
+          "label": "Urine odor",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Urinary catheter type",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Catheter last changed",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Foley insertion date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Foley size (French)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 11
+        },
+        {
+          "label": "Balloon inflation volume (mL)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 12
+        },
+        {
+          "label": "Inserted without difficulty",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Irrigation solution type",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Irrigation amount (mL)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 15
+        },
+        {
+          "label": "Irrigation frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 16
+        },
+        {
+          "label": "Irrigation returns",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Patient tolerated procedure well",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 19
+        }
+      ]
+    },
+    {
+      "title": "Abdomen",
+      "description": null,
+      "order": 20,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Tenderness",
+              "Pain",
+              "Distention",
+              "Hard",
+              "Soft",
+              "Ascites"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Abdominal girth (inches)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 2
+        },
+        {
+          "label": "NG / enteral tube type and size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Bowel sounds",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Active", "Absent", "Hypoactive", "Hyperactive"]
+          },
+          "order": 4
+        },
+        {
+          "label": "Bowel-sound quadrants",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        }
+      ]
+    },
+    {
+      "title": "Genitalia and reproductive assessment",
+      "description": null,
+      "order": 21,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Discharge / drainage",
+              "Lesions",
+              "Blisters",
+              "Masses",
+              "Cyst",
+              "Inflammation",
+              "Surgical alteration",
+              "Prostate problem"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Discharge / drainage description",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Lesion / mass / cyst findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Current prostate-related findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Self-testicular examination frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Breast self-examination frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Breast discharge side (right / left)",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Prostate history",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["BPH", "TURP", "Other"]
+          },
+          "order": 9
+        },
+        {
+          "label": "BPH date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "TURP date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Other prostate history",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Menopause",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Menopause date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Hysterectomy",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Hysterectomy date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 16
+        },
+        {
+          "label": "Menopause / hysterectomy history details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Last PAP date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "Last PAP result",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 19
+        },
+        {
+          "label": "Mastectomy side",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Right", "Left", "Bilateral"]
+          },
+          "order": 20
+        },
+        {
+          "label": "Mastectomy date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 21
+        }
+      ]
+    },
+    {
+      "title": "Neurologic / emotional / behavioral status",
+      "description": null,
+      "order": 22,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Headache",
+              "PERRLA",
+              "Unequal pupils",
+              "Aphasia",
+              "Motor change",
+              "Weakness",
+              "Tremors",
+              "Stuporous",
+              "Hallucinations"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Headache location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Headache frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Unequal pupil side (right / left)",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Aphasia type",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Receptive", "Expressive", "Both"]
+          },
+          "order": 5
+        },
+        {
+          "label": "Motor change",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Fine", "Gross", "Both"]
+          },
+          "order": 6
+        },
+        {
+          "label": "Motor-change site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Dominant side",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Right", "Left"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Weakness extremity / location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Tremor characteristics",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Fine", "Gross", "Paralysis"]
+          },
+          "order": 10
+        },
+        {
+          "label": "Tremor / paralysis site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Hallucination modality",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Visual", "Auditory"]
+          },
+          "order": 12
+        },
+        {
+          "label": "Hand-grip symmetry",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Equal", "Unequal"]
+          },
+          "order": 13
+        },
+        {
+          "label": "Hand-grip symmetry details",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Hand-grip strength",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Strong", "Weak"]
+          },
+          "order": 15
+        },
+        {
+          "label": "Hand-grip strength details",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 16
+        },
+        {
+          "label": "Current response to psychotropic medication",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "Standing psychotropic medications",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Psychotropic drug name",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Dose",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Psychotropic medication",
+            "addButtonLabel": "Add psychotropic medication",
+            "collapsible": true
+          },
+          "order": 19
+        }
+      ]
+    },
+    {
+      "title": "Mental status",
+      "description": null,
+      "order": 23,
+      "fields": [
+        {
+          "label": "Mental status",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Oriented",
+              "Comatose",
+              "Forgetful",
+              "Depressed",
+              "Disoriented",
+              "Lethargic",
+              "Agitated",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other mental-status findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Psychological / learning assessment",
+      "description": null,
+      "order": 24,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Language barrier",
+              "Needs interpreter",
+              "Learning barrier",
+              "Unable to read / write",
+              "Angry",
+              "Withdrawn",
+              "Difficult coping",
+              "Discouraged",
+              "Flat affect",
+              "Disorganized",
+              "Depressed",
+              "Inappropriate responses to caregivers / clinician",
+              "Substance-use concern"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Learning barriers",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Mental", "Psychosocial", "Physical", "Functional"]
+          },
+          "order": 2
+        },
+        {
+          "label": "Current communication / learning needs",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Spiritual / cultural impacts on current care",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Depression course",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Recent", "Long-term"]
+          },
+          "order": 5
+        },
+        {
+          "label": "Current depression treatment / response",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Contributing concerns",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Lack of motivation",
+              "Inability to recognize problems",
+              "Unrealistic expectations",
+              "Denial of problems"
+            ]
+          },
+          "order": 7
+        },
+        {
+          "label": "Sleep / rest",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Adequate", "Inadequate"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Sleep / rest explanation",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Evidence of abuse",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Potential",
+              "Actual",
+              "Verbal / emotional",
+              "Physical",
+              "Financial"
+            ]
+          },
+          "order": 10
+        },
+        {
+          "label": "Substance-use concern type",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Drugs", "Alcohol", "Tobacco"]
+          },
+          "order": 11
+        },
+        {
+          "label": "Objective / subjective findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 13
+        }
+      ]
+    },
+    {
+      "title": "Musculoskeletal",
+      "description": null,
+      "order": 25,
+      "fields": [
+        {
+          "label": "Assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Findings documented",
+              "No problem identified",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Findings",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Shuffling / wide-based gait",
+              "Weakness",
+              "Amputation",
+              "Hemiplegia",
+              "Paraplegia",
+              "Quadriplegia",
+              "Fracture",
+              "Swollen / painful joints",
+              "Contractures",
+              "Atrophy",
+              "Poor conditioning",
+              "Decreased range of motion",
+              "Paresthesia"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Amputation level (BK/AK/UE), side and details",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Fracture location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Swollen / painful joint details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Contracture joint and location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Atrophy location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Range-of-motion limitations",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Paresthesia location",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Other findings / current assessment comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        }
+      ]
+    },
+    {
+      "title": "Functional limitations and permitted activities",
+      "description": null,
+      "order": 26,
+      "fields": [
+        {
+          "label": "Functional limitations",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Dyspnea with minimal exertion",
+              "Hearing deficit",
+              "Bowel / bladder incontinence",
+              "Speech deficit",
+              "Contracture",
+              "Endurance limitation",
+              "Amputation",
+              "Ambulation limitation",
+              "Paralysis",
+              "Legally blind",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other functional limitations / details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "No functional limitations",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Activities permitted",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Complete bedrest",
+              "Bedrest / bathroom privileges",
+              "Up as tolerated",
+              "Transfer bed / chair",
+              "Partial weight bearing",
+              "Exercises prescribed",
+              "Independent in home",
+              "Other"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "label": "Other permitted activities / instructions",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "No activity restrictions",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        }
+      ]
+    },
+    {
+      "title": "Enteral feeding / access device",
+      "description": null,
+      "order": 27,
+      "fields": [
+        {
+          "label": "Device assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Applicable", "Not applicable", "No problem identified"]
+          },
+          "order": 0
+        },
+        {
+          "label": "Access device",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Nasogastric", "Gastrostomy", "Jejunostomy", "Other"]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other access device",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Pump type / specification",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Feeding mode",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Bolus", "Continuous"]
+          },
+          "order": 4
+        },
+        {
+          "label": "Feeding type / formula",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Feeding amount and schedule",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Flush protocol / amount",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Feeding performed by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Self", "RN", "Caregiver", "Other"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Other person performing feeding",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Dressing / site care",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Interventions / instructions / comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        }
+      ]
+    },
+    {
+      "title": "Infusion access and site care",
+      "description": "Record this assessment and administered treatment. The standing medication snapshot is documented in Standing medication regimen; neither section changes eMAR orders.",
+      "order": 28,
+      "fields": [
+        {
+          "label": "Infusion assessment status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Applicable", "Not applicable", "No problem identified"]
+          },
+          "order": 0
+        },
+        {
+          "label": "Access type",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Peripheral line", "Midline catheter", "Central line"]
+          },
+          "order": 1
+        },
+        {
+          "label": "Type / brand",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Size / gauge / length",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Catheter design",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Groshong", "Non-Groshong"]
+          },
+          "order": 4
+        },
+        {
+          "label": "Tunnel status",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Tunneled", "Non-tunneled"]
+          },
+          "order": 5
+        },
+        {
+          "label": "Insertion site",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Insertion date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Lumens",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Single", "Double", "Triple"]
+          },
+          "order": 8
+        },
+        {
+          "label": "Flush solution / frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Line patent",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Injection cap change frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Dressing change frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Dressing technique",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Sterile", "Clean"]
+          },
+          "order": 13
+        },
+        {
+          "label": "Performed by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Self", "RN", "Caregiver", "Other"]
+          },
+          "order": 14
+        },
+        {
+          "label": "Other person performing line care",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Site / skin condition",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 16
+        },
+        {
+          "label": "External catheter length",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Other line findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "PICC arm circumference (cm)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 19
+        },
+        {
+          "label": "PICC X-ray verification",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 20
+        },
+        {
+          "label": "IVAD reservoir",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Single", "Double"]
+          },
+          "order": 21
+        },
+        {
+          "label": "Huber needle gauge / length",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 22
+        },
+        {
+          "label": "IVAD accessed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 23
+        },
+        {
+          "label": "IVAD access date",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 24
+        },
+        {
+          "label": "Epidural / intrathecal site and skin condition",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 25
+        },
+        {
+          "label": "Epidural / intrathecal infusion solution, volume and rate",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 26
+        },
+        {
+          "label": "Epidural / intrathecal dressing",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 27
+        },
+        {
+          "label": "Other epidural / intrathecal findings",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 28
+        },
+        {
+          "label": "Medication administered during assessment",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Medication name",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Dose",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Route",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_5",
+                "label": "Duration of therapy",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Administration",
+            "addButtonLabel": "Add administration",
+            "collapsible": true
+          },
+          "order": 29
+        },
+        {
+          "label": "Infusion pump type / specification",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 30
+        },
+        {
+          "label": "Infusion administered by",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Self", "Caregiver", "RN", "Other"]
+          },
+          "order": 31
+        },
+        {
+          "label": "Other infusion administrator",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 32
+        },
+        {
+          "label": "Purpose of intravenous access",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Antibiotic therapy",
+              "Pain control",
+              "Lab draws",
+              "Chemotherapy",
+              "Maintain venous access",
+              "Hydration",
+              "Parenteral nutrition",
+              "Other"
+            ]
+          },
+          "order": 33
+        },
+        {
+          "label": "Other access purpose",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 34
+        },
+        {
+          "label": "Infusion care provided during visit",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 35
+        }
+      ]
+    },
+    {
+      "title": "Appliances, aids and special equipment",
+      "description": null,
+      "order": 29,
+      "fields": [
+        {
+          "label": "Brace / orthotics",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Transfer equipment",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Board", "Lift"]
+          },
+          "order": 1
+        },
+        {
+          "label": "Bedside commode",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Prosthesis (RUE/RLE/LUE/LLE/other)",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Hospital bed specification (semi-electric / crank / other)",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Mattress overlays",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Safety equipment",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Lifeline", "Fire alarm", "Smoke alarm"]
+          },
+          "order": 6
+        },
+        {
+          "label": "Equipment needs",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Other equipment",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Interventions / instructions",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "No equipment problem identified",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 10
+        }
+      ]
+    },
+    {
+      "title": "Fall risk assessment",
+      "description": "Source-form scoring: add points for each yes; institute fall precautions for a total of 15 or greater, according to organizational guidelines. Medication examples in source: antihistamines, antihypertensives, antiseizure drugs, benzodiazepines, cathartics, diuretics, hypoglycemics, narcotics, psychotropics and sedatives / hypnotics. Total is entered manually.",
+      "order": 30,
+      "fields": [
+        {
+          "label": "History of falls in past three months (15 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Sensory deficit (vision and/or hearing) (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Age over 65 (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Confusion (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Impaired judgment (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Decreased cooperation (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Increased anxiety / emotional lability (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Unable to ambulate independently (ambulatory aid, chair board, etc.) (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Gait / balance / coordination problems (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Incontinence / urgency (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Cardiovascular / respiratory disease affecting perfusion and/or oxygenation (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Postural hypotension with dizziness (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Medications affecting blood pressure or consciousness (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Alcohol use (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Home safety issues (lighting, pathway, cords, tubing, floor coverings, stairs, etc.) (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "Lack of home modifications (bathroom, kitchen, stairs / entries, etc.) (5 points if yes)",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Total fall risk points (manual sum)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0,
+            "max": 90
+          },
+          "order": 16
+        },
+        {
+          "label": "Fall-prevention education specific to identified risks",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Physical / occupational therapy referral",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "Monitoring plan to reduce falls",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 19
+        },
+        {
+          "label": "Patient reassessment plan",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 20
+        }
+      ]
+    },
+    {
+      "title": "Safety measures and home environment",
+      "description": null,
+      "order": 31,
+      "fields": [
+        {
+          "label": "Safety measures",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Bleeding precautions",
+              "Oxygen precautions",
+              "Seizure precautions",
+              "Fall precautions",
+              "Side rails up",
+              "Elevate head of bed",
+              "24-hour supervision",
+              "Clear pathways",
+              "Lock wheelchair with transfers",
+              "Infection-control measures",
+              "Walker / cane"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other safety measures",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Unsound structure",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Inadequate heating / cooling / electricity",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Inadequate sanitation",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Inadequate refrigeration",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Unsafe gas / electrical appliances or outlets",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Inadequate running water",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Unsafe storage of supplies / equipment",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "No telephone or unable to use phone",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Insects / rodents",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Medications stored safely",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Emergency planning / fire safety addressed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 12
+        },
+        {
+          "label": "Smoke detectors on all home levels",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Smoke detectors tested and functioning",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 14
+        },
+        {
+          "label": "More than one exit",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Exit plan in place",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 16
+        },
+        {
+          "label": "Home-safety findings / interventions",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 17
+        }
+      ]
+    },
+    {
+      "title": "Oxygen safety",
+      "description": null,
+      "order": 32,
+      "fields": [
+        {
+          "label": "Oxygen used",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Oxygen signs posted",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Smoking / flammables handled safely",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Backup oxygen available",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Knows how to use backup oxygen",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Electrical / fire safety addressed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Oxygen-safety comments",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        }
+      ]
+    },
+    {
+      "title": "Activities of daily living",
+      "description": "Paper columns I / A / D are represented as one assistance-level choice per activity, with a separate teach / train field.",
+      "order": 33,
+      "fields": [
+        {
+          "label": "Eating — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Eating — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Transfer — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 2
+        },
+        {
+          "label": "Transfer — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Dressing / grooming — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "label": "Dressing / grooming — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Bathing — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 6
+        },
+        {
+          "label": "Bathing — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Toileting — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 8
+        },
+        {
+          "label": "Toileting — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Ambulation — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 10
+        },
+        {
+          "label": "Ambulation — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Communication — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 12
+        },
+        {
+          "label": "Communication — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 13
+        },
+        {
+          "label": "Preparing light meals — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 14
+        },
+        {
+          "label": "Preparing light meals — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Preparing full meals — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 16
+        },
+        {
+          "label": "Preparing full meals — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Light housekeeping — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 18
+        },
+        {
+          "label": "Light housekeeping — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 19
+        },
+        {
+          "label": "Personal laundry — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 20
+        },
+        {
+          "label": "Personal laundry — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 21
+        },
+        {
+          "label": "Handling money — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 22
+        },
+        {
+          "label": "Handling money — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 23
+        },
+        {
+          "label": "Using telephone — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 24
+        },
+        {
+          "label": "Using telephone — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 25
+        },
+        {
+          "label": "Reading — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 26
+        },
+        {
+          "label": "Reading — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 27
+        },
+        {
+          "label": "Writing — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 28
+        },
+        {
+          "label": "Writing — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 29
+        },
+        {
+          "label": "Managing medications — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 30
+        },
+        {
+          "label": "Managing medications — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 31
+        },
+        {
+          "label": "Other activity",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 32
+        },
+        {
+          "label": "Other activity — assistance level",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Independent",
+              "Assistance required",
+              "Dependent",
+              "Not assessed"
+            ]
+          },
+          "order": 33
+        },
+        {
+          "label": "Other activity — teach / train",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 34
+        }
+      ]
+    },
+    {
+      "title": "Instructions and materials provided",
+      "description": null,
+      "order": 34,
+      "fields": [
+        {
+          "label": "Instructions / materials provided",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Rights and responsibilities",
+              "State hotline number",
+              "Advance directives",
+              "Do not resuscitate (DNR)",
+              "HIPAA Notice of Privacy Practices",
+              "OASIS Privacy Notice",
+              "Emergency planning for service disruption",
+              "Agency phone / after-hours number",
+              "When to contact physician and/or agency",
+              "Standard precautions / handwashing",
+              "Basic home safety",
+              "Disease education",
+              "Medication regimen / administration",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Disease education topic",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Other instruction / material details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Homebound reason",
+      "description": null,
+      "order": 35,
+      "fields": [
+        {
+          "label": "Homebound reasons",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Needs assistance for all activities",
+              "Residual weakness",
+              "Requires assistance to ambulate",
+              "Confusion / unable to go out alone",
+              "Unable to safely leave home unassisted",
+              "Severe shortness of breath on exertion",
+              "Dependent on adaptive devices",
+              "Medical restrictions",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Adaptive devices / medical restrictions / other details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        }
+      ]
+    },
+    {
+      "title": "Summary checklist and skilled care",
+      "description": null,
+      "order": 36,
+      "fields": [
+        {
+          "label": "Medication review status",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Medication regimen completed / reviewed",
+              "No change",
+              "Order obtained"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Medication issues identified",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Potential adverse effects / drug reaction",
+              "Ineffective drug therapy",
+              "Significant side effects",
+              "Significant drug interactions",
+              "Duplicate drug therapy",
+              "Non-compliance with drug therapy"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Billable supplies recorded",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Care coordination",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Physician",
+              "SN",
+              "PT",
+              "OT",
+              "ST",
+              "MSW",
+              "Aide",
+              "Other"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "label": "Other care coordination",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Additional notes on skilled care provided",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Nurse name",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Nurse signature",
+          "type": "SIGNATURE",
+          "required": false,
+          "config": {},
+          "order": 7
+        }
+      ]
+    },
+    {
+      "title": "DME and supplies",
+      "description": null,
+      "order": 37,
+      "fields": [
+        {
+          "label": "Wound-care supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "2×2 dressings",
+              "4×4 dressings",
+              "ABD pads",
+              "Cotton-tipped applicators",
+              "Wound cleanser",
+              "Wound gel",
+              "Drain sponges",
+              "Sterile gloves",
+              "Non-sterile gloves",
+              "Hydrocolloids",
+              "Kerlix",
+              "Nu-gauze",
+              "Saline",
+              "Tape",
+              "Transparent dressings",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Kerlix size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Other wound-care supplies",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "IV supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "IV start kit",
+              "IV pole",
+              "IV tubing",
+              "Alcohol swabs",
+              "Angiocatheter",
+              "Tape",
+              "Extension tubing",
+              "Injection caps",
+              "Central-line dressing",
+              "Infusion pump",
+              "Batteries",
+              "Syringes",
+              "Other"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "label": "Angiocatheter size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Battery size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Syringe size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Other IV supplies",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Urinary / ostomy supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Underpads",
+              "External catheters",
+              "Urinary bag / pouch",
+              "Ostomy pouch",
+              "Ostomy wafer",
+              "Stoma adhesive tape",
+              "Skin protectant",
+              "Other"
+            ]
+          },
+          "order": 8
+        },
+        {
+          "label": "Ostomy pouch brand / size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Ostomy wafer brand / size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Other urinary / ostomy supplies",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 11
+        },
+        {
+          "label": "Foley supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "French catheter kit (tray, bag, Foley)",
+              "Straight catheter",
+              "Irrigation tray"
+            ]
+          },
+          "order": 12
+        },
+        {
+          "label": "Foley catheter kit size (French)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 13
+        },
+        {
+          "label": "Diabetic supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Chemstrips", "Syringes", "Other"]
+          },
+          "order": 14
+        },
+        {
+          "label": "Other diabetic supplies",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 15
+        },
+        {
+          "label": "Miscellaneous supplies",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Enema supplies",
+              "Feeding tube",
+              "Suture removal kit",
+              "Staple removal kit",
+              "Steri-strips",
+              "Saline",
+              "Acetic acid",
+              "Other"
+            ]
+          },
+          "order": 16
+        },
+        {
+          "label": "Feeding tube type / size",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 17
+        },
+        {
+          "label": "Other miscellaneous supplies",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 18
+        },
+        {
+          "label": "Supplies / equipment",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Bath bench",
+              "Cane",
+              "Commode",
+              "Special mattress overlay",
+              "Pressure-relieving device",
+              "Eggcrate",
+              "Hospital bed",
+              "Hoyer lift",
+              "Enteral feeding pump",
+              "Nebulizer",
+              "Oxygen concentrator",
+              "Suction machine",
+              "Ventilator",
+              "Walker",
+              "Wheelchair",
+              "TENS unit",
+              "Other"
+            ]
+          },
+          "order": 19
+        },
+        {
+          "label": "Special mattress overlay specification",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 20
+        },
+        {
+          "label": "Other equipment / supply specifications",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 21
+        }
+      ]
+    },
+    {
+      "title": "Professional services — nursing",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 38,
+      "fields": [
+        {
+          "label": "485 / Plan of Care completed",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Emergency patient-specific order for plan of care",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Skilled nursing frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Skilled observation for",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Skilled nursing services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluate cardiopulmonary status",
+              "Evaluate nutrition / hydration / elimination",
+              "Evaluate signs / symptoms of infection",
+              "Teach disease process",
+              "Teach diet",
+              "Teach home safety / fall prevention",
+              "Medication teaching",
+              "Evaluate medication effects / compliance",
+              "Administer medication",
+              "Teach NG-tube feeding",
+              "Teach G-tube feeding",
+              "Administer insulin",
+              "Prepare insulin syringes",
+              "Blood glucose monitoring PRN",
+              "Teach diabetic care",
+              "Other"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "label": "Other nursing evaluation / services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "PRN visits for",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Psychiatric nursing for",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Set up medications every (weeks)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 8
+        },
+        {
+          "label": "Medication administration orders",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Medication name",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Dose",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Route",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Order",
+            "addButtonLabel": "Add order",
+            "collapsible": true
+          },
+          "order": 9
+        },
+        {
+          "label": "Blood glucose monitoring schedule / other instructions",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 10
+        }
+      ]
+    },
+    {
+      "title": "Professional services — IV / infusion",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 39,
+      "fields": [
+        {
+          "label": "IV medication orders",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Medication name",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_2",
+                "label": "Dose",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Route",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_4",
+                "label": "Frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "IV order",
+            "addButtonLabel": "Add iv order",
+            "collapsible": true
+          },
+          "order": 0
+        },
+        {
+          "label": "Teach IV administration",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "IV teaching details",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Flushing protocol",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Flush solution",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Normal saline",
+                    "Sterile water",
+                    "Heparin",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Other solution",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Volume (mL)",
+                "type": "NUMBER",
+                "required": false,
+                "config": {
+                  "min": 0
+                }
+              },
+              {
+                "key": "item_4",
+                "label": "Concentration (units/mL, if applicable)",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_5",
+                "label": "Frequency",
+                "type": "TEXT_SHORT",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Flush",
+            "addButtonLabel": "Add flush",
+            "collapsible": true
+          },
+          "order": 3
+        },
+        {
+          "label": "IV services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Teach signs / symptoms of IV complications",
+              "Teach IV site care",
+              "Teach infusion pump",
+              "Teach complete parenteral nutrition",
+              "Site care",
+              "Line protocol",
+              "PRN visits for IV complications",
+              "Anaphylaxis protocol",
+              "Other"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "label": "Site care specification",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Line protocol",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "PRN visits for IV complications",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Anaphylaxis protocol / specific orders",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 8
+        },
+        {
+          "label": "Other IV services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        }
+      ]
+    },
+    {
+      "title": "Professional services — respiratory, wound and elimination",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 40,
+      "fields": [
+        {
+          "label": "Oxygen order (L/min)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 0
+        },
+        {
+          "label": "Oxygen order instructions",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Respiratory services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Pulse oximetry every visit",
+              "Pulse oximetry PRN dyspnea",
+              "Teach oxygen use / precautions",
+              "Teach tracheostomy care",
+              "Administer tracheostomy care",
+              "Other"
+            ]
+          },
+          "order": 2
+        },
+        {
+          "label": "Other respiratory services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Wound care orders (specify each site)",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Wound services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluate wound / decubitus healing",
+              "Measure wounds weekly",
+              "Teach wound care / dressing",
+              "Other"
+            ]
+          },
+          "order": 5
+        },
+        {
+          "label": "Other wound services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Foley order size (French)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 7
+        },
+        {
+          "label": "Foley balloon inflation (mL)",
+          "type": "NUMBER",
+          "required": false,
+          "config": {
+            "min": 0
+          },
+          "order": 8
+        },
+        {
+          "label": "Foley change frequency",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 9
+        },
+        {
+          "label": "Suprapubic catheter insertion schedule",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 10
+        },
+        {
+          "label": "Elimination services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Teach indwelling-catheter care",
+              "Teach self-catheterization",
+              "Teach ostomy care",
+              "Teach bowel regimen",
+              "Other"
+            ]
+          },
+          "order": 11
+        },
+        {
+          "label": "Other elimination services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 12
+        }
+      ]
+    },
+    {
+      "title": "Professional services — maternal / child and laboratory",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 41,
+      "fields": [
+        {
+          "label": "Maternal / child services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluate fetal / maternal status",
+              "Evaluate growth and development",
+              "Evaluate parenting",
+              "Teach signs / symptoms of preterm labor",
+              "Teach growth and development",
+              "Teach apnea-monitor use",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other maternal / child services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Venipuncture for",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Other laboratory services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Professional services — physical therapy",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 42,
+      "fields": [
+        {
+          "label": "Physical therapy frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Physical therapy services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluation and treatment",
+              "Pulse oximetry PRN",
+              "Home safety / fall prevention",
+              "Therapeutic exercise",
+              "Transfer training",
+              "Gait training",
+              "Establish home exercise program",
+              "Modality",
+              "Prosthetic training",
+              "Muscle re-education",
+              "Other"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other services / treatment details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Modality specification, frequency, duration and amount",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Professional services — occupational therapy",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 43,
+      "fields": [
+        {
+          "label": "Occupational therapy frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Occupational therapy services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluation and treatment",
+              "Pulse oximetry PRN",
+              "Home safety / fall prevention",
+              "Adaptive equipment",
+              "Therapeutic exercise",
+              "Muscle re-education",
+              "Establish home exercise program",
+              "Homemaker training",
+              "Modality",
+              "Other"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other services / treatment details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Modality specification, frequency, duration and amount",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Professional services — speech therapy",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 44,
+      "fields": [
+        {
+          "label": "Speech therapy frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Speech therapy services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluation and treatment",
+              "Voice-disorder treatment",
+              "Speech-articulation-disorder treatment",
+              "Dysphagia treatment",
+              "Receptive skills",
+              "Expressive skills",
+              "Cognitive skills",
+              "Other"
+            ]
+          },
+          "order": 1
+        },
+        {
+          "label": "Other services / treatment details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Professional services — home health aide and other services",
+      "description": "Complete this section only when the 485 / Plan of Care is completed. Record services according to the patient-specific order.",
+      "order": 45,
+      "fields": [
+        {
+          "label": "Home health aide frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Personal care for ADL assistance",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Other HHA tasks",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Other service",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 3
+        },
+        {
+          "label": "Other service frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 4
+        },
+        {
+          "label": "Homemaking services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 5
+        },
+        {
+          "label": "Other service details",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 6
+        },
+        {
+          "label": "Medical social worker frequency / duration",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 7
+        },
+        {
+          "label": "Medical social worker services",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Evaluate and treat",
+              "Evaluate family situation",
+              "Evaluate / refer for community resources",
+              "Evaluate financial status",
+              "Other"
+            ]
+          },
+          "order": 8
+        },
+        {
+          "label": "Other medical social worker services",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 9
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — nursing",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 46,
+      "fields": [
+        {
+          "label": "Nursing goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Demonstrates compliance with medication",
+                    "Stabilization of cardiovascular / pulmonary condition",
+                    "Demonstrates competence following medical regimen",
+                    "Verbalizes pain controlled at acceptable level",
+                    "Demonstrates independence in specified activity",
+                    "Verbalizes / demonstrates independence with care",
+                    "Wound healing without complications",
+                    "Daily skilled nursing visits expected to end",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — physical therapy",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 47,
+      "fields": [
+        {
+          "label": "Physical therapy goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Demonstrates ability to follow home exercise program",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — occupational therapy",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 48,
+      "fields": [
+        {
+          "label": "Occupational therapy goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Demonstrates ability to follow home exercise program",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — speech therapy",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 49,
+      "fields": [
+        {
+          "label": "Speech therapy goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Demonstrates swallowing skills in formal / informal dysphagia evaluation exercise program",
+                    "Completes speech therapy program",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — aide",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 50,
+      "fields": [
+        {
+          "label": "Aide goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Assumes responsibility for personal-care needs",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discipline goals — medical social services",
+      "description": "Add each applicable goal and its target achievement date. Specify the activity for independence goals and describe any other goal.",
+      "order": 51,
+      "fields": [
+        {
+          "label": "Medical social services goals",
+          "type": "REPEATABLE_GROUP",
+          "required": false,
+          "config": {
+            "childFields": [
+              {
+                "key": "item_1",
+                "label": "Selected goal",
+                "type": "SINGLE_CHOICE",
+                "required": false,
+                "config": {
+                  "options": [
+                    "Verbalizes information about community resources and how to obtain assistance",
+                    "Other"
+                  ]
+                }
+              },
+              {
+                "key": "item_2",
+                "label": "Goal specifics / independence activity / other goal",
+                "type": "TEXT_LONG",
+                "required": false,
+                "config": {}
+              },
+              {
+                "key": "item_3",
+                "label": "Date goal will be achieved",
+                "type": "DATE",
+                "required": false,
+                "config": {}
+              }
+            ],
+            "minItems": 0,
+            "itemLabel": "Goal",
+            "addButtonLabel": "Add goal",
+            "collapsible": true
+          },
+          "order": 0
+        }
+      ]
+    },
+    {
+      "title": "Discharge plans and rehabilitation potential",
+      "description": null,
+      "order": 52,
+      "fields": [
+        {
+          "label": "Discharge criteria",
+          "type": "MULTIPLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": [
+              "Return to independent level of care / self-care",
+              "Able to remain in residence with primary caregiver / community-agency support",
+              "Patient knowledgeable about when to notify physician",
+              "Understands medication regimen and diagnosis-related care",
+              "Medical condition stabilizes",
+              "Maximum functional potential reached",
+              "Other"
+            ]
+          },
+          "order": 0
+        },
+        {
+          "label": "Other discharge plans",
+          "type": "TEXT_LONG",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Discharge plan discussed with patient",
+          "type": "YES_NO",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Rehabilitation potential",
+          "type": "SINGLE_CHOICE",
+          "required": false,
+          "config": {
+            "options": ["Poor", "Fair", "Good", "Excellent"]
+          },
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Staff completion and signature",
+      "description": null,
+      "order": 53,
+      "fields": [
+        {
+          "label": "Person completing form — name",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 0
+        },
+        {
+          "label": "Person completing form — title",
+          "type": "TEXT_SHORT",
+          "required": false,
+          "config": {},
+          "order": 1
+        },
+        {
+          "label": "Person completing form — signature",
+          "type": "SIGNATURE",
+          "required": false,
+          "config": {},
+          "order": 2
+        },
+        {
+          "label": "Date completed",
+          "type": "DATE",
+          "required": false,
+          "config": {},
+          "order": 3
+        }
+      ]
+    }
+  ]
+}

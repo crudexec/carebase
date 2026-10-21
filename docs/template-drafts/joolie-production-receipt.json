@@ -1,0 +1,13 @@
+{
+  "id": "cmuokvcoa0001s6dqns73zyvm",
+  "companyId": "cmu4j4zvg22kqo00kweyzqizk",
+  "name": "Joolie Health Comprehensive Nursing Asset",
+  "status": "DRAFT",
+  "isEnabled": false,
+  "sections": 54,
+  "fields": 564,
+  "bodyMaps": 2,
+  "sourceSha256": "d7a2497be0ca6c1e062a400dd5a36f810f93d30c980e24d7e06a04325864ff6b",
+  "verifiedAt": "2026-09-30T20:49:39.464Z",
+  "verification": "All metadata, section and field ordering, labels, types, requirements and configs exactly match approved draft; one matching audit entry."
+}

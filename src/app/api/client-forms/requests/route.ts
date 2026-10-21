@@ -92,6 +92,7 @@ export async function POST(request: Request) {
       notes,
       expiresAt,
       maxSubmissions,
+      intakeId,
     } = validation.data;
 
     const [client, template] = await Promise.all([
@@ -115,6 +116,16 @@ export async function POST(request: Request) {
 
     if (!template) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
+    }
+
+    if (intakeId) {
+      const intake = await prisma.intake.findFirst({
+        where: { id: intakeId, companyId: session.user.companyId, clientId },
+        select: { id: true },
+      });
+      if (!intake) {
+        return NextResponse.json({ error: "Intake not found" }, { status: 404 });
+      }
     }
 
     const settings = getClientFormTemplateSettings(template.settings);
@@ -146,6 +157,7 @@ export async function POST(request: Request) {
         notes: notes ?? null,
         expiresAt: effectiveExpiresAt,
         maxSubmissions: effectiveMaxSubmissions,
+        intakeId: intakeId ?? null,
       },
       include: {
         template: {

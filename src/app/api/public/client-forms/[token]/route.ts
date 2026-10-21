@@ -183,6 +183,7 @@ export async function POST(
           clientId: requestRecord.clientId,
           templateId: requestRecord.templateId,
           requestId: requestRecord.id,
+          intakeId: requestRecord.intakeId,
           templateVersion: requestRecord.template.version,
           formSchemaSnapshot: snapshot as unknown as Prisma.InputJsonValue,
           data: data as Prisma.InputJsonValue,

@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { clientId, templateId, data } = validation.data;
+    const { clientId, templateId, intakeId, data } = validation.data;
 
     const [client, template] = await Promise.all([
       prisma.client.findFirst({
@@ -133,6 +133,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
 
+    if (intakeId) {
+      const intake = await prisma.intake.findFirst({
+        where: { id: intakeId, companyId: session.user.companyId, clientId },
+        select: { id: true },
+      });
+      if (!intake) {
+        return NextResponse.json({ error: "Intake not found" }, { status: 404 });
+      }
+    }
+
     const snapshot = buildClientFormSnapshot(template);
     const submissionValidation = validateClientFormSubmissionData(snapshot, data);
 
@@ -153,6 +163,7 @@ export async function POST(request: Request) {
         data: data as Prisma.InputJsonValue,
         isPublicSubmission: false,
         submittedById: session.user.id,
+        intakeId: intakeId ?? null,
       },
       include: {
         client: {
@@ -167,6 +178,14 @@ export async function POST(request: Request) {
       },
     });
 
+    if (intakeId) {
+      await prisma.intakeForm.upsert({
+        where: { intakeId_templateId: { intakeId, templateId } },
+        update: {},
+        create: { intakeId, templateId, addedById: session.user.id },
+      });
+    }
+
     await prisma.auditLog.create({
       data: {
         companyId: session.user.companyId,
@@ -179,6 +198,7 @@ export async function POST(request: Request) {
           clientName: `${client.firstName} ${client.lastName}`,
           templateId: template.id,
           templateName: template.name,
+          intakeId: intakeId ?? null,
         },
       },
     });

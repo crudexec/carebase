@@ -811,6 +811,7 @@ model User {
   submittedVisitNotes       VisitNote[]            @relation("VisitNoteSubmitter")
   createdClientFormRequests ClientFormRequest[]    @relation("ClientFormRequestCreator")
   submittedClientForms      ClientFormSubmission[] @relation("ClientFormSubmitter")
+  addedIntakeForms          IntakeForm[]           @relation("IntakeFormAdder")
 
   // Comments
   comments VisitNoteComment[] @relation("CommentAuthor")
@@ -1888,6 +1889,7 @@ model FormTemplate {
   visitNotes            VisitNote[]
   clientFormRequests    ClientFormRequest[]
   clientFormSubmissions ClientFormSubmission[]
+  intakeForms           IntakeForm[]
 
   @@index([companyId])
   @@index([status])
@@ -2101,6 +2103,10 @@ model ClientFormRequest {
   createdById String
   createdBy   User   @relation("ClientFormRequestCreator", fields: [createdById], references: [id])
 
+  // Intake the request was sent for (optional)
+  intakeId String?
+  intake   Intake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+
   submissions ClientFormSubmission[]
 
   @@index([companyId])
@@ -2108,6 +2114,7 @@ model ClientFormRequest {
   @@index([templateId])
   @@index([status])
   @@index([expiresAt])
+  @@index([intakeId])
 }
 
 model ClientFormSubmission {
@@ -2144,12 +2151,17 @@ model ClientFormSubmission {
   submittedById String?
   submittedBy   User?   @relation("ClientFormSubmitter", fields: [submittedById], references: [id])
 
+  // Intake the form was completed for (optional)
+  intakeId String?
+  intake   Intake? @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+
   @@index([companyId])
   @@index([clientId])
   @@index([templateId])
   @@index([requestId])
   @@index([status])
   @@index([submittedAt])
+  @@index([intakeId])
 }
 
 model CommentMention {
@@ -3019,13 +3031,34 @@ model Intake {
   referral   Referral? @relation(fields: [referralId], references: [id])
 
   // Relations
-  assessments Assessment[]
-  consents    ConsentSignature[]
-  carePlans   CarePlan[]
+  assessments           Assessment[]
+  consents              ConsentSignature[]
+  carePlans             CarePlan[]
+  forms                 IntakeForm[]
+  clientFormRequests    ClientFormRequest[]
+  clientFormSubmissions ClientFormSubmission[]
 
   @@index([companyId])
   @@index([status])
   @@index([intakeCoordinatorId])
+}
+
+// Client form templates selected for an intake's consent step
+model IntakeForm {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  intakeId String
+  intake   Intake @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+
+  templateId String
+  template   FormTemplate @relation(fields: [templateId], references: [id])
+
+  addedById String
+  addedBy   User   @relation("IntakeFormAdder", fields: [addedById], references: [id])
+
+  @@unique([intakeId, templateId])
+  @@index([templateId])
 }
 
 // ============================================

@@ -13,6 +13,7 @@ import {
   Button,
   Badge,
   Breadcrumb,
+  Checkbox,
   ConfirmActionModal,
 } from "@/components/ui";
 import {
@@ -106,11 +107,17 @@ interface AvailableTemplate {
   }[];
 }
 
-interface RequiredConsent {
+interface ConsentFormOption {
   id: string;
   name: string;
   description: string | null;
-  formType: string;
+  isPublic: boolean;
+}
+
+interface IntakeConsentForm {
+  id: string;
+  template: ConsentFormOption;
+  submission: { id: string; submittedAt: string } | null;
 }
 
 const WIZARD_STEPS = [
@@ -137,7 +144,9 @@ export default function IntakeWizardPage() {
 
   const [intake, setIntake] = React.useState<IntakeData | null>(null);
   const [availableTemplates, setAvailableTemplates] = React.useState<AvailableTemplate[]>([]);
-  const [requiredConsents, setRequiredConsents] = React.useState<RequiredConsent[]>([]);
+  const [consentForms, setConsentForms] = React.useState<IntakeConsentForm[]>([]);
+  const [availableConsentForms, setAvailableConsentForms] = React.useState<ConsentFormOption[]>([]);
+  const [savingFormId, setSavingFormId] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -162,7 +171,8 @@ export default function IntakeWizardPage() {
 
       setIntake(data.intake);
       setAvailableTemplates(data.availableTemplates || []);
-      setRequiredConsents(data.requiredConsents || []);
+      setConsentForms(data.consentForms || []);
+      setAvailableConsentForms(data.availableConsentForms || []);
       // Parse currentStep - handle both numeric strings and default to 1
       const step = parseInt(data.intake.currentStep, 10);
       setCurrentStep(isNaN(step) ? 1 : step);
@@ -223,24 +233,45 @@ export default function IntakeWizardPage() {
     }
   };
 
-  const createConsent = async (templateId: string) => {
-    try {
-      const response = await fetch(`/api/intake/${intakeId}/consents`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId }),
-      });
+  const toggleConsentForm = async (template: ConsentFormOption, selected: boolean) => {
+    const currentIds = consentForms.map((form) => form.template.id);
+    const templateIds = selected
+      ? [...currentIds, template.id]
+      : currentIds.filter((templateId) => templateId !== template.id);
 
+    setSavingFormId(template.id);
+    try {
+      const response = await fetch(`/api/intake/${intakeId}/forms`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateIds }),
+      });
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Consent form created");
-        router.push(`/consents/${data.consent.id}`);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update forms");
       }
+
+      setConsentForms((forms) =>
+        selected
+          ? [...forms, { id: template.id, template, submission: null }]
+          : forms.filter((form) => form.template.id !== template.id)
+      );
     } catch (err) {
-      console.error("Failed to create consent:", err);
-      toast.error("Failed to create consent");
+      toast.error(err instanceof Error ? err.message : "Failed to update forms");
+    } finally {
+      setSavingFormId(null);
     }
+  };
+
+  const consentFormHref = (path: string, templateId: string) => {
+    const query = new URLSearchParams({
+      clientId: intake?.client.id ?? "",
+      templateId,
+      intakeId,
+      returnTo: `/intake/${intakeId}`,
+    });
+    return `${path}?${query.toString()}`;
   };
 
   const generateCarePlan = async () => {
@@ -374,8 +405,9 @@ export default function IntakeWizardPage() {
   const isStep1Complete = true; // Client info is always complete if intake exists
   const completedAssessments = intake.assessments.filter((a) => a.status === "COMPLETED");
   const isStep2Complete = completedAssessments.length > 0; // At least one completed assessment
-  const completedConsents = intake.consents.filter((c) => c.status === "SIGNED");
-  const isStep3Complete = requiredConsents.length === 0 || completedConsents.length >= requiredConsents.length;
+  const completedConsentForms = consentForms.filter((form) => form.submission !== null);
+  const isStep3Complete =
+    consentForms.length > 0 && completedConsentForms.length === consentForms.length;
   const isStep4Complete = intake.carePlan !== null;
   const canSubmit = isStep1Complete && isStep2Complete && isStep3Complete && isStep4Complete;
 
@@ -562,73 +594,108 @@ export default function IntakeWizardPage() {
           </Card>
         );
 
-      case 3:
+      case 3: {
+        // Forms selected earlier stay listed even if their template was disabled since
+        const consentFormOptions = [
+          ...availableConsentForms,
+          ...consentForms
+            .map((form) => form.template)
+            .filter((template) => !availableConsentForms.some((t) => t.id === template.id)),
+        ];
+
         return (
           <Card>
             <CardHeader>
               <CardTitle>Consent Forms</CardTitle>
               <CardDescription>
-                Obtain required consent signatures
+                Select the forms this client needs to complete, then fill them in or send a link
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {requiredConsents.length === 0 ? (
+              {consentFormOptions.length === 0 ? (
                 <div className="text-center py-8 text-foreground-secondary">
                   <FileText className="mx-auto h-10 w-10 mb-3 opacity-50" />
-                  <p>No required consent forms for your state.</p>
+                  <p>No enabled client form templates.</p>
+                  <Link href="/client-forms/templates" className="text-sm text-primary hover:underline">
+                    Manage client form templates
+                  </Link>
                 </div>
               ) : (
-                requiredConsents.map((consent) => {
-                  const existing = intake.consents.find(
-                    (c) => c.template.id === consent.id
-                  );
-                  const isSigned = existing?.status === "SIGNED";
+                consentFormOptions.map((template) => {
+                  const selected = consentForms.find((form) => form.template.id === template.id);
+                  const submission = selected?.submission ?? null;
 
                   return (
                     <div
-                      key={consent.id}
-                      className="p-4 rounded-lg border flex items-center justify-between"
+                      key={template.id}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        submission
+                          ? "border-success bg-success/5"
+                          : selected
+                          ? "border-warning bg-warning/5"
+                          : "hover:border-primary/50"
+                      }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            isSigned
-                              ? "bg-success/10 text-success"
-                              : existing
-                              ? "bg-warning/10 text-warning"
-                              : "bg-background-secondary"
-                          }`}
-                        >
-                          {isSigned ? (
-                            <CheckCircle className="h-5 w-5" />
-                          ) : (
-                            <FileText className="h-5 w-5" />
-                          )}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <Checkbox
+                            className="mt-1"
+                            checked={Boolean(selected)}
+                            disabled={Boolean(submission) || savingFormId === template.id}
+                            onChange={(event) => toggleConsentForm(template, event.target.checked)}
+                            aria-label={`Select ${template.name}`}
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{template.name}</p>
+                              {selected && (
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full ${
+                                    submission
+                                      ? "bg-success/10 text-success"
+                                      : "bg-warning/10 text-warning"
+                                  }`}
+                                >
+                                  {submission ? "Submitted" : "Pending"}
+                                </span>
+                              )}
+                            </div>
+                            {template.description && (
+                              <p className="text-sm text-foreground-secondary mt-1">
+                                {template.description}
+                              </p>
+                            )}
+                            {submission && (
+                              <p className="text-xs text-foreground-secondary mt-2">
+                                Submitted {new Date(submission.submittedAt).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{consent.name}</p>
-                          {consent.description && (
-                            <p className="text-sm text-foreground-secondary">
-                              {consent.description}
-                            </p>
-                          )}
-                          <Badge className="mt-1">
-                            {consent.formType.replace("_", " ")}
-                          </Badge>
-                        </div>
+                        {selected && (
+                          <div className="flex flex-shrink-0 gap-2">
+                            {submission ? (
+                              <Link href={`/client-forms/${submission.id}`}>
+                                <Button variant="secondary" size="sm">View</Button>
+                              </Link>
+                            ) : (
+                              <>
+                                {template.isPublic && (
+                                  <Link href={consentFormHref("/client-forms/requests/new", template.id)}>
+                                    <Button variant="secondary" size="sm">
+                                      <ExternalLink className="mr-1 h-4 w-4" />
+                                      Send link
+                                    </Button>
+                                  </Link>
+                                )}
+                                <Link href={consentFormHref("/client-forms/new", template.id)}>
+                                  <Button size="sm">Fill</Button>
+                                </Link>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {existing ? (
-                        <Link href={`/consents/${existing.id}`}>
-                          <Button variant="secondary" size="sm">
-                            {isSigned ? "View" : "Sign"}
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button size="sm" onClick={() => createConsent(consent.id)}>
-                          <Plus className="mr-1 h-4 w-4" />
-                          Prepare
-                        </Button>
-                      )}
                     </div>
                   );
                 })
@@ -637,12 +704,17 @@ export default function IntakeWizardPage() {
               {!isStep3Complete && (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning text-sm">
                   <AlertCircle className="h-4 w-4" />
-                  <span>Complete all required consent forms before proceeding.</span>
+                  <span>
+                    {consentForms.length === 0
+                      ? "Select at least one consent form."
+                      : "Submit all selected consent forms before proceeding."}
+                  </span>
                 </div>
               )}
             </CardContent>
           </Card>
         );
+      }
 
       case 4:
         return (
@@ -760,7 +832,7 @@ export default function IntakeWizardPage() {
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5" />
                     <span>
-                      Consents ({completedConsents.length}/{requiredConsents.length} signed)
+                      Consent Forms ({completedConsentForms.length}/{consentForms.length} submitted)
                     </span>
                   </div>
                   {isStep3Complete ? (

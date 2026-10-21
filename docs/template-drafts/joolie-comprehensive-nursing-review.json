@@ -1,0 +1,807 @@
+{
+  "company": {
+    "id": "cmu4j4zvg22kqo00kweyzqizk",
+    "name": "Joolie Health"
+  },
+  "databaseChangesMade": true,
+  "proposedStatus": "Created as approved: DRAFT / disabled",
+  "assumptions": [
+    "Use exact requested name unless corrected.",
+    "All 37 patient-information requirement groups listed by the user are now included in the nursing template. Only patient name, address, birth date and sex remain outside the form.",
+    "Patient-profile integration is outside this change. These fields save with the care-plan assessment and do not automatically synchronize with Client, insurance, intake, directives or eMAR records.",
+    "Only nursing screenshots 1–8 are in scope; 9–10 are unrelated asset-picker screenshots.",
+    "Final supplied page is included: discipline goals and achievement dates, discharge planning, rehabilitation potential and staff completion/signature.",
+    "Risk wording and point values are transcribed from the supplied form, not independently clinically validated.",
+    "All fields are optional because the source does not identify required fields and many sections may not apply.",
+    "TABLE, TEXT_DISPLAY and CALCULATED_SCORE are avoided because the current care-plan renderer lacks implementations.",
+    "String options are required by the current top-level care-plan renderer. Its existing choice editor expects object options; this pre-existing compatibility issue should be fixed before editing choices in the builder."
+  ],
+  "excludedPatientFields": [
+    {
+      "category": "Patient identity",
+      "fields": [
+        "Patient name (including repeated page headers)",
+        "Patient address",
+        "Date of birth",
+        "Male / female"
+      ],
+      "destination": "Client firstName / lastName / address / dateOfBirth; sex/gender in profileData if configured."
+    }
+  ],
+  "sourceCoverage": [
+    {
+      "section": "Insurance and start of care",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Diagnoses and medical history",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Immunization history",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Allergies",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Standing medication regimen",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Advance directives and DNR",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Living arrangements and caregiver profile",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Language, education and support contacts",
+      "images": [
+        "Original nursing screenshots and user-confirmed patient-information list"
+      ]
+    },
+    {
+      "section": "Visit and assessment context",
+      "images": [8]
+    },
+    {
+      "section": "Eyes and ears",
+      "images": [7, 8]
+    },
+    {
+      "section": "Nose, throat and mouth",
+      "images": [8]
+    },
+    {
+      "section": "Head and neck",
+      "images": [8]
+    },
+    {
+      "section": "Endocrine and hematology",
+      "images": [8]
+    },
+    {
+      "section": "Pain assessment",
+      "images": [7]
+    },
+    {
+      "section": "Skin condition and wounds",
+      "images": [7, 6]
+    },
+    {
+      "section": "Cardiopulmonary assessment",
+      "images": [6]
+    },
+    {
+      "section": "Nutritional status",
+      "images": [6]
+    },
+    {
+      "section": "Nutritional risk screening",
+      "images": [6, 5]
+    },
+    {
+      "section": "Elimination",
+      "images": [5]
+    },
+    {
+      "section": "Genitourinary",
+      "images": [5]
+    },
+    {
+      "section": "Abdomen",
+      "images": [5]
+    },
+    {
+      "section": "Genitalia and reproductive assessment",
+      "images": [5, 4]
+    },
+    {
+      "section": "Neurologic / emotional / behavioral status",
+      "images": [5]
+    },
+    {
+      "section": "Mental status",
+      "images": [5]
+    },
+    {
+      "section": "Psychological / learning assessment",
+      "images": [5, 4]
+    },
+    {
+      "section": "Musculoskeletal",
+      "images": [4]
+    },
+    {
+      "section": "Functional limitations and permitted activities",
+      "images": [4]
+    },
+    {
+      "section": "Enteral feeding / access device",
+      "images": [4]
+    },
+    {
+      "section": "Infusion access and site care",
+      "images": [4, 3]
+    },
+    {
+      "section": "Appliances, aids and special equipment",
+      "images": [4]
+    },
+    {
+      "section": "Fall risk assessment",
+      "images": [4, 3]
+    },
+    {
+      "section": "Safety measures and home environment",
+      "images": [3]
+    },
+    {
+      "section": "Oxygen safety",
+      "images": [2]
+    },
+    {
+      "section": "Activities of daily living",
+      "images": [3, 2]
+    },
+    {
+      "section": "Instructions and materials provided",
+      "images": [2]
+    },
+    {
+      "section": "Homebound reason",
+      "images": [2]
+    },
+    {
+      "section": "Summary checklist and skilled care",
+      "images": [2]
+    },
+    {
+      "section": "DME and supplies",
+      "images": [2, 1]
+    },
+    {
+      "section": "Professional services — nursing",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — IV / infusion",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — respiratory, wound and elimination",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — maternal / child and laboratory",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — physical therapy",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — occupational therapy",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — speech therapy",
+      "images": [1]
+    },
+    {
+      "section": "Professional services — home health aide and other services",
+      "images": [1]
+    },
+    {
+      "section": "Discipline goals — nursing",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discipline goals — physical therapy",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discipline goals — occupational therapy",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discipline goals — speech therapy",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discipline goals — aide",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discipline goals — medical social services",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Discharge plans and rehabilitation potential",
+      "images": ["Final page supplied at 1:20 PM"]
+    },
+    {
+      "section": "Staff completion and signature",
+      "images": ["Final page supplied at 1:20 PM"]
+    }
+  ],
+  "patientInformationCoverageFile": "joolie-patient-information-coverage.json",
+  "patientInformationDisposition": "User requested inclusion of all listed items directly in the nursing template. All 37 requirement groups are mapped to concrete fields in the local draft.",
+  "includedPatientFields": [
+    {
+      "category": "Insurance and identifiers",
+      "requirement": "Health insurance name",
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Health insurance name"
+        }
+      ]
+    },
+    {
+      "category": "Insurance and identifiers",
+      "requirement": "Policy number",
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Policy number"
+        }
+      ]
+    },
+    {
+      "category": "Enrollment",
+      "requirement": "Start-of-care (S.O.C.) date",
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Start-of-care (S.O.C.) date"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Primary diagnosis / ICD code and date",
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Primary diagnosis / ICD code"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Primary diagnosis date"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Surgical procedures / ICD code and date",
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Surgical procedures"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Recent and prior hospitalization history, dates, reasons and counts",
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Recent hospitalization"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Number of prior hospitalizations"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Hospitalization history"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "New diagnosis / condition",
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "New diagnosis / condition"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Specify new diagnosis / condition"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Pertinent medical history: hypertension, cardiac disease, diabetes, respiratory disease, osteoporosis, fractures, cancer, infection, immunosuppression, open wounds and surgeries",
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Pertinent medical history"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Cancer site"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Surgical history details"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Other pertinent history / previous outcomes"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Immunization history and up-to-date status; influenza, pneumonia, tetanus and other needs",
+      "templateFields": [
+        {
+          "section": "Immunization history",
+          "field": "Immunizations up to date"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Immunizations needed"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Other immunization needs"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Immunization history"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Cataract surgery site and date",
+      "templateFields": [
+        {
+          "section": "Eyes and ears",
+          "field": "Cataract surgery site"
+        },
+        {
+          "section": "Eyes and ears",
+          "field": "Cataract surgery date"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Diabetes type and standing diet/oral/insulin treatment; insulin dose/frequency",
+      "templateFields": [
+        {
+          "section": "Endocrine and hematology",
+          "field": "Diabetes type"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Other diabetes type"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing diabetes treatment"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Diet / oral control details"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin name"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin dose"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin frequency"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Pacemaker date and type",
+      "templateFields": [
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker present"
+        },
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker date"
+        },
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker type"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "BPH/TURP date",
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Prostate history"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "BPH date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "TURP date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Other prostate history"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Menopause / hysterectomy history and dates",
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Hysterectomy"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Hysterectomy date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause / hysterectomy history details"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Last PAP date and result",
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Last PAP date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Last PAP result"
+        }
+      ]
+    },
+    {
+      "category": "Diagnoses and longitudinal medical history",
+      "requirement": "Mastectomy side and date",
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Mastectomy side"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Mastectomy date"
+        }
+      ]
+    },
+    {
+      "category": "Allergies",
+      "requirement": "None known / no allergy problem",
+      "templateFields": [
+        {
+          "section": "Allergies",
+          "field": "Allergy status"
+        }
+      ]
+    },
+    {
+      "category": "Allergies",
+      "requirement": "Aspirin, sulfa, pollen, penicillin, eggs, milk products, insect bites and other allergies",
+      "templateFields": [
+        {
+          "section": "Allergies",
+          "field": "Known allergens"
+        },
+        {
+          "section": "Allergies",
+          "field": "Other allergies / allergy details"
+        }
+      ]
+    },
+    {
+      "category": "Standing medications",
+      "requirement": "Ongoing medication list / regimen",
+      "templateFields": [
+        {
+          "section": "Standing medication regimen",
+          "field": "Current medication regimen"
+        }
+      ]
+    },
+    {
+      "category": "Standing medications",
+      "requirement": "Psychotropic drug name, dose and frequency",
+      "templateFields": [
+        {
+          "section": "Neurologic / emotional / behavioral status",
+          "field": "Standing psychotropic medications"
+        }
+      ]
+    },
+    {
+      "category": "Standing medications",
+      "requirement": "Standing insulin dose and frequency",
+      "templateFields": [
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin dose"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin frequency"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin name"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "Living will",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Living will"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "Do not resuscitate",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Do not resuscitate (DNR)"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "Copies on file",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Advance-directive copies on file"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "Funeral arrangements made",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Funeral arrangements made"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "Persistent directive comments / documents",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Advance-directive comments"
+        },
+        {
+          "section": "Advance directives and DNR",
+          "field": "Directive document references / location"
+        }
+      ]
+    },
+    {
+      "category": "Advance directives",
+      "requirement": "DNR / physician-order status repeated under professional services",
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "DNR physician-order status"
+        },
+        {
+          "section": "Advance directives and DNR",
+          "field": "DNR physician-order reference / details"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "House / apartment",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Home type"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Other home type"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "New environment",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "New environment"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "Family present / lives alone / lives with others",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Family present"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Household arrangement"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Household details"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "Primary caregiver name, relationship and health status",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver name"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver relationship"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver health status"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "Caregiver assists with ADLs / provides physical care",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver assistance"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Other caregiver assistance"
+        }
+      ]
+    },
+    {
+      "category": "Living arrangements and caregiver profile",
+      "requirement": "Secondary / other caregiver identities",
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Secondary / other caregivers — names, relationships and roles"
+        }
+      ]
+    },
+    {
+      "category": "Language, education and support contacts",
+      "requirement": "Primary language",
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Primary language"
+        }
+      ]
+    },
+    {
+      "category": "Language, education and support contacts",
+      "requirement": "Educational level",
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Educational level"
+        }
+      ]
+    },
+    {
+      "category": "Language, education and support contacts",
+      "requirement": "Spiritual resource and phone number",
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Spiritual resource"
+        },
+        {
+          "section": "Language, education and support contacts",
+          "field": "Spiritual resource phone number"
+        }
+      ]
+    },
+    {
+      "category": "Language, education and support contacts",
+      "requirement": "Oxygen HME company and representative",
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Oxygen HME company"
+        },
+        {
+          "section": "Language, education and support contacts",
+          "field": "Oxygen HME representative"
+        }
+      ]
+    }
+  ],
+  "productionReceipt": "joolie-production-receipt.json",
+  "productionTemplateId": "cmuokvcoa0001s6dqns73zyvm",
+  "productionStatus": "DRAFT",
+  "isEnabled": false
+}

@@ -93,14 +93,30 @@ export function combineDateTime(date: Date, time: string, timezoneOffsetMinutes?
 }
 
 /**
+ * Parse an HH:mm string into [hours, minutes], or null if incomplete/invalid
+ */
+function parseTime(time: string | null | undefined): [number, number] | null {
+  const match = /^(\d{1,2}):(\d{2})/.exec(time ?? "");
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return [hours, minutes];
+}
+
+/**
  * Calculate hours between two times
  * @param startTime - Start time in HH:mm format
  * @param endTime - End time in HH:mm format
  * @returns Number of hours
  */
 export function calculateHoursBetween(startTime: string, endTime: string): number {
-  const [startHours, startMinutes] = startTime.split(":").map(Number);
-  const [endHours, endMinutes] = endTime.split(":").map(Number);
+  const start = parseTime(startTime);
+  const end = parseTime(endTime);
+  // Incomplete or invalid input (e.g. a time input mid-edit reports "")
+  if (!start || !end) return 0;
+  const [startHours, startMinutes] = start;
+  const [endHours, endMinutes] = end;
 
   const startTotalMinutes = startHours * 60 + startMinutes;
   const endTotalMinutes = endHours * 60 + endMinutes;
@@ -178,7 +194,9 @@ export const DAY_NAMES_FULL = [
  * Format time for display (12-hour format)
  */
 export function formatTime12Hour(time: string): string {
-  const [hours, minutes] = time.split(":").map(Number);
+  const parsed = parseTime(time);
+  if (!parsed) return "--:--";
+  const [hours, minutes] = parsed;
   const ampm = hours >= 12 ? "PM" : "AM";
   const hour12 = hours % 12 || 12;
   return `${hour12}:${minutes.toString().padStart(2, "0")} ${ampm}`;

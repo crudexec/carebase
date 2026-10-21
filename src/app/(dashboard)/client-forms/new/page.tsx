@@ -17,6 +17,9 @@ export default function NewClientFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedClientId = searchParams.get("clientId");
+  const preselectedTemplateId = searchParams.get("templateId");
+  const intakeId = searchParams.get("intakeId");
+  const returnTo = searchParams.get("returnTo");
   const [selectedClient, setSelectedClient] = React.useState<ClientInfo | null>(null);
   const [templates, setTemplates] = React.useState<FormTemplateData[]>([]);
   const [selectedTemplate, setSelectedTemplate] = React.useState<FormTemplateData | null>(null);
@@ -30,7 +33,11 @@ export default function NewClientFormPage() {
         const response = await fetch("/api/client-forms/templates/enabled");
         const data = await response.json();
         if (response.ok) {
-          setTemplates(data.templates || []);
+          const enabled: FormTemplateData[] = data.templates || [];
+          setTemplates(enabled);
+          if (preselectedTemplateId) {
+            setSelectedTemplate(enabled.find((t) => t.id === preselectedTemplateId) ?? null);
+          }
         }
       } catch {
         setError("Failed to load templates");
@@ -40,7 +47,7 @@ export default function NewClientFormPage() {
     };
 
     fetchTemplates();
-  }, []);
+  }, [preselectedTemplateId]);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     const clientId = selectedClient?.id || preselectedClientId;
@@ -52,6 +59,7 @@ export default function NewClientFormPage() {
       body: JSON.stringify({
         clientId,
         templateId: selectedTemplate.id,
+        intakeId,
         data,
       }),
     });
@@ -61,7 +69,12 @@ export default function NewClientFormPage() {
       throw new Error(result.error || "Failed to submit form");
     }
 
-    router.push(`/client-forms/${result.submission.id}`);
+    // Only follow same-origin relative paths
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+      router.push(returnTo);
+    } else {
+      router.push(`/client-forms/${result.submission.id}`);
+    }
   };
 
   return (

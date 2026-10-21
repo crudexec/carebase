@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@/components/ui";
 import { ClientSearchSelect } from "@/components/clients/client-search-select";
@@ -17,6 +18,10 @@ export default function NewClientFormRequestPage() {
   const searchParams = useSearchParams();
   const preselectedClientId = searchParams.get("clientId");
   const preselectedTemplateId = searchParams.get("templateId");
+  const intakeId = searchParams.get("intakeId");
+  const returnTo = searchParams.get("returnTo");
+  const safeReturnTo =
+    returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : null;
   const [selectedClient, setSelectedClient] = React.useState<ClientInfo | null>(null);
   const [templates, setTemplates] = React.useState<FormTemplateData[]>([]);
   const [templateId, setTemplateId] = React.useState("");
@@ -67,6 +72,7 @@ export default function NewClientFormRequestPage() {
         recipientEmail: recipientEmail || null,
         expiresAt: expiresAt || null,
         maxSubmissions: maxSubmissions ? Number(maxSubmissions) : null,
+        intakeId,
       }),
     });
 
@@ -173,9 +179,16 @@ export default function NewClientFormRequestPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <Input value={publicUrl} readOnly />
-            <Button variant="ghost" onClick={handleCopyLink}>
-              Copy Link
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={handleCopyLink}>
+                Copy Link
+              </Button>
+              {safeReturnTo && (
+                <Link href={safeReturnTo}>
+                  <Button variant="secondary">Back to intake</Button>
+                </Link>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

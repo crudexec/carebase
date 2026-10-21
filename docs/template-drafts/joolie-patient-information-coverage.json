@@ -1,0 +1,1108 @@
+{
+  "title": "Joolie Health — patient information included in nursing template",
+  "databaseChangesMade": true,
+  "templateChanged": true,
+  "reviewBasis": "Repository schema, screens and API code; this is not verification of deployed production UI or individual patient records.",
+  "profileIntegrationGap": "Patient-profile integration is outside this change. These fields save with the care-plan assessment and do not automatically synchronize with Client, insurance, intake, directives or eMAR records.",
+  "placementDecision": "User requested inclusion of all listed items directly in the nursing template. All 37 requirement groups are mapped to concrete fields in the local draft.",
+  "requirements": [
+    {
+      "id": "patient-requirement-001",
+      "category": "Insurance and identifiers",
+      "sourceRequirement": "Health insurance name",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; exact fields missing",
+      "existingStorage": "Client.medicaidId, medicaidPayerId, secondaryInsuranceId, secondaryPayerId; Referral.insuranceInfo is free text.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx",
+        "src/app/api/clients/unified/route.ts",
+        "prisma/schema.prisma"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Health insurance name"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-002",
+      "category": "Insurance and identifiers",
+      "sourceRequirement": "Policy number",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; exact fields missing",
+      "existingStorage": "Client.medicaidId, medicaidPayerId, secondaryInsuranceId, secondaryPayerId; Referral.insuranceInfo is free text.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx",
+        "src/app/api/clients/unified/route.ts",
+        "prisma/schema.prisma"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Policy number"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-003",
+      "category": "Enrollment",
+      "sourceRequirement": "Start-of-care (S.O.C.) date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Actual SOC mapping unconfirmed",
+      "existingStorage": "Intake.startedAt, targetStartDate, completedAt; CarePlan.verbalSOCDate and effectiveDate.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["DATE"],
+      "evidence": ["src/app/api/intake/route.ts", "prisma/schema.prisma"],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Insurance and start of care",
+          "field": "Start-of-care (S.O.C.) date"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-004",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Primary diagnosis / ICD code and date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Primary diagnosis — ICD10_DIAGNOSIS",
+        "Diagnosis date — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Primary diagnosis / ICD code"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Primary diagnosis date"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-005",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Surgical procedures / ICD code and date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Procedure — TEXT_SHORT",
+        "Procedure / supplied ICD code — TEXT_SHORT (do not assume diagnosis-code picker supports procedure codes)",
+        "Procedure date — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Surgical procedures"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-006",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Recent and prior hospitalization history, dates, reasons and counts",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Recent hospitalization — YES_NO",
+        "Admission / discharge dates — DATE",
+        "Reason — TEXT_LONG",
+        "Prior hospitalization count — NUMBER",
+        "Repeatable hospitalization history — REPEATABLE_GROUP with text, dates and reason"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Recent hospitalization"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Number of prior hospitalizations"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Hospitalization history"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-007",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "New diagnosis / condition",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "New diagnosis or condition — YES_NO",
+        "Specify diagnosis / condition — TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "New diagnosis / condition"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Specify new diagnosis / condition"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-008",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Pertinent medical history: hypertension, cardiac disease, diabetes, respiratory disease, osteoporosis, fractures, cancer, infection, immunosuppression, open wounds and surgeries",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "All listed history categories — MULTIPLE_CHOICE",
+        "Cancer site, surgery and other details — TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Pertinent medical history"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Cancer site"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Surgical history details"
+        },
+        {
+          "section": "Diagnoses and medical history",
+          "field": "Other pertinent history / previous outcomes"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-009",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Immunization history and up-to-date status; influenza, pneumonia, tetanus and other needs",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Immunizations up to date — YES_NO",
+        "Needed: influenza / pneumonia / tetanus / other — MULTIPLE_CHOICE",
+        "Other immunization details — TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Immunization history",
+          "field": "Immunizations up to date"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Immunizations needed"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Other immunization needs"
+        },
+        {
+          "section": "Immunization history",
+          "field": "Immunization history"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-010",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Cataract surgery site and date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Cataract surgery site — TEXT_SHORT",
+        "Cataract surgery date — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Eyes and ears",
+          "field": "Cataract surgery site"
+        },
+        {
+          "section": "Eyes and ears",
+          "field": "Cataract surgery date"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-011",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Diabetes type and standing diet/oral/insulin treatment; insulin dose/frequency",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Diabetes type — SINGLE_CHOICE",
+        "Diet / oral control and treatment details — TEXT_LONG",
+        "Standing insulin name, dose and frequency — existing Medication record"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Endocrine and hematology",
+          "field": "Diabetes type"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Other diabetes type"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing diabetes treatment"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Diet / oral control details"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin name"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin dose"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin frequency"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-012",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Pacemaker date and type",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Pacemaker date — DATE",
+        "Pacemaker type — TEXT_SHORT"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker present"
+        },
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker date"
+        },
+        {
+          "section": "Cardiopulmonary assessment",
+          "field": "Pacemaker type"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-013",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "BPH/TURP date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "BPH / TURP history — TEXT_SHORT",
+        "BPH / TURP date — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Prostate history"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "BPH date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "TURP date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Other prostate history"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-014",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Menopause / hysterectomy history and dates",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Menopause / hysterectomy history — MULTIPLE_CHOICE",
+        "Relevant history dates — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Hysterectomy"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Hysterectomy date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Menopause / hysterectomy history details"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-015",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Last PAP date and result",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["Last PAP date — DATE", "PAP result — TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Last PAP date"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Last PAP result"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-016",
+      "category": "Diagnoses and longitudinal medical history",
+      "sourceRequirement": "Mastectomy side and date",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; structured history missing",
+      "existingStorage": "Client.primaryDiagnosis and diagnosisCodes. CarePlanDiagnosis stores ICD code/description and onsetDate at plan level. Client.medicalNotes provides free text only.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Mastectomy side — SINGLE_CHOICE",
+        "Mastectomy date — DATE"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts",
+        "src/components/clients/unified-client-form/steps/full-profile-step.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Mastectomy side"
+        },
+        {
+          "section": "Genitalia and reproductive assessment",
+          "field": "Mastectomy date"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-017",
+      "category": "Allergies",
+      "sourceRequirement": "None known / no allergy problem",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Patient-level structured capture missing",
+      "existingStorage": "CarePlan.allergies exists as plan-level free text. Client.medicalNotes can hold text but is not a dedicated allergy record.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Allergies",
+          "field": "Allergy status"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-018",
+      "category": "Allergies",
+      "sourceRequirement": "Aspirin, sulfa, pollen, penicillin, eggs, milk products, insect bites and other allergies",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Patient-level structured capture missing",
+      "existingStorage": "CarePlan.allergies exists as plan-level free text. Client.medicalNotes can hold text but is not a dedicated allergy record.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Allergies",
+          "field": "Known allergens"
+        },
+        {
+          "section": "Allergies",
+          "field": "Other allergies / allergy details"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-019",
+      "category": "Standing medications",
+      "sourceRequirement": "Ongoing medication list / regimen",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Existing patient medication workflow",
+      "existingStorage": "Client.medications → Medication.name, strength, doseAmount, route, frequency, frequencyOther, scheduledTimes, startDate, endDate, specialInstructions.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Existing nursing-template text and repeatable-group fields; assessment snapshot only."
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/emar/medications/medication-form.tsx",
+        "src/app/api/medications/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Standing medication regimen",
+          "field": "Current medication regimen"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-020",
+      "category": "Standing medications",
+      "sourceRequirement": "Psychotropic drug name, dose and frequency",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Existing patient medication workflow",
+      "existingStorage": "Client.medications → Medication.name, strength, doseAmount, route, frequency, frequencyOther, scheduledTimes, startDate, endDate, specialInstructions.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Existing nursing-template text and repeatable-group fields; assessment snapshot only."
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/emar/medications/medication-form.tsx",
+        "src/app/api/medications/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Neurologic / emotional / behavioral status",
+          "field": "Standing psychotropic medications"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-021",
+      "category": "Standing medications",
+      "sourceRequirement": "Standing insulin dose and frequency",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Existing patient medication workflow",
+      "existingStorage": "Client.medications → Medication.name, strength, doseAmount, route, frequency, frequencyOther, scheduledTimes, startDate, endDate, specialInstructions.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "Existing nursing-template text and repeatable-group fields; assessment snapshot only."
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/emar/medications/medication-form.tsx",
+        "src/app/api/medications/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin dose"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin frequency"
+        },
+        {
+          "section": "Endocrine and hematology",
+          "field": "Standing insulin name"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-022",
+      "category": "Advance directives",
+      "sourceRequirement": "Living will",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Living will"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-023",
+      "category": "Advance directives",
+      "sourceRequirement": "Do not resuscitate",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Do not resuscitate (DNR)"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-024",
+      "category": "Advance directives",
+      "sourceRequirement": "Copies on file",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Advance-directive copies on file"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-025",
+      "category": "Advance directives",
+      "sourceRequirement": "Funeral arrangements made",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Funeral arrangements made"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-026",
+      "category": "Advance directives",
+      "sourceRequirement": "Persistent directive comments / documents",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "Advance-directive comments"
+        },
+        {
+          "section": "Advance directives and DNR",
+          "field": "Directive document references / location"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-027",
+      "category": "Advance directives",
+      "sourceRequirement": "DNR / physician-order status repeated under professional services",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; dedicated patient directive fields missing",
+      "existingStorage": "CarePlan.advancedDirectives is plan-level free text. ConsentFormTemplate / ConsentSignature store forms/signatures, not verified living-will or DNR status mappings.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["YES_NO / TEXT_LONG"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/components/care-plan/care-plan-form.tsx"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Advance directives and DNR",
+          "field": "DNR physician-order status"
+        },
+        {
+          "section": "Advance directives and DNR",
+          "field": "DNR physician-order reference / details"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-028",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "House / apartment",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Home type"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Other home type"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-029",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "New environment",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "New environment"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-030",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "Family present / lives alone / lives with others",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Family present"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Household arrangement"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Household details"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-031",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "Primary caregiver name, relationship and health status",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver name"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver relationship"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver health status"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-032",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "Caregiver assists with ADLs / provides physical care",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Primary caregiver assistance"
+        },
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Other caregiver assistance"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-033",
+      "category": "Living arrangements and caregiver profile",
+      "sourceRequirement": "Secondary / other caregiver identities",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Partial; requested profile fields missing",
+      "existingStorage": "Client.sponsorId and assignedCarerId identify linked users. Referral emergency-contact fields are not a verified primary/secondary caregiver mapping.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": [
+        "SINGLE_CHOICE / MULTIPLE_CHOICE / TEXT_SHORT / TEXT_LONG"
+      ],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/unified/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Living arrangements and caregiver profile",
+          "field": "Secondary / other caregivers — names, relationships and roles"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-034",
+      "category": "Language, education and support contacts",
+      "sourceRequirement": "Primary language",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Dedicated patient capture missing",
+      "existingStorage": "No matching dedicated Client fields found in inspected schema/UI/API.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/route.ts",
+        "src/app/api/clients/[id]/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Primary language"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-035",
+      "category": "Language, education and support contacts",
+      "sourceRequirement": "Educational level",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Dedicated patient capture missing",
+      "existingStorage": "No matching dedicated Client fields found in inspected schema/UI/API.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/route.ts",
+        "src/app/api/clients/[id]/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Educational level"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-036",
+      "category": "Language, education and support contacts",
+      "sourceRequirement": "Spiritual resource and phone number",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Dedicated patient capture missing",
+      "existingStorage": "No matching dedicated Client fields found in inspected schema/UI/API.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/route.ts",
+        "src/app/api/clients/[id]/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Spiritual resource"
+        },
+        {
+          "section": "Language, education and support contacts",
+          "field": "Spiritual resource phone number"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    },
+    {
+      "id": "patient-requirement-037",
+      "category": "Language, education and support contacts",
+      "sourceRequirement": "Oxygen HME company and representative",
+      "inScope": true,
+      "disposition": "Included in verified production nursing template draft",
+      "currentCoverage": "Dedicated patient capture missing",
+      "existingStorage": "No matching dedicated Client fields found in inspected schema/UI/API.",
+      "requiredAction": "Production creation approved and completed. Activation was not requested.",
+      "proposedCapture": ["TEXT_SHORT"],
+      "evidence": [
+        "prisma/schema.prisma",
+        "src/app/api/clients/route.ts",
+        "src/app/api/clients/[id]/route.ts"
+      ],
+      "implemented": true,
+      "templateFields": [
+        {
+          "section": "Language, education and support contacts",
+          "field": "Oxygen HME company"
+        },
+        {
+          "section": "Language, education and support contacts",
+          "field": "Oxygen HME representative"
+        }
+      ],
+      "implementationScope": "Created in production as a disabled draft; no patient-profile/eMAR synchronization."
+    }
+  ],
+  "productionReceipt": "joolie-production-receipt.json",
+  "productionTemplateId": "cmuokvcoa0001s6dqns73zyvm",
+  "productionStatus": "DRAFT",
+  "isEnabled": false
+}

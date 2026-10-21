@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { getClientFormTemplateSettings } from "@/lib/client-forms/snapshots";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -140,25 +141,60 @@ export async function GET(request: Request, { params }: RouteParams) {
       ],
     });
 
-    // Get required consent form templates
-    const requiredConsents = await prisma.consentFormTemplate.findMany({
-      where: {
-        stateConfigId: companyState?.stateConfigId,
-        isRequired: true,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        formType: true,
-      },
+    // Consent step: enabled client form templates and the ones selected for this intake
+    const [availableConsentForms, selectedForms, intakeSubmissions] = await Promise.all([
+      prisma.formTemplate.findMany({
+        where: {
+          companyId: session.user.companyId,
+          type: "CLIENT_FORM",
+          status: "ACTIVE",
+          isEnabled: true,
+        },
+        select: { id: true, name: true, description: true, settings: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.intakeForm.findMany({
+        where: { intakeId: id },
+        include: {
+          template: {
+            select: { id: true, name: true, description: true, settings: true },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.clientFormSubmission.findMany({
+        where: { intakeId: id },
+        select: { id: true, templateId: true, submittedAt: true },
+        orderBy: { submittedAt: "desc" },
+      }),
+    ]);
+
+    const consentForms = selectedForms.map((form) => {
+      const latest = intakeSubmissions.find((sub) => sub.templateId === form.templateId);
+      return {
+        id: form.id,
+        template: {
+          id: form.template.id,
+          name: form.template.name,
+          description: form.template.description,
+          isPublic: getClientFormTemplateSettings(form.template.settings).access.isPublic,
+        },
+        submission: latest
+          ? { id: latest.id, submittedAt: latest.submittedAt.toISOString() }
+          : null,
+      };
     });
 
     return NextResponse.json({
       intake,
       availableTemplates,
-      requiredConsents,
+      consentForms,
+      availableConsentForms: availableConsentForms.map((template) => ({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        isPublic: getClientFormTemplateSettings(template.settings).access.isPublic,
+      })),
       stateConfig: companyState?.stateConfig,
     });
   } catch (error) {

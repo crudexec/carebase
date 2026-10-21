@@ -30,6 +30,7 @@ export const createClientFormRequestSchema = z.object({
   notes: z.string().max(2000).nullable().optional(),
   expiresAt: z.string().datetime().nullable().optional(),
   maxSubmissions: z.number().int().positive().nullable().optional(),
+  intakeId: z.string().min(1).nullable().optional(),
 });
 
 export const updateClientFormRequestSchema = z.object({
@@ -44,6 +45,7 @@ export const updateClientFormRequestSchema = z.object({
 export const createAuthenticatedClientFormSubmissionSchema = z.object({
   clientId: z.string().min(1),
   templateId: z.string().min(1),
+  intakeId: z.string().min(1).nullable().optional(),
   data: z.record(z.string(), z.any()),
 });
 
