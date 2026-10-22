@@ -1,0 +1,1571 @@
+{
+  "source": {
+    "file": "docs/template-drafts/Patient Admission Office Copy (002).docx",
+    "sha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791"
+  },
+  "company": {
+    "name": "Joolie Health",
+    "adminEmail": "jooliehealthcare@gmail.com"
+  },
+  "openItems": [
+    "Vulnerability: the packet does not say what \"Exit Risk Factor?\" means; it is recorded per factor but not scored.",
+    "Neither assessment defines risk levels, so completed results show \"Score: N\" (N = risk factors or hazards found). Named risk levels need agreed cut-offs and a small code change.",
+    "These assessments do not generate care-plan tasks automatically (the generator only recognises Katz ADL, Lawton IADL, PHQ-9 and Mini-Cog)."
+  ],
+  "textChanges": [
+    {
+      "template": "Client Vulnerability to Abuse and/or Neglect",
+      "from": "One table: each factor has \"Vulnerability Risk Yes/No\" and \"Exit Risk Factor? Yes/No\" columns",
+      "to": "Two sections: \"Vulnerability risk factors\" (scored, 1 point per Yes) and \"Exit risk factors\" (recorded, not scored)",
+      "reason": "The assessment form asks one question per item"
+    },
+    {
+      "template": "Client Vulnerability to Abuse and/or Neglect",
+      "from": "(no scoring on paper)",
+      "to": "Total score = number of vulnerability risk factors present (0–15); no risk levels",
+      "reason": "The packet defines no cut-offs"
+    },
+    {
+      "template": "Client Vulnerability to Abuse and/or Neglect",
+      "from": "Client Name / PT Nos",
+      "to": "(omitted)",
+      "reason": "The assessment is already attached to the client"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "p a t I e n t / wi I ll (broken spacing in the paper copy)",
+      "to": "patient / will",
+      "reason": "Typo"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "Do you remove soap build in your shower/bathtub up to avoid slipping?",
+      "to": "Do you remove soap build-up in your shower/bathtub to avoid slipping?",
+      "reason": "Typo"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "Are floor coverings secure d and tidy?",
+      "to": "Are floor coverings secured and tidy?",
+      "reason": "Typo"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "Are there ice at steps or walkways?",
+      "to": "Is there ice on steps or walkways?",
+      "reason": "Typo"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "Check “YES” or “NO’ for each item. Any No Answers Indicate a potential need for changes to the environment",
+      "to": "Check “YES” or “NO” for each item. Any No answers indicate a potential need for changes to the environment Exception: for questions marked “Yes = hazard”, a Yes answer indicates the hazard.",
+      "reason": "Four questions are worded so that Yes is the hazard"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "Is food prepared in the kitchen?",
+      "to": "Recorded, not scored",
+      "reason": "Neither answer clearly indicates a hazard"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "OVERALL ASSESSMENT RESULT (Yes/No row)",
+      "to": "Automatic total = number of hazards found (0–29)",
+      "reason": "Calculated by the app on completion"
+    },
+    {
+      "template": "Home Safety / Fall Risk Assessment",
+      "from": "ADAGE Representative Name / Signature / Date",
+      "to": "Agency representative name / signature / date",
+      "reason": "Another agency's name left in the packet"
+    }
+  ],
+  "templates": [
+    {
+      "name": "Client Vulnerability to Abuse and/or Neglect",
+      "description": "Fifteen vulnerability risk factors (orientation, following directions, assertiveness, mobility, endurance, pain, communicable disease, hearing, speech, touch, behavior and safety). Score = number of risk factors present.",
+      "isRequired": false,
+      "scoringConfig": {
+        "method": "SUM",
+        "maxScore": 15
+      },
+      "sections": [
+        {
+          "sectionType": "CUSTOM",
+          "title": "Assessment details",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "DATE_OF_CLIENT_ASSESSMENT_FOR_VULNERABILITY",
+              "questionText": "Date of client assessment for vulnerability",
+              "description": null,
+              "responseType": "DATE",
+              "required": true,
+              "order": 0
+            }
+          ],
+          "order": 0,
+          "scoringConfig": null
+        },
+        {
+          "sectionType": "CUSTOM",
+          "title": "Vulnerability risk factors",
+          "description": "For each factor, answer Yes if it is a vulnerability risk for this client (the client does not demonstrate it), No if it is not. 1 point for each risk factor present.",
+          "instructions": null,
+          "items": [
+            {
+              "code": "R01_DEMONSTRATE_ORIENTATION_TO_TIME_PLACE_AND_PERS",
+              "questionText": "Demonstrate orientation to time, place, and person",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "R02_DEMONSTRATE_ABILITY_TO_FOLLOW_DIRECTIONS_CONSI",
+              "questionText": "Demonstrate ability to follow directions consistently",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "R03_DEMONSTRATE_ASSERTIVENESS",
+              "questionText": "Demonstrate assertiveness",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "R04_DEMONSTRATES_ABILITY_TO_GIVE_ACCURATE_INFORMAT",
+              "questionText": "Demonstrates ability to give accurate information consistently",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 3
+            },
+            {
+              "code": "R05_DEMONSTRATES_INTEREST_IN_ENVIRONMENT_ACTIVITIE",
+              "questionText": "Demonstrates interest in environment activities",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 4
+            },
+            {
+              "code": "R06_DEMONSTRATES_ABILITY_TO_WALK_WITHOUT_ASSISTIVE",
+              "questionText": "Demonstrates ability to walk without assistive devices",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 5
+            },
+            {
+              "code": "R07_DEMONSTRATES_FULL_RANGE_OF_MOTION",
+              "questionText": "Demonstrates full range of motion",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 6
+            },
+            {
+              "code": "R08_DEMONSTRATES_ADEQUATE_ENDURANCE",
+              "questionText": "Demonstrates adequate endurance",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 7
+            },
+            {
+              "code": "R09_DEMONSTRATES_PAIN_FREE_CONDITION_ILLNESS",
+              "questionText": "Demonstrates pain-free condition/illness",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 8
+            },
+            {
+              "code": "R10_DEMONSTRATES_FREEDOM_FROM_COMMUNICABLE_DISEASE",
+              "questionText": "Demonstrates freedom from communicable disease",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 9
+            },
+            {
+              "code": "R11_DEMONSTRATES_ADEQUATE_AUDITORY_PERCEPTION",
+              "questionText": "Demonstrates adequate auditory perception",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 10
+            },
+            {
+              "code": "R12_DEMONSTRATES_ADEQUATE_SPEECH",
+              "questionText": "Demonstrates adequate speech",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 11
+            },
+            {
+              "code": "R13_DEMONSTRATES_ADEQUATE_TOUCH_SENSATION",
+              "questionText": "Demonstrates adequate touch sensation",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 12
+            },
+            {
+              "code": "R14_DEMONSTRATES_COOPERATIVE_BEHAVIOR",
+              "questionText": "Demonstrates cooperative behavior",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 13
+            },
+            {
+              "code": "R15_DEMONSTRATES_ABILITY_TO_ADHERE_TO_SAFETY_PRECA",
+              "questionText": "Demonstrates ability to adhere to safety precautions consistently",
+              "description": "Vulnerability risk: answer Yes if the client does not demonstrate this.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 14
+            }
+          ],
+          "order": 1,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 15
+          }
+        },
+        {
+          "sectionType": "CUSTOM",
+          "title": "Exit risk factors",
+          "description": "For each factor, record whether it is an exit risk factor. Recorded for follow-up; not scored.",
+          "instructions": null,
+          "items": [
+            {
+              "code": "X01_DEMONSTRATE_ORIENTATION_TO_TIME_PLACE_AND_PERS",
+              "questionText": "Demonstrate orientation to time, place, and person",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "X02_DEMONSTRATE_ABILITY_TO_FOLLOW_DIRECTIONS_CONSI",
+              "questionText": "Demonstrate ability to follow directions consistently",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "X03_DEMONSTRATE_ASSERTIVENESS",
+              "questionText": "Demonstrate assertiveness",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "X04_DEMONSTRATES_ABILITY_TO_GIVE_ACCURATE_INFORMAT",
+              "questionText": "Demonstrates ability to give accurate information consistently",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 3
+            },
+            {
+              "code": "X05_DEMONSTRATES_INTEREST_IN_ENVIRONMENT_ACTIVITIE",
+              "questionText": "Demonstrates interest in environment activities",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 4
+            },
+            {
+              "code": "X06_DEMONSTRATES_ABILITY_TO_WALK_WITHOUT_ASSISTIVE",
+              "questionText": "Demonstrates ability to walk without assistive devices",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 5
+            },
+            {
+              "code": "X07_DEMONSTRATES_FULL_RANGE_OF_MOTION",
+              "questionText": "Demonstrates full range of motion",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 6
+            },
+            {
+              "code": "X08_DEMONSTRATES_ADEQUATE_ENDURANCE",
+              "questionText": "Demonstrates adequate endurance",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 7
+            },
+            {
+              "code": "X09_DEMONSTRATES_PAIN_FREE_CONDITION_ILLNESS",
+              "questionText": "Demonstrates pain-free condition/illness",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 8
+            },
+            {
+              "code": "X10_DEMONSTRATES_FREEDOM_FROM_COMMUNICABLE_DISEASE",
+              "questionText": "Demonstrates freedom from communicable disease",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 9
+            },
+            {
+              "code": "X11_DEMONSTRATES_ADEQUATE_AUDITORY_PERCEPTION",
+              "questionText": "Demonstrates adequate auditory perception",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 10
+            },
+            {
+              "code": "X12_DEMONSTRATES_ADEQUATE_SPEECH",
+              "questionText": "Demonstrates adequate speech",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 11
+            },
+            {
+              "code": "X13_DEMONSTRATES_ADEQUATE_TOUCH_SENSATION",
+              "questionText": "Demonstrates adequate touch sensation",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 12
+            },
+            {
+              "code": "X14_DEMONSTRATES_COOPERATIVE_BEHAVIOR",
+              "questionText": "Demonstrates cooperative behavior",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 13
+            },
+            {
+              "code": "X15_DEMONSTRATES_ABILITY_TO_ADHERE_TO_SAFETY_PRECA",
+              "questionText": "Demonstrates ability to adhere to safety precautions consistently",
+              "description": "Exit risk factor?",
+              "responseType": "SINGLE_CHOICE",
+              "required": false,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 14
+            }
+          ],
+          "order": 2,
+          "scoringConfig": null
+        },
+        {
+          "sectionType": "CUSTOM",
+          "title": "Nurse signature",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "NURSE_NAME",
+              "questionText": "Nurse name",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": true,
+              "order": 0
+            },
+            {
+              "code": "NURSE_SIGNATURE",
+              "questionText": "Nurse signature",
+              "description": null,
+              "responseType": "SIGNATURE",
+              "required": true,
+              "order": 1
+            },
+            {
+              "code": "DATE_SIGNED",
+              "questionText": "Date signed",
+              "description": null,
+              "responseType": "DATE",
+              "required": true,
+              "order": 2
+            }
+          ],
+          "order": 3,
+          "scoringConfig": null
+        }
+      ]
+    },
+    {
+      "name": "Home Safety / Fall Risk Assessment",
+      "description": "At JOOLIE HEALTHCARE SERVICES, LLC., we understand that experiencing a fall can be a life-changing event That’s why we’ve developed our “Focus on fall prevention” program, a unique approach that pairs our clinical expertise with patient education for our patient and family to reduce fall risk by helping to address common causes of falls among our patients, including environmental hazards both inside and outside the home. This Home Safety Checklist will guide you through key environmental considerations to help and increase home safety and reduce the likelihood of falls in your homes or that of a loved one.",
+      "isRequired": false,
+      "scoringConfig": {
+        "method": "SUM",
+        "maxScore": 29
+      },
+      "sections": [
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Bathroom",
+          "description": "Check “YES” or “NO” for each item. Any No answers indicate a potential need for changes to the environment Exception: for questions marked “Yes = hazard”, a Yes answer indicates the hazard.",
+          "instructions": null,
+          "items": [
+            {
+              "code": "BATH_IS_THE_PATH_FROM_THE_BEDROOM_TO_THE_BATHROOM",
+              "questionText": "Is the path from the bedroom to the bathroom well lit?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "BATH_ARE_THERE_GRAB_BARS_NEAR_THE_TOILET_AND_IN_TH",
+              "questionText": "Are there grab bars near the toilet and in the shower and bathtub?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "BATH_IF_YOU_HAVE_DIFFICULTY_STANDING_IN_THE_SHOWER",
+              "questionText": "If you have difficulty standing in the shower, do you use a shower seat?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "BATH_DO_YOUR_BATHMATS_HAVE_SLIP_RESISTANT_BACKING",
+              "questionText": "Do your bathmats have slip-resistant backing?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 3
+            },
+            {
+              "code": "BATH_DO_YOU_REMOVE_SOAP_BUILD_UP_IN_YOUR_SHOWER_BA",
+              "questionText": "Do you remove soap build-up in your shower/bathtub to avoid slipping?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 4
+            },
+            {
+              "code": "BATH_CAN_YOU_REACH_SOAP_IN_THE_SHOWER_WITHOUT_BEND",
+              "questionText": "Can you reach soap in the shower without bending down or turning too far around?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 5
+            },
+            {
+              "code": "BATH_DO_YOU_HAVE_A_RAISED_TOILET_SEAT_IF_YOU_HAVE",
+              "questionText": "Do you have a raised toilet seat if you have difficulty standing up and sitting down?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 6
+            },
+            {
+              "code": "BATH_ARE_SPILLS_CLEANED_UP_IMMEDIATELY",
+              "questionText": "Are spills cleaned up immediately?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 7
+            }
+          ],
+          "order": 0,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 8
+          }
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Bedroom",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "BED_IS_THERE_A_TABLE_CLOSE_TO_YOUR_BED_WITH_A_LAMP",
+              "questionText": "Is there a table close to your bed with a lamp and room to store eye glasses and a phone?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "BED_ARE_CORDS_PUSHED_BACK_AGAINST_THE_WALL",
+              "questionText": "Are cords pushed back against the wall?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "BED_IS_THERE_CLUTTER_ON_THE_FLOOR",
+              "questionText": "Is there clutter on the floor?",
+              "description": "Yes = hazard",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "BED_DO_YOU_HAVE_A_MOTION_SENSOR_NIGHT_LIGHT",
+              "questionText": "Do you have a motion sensor night light?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 3
+            }
+          ],
+          "order": 1,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 4
+          }
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Kitchen",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "KIT_ARE_THROW_RUGS_FLOOR_MATS_SECURE",
+              "questionText": "Are throw rugs/floor mats secure?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "KIT_CAN_YOU_GET_TO_REGULARLY_USED_ITEMS_WITHOUT_BE",
+              "questionText": "Can you get to regularly used items without bending down or reaching up too far?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "KIT_ARE_SPILLS_CLEANED_UP_IMMEDIATELY",
+              "questionText": "Are spills cleaned up immediately?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "KIT_IS_FOOD_PREPARED_IN_THE_KITCHEN",
+              "questionText": "Is food prepared in the kitchen?",
+              "description": "Recorded, not scored.",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 3
+            }
+          ],
+          "order": 2,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 3
+          }
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Living areas",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "LIV_ARE_FLOOR_COVERINGS_SECURED_AND_TIDY",
+              "questionText": "Are floor coverings secured and tidy?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "LIV_CAN_YOU_ANSWER_THE_PHONE_WITHOUT_GETTING_UP",
+              "questionText": "Can you answer the phone without getting up?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "LIV_CAN_YOU_TURN_ON_A_LIGHT_WITHOUT_HAVING_TO_WALK",
+              "questionText": "Can you turn on a light without having to walk into a dark room?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "LIV_DO_YOU_HAVE_A_STEP_STOOL_THAT_HAS_SIDE_RAILS_S",
+              "questionText": "Do you have a step stool that has side rails, sturdy and in good condition?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 3
+            },
+            {
+              "code": "LIV_DO_YOU_HAVE_A_CORDLESS_OR_CELLULAR_PHONE_OR_AN",
+              "questionText": "Do you have a cordless or cellular phone or an emergency alarm device?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 4
+            },
+            {
+              "code": "LIV_IS_IT_EASY_TO_WALK_AROUND_THE_FURNITURE_IN_YOU",
+              "questionText": "Is it easy to walk around the furniture in your home?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 5
+            },
+            {
+              "code": "LIV_CAN_YOU_PULL_CORDS_TO_LIGHTS_OR_CEILING_FANS_W",
+              "questionText": "Can you pull cords to lights or ceiling fans without reaching up?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 6
+            },
+            {
+              "code": "LIV_ARE_THERE_HANDRAILS_ON_BOTH_SIDES_OF_THE_STAIR",
+              "questionText": "Are there handrails on both sides of the stairways in your home?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 7
+            },
+            {
+              "code": "LIV_ARE_THE_STEPS_ON_YOUR_STAIRWAYS_EVEN_AND_SAFE",
+              "questionText": "Are the steps on your stairways even and safe?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 8
+            },
+            {
+              "code": "LIV_ARE_THERE_LIGHTS_AT_THE_TOP_AND_THE_BOTTOM_OF",
+              "questionText": "Are there lights at the top and the bottom of the stairs?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 9
+            }
+          ],
+          "order": 3,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 10
+          }
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Porch, yard, outside",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "OUT_IS_THE_PATH_FROM_THE_HOUSE_TO_THE_GARAGE_WELL",
+              "questionText": "Is the path from the house to the garage well lit?",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 1
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "OUT_ARE_THERE_CRACKS_OR_BUCKLES_ON_THE_SIDEWALKS_O",
+              "questionText": "Are there cracks or buckles on the sidewalks or driveway?",
+              "description": "Yes = hazard",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 1
+            },
+            {
+              "code": "OUT_ARE_THERE_HOSES_WEEDS_OR_OTHER_OBSTACLES_ON_TH",
+              "questionText": "Are there hoses, weeds or other obstacles on the walkways?",
+              "description": "Yes = hazard",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 2
+            },
+            {
+              "code": "OUT_IS_THERE_ICE_ON_STEPS_OR_WALKWAYS",
+              "questionText": "Is there ice on steps or walkways?",
+              "description": "Yes = hazard",
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 1
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 3
+            }
+          ],
+          "order": 4,
+          "scoringConfig": {
+            "method": "SUM",
+            "maxScore": 4
+          }
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Intervention",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "INT_MD_NOTIFIED",
+              "questionText": "MD notified",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 0
+            },
+            {
+              "code": "INT_MD_NAME",
+              "questionText": "MD name",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": false,
+              "order": 1
+            },
+            {
+              "code": "INT_MD_TELEPHONE",
+              "questionText": "MD telephone",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": false,
+              "order": 2
+            },
+            {
+              "code": "INT_CASE_MANAGER_NOTIFIED",
+              "questionText": "Case manager notified",
+              "description": null,
+              "responseType": "SINGLE_CHOICE",
+              "required": true,
+              "responseOptions": [
+                {
+                  "value": "YES",
+                  "label": "Yes",
+                  "score": 0
+                },
+                {
+                  "value": "NO",
+                  "label": "No",
+                  "score": 0
+                }
+              ],
+              "order": 3
+            },
+            {
+              "code": "INT_CASE_MANAGER_NAME",
+              "questionText": "Case manager name",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": false,
+              "order": 4
+            },
+            {
+              "code": "INT_CASE_MANAGER_TELEPHONE",
+              "questionText": "Case manager telephone",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": false,
+              "order": 5
+            },
+            {
+              "code": "INT_RECOMMENDATION",
+              "questionText": "Recommendation",
+              "description": null,
+              "responseType": "TEXT_LONG",
+              "required": false,
+              "order": 6
+            }
+          ],
+          "order": 5,
+          "scoringConfig": null
+        },
+        {
+          "sectionType": "FALL_RISK",
+          "title": "Agency representative signature",
+          "description": null,
+          "instructions": null,
+          "items": [
+            {
+              "code": "AGENCY_REPRESENTATIVE_NAME",
+              "questionText": "Agency representative name",
+              "description": null,
+              "responseType": "TEXT_SHORT",
+              "required": true,
+              "order": 0
+            },
+            {
+              "code": "AGENCY_REPRESENTATIVE_SIGNATURE",
+              "questionText": "Agency representative signature",
+              "description": null,
+              "responseType": "SIGNATURE",
+              "required": true,
+              "order": 1
+            },
+            {
+              "code": "DATE_SIGNED",
+              "questionText": "Date signed",
+              "description": null,
+              "responseType": "DATE",
+              "required": true,
+              "order": 2
+            }
+          ],
+          "order": 6,
+          "scoringConfig": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "companyId": "cmu4j4zvg22kqo00kweyzqizk",
+  "draft": "docs/template-drafts/joolie-intake-forms.json",
+  "sha256": "6a90771a473467b42ccc7216331da8d337f95c6e34bd4e8136993830d1d09954",
+  "sourceSha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791",
+  "templates": [
+    {
+      "id": "cmviwzszv0001s6042vgxi6zh",
+      "name": "Admission Consent & Service Agreement",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 7,
+      "fields": 23
+    },
+    {
+      "id": "cmviwzua1000zs6042l6csrk6",
+      "name": "Advance Directives & Authorized Representative",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 4,
+      "fields": 22
+    },
+    {
+      "id": "cmviwzux3001ts604phbdnqx6",
+      "name": "Patient Bill of Rights & Responsibilities",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 5,
+      "fields": 11
+    },
+    {
+      "id": "cmviwzvl7002ds604k4398j5w",
+      "name": "HIPAA Privacy Rights & Notice of Privacy Practices",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 4,
+      "fields": 10
+    },
+    {
+      "id": "cmviwzw47002vs604e1gzdj6c",
+      "name": "Grievance Procedure Acknowledgment",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 2,
+      "fields": 5
+    },
+    {
+      "id": "cmviwzwiy0036s604hfz0oh0z",
+      "name": "Patient Photograph Release",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 2,
+      "fields": 6
+    },
+    {
+      "id": "cmviwzwwa003is6041v8kqj1w",
+      "name": "Medication Verification & Profile",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 2,
+      "fields": 13
+    },
+    {
+      "id": "cmviwzxdl0041s6047m7uba7p",
+      "name": "Emergency / Disaster Plan",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 6,
+      "fields": 35
+    }
+  ],
+  "totalFields": 125,
+  "verifiedAt": "2026-10-22T02:22:41.700Z",
+  "verification": "All 8 templates' metadata, settings, section and field ordering, labels, types, requirements and configs exactly match the approved draft; one matching audit entry per template, created by the Joolie Health admin."
+}

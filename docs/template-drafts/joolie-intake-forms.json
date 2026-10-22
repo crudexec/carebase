@@ -1,0 +1,1756 @@
+{
+  "source": {
+    "file": "docs/template-drafts/Patient Admission Office Copy (002).docx",
+    "sha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791"
+  },
+  "company": {
+    "name": "Joolie Health",
+    "adminEmail": "jooliehealthcare@gmail.com"
+  },
+  "openItems": [
+    "Admission Consent: the visit rate is kept as written, \"$130.00/____ per visit\" (blank left unfilled).",
+    "Emergency Plan: \"CALL JOOLIE HEALTHCARE SERVICES, LLC AT THE PHONE NUMBER IN THE COVER PAGE\" — there is no cover page in the digital form; a phone number is needed or the sentence should be reworded."
+  ],
+  "textChanges": [
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "VOLUNTRY",
+      "to": "VOLUNTARY",
+      "reason": "Typo"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "another  r Agency",
+      "to": "another Agency",
+      "reason": "Typo"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "If your homes care services",
+      "to": "If your home care services",
+      "reason": "Typo"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "denied or none coverage",
+      "to": "denied or non-covered",
+      "reason": "Typo"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "financial responsible",
+      "to": "financially responsible",
+      "reason": "Typo"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "Also I authorize to ________, (Relation to patient ____) TO SIGN ALL DOCUMENTS ...",
+      "to": "Moved to \"Advance Directives & Authorized Representative\" as the Authorized representative section",
+      "reason": "Split into separate templates"
+    },
+    {
+      "template": "Admission Consent & Service Agreement",
+      "from": "ONE PATIENT SIGNATURE: Admission consent/agreement form is used in all patient orientation booklets ...",
+      "to": "(omitted)",
+      "reason": "Each document is now a separate form with its own signature, so the single-signature booklet statement no longer applies"
+    },
+    {
+      "template": "Patient Bill of Rights & Responsibilities",
+      "from": "To be inform of",
+      "to": "To be informed of",
+      "reason": "Typo"
+    },
+    {
+      "template": "Patient Bill of Rights & Responsibilities",
+      "from": "filling a compliant",
+      "to": "filing a complaint",
+      "reason": "Typo"
+    },
+    {
+      "template": "Patient Bill of Rights & Responsibilities",
+      "from": "be treated with confidential",
+      "to": "be treated as confidential",
+      "reason": "Typo"
+    },
+    {
+      "template": "Patient Bill of Rights & Responsibilities",
+      "from": "Signs required consents",
+      "to": "Sign required consents",
+      "reason": "Typo"
+    },
+    {
+      "template": "HIPAA Privacy Rights & Notice of Privacy Practices",
+      "from": "We may denial you request",
+      "to": "We may deny your request",
+      "reason": "Typo"
+    },
+    {
+      "template": "Patient Photograph Release",
+      "from": "facsimiles, mail. Delivery, thereof",
+      "to": "facsimiles, mail, delivery thereof",
+      "reason": "Punctuation"
+    },
+    {
+      "template": "Patient Photograph Release",
+      "from": "(signature only)",
+      "to": "Added a required Yes/No: \"Photograph release granted\"",
+      "reason": "Lets the client decline the release while still completing the form"
+    },
+    {
+      "template": "Medication Verification & Profile",
+      "from": "Clinician’s Name and Signature (medication sheet) + Skilled Nurse Name/Signature (verification page)",
+      "to": "One skilled nurse name, signature and date",
+      "reason": "Both lines are signed by the same clinician"
+    },
+    {
+      "template": "Emergency / Disaster Plan",
+      "from": "(IN CASE OF MEDICAL EMERGENCY DAIL 911",
+      "to": "IN CASE OF MEDICAL EMERGENCY DIAL 911.",
+      "reason": "Typo and stray bracket"
+    },
+    {
+      "template": "Emergency / Disaster Plan",
+      "from": "ADAGER SERVICES",
+      "to": "JOOLIE HEALTHCARE SERVICES, LLC",
+      "reason": "Another agency's name left in the packet"
+    },
+    {
+      "template": "Emergency / Disaster Plan",
+      "from": "Suppliers/DME list item \"02 Concentrator\" / \"Sharp Container\"",
+      "to": "\"O2 Concentrator\" / \"Sharps Container\"",
+      "reason": "Typo"
+    },
+    {
+      "template": "Emergency / Disaster Plan",
+      "from": "Service Provided: None-Skilled (Personal Care Only)",
+      "to": "Non-Skilled (Personal Care Only)",
+      "reason": "Typo"
+    },
+    {
+      "template": "Emergency / Disaster Plan",
+      "from": "To contact your nurse directly you may him/her at:",
+      "to": "Field label \"Nurse direct contact\"",
+      "reason": "Missing word; turned into a field"
+    }
+  ],
+  "templates": [
+    {
+      "name": "Admission Consent & Service Agreement",
+      "description": "Voluntary admission, consent to services, emergency services, release of information, insurance and payment, services to be furnished and consent to survey visits.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Client",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Policy number",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Admission and consent to services",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Admission and consent",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>VOLUNTARY ADMISSION:</strong> I Voluntarily Consent To Admission To the Agency, And To Treatment That May Be Advised And Or Recommended By My Physician and Treatment Team.</p><p><strong>CONSENT TO RECEIVE SERVICES:</strong> I hereby authorize the Agency, to render appropriate services as prescribed by my Physician, or by any other Physician who may be treating me, including all Diagnostic and Therapeutic Treatment that may be considered advisable or necessary in the judgment of the Physician. I hereby authorize the Agency, or your Agents to perform any work in taking Blood Samples from me or administering injections or Intravenous Therapy for normal medical practice. I hereby authorize this work under Physician’s orders, while a patient of JOOLIE HEALTHCARE SERVICES, LLC. I certify that I am not receiving Home Health Care Services from another Agency. I am also aware that only one Home Health Agency will be paid once I am admitted to this Agency. I hereby acknowledge that I am not under any circumstances able to operate any motor vehicle.</p><p><strong>EMERGENCY MEDICAL SERVICES:</strong> I understand that during the course of my treatment the need for emergency treatment and/or treatment and/or transfer to a Hospital may become necessary and appropriate. I understand that the Agency does not provide emergency medical care and therefore should the need for such treatment and/or transfer may be deemed necessary and appropriate, the Agency staff will call 911. I consent to such emergency treatment and/or transfer to a Hospital and hereby indemnify the Agency from such emergency treatment and/or transfer. I agree to assume sole responsibility for all charges incurred for such treatment.</p><p><strong>RELEASE OF INFORMATION:</strong> I authorize all Physicians, Hospitals, Nursing Homes, Clinics, and other Health Care providers’ release of Medical Information relevant to my care to the Agency. I hereby authorize the release of any medical information from my records to any Licensed Institutions, State, Federal, or Accredited Institutions for the purposes of providing continuity of care. Establish correct reimbursement; establish need for service or as authorized by Law. I place no limitations on history or illness or Diagnostic/Therapeutic Information including any treatment for substance abuse, Psychiatric disorders, or Acquired Immune Deficiency Syndrome. “Release of information” will be performed according to HIPAA Regulations.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "I request a copy of the plan of treatment",
+              "type": "YES_NO",
+              "required": false,
+              "config": {},
+              "order": 1
+            }
+          ]
+        },
+        {
+          "title": "Insurance benefits and payment",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Insurance benefits and payment terms",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>INSURANCE BENEFITS AND PAYMENT:</strong> I hereby request and authorize my insurance carrier to pay insurance benefits to the JOOLIE HEALTHCARE SERVICES, LLC. I understand that to receive medical covered home care services, I must meet the qualifying criteria (home bound) as outlined under information of Medicaid coverage criteria statement guideline. If your home care services conform to this rule, your home care services should generally be covered without liability for payment. If services should be determined as denied or non-covered by your carrier, then the patient will be notified via letter of the charges incurred.</p><p>I understand that I am financially responsible for charges not paid under any assignment, charges will not exceed the agency’s regular Medicaid charges ($130.00/____ per visit). I certify that the information given by me in the applying for payment under the title XVIII and/or XIX of the social security act is correct. I authorize the release of all records required to act on this request. I request that payment of authorized benefits be made on my behalf. Furthermore, I hereby declare that I do not belong to any Health Maintenance Organization (HMO) and agree to the release of all medical information to my insurance carrier if should be required by any program.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Admission payment source",
+              "type": "SINGLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "I HAVE BEEN ADMITTED THROUGH MY INSURANCE that will be responsible for service fees except co-pay portion of service charge incurred.",
+                  "I HAVE BEEN ADMITTED THROUGH INSURANCE PAY and the charges are specified herein."
+                ]
+              },
+              "order": 1
+            },
+            {
+              "label": "Financial information certification",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>I CERTIFY THAT THE FINANCIAL INFORMATION:</strong> Indicated above, related to the payments made by insurer or third-party payer, the scope and intent of coverage, and charges for non-covered service charges, has been explained and understood.</p>"
+              },
+              "order": 2
+            }
+          ]
+        },
+        {
+          "title": "Home health services to be furnished, frequency and charges",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Skilled nursing",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Home health aide",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Physical therapy",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Medical social worker",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Speech therapy",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Occupational therapy",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Other services",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            },
+            {
+              "label": "Visit authorization",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>Also, I authorize the Agency’s RN/PT/OT/ST/HHA to perform visits as prescribed in the care plan.</p>"
+              },
+              "order": 7
+            }
+          ]
+        },
+        {
+          "title": "Acknowledgments",
+          "description": null,
+          "order": 4,
+          "fields": [
+            {
+              "label": "Consent for home visit and service agreement",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>CONSENT FOR HOME VISIT:</strong> I hereby consent to have a State/Federal/Accreditation Health Survey to assist in evaluating the effectiveness quality of Home Health Services that I receive from the Agency. I understand that consent for this visit is voluntary and none of my rights to confidentiality or privacy are waived by my consent. I have been told and understand that refusal to a Home Health visit will have no effect on the level or nature of Insurance benefits to which I am entitled.</p><p><strong>PATIENT SERVICE AGREEMENT:</strong> I have received a copy of the Agency’s Patient Service Agreement and have all questions and concerns answered to my satisfaction.</p>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 5,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Agency representative",
+          "description": null,
+          "order": 6,
+          "fields": [
+            {
+              "label": "Agency representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Agency representative title",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Agency representative signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed by agency representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Advance Directives & Authorized Representative",
+      "description": "Advance directive, living will, patient advocate/proxy and DNR elections, and the person authorized to sign on the client's behalf.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Advance directives and living wills",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Advance directive information",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>ADVANCE DIRECTIVE AND LIVING WILLS:</strong> I have received written information regarding my rights to make decisions concerning Medical Care, including the right to accept or refuse Medical or HHA treatment and the right to formulate Advance Directives under State Law.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "I have an Advance Directive",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "I have a Living Will",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Location of Living Will (if yes)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "I have a Patient Advocate/Proxy",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 4
+            },
+            {
+              "label": "Patient Advocate/Proxy name (if yes)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Patient Advocate/Proxy address (if yes)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            },
+            {
+              "label": "Patient Advocate/Proxy phone (if yes)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 7
+            },
+            {
+              "label": "I want to use the DNR order",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 8
+            },
+            {
+              "label": "DNR note",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>If yes, complete the official Legal Form.</p>"
+              },
+              "order": 9
+            }
+          ]
+        },
+        {
+          "title": "Authorized representative",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Authorization to sign",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>I authorize the person named below TO SIGN ALL DOCUMENTS, because I’m unable to do so.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Authorized person's name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Relation to patient",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Reason unable to sign",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 2000
+              },
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Agency representative",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Agency representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Agency representative title",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Agency representative signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed by agency representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient Bill of Rights & Responsibilities",
+      "description": "Patient bill of rights, including the abuse and complaint line, and patient responsibilities.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Patient Bill of Rights",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Patient rights",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>AS OUR CLIENT, YOU HAVE THE RIGHT TO EXERCISE YOUR RIGHTS, AND/OR TO DESIGNATE A REPRESENTATIVE TO EXERCISE THEM FOR YOU:</p><ul><li>Choose a health care provider and be informed of provider service / care limitations</li><li>Be informed of any financial benefits when referred to an organization.</li><li>Be informed of anticipated outcomes of service/care and of any barriers in outcome achievement.</li><li>Be treated with respect, and full recognition of your dignity and without regards to age, race, gender, sexual orientation, national origin, disability, religion, economic status, political beliefs or diagnoses</li><li>To request from your Physician complete and accurate medical information regarding your diagnosis, prognosis, and treatment in terms you can reasonably understand.</li><li>To expect all communications and medical records pertaining to your care be treated as confidential.</li><li>Be informed of the process to voice concerns regarding care or lack of respect to property and/or to your person without being subjected to discrimination or reprisal.</li><li>Be entitled to know the name of responsible person directly involved in coordination and supervising your home health care and the manner in which that person may be contacted during regular working hours.</li><li>To refuse any segment of treatment to the extent permitted by the law without relinquishing other segments of the treatment plan. You have the right to be informed of the medical consequences of your action.</li><li>To the extent that is reasonably possible to be involved in the planning and implementation of the Home Health plan of care and its expected outcome.</li><li>To be informed of the policy and procedure for registering formal complaint about the services being provided. *You have the right to be informed that the Home Health services will not be disrupted as a result of filing a complaint.</li><li>To expect that within its capacity the agency must make a reasonable response to your request for services.</li><li>To receive copy of your bill from your agency, and request explanation of charges regardless of source of payment</li><li>To know what agency rules and expectations apply to your conduct as a client.</li><li>To be involved in the planning and implementation of home health plan of care and to request copy of your plan of care</li><li>Be informed of your right to formulate an Advance Directive and/or Do Not Resuscitate (DNR) order.</li><li>To be informed, both orally and in writing, in advance of services/care to be provided, including charges of the payment for service/care expected from third parties and any charges for which you will be responsible.</li><li>To have the pain evaluated and its intensity controlled. Be free of physical and mental abuse/neglect and/or exploitation. Be informed of the availability of the JOOLIE HEALTHCARE SERVICES, LLC consumer line to make a complaint regarding any Home Health Agency or in the implementation of the Advance Directives at (240) 206-8767 from 9am to 5pm and to report Abuse, Neglect, or exploitation: (240) 206-8767, 24 hours a day, 7 days a week.</li><li>To have property treated with respect.</li><li>To voice grievance regarding treatment or care that is (or fails to be) furnished, or regarding lack of respect for property by anyone who is furnishing services on behalf of the Agency, and must not be subject to discrimination or reprisal for doing so.</li></ul>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Patient responsibility",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Patient responsibilities",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>As a Home Health Care patient, you have the responsibility to:</p><ul><li>Give accurate and complete health information concerning your past illness, hospitalization, medications, allergies, and other pertinent items.</li><li>Assist in developing and maintaining a safe environment.</li><li>Inform the Home Health Care Agency when you will not be able to keep a home health care visit</li><li>Participate in the development and update of your home health care plan and comply with prescribed medical regimen</li><li>Adhere to your developed (updated home health care plan)</li><li>Request further information concerning anything you do not understand</li><li>Give information regarding concerns and problems you have to a home health care agency staff member.</li><li>Agree to accept all care givers without regard to race, color, religion, sex, age, gender, preference, handicap, or national origin.</li><li>Remain under a physicians’ care while receiving skilled services</li><li>Provide the agency with all requested insurance and financial records.</li><li>Sign required consents and release forms</li><li>Accept the responsibility of any refusal of treatment. I have reviewed and understand my responsibilities as described above.</li></ul>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Statement of patient rights and abuse registry",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Rights acknowledgment",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>STATEMENT OF PATIENT RIGHTS, RESPONSIBILITIES AND ABUSE REGISTRY:</strong> I certify that I have read, understood and received a copy of the statement of patient rights and responsibility which has been explained to me verbally by a representative of the Agency, I understand the Policy and have received a copy with the abuse Phone Number 240-206-8767</p>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Agency representative",
+          "description": null,
+          "order": 4,
+          "fields": [
+            {
+              "label": "Agency representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Agency representative title",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Agency representative signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed by agency representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HIPAA Privacy Rights & Notice of Privacy Practices",
+      "description": "HIPAA privacy rights and acknowledgment of the notice of privacy practices.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "HIPAA privacy rights",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Privacy rights",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>Your Right as a Patient to Privacy of Your Health Information</p><ul><li>Right to Request Restrictions you have the right to request confidential communications.</li><li>You have the right to request that we communicate with your confidentiality, for example speak with you only in private; to send mail to an address you designate; or to telephone you at a number you designate. We will make every attempt to honor your request. Right to request Access to your Health Information. You have the right to request access to your health information in order to inspect or copy it.</li><li>Your request must be in writing. We may deny your request and, if so, you may request a review of the denial. However, we will make every attempt to honor your request. Right to request an amendment of your Health Information.</li><li>Your request must be in writing and must provide a reason for the amendment. We may deny your request and, if so, you may submit a statement of disagreement. However, we will make every attempt to honor your request. Right to request an Accounting of Disclosures of</li><li>Your Health Information.</li><li>You have the right to request an accounting of our disclosures of your health information for purpose other than treatment, payment, and health care operations. We will make every attempt to honor your request. We are not required to provide an accounting for disclosures for more than 6 years prior to the date of your request.</li><li>Rights to obtain a Paper Copy of the Privacy Notice if you received the Privacy Notice electronically, you have the right to receive a paper copy. To exercise any of these rights please write or telephone to our Agency.</li></ul>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Notice of privacy practices",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Notice of privacy practices acknowledgment",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>HIPAA:</strong> NOTICE OF PRIVACY PRACTICE: I have received a copy of the Agency’s notice of privacy practice; I discussed and receive a copy of the client information/orientation handbook.</p>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Agency representative",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Agency representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Agency representative title",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Agency representative signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed by agency representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Grievance Procedure Acknowledgment",
+      "description": "Agency grievance procedures, timelines and appeal process.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Grievance procedures",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Grievance procedures",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<ol><li>Any person, who believes he or she has been subjected to discrimination, or otherwise denied equitable and fair treatment, may file a grievance under these procedures. The Agency will not retaliate against anyone solely for filing a grievance or cooperation in the investigation of a grievance.</li><li>Grievances must be submitted to the Agency within thirty (30) days of the date the person filing the grievance becomes aware of the action.</li><li>A complaint should be in writing/phone, containing the name and address of the person filing it. The complaint must state the problem or action alleged to have occurred and the remedy or relief sought by the grievant.</li><li>The Director of Nursing or Administrator shall conduct an investigation of the complaint to determine its validity. This investigation may be informal, but it has to be thorough, affording all interested persons the ability to submit evidence relevant to the complaint.</li><li>The Director of Nursing will maintain the files and records of the Agency relating to such grievance.</li><li>The Director of Nursing will issue a written decision on the grievance no later than thirty (30) days after its filing.</li><li>The grievant may appeal the decision of the Director of Nursing by filing an appeal in writing to the Administrator of JOOLIE HEALTHCARE SERVICES, LLC within fifteen (15) days of receiving the Director of Patient Service decision.</li><li>The Administrator shall issue a written decision in response to the appeal no later than thirty (30) days after filing.</li><li>The availability and use of the grievance procedure does not preclude a person pursuing other remedies accorded by local, State and Federal Laws and Regulations.</li></ol>"
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient Photograph Release",
+      "description": "Permission for the agency to take and use photographs of the patient.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Release to photograph",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Photograph release",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>PATIENT RELEASE TO PHOTOGRAPH:</strong> I hereby grant the Agency, and their representatives, permission to take photographs of me and to use the finished photographs in any legitimate ways they deem proper. Further, I relinquish and give to the Agency, All Rights, Title and Interest I may have in the finished pictures, negatives, reproductions and copies of the original prints, or copied and facsimiles, mail, delivery thereof to any responsible individual, insurance provider, or publication, or to any other assignees.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Photograph release granted",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 1
+            }
+          ]
+        },
+        {
+          "title": "Client signature",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Client or authorized representative name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Signature of client or authorized representative",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Relationship of authorized representative (if not the client)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Date signed by client or representative",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Medication Verification & Profile",
+      "description": "Medication profile (prescribed and over-the-counter) with patient and skilled nurse verification.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Medication profile",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Medications managed by",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Allergies",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Pharmacy name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Pharmacy phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Prescribed medications",
+              "type": "TABLE",
+              "required": false,
+              "config": {
+                "columns": [
+                  {
+                    "id": "start_stop",
+                    "label": "Date start/stop"
+                  },
+                  {
+                    "id": "name",
+                    "label": "Name of medication"
+                  },
+                  {
+                    "id": "strength",
+                    "label": "Strength"
+                  },
+                  {
+                    "id": "dosage",
+                    "label": "Dosage"
+                  },
+                  {
+                    "id": "route",
+                    "label": "Route"
+                  },
+                  {
+                    "id": "frequency",
+                    "label": "Frequency"
+                  },
+                  {
+                    "id": "classification",
+                    "label": "Classification"
+                  }
+                ],
+                "minRows": 1
+              },
+              "order": 4
+            },
+            {
+              "label": "Over-the-counter medications including herbal remedies",
+              "type": "TABLE",
+              "required": false,
+              "config": {
+                "columns": [
+                  {
+                    "id": "start_stop",
+                    "label": "Date start/stop"
+                  },
+                  {
+                    "id": "name",
+                    "label": "Name of medication"
+                  },
+                  {
+                    "id": "strength",
+                    "label": "Strength"
+                  },
+                  {
+                    "id": "dosage",
+                    "label": "Dosage"
+                  },
+                  {
+                    "id": "route",
+                    "label": "Route"
+                  },
+                  {
+                    "id": "frequency",
+                    "label": "Frequency"
+                  },
+                  {
+                    "id": "classification",
+                    "label": "Classification"
+                  }
+                ],
+                "minRows": 0
+              },
+              "order": 5
+            }
+          ]
+        },
+        {
+          "title": "Medication verification",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Verification statement",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>This is to attest that my medications were reviewed with me by the skilled Nurse. I confirm that I am aware of all the medications that were ordered for me by the physician.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Patient name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Patient signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed by patient",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "Skilled nurse name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Skilled nurse signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Date signed by skilled nurse",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emergency / Disaster Plan",
+      "description": "Emergency classification, emergency contacts, supplies and the client's plan in a hurricane or other disaster. Keep a copy where it can be easily located.",
+      "type": "CLIENT_FORM",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": {
+        "access": {
+          "isPublic": false,
+          "allowAuthenticatedAccess": true,
+          "requireRequestTokenForPublic": true,
+          "allowMultipleSubmissionsPerRequest": false,
+          "defaultExpirationDays": 7
+        },
+        "display": {
+          "showClientName": true,
+          "showClientDob": false,
+          "publicTitle": null,
+          "publicDescription": null,
+          "successMessage": null
+        },
+        "collection": {
+          "collectSubmitterName": false,
+          "collectSubmitterEmail": false
+        }
+      },
+      "sections": [
+        {
+          "title": "Plan information",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Plan date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Information obtained by",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": ["Client/Patient", "Caregiver"]
+              },
+              "order": 1
+            },
+            {
+              "label": "Caregiver relationship to patient (if caregiver)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Dispatcher note",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>The Emergency Medical Service Dispatcher will need to know (caregiver):</p>"
+              },
+              "order": 3
+            },
+            {
+              "label": "Responsible caregiver name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Responsible caregiver phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Responsible caregiver address",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Emergency classification",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Classification descriptions",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p><strong>D1-Category 1</strong> Client who cannot safely forgo care: highly unstable clients with high probability of inpatient admissions if home care is not provided: IV therapy, highly skilled wound care, with no family/caregiver, life sustaining medication or equipment.</p><p><strong>D2 – Category 2</strong> Client whose condition recently worsened: moderate level of skilled care. That should be provided that day, but could postpone visit until emergency situation improves. Client with untrained families/caregivers who could provide basic care in an emergency</p><p><strong>D3-Category3</strong> Client who can safely forgo care or scheduled visit including Home Health Aide visits, Clients receiving routine supervisory visit, evaluation visits. Client with 1 or 2 visits/week, or Clients who have a competent family/caregiver/</p><p><strong>D4-Category 4</strong> Patient who refused information, or signed the registration release form releasing the Agency from evacuation responsibilities</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Client's emergency classification",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "D1 – Category 1",
+                  "D2 – Category 2",
+                  "D3 – Category 3",
+                  "D4 – Category 4"
+                ]
+              },
+              "order": 1
+            }
+          ]
+        },
+        {
+          "title": "Patient data",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Allergies",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "NKA",
+                  "Penicillin",
+                  "Sulfa",
+                  "Aspirin",
+                  "Pollen",
+                  "Iodine"
+                ]
+              },
+              "order": 0
+            },
+            {
+              "label": "Other allergies",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Special needs",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Medications note",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>Medications: See medication schedule (part of Emergency plan).</p>"
+              },
+              "order": 3
+            },
+            {
+              "label": "Comments",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 2000
+              },
+              "order": 4
+            },
+            {
+              "label": "Suppliers/DME",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Walker",
+                  "Wheelchair",
+                  "Cane",
+                  "Commode",
+                  "Hoyer Lift",
+                  "O2 Concentrator",
+                  "Gloves",
+                  "Alcohol Pads",
+                  "Hospital Bed",
+                  "Sharps Container",
+                  "4x4 Gauze"
+                ]
+              },
+              "order": 5
+            },
+            {
+              "label": "Other suppliers/DME",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Contacts",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Doctor's name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Doctor's phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Doctor's address",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Emergency instructions",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>IN CASE OF MEDICAL EMERGENCY DIAL 911. IN CASE OF NURSING RELATED PROBLEMS CALL JOOLIE HEALTHCARE SERVICES, LLC AT THE PHONE NUMBER IN THE COVER PAGE</p>"
+              },
+              "order": 3
+            },
+            {
+              "label": "Nurse direct contact",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Emergency contact name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Emergency contact phone",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            },
+            {
+              "label": "Emergency contact address",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 7
+            },
+            {
+              "label": "Service provided",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Skilled Services",
+                  "Non-Skilled (Personal Care Only)"
+                ]
+              },
+              "order": 8
+            }
+          ]
+        },
+        {
+          "title": "Disaster plan",
+          "description": null,
+          "order": 4,
+          "fields": [
+            {
+              "label": "In the event of hurricane (other related disaster) I will",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Stay at home",
+                  "Stay with family",
+                  "Go to shelter",
+                  "Go to a hospital (medically necessary)"
+                ]
+              },
+              "order": 0
+            },
+            {
+              "label": "Who will help with medications (if staying at home)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Family name, address and phone (if staying with family)",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 2000
+              },
+              "order": 2
+            },
+            {
+              "label": "Shelter address (if going to shelter)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Hospital address (if going to a hospital)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Type of transportation",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Alternative service",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>PLEASE CONTACT JOOLIE HEALTHCARE SERVICES, LLC FOR ALTERNATIVE SERVICE IN CASE OF DISASTER</p>"
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Nurse signature",
+          "description": null,
+          "order": 5,
+          "fields": [
+            {
+              "label": "Nurse name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Nurse signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Date signed by nurse",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

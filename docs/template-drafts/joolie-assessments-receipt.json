@@ -1,0 +1,26 @@
+{
+  "companyId": "cmu4j4zvg22kqo00kweyzqizk",
+  "draft": "docs/template-drafts/joolie-assessments.json",
+  "sha256": "07cbe91173199ebf32b8ca126ed6118298acfbd49a537cca9dbd912aec1ce05e",
+  "sourceSha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791",
+  "templates": [
+    {
+      "id": "cmviyutcw0001s6l41595817n",
+      "name": "Client Vulnerability to Abuse and/or Neglect",
+      "isActive": false,
+      "sections": 4,
+      "items": 34,
+      "maxScore": 15
+    },
+    {
+      "id": "cmviyuudq0017s6l4rccxiv0h",
+      "name": "Home Safety / Fall Risk Assessment",
+      "isActive": false,
+      "sections": 7,
+      "items": 40,
+      "maxScore": 29
+    }
+  ],
+  "verifiedAt": "2026-10-22T03:14:45.771Z",
+  "verification": "Both assessment templates' metadata, scoring (method, template and section max scores), section order and types, question codes, wording, response types, requirements and scored options exactly match the approved draft; one matching audit entry per template, created by the Joolie Health admin."
+}
