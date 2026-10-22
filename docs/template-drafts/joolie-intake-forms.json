@@ -1384,7 +1384,10 @@
               "type": "SINGLE_CHOICE",
               "required": true,
               "config": {
-                "options": ["Client/Patient", "Caregiver"]
+                "options": [
+                  "Client/Patient",
+                  "Caregiver"
+                ]
               },
               "order": 1
             },
