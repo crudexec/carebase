@@ -1,0 +1,2115 @@
+{
+  "source": {
+    "file": "docs/template-drafts/Patient Admission Office Copy (002).docx",
+    "sha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791"
+  },
+  "company": {
+    "name": "Joolie Health",
+    "adminEmail": "jooliehealthcare@gmail.com"
+  },
+  "openItems": [
+    "Communication Record is not included: the scanned page is unreadable; it will be built once the client provides a clearer copy."
+  ],
+  "textChanges": [
+    {
+      "template": "Telephone Order Sheet",
+      "from": "Patient name / address / DOB / phone lines",
+      "to": "(omitted)",
+      "reason": "Visit notes are already attached to the client"
+    },
+    {
+      "template": "Infection Report Form",
+      "from": "Patient name / address / DOB / phone lines",
+      "to": "(omitted)",
+      "reason": "Visit notes are already attached to the client"
+    },
+    {
+      "template": "Transfer/Discharge Summary",
+      "from": "Patient name / address / DOB / phone lines",
+      "to": "(omitted)",
+      "reason": "Visit notes are already attached to the client"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Patient name / address / DOB / phone lines",
+      "to": "(omitted)",
+      "reason": "Visit notes are already attached to the client"
+    },
+    {
+      "template": "Telephone Order Sheet",
+      "from": "within 28days.Thanks you for your cooperation.",
+      "to": "within 28 days. Thank you for your cooperation.",
+      "reason": "Typo"
+    },
+    {
+      "template": "Infection Report Form",
+      "from": "Admission Date (listed twice)",
+      "to": "Admission date (once)",
+      "reason": "Duplicate line"
+    },
+    {
+      "template": "Infection Report Form",
+      "from": "Temperature over 100.4 °F … Date: (×6)",
+      "to": "Table of date and temperature readings",
+      "reason": "Repeated date boxes"
+    },
+    {
+      "template": "Infection Report Form",
+      "from": "Drainage ( serous purulent)",
+      "to": "Drainage (serous) / Drainage (purulent)",
+      "reason": "Two separate checkboxes"
+    },
+    {
+      "template": "Transfer/Discharge Summary",
+      "from": "Diagnosis: Primary … ICD -9 Code / Secondary … ICD -9 Code",
+      "to": "ICD-10 diagnosis lookups",
+      "reason": "ICD-9 is no longer used"
+    },
+    {
+      "template": "Transfer/Discharge Summary",
+      "from": "Status at time of discharge / Discharge initiated by / Discipline (unlabelled checkboxes)",
+      "to": "Pick-one lists",
+      "reason": "Digital checkboxes"
+    },
+    {
+      "template": "Transfer/Discharge Summary",
+      "from": "Notification of discharge to: … JOOLIE HEALTHCARE SERVICES, LLC",
+      "to": "Pick-any list",
+      "reason": "Digital checkboxes"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Douderm Extra Thin",
+      "to": "DuoDERM Extra Thin",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Stripe Elite",
+      "to": "Strips Elite",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Stripe One Touch",
+      "to": "Strips One Touch",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Syringe Lauer Look 60cc",
+      "to": "Syringe Luer Lock 60cc",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "F/C 18 Fr 300cc",
+      "to": "F/C 18 Fr 30cc",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Thermostat Sheaths",
+      "to": "Thermometer Sheaths",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "None-Adhesive Pads 3x3 Adapter",
+      "to": "Non-Adhesive Pads 3x3 Adapter",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Nu, Gauze Packing Strip ½",
+      "to": "Nu-Gauze Packing Strip ½",
+      "reason": "Typo / product name"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Two-column paper list",
+      "to": "Alphabetical quantity fields, blank = not needed",
+      "reason": "Digital form"
+    },
+    {
+      "template": "Supply Requisition Form",
+      "from": "Requestor's Name / Date (no signature line)",
+      "to": "Added a required requestor signature",
+      "reason": "The physician signs later, so the submitting staff member needs to sign"
+    },
+    {
+      "template": "Missed Visit Note",
+      "from": "family visiting and able to assist patient",
+      "to": "Family visiting and able to assist patient",
+      "reason": "Capitalisation"
+    }
+  ],
+  "templates": [
+    {
+      "name": "Telephone Order Sheet",
+      "description": "Verbal and telephone orders taken from a physician, read back and sent for signature.",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": null,
+      "sections": [
+        {
+          "title": "Physician",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "MD name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "MD phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "MD fax",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            }
+          ]
+        },
+        {
+          "title": "Order",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Date order obtained",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Verbal order obtained",
+              "type": "TEXT_LONG",
+              "required": true,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 1
+            },
+            {
+              "label": "Verbal order repeated back to the physician",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "New or changed medication orders",
+              "type": "YES_NO",
+              "required": false,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "Rx in home",
+              "type": "YES_NO",
+              "required": false,
+              "config": {},
+              "order": 4
+            },
+            {
+              "label": "Start date (if yes)",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "End date (if yes)",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 6
+            },
+            {
+              "label": "Order (if yes)",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 7
+            }
+          ]
+        },
+        {
+          "title": "Order obtained from",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Title",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "MD",
+                  "RN/LPN",
+                  "PA",
+                  "PT/OT/SP",
+                  "Other"
+                ]
+              },
+              "order": 1
+            },
+            {
+              "label": "Date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Time",
+              "type": "TIME",
+              "required": true,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Signatures",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Physician signature request",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>The orders shown above are being sent for your signature to authorize a change in the plan of treatment/care and/or your verbal orders given on the date above. If any discrepancy in these orders is noted, please call our office. Please sign and return as soon as possible.</p>"
+              },
+              "order": 0
+            },
+            {
+              "label": "Person taking the order",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Signature of person taking the order",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Date signed",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "Physician name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Physician signature",
+              "type": "SIGNATURE",
+              "required": false,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Date signed by physician",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 6
+            },
+            {
+              "label": "Return deadline",
+              "type": "TEXT_DISPLAY",
+              "required": false,
+              "config": {
+                "content": "<p>All verbal orders must be signed by the physician and returned to the agency within 28 days. Thank you for your cooperation.</p>"
+              },
+              "order": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Infection Report Form",
+      "description": "Report of signs and symptoms of a suspected infection, notifications, tests ordered and patient disposition.",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": null,
+      "sections": [
+        {
+          "title": "Patient and clinical details",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Today's date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "MR#",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Diagnosis",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Physician",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Admission date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 4
+            },
+            {
+              "label": "Hospital discharge date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Surgery (type)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            },
+            {
+              "label": "Surgery date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 7
+            },
+            {
+              "label": "Procedure(s) (type)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 8
+            },
+            {
+              "label": "Procedure date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 9
+            },
+            {
+              "label": "Staff assigned to patient",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 10
+            },
+            {
+              "label": "Relevant clinical data",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 11
+            }
+          ]
+        },
+        {
+          "title": "Signs and symptoms",
+          "description": "Check and complete all applicable information.",
+          "order": 1,
+          "fields": [
+            {
+              "label": "Temperature over 100.4 °F (38 °C) orally",
+              "type": "TABLE",
+              "required": false,
+              "config": {
+                "columns": [
+                  {
+                    "id": "date",
+                    "label": "Date"
+                  },
+                  {
+                    "id": "temperature",
+                    "label": "Temperature"
+                  }
+                ],
+                "minRows": 0
+              },
+              "order": 0
+            },
+            {
+              "label": "Soft tissue (IV line sites, pressure ulcers, surgical wound sites, etc.)",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Edema",
+                  "Heat",
+                  "Drainage (serous)",
+                  "Drainage (purulent)",
+                  "Tenderness/pain",
+                  "Necrosis",
+                  "Induration",
+                  "Redness",
+                  "Separation/dehiscence"
+                ]
+              },
+              "order": 1
+            },
+            {
+              "label": "Soft tissue: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Urinary: catheter type",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Urinary: catheter size",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Urinary: date of insertion",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Urinary symptoms",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Frequency",
+                  "Foul odor",
+                  "Suprapubic tenderness",
+                  "Dysuria",
+                  "Cloudy urine/pyuria"
+                ]
+              },
+              "order": 6
+            },
+            {
+              "label": "Urinary: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 7
+            },
+            {
+              "label": "Diarrhea",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Liquid stool x 12 hours",
+                  "Abdominal pain/tenderness",
+                  "Purulent stools"
+                ]
+              },
+              "order": 8
+            },
+            {
+              "label": "Respiratory",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Productive cough",
+                  "Purulent sputum",
+                  "Sore throat",
+                  "Hoarseness"
+                ]
+              },
+              "order": 9
+            },
+            {
+              "label": "Respiratory: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 10
+            },
+            {
+              "label": "Lung sounds (describe)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 11
+            },
+            {
+              "label": "Other symptoms",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Jaundice",
+                  "Rash",
+                  "Tenderness",
+                  "Chills",
+                  "Discharge",
+                  "Swelling"
+                ]
+              },
+              "order": 12
+            },
+            {
+              "label": "Other symptoms: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 13
+            }
+          ]
+        },
+        {
+          "title": "Notification",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Supervisor notified: date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Supervisor notified: time",
+              "type": "TIME",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Physician notified: date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Physician notified: time",
+              "type": "TIME",
+              "required": false,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Tests ordered",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Labs: date ordered",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Labs: collection date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Labs: source",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Labs: results",
+              "type": "SINGLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "Positive",
+                  "Negative"
+                ]
+              },
+              "order": 3
+            },
+            {
+              "label": "Labs: comments",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 4
+            },
+            {
+              "label": "Radiographic studies: date ordered",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Radiographic studies: date performed",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 6
+            },
+            {
+              "label": "Radiographic studies: type",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 7
+            },
+            {
+              "label": "Radiographic studies: results (if known)",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 8
+            }
+          ]
+        },
+        {
+          "title": "Patient status / disposition",
+          "description": null,
+          "order": 4,
+          "fields": [
+            {
+              "label": "Disposition",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Treatment at home continued",
+                  "Admitted to hospital",
+                  "Other"
+                ]
+              },
+              "order": 0
+            },
+            {
+              "label": "Other disposition",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Date of hospital admission",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Name of hospital",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Reason for admission",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 4
+            }
+          ]
+        },
+        {
+          "title": "Nurse signature",
+          "description": null,
+          "order": 5,
+          "fields": [
+            {
+              "label": "Nurse name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Nurse signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Date signed",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transfer/Discharge Summary",
+      "description": "Summary of care at transfer or discharge, including reason, status, goals met, instructions and notifications.",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": null,
+      "sections": [
+        {
+          "title": "Patient information",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Pt. case #",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Primary MD",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Primary MD phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Secondary MD",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Secondary MD phone",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Primary diagnosis",
+              "type": "ICD10_DIAGNOSIS",
+              "required": true,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Secondary diagnosis",
+              "type": "ICD10_DIAGNOSIS",
+              "required": false,
+              "config": {},
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Admission information",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "SOC date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Admitting RN",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Status upon admission",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 2
+            }
+          ]
+        },
+        {
+          "title": "Discharge information",
+          "description": null,
+          "order": 2,
+          "fields": [
+            {
+              "label": "Discharge date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Discharge type",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Direct Visit D/C",
+                  "Phone D/C"
+                ]
+              },
+              "order": 1
+            },
+            {
+              "label": "Discharge initiated by",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Primary MD",
+                  "RN",
+                  "PT",
+                  "Insurance Company",
+                  "Other"
+                ]
+              },
+              "order": 2
+            },
+            {
+              "label": "Discharge initiated by: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Discipline completing discharge",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "RN",
+                  "PT",
+                  "OT",
+                  "ST"
+                ]
+              },
+              "order": 4
+            },
+            {
+              "label": "Status at time of discharge",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Improved",
+                  "Stabilized",
+                  "Transfer to Hospital"
+                ]
+              },
+              "order": 5
+            },
+            {
+              "label": "Reason for discharge",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Condition improved",
+                  "Non compliant",
+                  "Patient met goals",
+                  "Admitted to alternative facility",
+                  "Patient/family cancelled",
+                  "Referral to another agency",
+                  "Other"
+                ]
+              },
+              "order": 6
+            },
+            {
+              "label": "Reason for discharge: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 7
+            },
+            {
+              "label": "Did the patient reach their planned goals?",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 8
+            },
+            {
+              "label": "If no, plan for follow-up care including community resources",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 9
+            },
+            {
+              "label": "Discharge instruction provided to",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Patient",
+                  "Patient/caregiver"
+                ]
+              },
+              "order": 10
+            },
+            {
+              "label": "Summary of care provided",
+              "type": "TEXT_LONG",
+              "required": true,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 11
+            },
+            {
+              "label": "Was patient discharged because of unplanned emergent care/hospitalization?",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 12
+            },
+            {
+              "label": "If yes, reason for hospitalization",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 13
+            },
+            {
+              "label": "Notification of discharge to",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "MD",
+                  "Case Manager",
+                  "RN",
+                  "PT",
+                  "OT",
+                  "ST",
+                  "Joolie Healthcare Services, LLC"
+                ]
+              },
+              "order": 14
+            }
+          ]
+        },
+        {
+          "title": "Signatures",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "Patient signature (optional)",
+              "type": "SIGNATURE",
+              "required": false,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "Date signed by patient",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Clinician name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 2
+            },
+            {
+              "label": "Clinician signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "Date signed by clinician",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supply Requisition Form",
+      "description": "Supply order: quantity per item, refills, requestor and physician authorization.",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": null,
+      "sections": [
+        {
+          "title": "Supplies",
+          "description": "Enter a quantity for each supply needed; leave the rest blank.",
+          "order": 0,
+          "fields": [
+            {
+              "label": "2x2 Gauze",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 0
+            },
+            {
+              "label": "4x4 Gauze",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 1
+            },
+            {
+              "label": "ABD Pad",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 2
+            },
+            {
+              "label": "Adhesive Dressing 2x3/3x4",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 3
+            },
+            {
+              "label": "Alcohol Gel 8 Oz",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 4
+            },
+            {
+              "label": "Alcohol Prep Pads",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 5
+            },
+            {
+              "label": "Band Aids",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 6
+            },
+            {
+              "label": "Board Gauze",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 7
+            },
+            {
+              "label": "Containers Sharps Small",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 8
+            },
+            {
+              "label": "Containers- Sharps Large",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 9
+            },
+            {
+              "label": "Containers- Sharps Medium",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 10
+            },
+            {
+              "label": "Cotton Tip Applicator",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 11
+            },
+            {
+              "label": "Dressing Transparent 10 CM",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 12
+            },
+            {
+              "label": "DuoDERM Extra Thin",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 13
+            },
+            {
+              "label": "Enema Ready to Use",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 14
+            },
+            {
+              "label": "F/C 16 Fr Coude, Tipped Balloon",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 15
+            },
+            {
+              "label": "F/C 16fr 5cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 16
+            },
+            {
+              "label": "F/C 18 Fr 30cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 17
+            },
+            {
+              "label": "F/C 18 Fr 5cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 18
+            },
+            {
+              "label": "F/C 18 Fr 5cc 3way",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 19
+            },
+            {
+              "label": "F/C 20 Fr 30cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 20
+            },
+            {
+              "label": "F/C 20 Fr 5cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 21
+            },
+            {
+              "label": "F/C 20 Fr 5cc 3way",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 22
+            },
+            {
+              "label": "F/C 22 Fr 30cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 23
+            },
+            {
+              "label": "F/C 22 Fr 5cc 3way",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 24
+            },
+            {
+              "label": "F/C Insertion tray",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 25
+            },
+            {
+              "label": "Gloves, Small, Medium, Large(latex free)",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 26
+            },
+            {
+              "label": "Kerlix",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 27
+            },
+            {
+              "label": "Lancet",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 28
+            },
+            {
+              "label": "Leg Drainage Bag",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 29
+            },
+            {
+              "label": "Needle 22g",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 30
+            },
+            {
+              "label": "Needle 23g",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 31
+            },
+            {
+              "label": "Needle Vacutainer",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 32
+            },
+            {
+              "label": "Non-Adhesive Pads 3x3 Adapter",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 33
+            },
+            {
+              "label": "Normal Saline 100 ml",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 34
+            },
+            {
+              "label": "Normal Saline 250ml/1000ml",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 35
+            },
+            {
+              "label": "Nu-Gauze Packing Strip ½",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 36
+            },
+            {
+              "label": "Paper Tape",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 37
+            },
+            {
+              "label": "Pill Box Weekly",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 38
+            },
+            {
+              "label": "Povidine Ointment 4 Oz",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 39
+            },
+            {
+              "label": "Silver Alginate",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 40
+            },
+            {
+              "label": "Sorbian 2x2",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 41
+            },
+            {
+              "label": "Specimen Container",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 42
+            },
+            {
+              "label": "Sponge Drain 4x4",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 43
+            },
+            {
+              "label": "Sterile Conforming Bandage",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 44
+            },
+            {
+              "label": "Sterile Strips",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 45
+            },
+            {
+              "label": "Sterile Water 110 Ml",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 46
+            },
+            {
+              "label": "Stethoscope",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 47
+            },
+            {
+              "label": "Strips Elite",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 48
+            },
+            {
+              "label": "Strips One Touch",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 49
+            },
+            {
+              "label": "Syringe 3cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 50
+            },
+            {
+              "label": "Syringe 5cc with needle",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 51
+            },
+            {
+              "label": "Syringe 5cc/10cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 52
+            },
+            {
+              "label": "Syringe Cath Tip 60cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 53
+            },
+            {
+              "label": "Syringe Luer Lock 60cc",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 54
+            },
+            {
+              "label": "Syringe TB",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 55
+            },
+            {
+              "label": "Tape",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 56
+            },
+            {
+              "label": "Tape Measure",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 57
+            },
+            {
+              "label": "Tape Microspore",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 58
+            },
+            {
+              "label": "Thermometer Digital",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 59
+            },
+            {
+              "label": "Thermometer Sheaths",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 60
+            },
+            {
+              "label": "Triple Antibiotic 1 oz",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 61
+            },
+            {
+              "label": "Triple Antibiotic Foil Pack",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 62
+            },
+            {
+              "label": "Urinary Drainage Bag 2000",
+              "type": "NUMBER",
+              "required": false,
+              "config": {
+                "min": 0,
+                "step": 1,
+                "thresholdEnabled": false
+              },
+              "order": 63
+            }
+          ]
+        },
+        {
+          "title": "Request",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Number of refills",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Requestor's name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Requestor's signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "Request date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "Physician's name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "Physician NPI",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "Physician signature",
+              "type": "SIGNATURE",
+              "required": false,
+              "config": {},
+              "order": 6
+            },
+            {
+              "label": "Date signed by physician",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missed Visit Note",
+      "description": "Record of a scheduled visit that did not take place, with reason and physician notification.",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "settings": null,
+      "sections": [
+        {
+          "title": "Missed visit",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "Discipline",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "RN",
+                  "LPN",
+                  "CNA",
+                  "HHA",
+                  "Other"
+                ]
+              },
+              "order": 0
+            },
+            {
+              "label": "Discipline: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "Reason (check one)",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "Cancellation of care by patient",
+                  "Cancellation of care by family",
+                  "Patient re-hospitalized",
+                  "Doctor’s appointment",
+                  "Visit too late in the day",
+                  "Patient unable/ unwilling to answer the door",
+                  "Patient or family member confused and uncooperative",
+                  "Family visiting and able to assist patient",
+                  "Patient authorization expired",
+                  "Patient/ family were not notified in advance of my visit",
+                  "Unable to reach patient",
+                  "Other"
+                ]
+              },
+              "order": 2
+            },
+            {
+              "label": "Reason: other",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "Details",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 4
+            },
+            {
+              "label": "Doctor's office notified",
+              "type": "YES_NO",
+              "required": true,
+              "config": {},
+              "order": 5
+            },
+            {
+              "label": "Doctor's office telephone #",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Employee signature",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "Employee name",
+              "type": "TEXT_SHORT",
+              "required": true,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "Employee signature",
+              "type": "SIGNATURE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "Date signed",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

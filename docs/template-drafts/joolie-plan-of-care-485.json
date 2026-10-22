@@ -1,0 +1,518 @@
+{
+  "source": {
+    "file": "docs/template-drafts/Patient Admission Office Copy (002).docx",
+    "sha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791"
+  },
+  "company": {
+    "name": "Joolie Health",
+    "adminEmail": "jooliehealthcare@gmail.com"
+  },
+  "openItems": [
+    "The near-empty draft “Joolie Health Plan of Care” (2 test fields, unused) is left untouched; delete it in the app if it is not needed."
+  ],
+  "textChanges": [
+    {
+      "template": "Home Health Certification and Plan of Care (CMS-485)",
+      "from": "26. … and I have authorized on this plan of care …",
+      "to": "… and I have authorized the services on this plan of care …",
+      "reason": "Missing words (standard CMS-485 wording)"
+    },
+    {
+      "template": "Home Health Certification and Plan of Care (CMS-485)",
+      "from": "6. Patient’s Name and Address / 8. Date of Birth / 9. Sex",
+      "to": "(omitted)",
+      "reason": "The care plan is already attached to the client record"
+    },
+    {
+      "template": "Home Health Certification and Plan of Care (CMS-485)",
+      "from": "18.A / 18.B / 19 coded checkboxes (1, 2 … A, B)",
+      "to": "Pick-any lists keeping each CMS code in the label",
+      "reason": "Digital checkboxes"
+    },
+    {
+      "template": "Home Health Certification and Plan of Care (CMS-485)",
+      "from": "Items 26 and 28 (certification and penalty statements)",
+      "to": "Shown as the description of the signature sections",
+      "reason": "Care plan forms cannot show read-only text blocks"
+    },
+    {
+      "template": "Home Health Certification and Plan of Care (CMS-485)",
+      "from": "19. Mental Status: “Orientated”",
+      "to": "“Oriented”",
+      "reason": "Typo"
+    }
+  ],
+  "templates": [
+    {
+      "name": "Home Health Certification and Plan of Care (CMS-485)",
+      "description": "CMS-485 home health certification and plan of care: certification period, diagnoses, medications, DME, safety, nutrition, allergies, functional limitations, activities permitted, mental status, prognosis, orders, goals and signatures.",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "version": 1,
+      "sections": [
+        {
+          "title": "Certification",
+          "description": null,
+          "order": 0,
+          "fields": [
+            {
+              "label": "1. Patient's HI claim no.",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "2. Start of care date",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "3. Certification period from",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "3. Certification period to",
+              "type": "DATE",
+              "required": true,
+              "config": {},
+              "order": 3
+            },
+            {
+              "label": "4. Medical record no.",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 4
+            },
+            {
+              "label": "5. Provider no.",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "7. Provider's name, address and telephone number",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Diagnoses",
+          "description": null,
+          "order": 1,
+          "fields": [
+            {
+              "label": "11. Principal diagnosis (ICD-10-CM)",
+              "type": "ICD10_DIAGNOSIS",
+              "required": true,
+              "config": {},
+              "order": 0
+            },
+            {
+              "label": "11. Principal diagnosis date",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "12. Surgical procedures",
+              "type": "REPEATABLE_GROUP",
+              "required": false,
+              "config": {
+                "childFields": [
+                  {
+                    "key": "item_1",
+                    "label": "Surgical procedure",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_2",
+                    "label": "ICD-10 code",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_3",
+                    "label": "Date",
+                    "type": "DATE",
+                    "required": false,
+                    "config": {}
+                  }
+                ],
+                "minItems": 0,
+                "itemLabel": "Procedure",
+                "addButtonLabel": "Add procedure",
+                "collapsible": true
+              },
+              "order": 2
+            },
+            {
+              "label": "13. Other pertinent diagnoses",
+              "type": "REPEATABLE_GROUP",
+              "required": false,
+              "config": {
+                "childFields": [
+                  {
+                    "key": "item_1",
+                    "label": "Diagnosis",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_2",
+                    "label": "ICD-10-CM code",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_3",
+                    "label": "Date",
+                    "type": "DATE",
+                    "required": false,
+                    "config": {}
+                  }
+                ],
+                "minItems": 0,
+                "itemLabel": "Diagnosis",
+                "addButtonLabel": "Add diagnosis",
+                "collapsible": true
+              },
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "10. Medications",
+          "description": "Mark each medication (N)ew or (C)hanged where applicable.",
+          "order": 2,
+          "fields": [
+            {
+              "label": "Medications: dose / frequency / route",
+              "type": "REPEATABLE_GROUP",
+              "required": false,
+              "config": {
+                "childFields": [
+                  {
+                    "key": "item_1",
+                    "label": "Medication",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_2",
+                    "label": "Dose",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_3",
+                    "label": "Frequency",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_4",
+                    "label": "Route",
+                    "type": "TEXT_SHORT",
+                    "required": false,
+                    "config": {}
+                  },
+                  {
+                    "key": "item_5",
+                    "label": "New or changed",
+                    "type": "SINGLE_CHOICE",
+                    "required": false,
+                    "config": {
+                      "options": [
+                        "(N)ew",
+                        "(C)hanged"
+                      ]
+                    }
+                  }
+                ],
+                "minItems": 0,
+                "itemLabel": "Medication",
+                "addButtonLabel": "Add medication",
+                "collapsible": true
+              },
+              "order": 0
+            }
+          ]
+        },
+        {
+          "title": "Care needs",
+          "description": null,
+          "order": 3,
+          "fields": [
+            {
+              "label": "14. DME and supplies",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 0
+            },
+            {
+              "label": "15. Safety measures",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 1
+            },
+            {
+              "label": "16. Nutritional requirements",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 2
+            },
+            {
+              "label": "17. Allergies",
+              "type": "TEXT_LONG",
+              "required": false,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Functional status",
+          "description": null,
+          "order": 4,
+          "fields": [
+            {
+              "label": "18.A Functional limitations",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "1 Amputation",
+                  "2 Bowel/Bladder (Incontinence)",
+                  "3 Contracture",
+                  "4 Hearing",
+                  "5 Paralysis",
+                  "6 Endurance",
+                  "7 Ambulation",
+                  "8 Speech",
+                  "9 Legally Blind",
+                  "A Dyspnea With Minimal Exertion",
+                  "B Other"
+                ]
+              },
+              "order": 0
+            },
+            {
+              "label": "18.A Other functional limitation (specify)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 1
+            },
+            {
+              "label": "18.B Activities permitted",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "1 Complete Bedrest",
+                  "2 Bedrest BRP",
+                  "3 Up As Tolerated",
+                  "4 Transfer Bed/Chair",
+                  "5 Exercise Prescribed",
+                  "6 Partial Weight Bearing",
+                  "7 Independent At Home",
+                  "8 Crutches",
+                  "9 Cane",
+                  "A Wheelchair",
+                  "B Walker",
+                  "C No Restrictions",
+                  "D Other"
+                ]
+              },
+              "order": 2
+            },
+            {
+              "label": "18.B Other activity (specify)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 3
+            },
+            {
+              "label": "19. Mental status",
+              "type": "MULTIPLE_CHOICE",
+              "required": false,
+              "config": {
+                "options": [
+                  "1 Oriented",
+                  "2 Comatose",
+                  "3 Forgetful",
+                  "4 Depressed",
+                  "5 Disoriented",
+                  "6 Lethargic",
+                  "7 Agitated",
+                  "8 Other"
+                ]
+              },
+              "order": 4
+            },
+            {
+              "label": "19. Other mental status (specify)",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 5
+            },
+            {
+              "label": "20. Prognosis",
+              "type": "SINGLE_CHOICE",
+              "required": true,
+              "config": {
+                "options": [
+                  "1 Poor",
+                  "2 Guarded",
+                  "3 Fair",
+                  "4 Good",
+                  "5 Excellent"
+                ]
+              },
+              "order": 6
+            }
+          ]
+        },
+        {
+          "title": "Orders and goals",
+          "description": null,
+          "order": 5,
+          "fields": [
+            {
+              "label": "21. Orders for discipline and treatments (specify amount/frequency/duration)",
+              "type": "TEXT_LONG",
+              "required": true,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 0
+            },
+            {
+              "label": "22. Goals / rehabilitation potential / discharge plans",
+              "type": "TEXT_LONG",
+              "required": true,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 1
+            }
+          ]
+        },
+        {
+          "title": "Nurse and agency",
+          "description": null,
+          "order": 6,
+          "fields": [
+            {
+              "label": "23. Nurse's name",
+              "type": "TEXT_SHORT",
+              "required": false,
+              "config": {
+                "maxLength": 200
+              },
+              "order": 0
+            },
+            {
+              "label": "23. Nurse's signature (verbal SOC where applicable)",
+              "type": "SIGNATURE",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "23. Date of verbal SOC",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 2
+            },
+            {
+              "label": "25. Date HHA received signed POT",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 3
+            }
+          ]
+        },
+        {
+          "title": "Physician certification",
+          "description": "I certify/recertify that this patient is confined to his/her home needs intermittent skilled nursing care physical therapy and/or speech therapy or continues to need occupational therapy. The patient is under my care, and I have authorized the services on this plan of care and will periodically review the plan Anyone who misrepresents, falsifies, or conceals essential information required for payment funds may be subject to fine, imprisonment or civil penalty under applicable federal law.",
+          "order": 7,
+          "fields": [
+            {
+              "label": "24. Physician's name and address",
+              "type": "TEXT_LONG",
+              "required": true,
+              "config": {
+                "maxLength": 4000
+              },
+              "order": 0
+            },
+            {
+              "label": "27. Attending physician's signature",
+              "type": "SIGNATURE",
+              "required": false,
+              "config": {},
+              "order": 1
+            },
+            {
+              "label": "27. Date signed",
+              "type": "DATE",
+              "required": false,
+              "config": {},
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

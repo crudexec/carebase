@@ -1,0 +1,14 @@
+{
+  "id": "cmvj0wsl00001s6fhfep36y5i",
+  "companyId": "cmu4j4zvg22kqo00kweyzqizk",
+  "name": "Home Health Certification and Plan of Care (CMS-485)",
+  "status": "DRAFT",
+  "isEnabled": false,
+  "draft": "docs/template-drafts/joolie-plan-of-care-485.json",
+  "sha256": "f7e79f1140228352641647cbbf26e09a30f44da88eac72116f3646be7aa559f5",
+  "sourceSha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791",
+  "sections": 8,
+  "fields": 32,
+  "verifiedAt": "2026-10-22T04:12:30.974Z",
+  "verification": "Metadata, section and field ordering, labels, types, requirements and configs (including repeating-list child fields) exactly match the approved draft; one matching audit entry, created by the Joolie Health admin."
+}

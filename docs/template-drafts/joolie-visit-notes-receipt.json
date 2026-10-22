@@ -1,0 +1,56 @@
+{
+  "companyId": "cmu4j4zvg22kqo00kweyzqizk",
+  "draft": "docs/template-drafts/joolie-visit-notes.json",
+  "sha256": "742efdad5694653beb84f89a9a670480ac09013a8bd1362fc78572f33b7d9094",
+  "sourceSha256": "9cfece54303cdb30a198cb50af2364d0b359a4b5d6d10ba9656dfcc0aee8a791",
+  "templates": [
+    {
+      "id": "cmvj0wv7z0001s6fkmlwr156d",
+      "name": "Telephone Order Sheet",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 4,
+      "fields": 23
+    },
+    {
+      "id": "cmvj0ww51000ws6fkopsf96f1",
+      "name": "Infection Report Form",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 6,
+      "fields": 47
+    },
+    {
+      "id": "cmvj0wx2h002hs6fkqbd60dq5",
+      "name": "Transfer/Discharge Summary",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 4,
+      "fields": 30
+    },
+    {
+      "id": "cmvj0wxqm003js6fkf1dnba4r",
+      "name": "Supply Requisition Form",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 2,
+      "fields": 72
+    },
+    {
+      "id": "cmvj0wy7i005ps6fkw1qss3va",
+      "name": "Missed Visit Note",
+      "type": "VISIT_NOTE",
+      "status": "DRAFT",
+      "isEnabled": false,
+      "sections": 2,
+      "fields": 10
+    }
+  ],
+  "totalFields": 182,
+  "verifiedAt": "2026-10-22T04:12:30.974Z",
+  "verification": "All 5 visit-note templates' metadata, section and field ordering, labels, types, requirements and configs exactly match the approved draft; one matching audit entry per template, created by the Joolie Health admin. Communication Record deliberately excluded pending a clearer copy from the client."
+}

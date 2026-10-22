@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Joolie Health — plan of care and visit notes (review draft)</title>
+<style>body{font:16px/1.55 system-ui;color:#172a36;max-width:1080px;margin:40px auto;padding:0 24px}h1{line-height:1.2}h2{margin-top:3rem;border-bottom:2px solid #bbcbd2;padding-bottom:8px}h3{margin:1.6rem 0 4px;color:#126682}.tag{font:12px monospace;background:#edf2f4;padding:3px 8px;border-radius:4px;white-space:nowrap}.req{color:#b42318;font-weight:700}.note{background:#fff4d8;padding:16px;border-radius:8px}.ok{background:#e6f4ea;padding:16px;border-radius:8px}.field{padding:9px 0;border-bottom:1px solid #e3e8eb;display:flex;gap:12px;justify-content:space-between;align-items:baseline}.display{margin:10px 0;padding:12px 16px;background:#f6f8f9;border-left:3px solid #cedbe1;border-radius:4px;font-size:15px}.desc{font-size:14px;color:#495f6c}.options{font-size:14px;color:#495f6c}.supplies{columns:2;font-size:14px;margin:8px 0}a{color:#126682}nav li{margin:3px 0}td,th{padding:8px 10px;text-align:left;vertical-align:top;border-bottom:1px solid #ddd;font-size:14px}table{border-collapse:collapse;width:100%}@media(max-width:640px){body{margin:20px auto;padding:0 16px}.field{flex-direction:column;gap:2px}.supplies{columns:1}}</style>
+<h1>Joolie Health — plan of care and visit notes</h1>
+<p class="ok"><strong>Review drafts — nothing has been imported.</strong> On approval each template is created for Joolie Health as <strong>Draft, disabled</strong>.</p>
+<nav><ol>
+<li><a href="#joolie-plan-of-care-485.json-0">Home Health Certification and Plan of Care (CMS-485)</a> <span class="desc">— care plan template, 32 fields</span></li>
+<li><a href="#joolie-visit-notes.json-0">Telephone Order Sheet</a> <span class="desc">— visit-note template, 23 fields</span></li>
+<li><a href="#joolie-visit-notes.json-1">Infection Report Form</a> <span class="desc">— visit-note template, 47 fields</span></li>
+<li><a href="#joolie-visit-notes.json-2">Transfer/Discharge Summary</a> <span class="desc">— visit-note template, 30 fields</span></li>
+<li><a href="#joolie-visit-notes.json-3">Supply Requisition Form</a> <span class="desc">— visit-note template, 72 fields</span></li>
+<li><a href="#joolie-visit-notes.json-4">Missed Visit Note</a> <span class="desc">— visit-note template, 10 fields</span></li>
+</ol></nav>
+<h2>Care plan templates — <span class="desc">joolie-plan-of-care-485.json</span></h2><p>Draft fingerprint (SHA-256): <span class="tag">f7e79f1140228352641647cbbf26e09a30f44da88eac72116f3646be7aa559f5</span></p>
+<h3>Open items</h3><ul><li>The near-empty draft “Joolie Health Plan of Care” (2 test fields, unused) is left untouched; delete it in the app if it is not needed.</li></ul>
+<h2 id="joolie-plan-of-care-485.json-0">Home Health Certification and Plan of Care (CMS-485)</h2><p class="desc">CMS-485 home health certification and plan of care: certification period, diagnoses, medications, DME, safety, nutrition, allergies, functional limitations, activities permitted, mental status, prognosis, orders, goals and signatures.</p>
+<h3>Certification</h3>
+<div class="field"><div><strong>1. Patient&#x27;s HI claim no.</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>2. Start of care date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>3. Certification period from</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>3. Certification period to</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>4. Medical record no.</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>5. Provider no.</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>7. Provider&#x27;s name, address and telephone number</strong></div><span class="tag">Long text</span></div>
+<h3>Diagnoses</h3>
+<div class="field"><div><strong>11. Principal diagnosis (ICD-10-CM)</strong> <span class="req" title="Required">*</span></div><span class="tag">ICD-10 lookup</span></div>
+<div class="field"><div><strong>11. Principal diagnosis date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>12. Surgical procedures</strong><div class="options">Each entry: Surgical procedure · ICD-10 code · Date</div></div><span class="tag">Repeating list</span></div>
+<div class="field"><div><strong>13. Other pertinent diagnoses</strong><div class="options">Each entry: Diagnosis · ICD-10-CM code · Date</div></div><span class="tag">Repeating list</span></div>
+<h3>10. Medications</h3>
+<p class="desc">Mark each medication (N)ew or (C)hanged where applicable.</p>
+<div class="field"><div><strong>Medications: dose / frequency / route</strong><div class="options">Each entry: Medication · Dose · Frequency · Route · New or changed ((N)ew / (C)hanged)</div></div><span class="tag">Repeating list</span></div>
+<h3>Care needs</h3>
+<div class="field"><div><strong>14. DME and supplies</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>15. Safety measures</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>16. Nutritional requirements</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>17. Allergies</strong></div><span class="tag">Long text</span></div>
+<h3>Functional status</h3>
+<div class="field"><div><strong>18.A Functional limitations</strong><div class="options">1 Amputation · 2 Bowel/Bladder (Incontinence) · 3 Contracture · 4 Hearing · 5 Paralysis · 6 Endurance · 7 Ambulation · 8 Speech · 9 Legally Blind · A Dyspnea With Minimal Exertion · B Other</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>18.A Other functional limitation (specify)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>18.B Activities permitted</strong><div class="options">1 Complete Bedrest · 2 Bedrest BRP · 3 Up As Tolerated · 4 Transfer Bed/Chair · 5 Exercise Prescribed · 6 Partial Weight Bearing · 7 Independent At Home · 8 Crutches · 9 Cane · A Wheelchair · B Walker · C No Restrictions · D Other</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>18.B Other activity (specify)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>19. Mental status</strong><div class="options">1 Oriented · 2 Comatose · 3 Forgetful · 4 Depressed · 5 Disoriented · 6 Lethargic · 7 Agitated · 8 Other</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>19. Other mental status (specify)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>20. Prognosis</strong> <span class="req" title="Required">*</span><div class="options">1 Poor · 2 Guarded · 3 Fair · 4 Good · 5 Excellent</div></div><span class="tag">Pick one</span></div>
+<h3>Orders and goals</h3>
+<div class="field"><div><strong>21. Orders for discipline and treatments (specify amount/frequency/duration)</strong> <span class="req" title="Required">*</span></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>22. Goals / rehabilitation potential / discharge plans</strong> <span class="req" title="Required">*</span></div><span class="tag">Long text</span></div>
+<h3>Nurse and agency</h3>
+<div class="field"><div><strong>23. Nurse&#x27;s name</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>23. Nurse&#x27;s signature (verbal SOC where applicable)</strong></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>23. Date of verbal SOC</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>25. Date HHA received signed POT</strong></div><span class="tag">Date</span></div>
+<h3>Physician certification</h3>
+<p class="desc">I certify/recertify that this patient is confined to his/her home needs intermittent skilled nursing care physical therapy and/or speech therapy or continues to need occupational therapy. The patient is under my care, and I have authorized the services on this plan of care and will periodically review the plan Anyone who misrepresents, falsifies, or conceals essential information required for payment funds may be subject to fine, imprisonment or civil penalty under applicable federal law.</p>
+<div class="field"><div><strong>24. Physician&#x27;s name and address</strong> <span class="req" title="Required">*</span></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>27. Attending physician&#x27;s signature</strong></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>27. Date signed</strong></div><span class="tag">Date</span></div>
+<h3>Changes from the paper packet (5)</h3><p class="note">Everything else follows the packet wording.</p>
+<table><thead><tr><th>Template</th><th>Original</th><th>Now</th><th>Why</th></tr></thead><tbody>
+<tr><td>Home Health Certification and Plan of Care (CMS-485)</td><td>26. … and I have authorized on this plan of care …</td><td>… and I have authorized the services on this plan of care …</td><td>Missing words (standard CMS-485 wording)</td></tr>
+<tr><td>Home Health Certification and Plan of Care (CMS-485)</td><td>6. Patient’s Name and Address / 8. Date of Birth / 9. Sex</td><td>(omitted)</td><td>The care plan is already attached to the client record</td></tr>
+<tr><td>Home Health Certification and Plan of Care (CMS-485)</td><td>18.A / 18.B / 19 coded checkboxes (1, 2 … A, B)</td><td>Pick-any lists keeping each CMS code in the label</td><td>Digital checkboxes</td></tr>
+<tr><td>Home Health Certification and Plan of Care (CMS-485)</td><td>Items 26 and 28 (certification and penalty statements)</td><td>Shown as the description of the signature sections</td><td>Care plan forms cannot show read-only text blocks</td></tr>
+<tr><td>Home Health Certification and Plan of Care (CMS-485)</td><td>19. Mental Status: “Orientated”</td><td>“Oriented”</td><td>Typo</td></tr>
+</tbody></table>
+<h2>Visit-note templates — <span class="desc">joolie-visit-notes.json</span></h2><p>Draft fingerprint (SHA-256): <span class="tag">742efdad5694653beb84f89a9a670480ac09013a8bd1362fc78572f33b7d9094</span></p>
+<h3>Open items</h3><ul><li>Communication Record is not included: the scanned page is unreadable; it will be built once the client provides a clearer copy.</li></ul>
+<h2 id="joolie-visit-notes.json-0">Telephone Order Sheet</h2><p class="desc">Verbal and telephone orders taken from a physician, read back and sent for signature.</p>
+<h3>Physician</h3>
+<div class="field"><div><strong>MD name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>MD phone</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>MD fax</strong></div><span class="tag">Short text</span></div>
+<h3>Order</h3>
+<div class="field"><div><strong>Date order obtained</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Verbal order obtained</strong> <span class="req" title="Required">*</span></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Verbal order repeated back to the physician</strong> <span class="req" title="Required">*</span></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>New or changed medication orders</strong></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>Rx in home</strong></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>Start date (if yes)</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>End date (if yes)</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Order (if yes)</strong></div><span class="tag">Long text</span></div>
+<h3>Order obtained from</h3>
+<div class="field"><div><strong>Name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Title</strong> <span class="req" title="Required">*</span><div class="options">MD · RN/LPN · PA · PT/OT/SP · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Time</strong> <span class="req" title="Required">*</span></div><span class="tag">Time</span></div>
+<h3>Signatures</h3>
+<div class="display"><p>The orders shown above are being sent for your signature to authorize a change in the plan of treatment/care and/or your verbal orders given on the date above. If any discrepancy in these orders is noted, please call our office. Please sign and return as soon as possible.</p></div>
+<div class="field"><div><strong>Person taking the order</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Signature of person taking the order</strong> <span class="req" title="Required">*</span></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Physician name</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Physician signature</strong></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed by physician</strong></div><span class="tag">Date</span></div>
+<div class="display"><p>All verbal orders must be signed by the physician and returned to the agency within 28 days. Thank you for your cooperation.</p></div>
+<h2 id="joolie-visit-notes.json-1">Infection Report Form</h2><p class="desc">Report of signs and symptoms of a suspected infection, notifications, tests ordered and patient disposition.</p>
+<h3>Patient and clinical details</h3>
+<div class="field"><div><strong>Today&#x27;s date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>MR#</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Diagnosis</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Physician</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Admission date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Hospital discharge date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Surgery (type)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Surgery date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Procedure(s) (type)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Procedure date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Staff assigned to patient</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Relevant clinical data</strong></div><span class="tag">Long text</span></div>
+<h3>Signs and symptoms</h3>
+<p class="desc">Check and complete all applicable information.</p>
+<div class="field"><div><strong>Temperature over 100.4 °F (38 °C) orally</strong><div class="options">Columns: Date · Temperature</div></div><span class="tag">Table</span></div>
+<div class="field"><div><strong>Soft tissue (IV line sites, pressure ulcers, surgical wound sites, etc.)</strong><div class="options">Edema · Heat · Drainage (serous) · Drainage (purulent) · Tenderness/pain · Necrosis · Induration · Redness · Separation/dehiscence</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>Soft tissue: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Urinary: catheter type</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Urinary: catheter size</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Urinary: date of insertion</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Urinary symptoms</strong><div class="options">Frequency · Foul odor · Suprapubic tenderness · Dysuria · Cloudy urine/pyuria</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>Urinary: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Diarrhea</strong><div class="options">Liquid stool x 12 hours · Abdominal pain/tenderness · Purulent stools</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>Respiratory</strong><div class="options">Productive cough · Purulent sputum · Sore throat · Hoarseness</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>Respiratory: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Lung sounds (describe)</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Other symptoms</strong><div class="options">Jaundice · Rash · Tenderness · Chills · Discharge · Swelling</div></div><span class="tag">Pick any</span></div>
+<div class="field"><div><strong>Other symptoms: other</strong></div><span class="tag">Short text</span></div>
+<h3>Notification</h3>
+<div class="field"><div><strong>Supervisor notified: date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Supervisor notified: time</strong></div><span class="tag">Time</span></div>
+<div class="field"><div><strong>Physician notified: date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Physician notified: time</strong></div><span class="tag">Time</span></div>
+<h3>Tests ordered</h3>
+<div class="field"><div><strong>Labs: date ordered</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Labs: collection date</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Labs: source</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Labs: results</strong><div class="options">Positive · Negative</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Labs: comments</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Radiographic studies: date ordered</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Radiographic studies: date performed</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Radiographic studies: type</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Radiographic studies: results (if known)</strong></div><span class="tag">Long text</span></div>
+<h3>Patient status / disposition</h3>
+<div class="field"><div><strong>Disposition</strong> <span class="req" title="Required">*</span><div class="options">Treatment at home continued · Admitted to hospital · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Other disposition</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Date of hospital admission</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Name of hospital</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Reason for admission</strong></div><span class="tag">Long text</span></div>
+<h3>Nurse signature</h3>
+<div class="field"><div><strong>Nurse name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Nurse signature</strong> <span class="req" title="Required">*</span></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<h2 id="joolie-visit-notes.json-2">Transfer/Discharge Summary</h2><p class="desc">Summary of care at transfer or discharge, including reason, status, goals met, instructions and notifications.</p>
+<h3>Patient information</h3>
+<div class="field"><div><strong>Pt. case #</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Primary MD</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Primary MD phone</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Secondary MD</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Secondary MD phone</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Primary diagnosis</strong> <span class="req" title="Required">*</span></div><span class="tag">ICD-10 lookup</span></div>
+<div class="field"><div><strong>Secondary diagnosis</strong></div><span class="tag">ICD-10 lookup</span></div>
+<h3>Admission information</h3>
+<div class="field"><div><strong>SOC date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Admitting RN</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Status upon admission</strong></div><span class="tag">Long text</span></div>
+<h3>Discharge information</h3>
+<div class="field"><div><strong>Discharge date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Discharge type</strong> <span class="req" title="Required">*</span><div class="options">Direct Visit D/C · Phone D/C</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Discharge initiated by</strong> <span class="req" title="Required">*</span><div class="options">Primary MD · RN · PT · Insurance Company · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Discharge initiated by: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Discipline completing discharge</strong> <span class="req" title="Required">*</span><div class="options">RN · PT · OT · ST</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Status at time of discharge</strong> <span class="req" title="Required">*</span><div class="options">Improved · Stabilized · Transfer to Hospital</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Reason for discharge</strong> <span class="req" title="Required">*</span><div class="options">Condition improved · Non compliant · Patient met goals · Admitted to alternative facility · Patient/family cancelled · Referral to another agency · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Reason for discharge: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Did the patient reach their planned goals?</strong> <span class="req" title="Required">*</span></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>If no, plan for follow-up care including community resources</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Discharge instruction provided to</strong> <span class="req" title="Required">*</span><div class="options">Patient · Patient/caregiver</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Summary of care provided</strong> <span class="req" title="Required">*</span></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Was patient discharged because of unplanned emergent care/hospitalization?</strong> <span class="req" title="Required">*</span></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>If yes, reason for hospitalization</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Notification of discharge to</strong><div class="options">MD · Case Manager · RN · PT · OT · ST · Joolie Healthcare Services, LLC</div></div><span class="tag">Pick any</span></div>
+<h3>Signatures</h3>
+<div class="field"><div><strong>Patient signature (optional)</strong></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed by patient</strong></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Clinician name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Clinician signature</strong> <span class="req" title="Required">*</span></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed by clinician</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<h2 id="joolie-visit-notes.json-3">Supply Requisition Form</h2><p class="desc">Supply order: quantity per item, refills, requestor and physician authorization.</p>
+<h3>Supplies</h3>
+<p class="desc">Enter a quantity for each supply needed; leave the rest blank.</p>
+<p class="options">64 quantity fields:</p><div class="supplies">2x2 Gauze<br>4x4 Gauze<br>ABD Pad<br>Adhesive Dressing 2x3/3x4<br>Alcohol Gel 8 Oz<br>Alcohol Prep Pads<br>Band Aids<br>Board Gauze<br>Containers Sharps Small<br>Containers- Sharps Large<br>Containers- Sharps Medium<br>Cotton Tip Applicator<br>Dressing Transparent 10 CM<br>DuoDERM Extra Thin<br>Enema Ready to Use<br>F/C 16 Fr Coude, Tipped Balloon<br>F/C 16fr 5cc<br>F/C 18 Fr 30cc<br>F/C 18 Fr 5cc<br>F/C 18 Fr 5cc 3way<br>F/C 20 Fr 30cc<br>F/C 20 Fr 5cc<br>F/C 20 Fr 5cc 3way<br>F/C 22 Fr 30cc<br>F/C 22 Fr 5cc 3way<br>F/C Insertion tray<br>Gloves, Small, Medium, Large(latex free)<br>Kerlix<br>Lancet<br>Leg Drainage Bag<br>Needle 22g<br>Needle 23g<br>Needle Vacutainer<br>Non-Adhesive Pads 3x3 Adapter<br>Normal Saline 100 ml<br>Normal Saline 250ml/1000ml<br>Nu-Gauze Packing Strip ½<br>Paper Tape<br>Pill Box Weekly<br>Povidine Ointment 4 Oz<br>Silver Alginate<br>Sorbian 2x2<br>Specimen Container<br>Sponge Drain 4x4<br>Sterile Conforming Bandage<br>Sterile Strips<br>Sterile Water 110 Ml<br>Stethoscope<br>Strips Elite<br>Strips One Touch<br>Syringe 3cc<br>Syringe 5cc with needle<br>Syringe 5cc/10cc<br>Syringe Cath Tip 60cc<br>Syringe Luer Lock 60cc<br>Syringe TB<br>Tape<br>Tape Measure<br>Tape Microspore<br>Thermometer Digital<br>Thermometer Sheaths<br>Triple Antibiotic 1 oz<br>Triple Antibiotic Foil Pack<br>Urinary Drainage Bag 2000</div>
+<h3>Request</h3>
+<div class="field"><div><strong>Number of refills</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Requestor&#x27;s name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Requestor&#x27;s signature</strong> <span class="req" title="Required">*</span></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Request date</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<div class="field"><div><strong>Physician&#x27;s name</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Physician NPI</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Physician signature</strong></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed by physician</strong></div><span class="tag">Date</span></div>
+<h2 id="joolie-visit-notes.json-4">Missed Visit Note</h2><p class="desc">Record of a scheduled visit that did not take place, with reason and physician notification.</p>
+<h3>Missed visit</h3>
+<div class="field"><div><strong>Discipline</strong> <span class="req" title="Required">*</span><div class="options">RN · LPN · CNA · HHA · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Discipline: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Reason (check one)</strong> <span class="req" title="Required">*</span><div class="options">Cancellation of care by patient · Cancellation of care by family · Patient re-hospitalized · Doctor’s appointment · Visit too late in the day · Patient unable/ unwilling to answer the door · Patient or family member confused and uncooperative · Family visiting and able to assist patient · Patient authorization expired · Patient/ family were not notified in advance of my visit · Unable to reach patient · Other</div></div><span class="tag">Pick one</span></div>
+<div class="field"><div><strong>Reason: other</strong></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Details</strong></div><span class="tag">Long text</span></div>
+<div class="field"><div><strong>Doctor&#x27;s office notified</strong> <span class="req" title="Required">*</span></div><span class="tag">Yes / No</span></div>
+<div class="field"><div><strong>Doctor&#x27;s office telephone #</strong></div><span class="tag">Short text</span></div>
+<h3>Employee signature</h3>
+<div class="field"><div><strong>Employee name</strong> <span class="req" title="Required">*</span></div><span class="tag">Short text</span></div>
+<div class="field"><div><strong>Employee signature</strong> <span class="req" title="Required">*</span></div><span class="tag">Signature</span></div>
+<div class="field"><div><strong>Date signed</strong> <span class="req" title="Required">*</span></div><span class="tag">Date</span></div>
+<h3>Changes from the paper packet (22)</h3><p class="note">Everything else follows the packet wording.</p>
+<table><thead><tr><th>Template</th><th>Original</th><th>Now</th><th>Why</th></tr></thead><tbody>
+<tr><td>Telephone Order Sheet</td><td>Patient name / address / DOB / phone lines</td><td>(omitted)</td><td>Visit notes are already attached to the client</td></tr>
+<tr><td>Infection Report Form</td><td>Patient name / address / DOB / phone lines</td><td>(omitted)</td><td>Visit notes are already attached to the client</td></tr>
+<tr><td>Transfer/Discharge Summary</td><td>Patient name / address / DOB / phone lines</td><td>(omitted)</td><td>Visit notes are already attached to the client</td></tr>
+<tr><td>Supply Requisition Form</td><td>Patient name / address / DOB / phone lines</td><td>(omitted)</td><td>Visit notes are already attached to the client</td></tr>
+<tr><td>Telephone Order Sheet</td><td>within 28days.Thanks you for your cooperation.</td><td>within 28 days. Thank you for your cooperation.</td><td>Typo</td></tr>
+<tr><td>Infection Report Form</td><td>Admission Date (listed twice)</td><td>Admission date (once)</td><td>Duplicate line</td></tr>
+<tr><td>Infection Report Form</td><td>Temperature over 100.4 °F … Date: (×6)</td><td>Table of date and temperature readings</td><td>Repeated date boxes</td></tr>
+<tr><td>Infection Report Form</td><td>Drainage ( serous purulent)</td><td>Drainage (serous) / Drainage (purulent)</td><td>Two separate checkboxes</td></tr>
+<tr><td>Transfer/Discharge Summary</td><td>Diagnosis: Primary … ICD -9 Code / Secondary … ICD -9 Code</td><td>ICD-10 diagnosis lookups</td><td>ICD-9 is no longer used</td></tr>
+<tr><td>Transfer/Discharge Summary</td><td>Status at time of discharge / Discharge initiated by / Discipline (unlabelled checkboxes)</td><td>Pick-one lists</td><td>Digital checkboxes</td></tr>
+<tr><td>Transfer/Discharge Summary</td><td>Notification of discharge to: … JOOLIE HEALTHCARE SERVICES, LLC</td><td>Pick-any list</td><td>Digital checkboxes</td></tr>
+<tr><td>Supply Requisition Form</td><td>Douderm Extra Thin</td><td>DuoDERM Extra Thin</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Stripe Elite</td><td>Strips Elite</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Stripe One Touch</td><td>Strips One Touch</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Syringe Lauer Look 60cc</td><td>Syringe Luer Lock 60cc</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>F/C 18 Fr 300cc</td><td>F/C 18 Fr 30cc</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Thermostat Sheaths</td><td>Thermometer Sheaths</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>None-Adhesive Pads 3x3 Adapter</td><td>Non-Adhesive Pads 3x3 Adapter</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Nu, Gauze Packing Strip ½</td><td>Nu-Gauze Packing Strip ½</td><td>Typo / product name</td></tr>
+<tr><td>Supply Requisition Form</td><td>Two-column paper list</td><td>Alphabetical quantity fields, blank = not needed</td><td>Digital form</td></tr>
+<tr><td>Supply Requisition Form</td><td>Requestor&#x27;s Name / Date (no signature line)</td><td>Added a required requestor signature</td><td>The physician signs later, so the submitting staff member needs to sign</td></tr>
+<tr><td>Missed Visit Note</td><td>family visiting and able to assist patient</td><td>Family visiting and able to assist patient</td><td>Capitalisation</td></tr>
+</tbody></table>
+</html>
