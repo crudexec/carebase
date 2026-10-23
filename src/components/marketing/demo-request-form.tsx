@@ -19,7 +19,9 @@ export function DemoRequestForm() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -59,23 +61,21 @@ export function DemoRequestForm() {
     } catch (error) {
       setStatus("error");
       setErrorMessage(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     }
   };
 
   if (status === "success") {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12" role="status" aria-live="polite">
         <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-8 h-8 text-success" />
         </div>
-        <h3 className="text-2xl font-bold text-foreground mb-3">
-          Thank You!
-        </h3>
+        <h3 className="text-2xl font-bold text-foreground mb-3">Thank You!</h3>
         <p className="text-foreground-secondary max-w-md mx-auto">
-          We&apos;ve received your demo request and will be in touch within 24 hours
-          to schedule your personalized walkthrough.
+          We&apos;ve received your demo request. Our team will be in touch to
+          arrange a walkthrough around your agency&apos;s needs.
         </p>
         <button
           onClick={() => setStatus("idle")}
@@ -90,7 +90,10 @@ export function DemoRequestForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {status === "error" && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-error/10 border border-error/20">
+        <div
+          role="alert"
+          className="flex items-center gap-3 p-4 rounded-lg bg-error/10 border border-error/20"
+        >
           <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
           <p className="text-sm text-error">{errorMessage}</p>
         </div>
@@ -98,13 +101,17 @@ export function DemoRequestForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="firstName"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             First Name *
           </label>
           <input
             type="text"
             id="firstName"
             name="firstName"
+            autoComplete="given-name"
             required
             value={formData.firstName}
             onChange={handleChange}
@@ -113,13 +120,17 @@ export function DemoRequestForm() {
           />
         </div>
         <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="lastName"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             Last Name *
           </label>
           <input
             type="text"
             id="lastName"
             name="lastName"
+            autoComplete="family-name"
             required
             value={formData.lastName}
             onChange={handleChange}
@@ -131,13 +142,17 @@ export function DemoRequestForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             Work Email *
           </label>
           <input
             type="email"
             id="email"
             name="email"
+            autoComplete="email"
             required
             value={formData.email}
             onChange={handleChange}
@@ -146,13 +161,17 @@ export function DemoRequestForm() {
           />
         </div>
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             Phone Number
           </label>
           <input
             type="tel"
             id="phone"
             name="phone"
+            autoComplete="tel"
             value={formData.phone}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
@@ -163,13 +182,17 @@ export function DemoRequestForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="companyName" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="companyName"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             Company Name *
           </label>
           <input
             type="text"
             id="companyName"
             name="companyName"
+            autoComplete="organization"
             required
             value={formData.companyName}
             onChange={handleChange}
@@ -178,7 +201,10 @@ export function DemoRequestForm() {
           />
         </div>
         <div>
-          <label htmlFor="companySize" className="block text-sm font-medium text-foreground mb-1.5">
+          <label
+            htmlFor="companySize"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
             Company Size *
           </label>
           <select
@@ -200,7 +226,10 @@ export function DemoRequestForm() {
       </div>
 
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-foreground mb-1.5">
+        <label
+          htmlFor="message"
+          className="block text-sm font-medium text-foreground mb-1.5"
+        >
           Tell us about your needs
         </label>
         <textarea
@@ -233,7 +262,7 @@ export function DemoRequestForm() {
       </button>
 
       <p className="text-center text-xs text-foreground-tertiary">
-        By submitting, you agree to our Privacy Policy and Terms of Service.
+        We’ll use these details to respond to your demo request.
       </p>
     </form>
   );

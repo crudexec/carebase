@@ -1,762 +1,480 @@
+import type { Metadata } from "next";
+import localFont from "next/font/local";
 import Link from "next/link";
 import {
-  Users,
-  Calendar,
-  FileText,
-  ClipboardList,
-  AlertTriangle,
-  DollarSign,
-  UserCog,
-  CheckSquare,
-  Shield,
-  GitBranch,
-  Heart,
-  Clock,
-  TrendingUp,
-  Lock,
-  Smartphone,
-  BarChart3,
+  ArrowDown,
   ArrowRight,
+  CalendarDays,
   Check,
-  Mail,
-  MapPin,
-  X,
   ChevronDown,
+  ClipboardCheck,
+  Heart,
+  MapPin,
+  MessageCircle,
   ShieldCheck,
-  Award,
-  Building2,
+  Users,
 } from "lucide-react";
 import { DemoRequestForm } from "@/components/marketing/demo-request-form";
+import { FeatureExplorer } from "@/components/marketing/feature-explorer";
+import styles from "./landing.module.css";
 
-const features = [
-  {
-    icon: Users,
-    title: "Client Management",
-    description:
-      "Comprehensive client profiles with medical history, care preferences, emergency contacts, and detailed service requirements.",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    icon: Calendar,
-    title: "Smart Scheduling",
-    description:
-      "Intelligent shift scheduling with availability tracking, conflict detection, and automated notifications for carers and clients.",
-    color: "bg-success/10 text-success",
-  },
-  {
-    icon: FileText,
-    title: "Visit Notes",
-    description:
-      "Digital visit documentation with customizable templates, photo attachments, and real-time sync across all devices.",
-    color: "bg-info/10 text-info",
-  },
-  {
-    icon: ClipboardList,
-    title: "Care Plans",
-    description:
-      "Create and manage personalized care plans with goals, interventions, and progress tracking for each client.",
-    color: "bg-warning/10 text-warning",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Incident Reports",
-    description:
-      "Streamlined incident reporting with severity classification, follow-up tracking, and compliance documentation.",
-    color: "bg-error/10 text-error",
-  },
-  {
-    icon: DollarSign,
-    title: "Billing & Claims",
-    description:
-      "Automated billing workflows, insurance claim management, and detailed financial reporting for your agency.",
-    color: "bg-success/10 text-success",
-  },
-  {
-    icon: UserCog,
-    title: "Staff Management",
-    description:
-      "Complete staff lifecycle management including credentials, training records, certifications, and performance tracking.",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    icon: CheckSquare,
-    title: "Assessments",
-    description:
-      "Standardized assessment tools for client evaluations, risk assessments, and care level determinations.",
-    color: "bg-info/10 text-info",
-  },
-  {
-    icon: Shield,
-    title: "Authorizations",
-    description:
-      "Track service authorizations, manage approval workflows, and monitor utilization against authorized hours.",
-    color: "bg-warning/10 text-warning",
-  },
-  {
-    icon: GitBranch,
-    title: "Referral Tracking",
-    description:
-      "Manage incoming referrals from hospitals, physicians, and case managers with complete tracking and follow-up.",
-    color: "bg-error/10 text-error",
-  },
-  {
-    icon: Heart,
-    title: "Sponsor Portal",
-    description:
-      "Family members can view care reports, daily updates, and communicate with caregivers through a dedicated portal.",
-    color: "bg-role-sponsor/20 text-foreground",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics & Reports",
-    description:
-      "Comprehensive reporting dashboard with KPIs, compliance metrics, and customizable data visualizations.",
-    color: "bg-primary/10 text-primary",
-  },
-];
+const marketingFont = localFont({
+  src: "../../public/fonts/manrope-bold.ttf",
+  variable: "--font-marketing",
+  weight: "700",
+  display: "swap",
+});
 
-const benefits = [
-  {
-    icon: Clock,
-    title: "Save 10+ Hours Weekly",
-    description: "Automate scheduling, billing, and documentation tasks",
-  },
-  {
-    icon: TrendingUp,
-    title: "Improve Care Quality",
-    description: "Real-time monitoring and standardized care protocols",
-  },
-  {
-    icon: Lock,
-    title: "HIPAA Compliant",
-    description: "Enterprise-grade security for patient data protection",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile Ready",
-    description: "Access everything from any device, anywhere",
-  },
-];
+export const metadata: Metadata = {
+  title: "CareBase | Connected home care management",
+  description:
+    "Bring your home care agency together with client intake, scheduling, EVV, care plans, visit notes, staff management, and billing in CareBase.",
+};
 
-const stats = [
-  { value: "99.9%", label: "Uptime" },
-  { value: "50K+", label: "Visits Tracked" },
-  { value: "500+", label: "Care Providers" },
-  { value: "4.9/5", label: "User Rating" },
-];
-
-const comparisonFeatures = [
-  { feature: "Client Management", carebase: true, spreadsheets: false, legacy: true },
-  { feature: "Real-time Scheduling", carebase: true, spreadsheets: false, legacy: false },
-  { feature: "Mobile App for Carers", carebase: true, spreadsheets: false, legacy: false },
-  { feature: "Automated EVV Compliance", carebase: true, spreadsheets: false, legacy: true },
-  { feature: "Family Portal Access", carebase: true, spreadsheets: false, legacy: false },
-  { feature: "Integrated Billing", carebase: true, spreadsheets: false, legacy: true },
-  { feature: "Custom Assessments", carebase: true, spreadsheets: false, legacy: false },
-  { feature: "Real-time Notifications", carebase: true, spreadsheets: false, legacy: false },
-  { feature: "HIPAA Compliant", carebase: true, spreadsheets: false, legacy: true },
-  { feature: "Setup in 24 Hours", carebase: true, spreadsheets: true, legacy: false },
-  { feature: "No IT Team Required", carebase: true, spreadsheets: true, legacy: false },
-  { feature: "Modern User Interface", carebase: true, spreadsheets: false, legacy: false },
+const capabilities = [
+  {
+    title: "Documentation that fits your care.",
+    description:
+      "Build assessments, care plans, and visit notes around the information your team needs. Keep the structure consistent while giving each client a personal plan.",
+    items: [
+      "Custom form templates and required fields",
+      "Care goals, interventions, and progress tracking",
+      "Signature capture, PDF export, and fax workflows",
+    ],
+    icon: ClipboardCheck,
+  },
+  {
+    title: "A clearer view of every visit.",
+    description:
+      "Connect the schedule to what happens in the field. Give your office the context to follow up on missed visits, outstanding notes, and changes in care.",
+    items: [
+      "GPS check-in and check-out with visit times",
+      "Missed-visit reasons and documentation",
+      "Visit note review and incident follow-up",
+    ],
+    icon: MapPin,
+  },
+  {
+    title: "Keep families in the conversation.",
+    description:
+      "Give sponsors a dedicated place to follow care, read updates, and message caregivers. Keep communication connected to the people receiving care.",
+    items: [
+      "Daily care reports and monthly summaries",
+      "Caregiver messaging in the sponsor portal",
+      "Invoice visibility and reviewed incident updates",
+    ],
+    icon: MessageCircle,
+  },
 ];
 
 const faqs = [
   {
-    question: "How long does it take to get started with CareBase?",
-    answer: "Most agencies are fully operational within 24 hours. Our onboarding team helps you import existing client and staff data, configure your settings, and train your team. We provide hands-on support throughout the entire process.",
+    question: "What can my agency manage in CareBase?",
+    answer:
+      "CareBase brings together client intake and referrals, assessments, care plans, scheduling, electronic visit verification, visit notes, staff credentials and training, authorizations, claims, invoices, payroll, and reporting. The feature explorer above shows how these tools support different parts of your day.",
   },
   {
-    question: "Can I import data from my current system?",
-    answer: "Yes! We support data imports from spreadsheets, legacy software, and other care management systems. Our team handles the migration for you, ensuring all your client records, staff information, and historical data transfer seamlessly.",
+    question: "Can we use our own forms and care templates?",
+    answer:
+      "Yes. Template builders let your team configure assessments, care plans, and visit notes with sections, different field types, and required information. You can adapt documentation to your agency’s workflows and keep a consistent structure across the team.",
   },
   {
-    question: "Is CareBase HIPAA compliant?",
-    answer: "Absolutely. CareBase is fully HIPAA compliant with enterprise-grade security. We use end-to-end encryption, secure data centers, regular security audits, and strict access controls. We also provide Business Associate Agreements (BAAs) for all customers.",
+    question: "How does electronic visit verification work?",
+    answer:
+      "Caregivers can check in and out with location capture and visit times. Office teams can review visit information in the EVV dashboard and reports. During your demo, we can review your state and payer workflow and discuss the configuration your agency needs.",
   },
   {
-    question: "Does CareBase work with Medicaid and EVV requirements?",
-    answer: "Yes, CareBase is designed to meet state EVV (Electronic Visit Verification) requirements. We support GPS verification, telephony check-in, and integrate with state aggregators. Our system automatically captures all required data points for compliance.",
+    question: "What can caregivers and family members access?",
+    answer:
+      "Caregivers have tools for their schedules, check-in, and visit documentation. Sponsors have a dedicated portal for care reports, messages, and invoices. Role-based permissions separate the workflows available to administrators, clinical staff, caregivers, and sponsors.",
   },
   {
-    question: "What kind of support is included?",
-    answer: "All plans include email support with 24-hour response times. Professional and Enterprise plans include priority phone support, dedicated account managers, and custom training sessions. We also provide extensive documentation and video tutorials.",
+    question: "Can we manage staff readiness as well as client care?",
+    answer:
+      "Yes. CareBase includes staff profiles, onboarding, credential expiration alerts, training courses and sessions, and competency tracking. Your team can keep workforce records alongside the scheduling and care workflows they support.",
   },
   {
-    question: "Can family members access the system?",
-    answer: "Yes! Our Sponsor Portal allows family members to view care updates, scheduled visits, and communicate with caregivers. They get read-only access to relevant information while maintaining full privacy controls for your agency.",
+    question: "What should we bring to a demo?",
+    answer:
+      "Bring the workflows you want to improve: a scheduling challenge, a care-documentation process, a billing requirement, or a form you use today. Include your agency size and priorities in the request below so the walkthrough can focus on what matters to your team.",
   },
 ];
 
-const complianceBadges = [
-  { name: "HIPAA", description: "Compliant" },
-  { name: "SOC 2", description: "Type II Certified" },
-  { name: "EVV", description: "All 50 States" },
-  { name: "256-bit", description: "Encryption" },
-];
+function Brand() {
+  return (
+    <span className={styles.brand}>
+      <span className={styles.brandMark}>
+        <Heart size={22} strokeWidth={2.2} aria-hidden="true" />
+      </span>
+      CareBase<span className={styles.brandDot}>.</span>
+    </span>
+  );
+}
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold text-foreground">
-                CareBase
-              </span>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <a
-                href="#features"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Features
-              </a>
-              <a
-                href="#benefits"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Benefits
-              </a>
-              <a
-                href="#demo"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Demo
-              </a>
-              <a
-                href="#contact"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Contact
-              </a>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors px-4 py-2"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="bg-primary hover:bg-primary-hover text-white text-body-sm font-medium px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md"
-              >
-                Get Started
-              </Link>
-            </div>
+    <div className={`${styles.page} ${marketingFont.variable}`}>
+      <a href="#main-content" className={styles.skipLink}>
+        Skip to content
+      </a>
+      <header className={styles.header}>
+        <div className={`${styles.container} ${styles.nav}`}>
+          <Link href="/" aria-label="CareBase home">
+            <Brand />
+          </Link>
+          <nav className={styles.navLinks} aria-label="Main navigation">
+            <a href="#features">Platform</a>
+            <a href="#care">Connected care</a>
+            <a href="#questions">FAQs</a>
+          </nav>
+          <div className={styles.navActions}>
+            <Link href="/login" className={styles.signIn}>
+              Sign in
+            </Link>
+            <a href="#demo" className={styles.button}>
+              Book a demo <ArrowRight size={16} aria-hidden="true" />
+            </a>
           </div>
+          <details className={styles.mobileMenu}>
+            <summary aria-label="Open navigation">
+              <span>Menu</span>
+              <ChevronDown size={16} aria-hidden="true" />
+            </summary>
+            <nav aria-label="Mobile navigation">
+              <a href="#features">Explore the platform</a>
+              <a href="#care">Connected care</a>
+              <a href="#questions">FAQs</a>
+              <Link href="/login">Sign in</Link>
+              <a href="#demo">Book a demo</a>
+            </nav>
+          </details>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-primary/5 via-transparent to-transparent rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-success/5 via-transparent to-transparent rounded-full blur-3xl" />
-        </div>
-
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-body-sm font-medium mb-8 animate-slideUp">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Trusted by 500+ Care Agencies
-            </div>
-
-            {/* Headline */}
-            <h1
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6 animate-slideUp"
-              style={{ animationDelay: "0.1s" }}
-            >
-              Modern Care Management
-              <br />
-              <span className="text-primary">Built for Excellence</span>
-            </h1>
-
-            {/* Subheadline */}
-            <p
-              className="text-lg md:text-xl text-foreground-secondary max-w-2xl mx-auto mb-10 animate-slideUp"
-              style={{ animationDelay: "0.2s" }}
-            >
-              Streamline your home care operations with an all-in-one platform
-              for scheduling, documentation, billing, and family communication.
-            </p>
-
-            {/* CTA Buttons */}
-            <div
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slideUp"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <a
-                href="#demo"
-                className="group bg-primary hover:bg-primary-hover text-white font-medium px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-              >
-                Request a Demo
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <Link
-                href="/register"
-                className="bg-white hover:bg-background-secondary text-foreground font-medium px-8 py-4 rounded-xl border border-border transition-all flex items-center gap-2"
-              >
-                Start Free Trial
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-20 animate-slideUp"
-            style={{ animationDelay: "0.4s" }}
-          >
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-6 rounded-2xl bg-background-tertiary border border-border/50 hover:border-primary/30 transition-colors"
-              >
-                <div className="text-3xl font-bold text-foreground mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-body-sm text-foreground-secondary">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Trust Badges */}
-          <div
-            className="flex flex-wrap justify-center items-center gap-8 mt-16 animate-slideUp"
-            style={{ animationDelay: "0.5s" }}
-          >
-            {complianceBadges.map((badge, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 px-5 py-3 rounded-full bg-background-tertiary border border-border/50"
-              >
-                <ShieldCheck className="w-5 h-5 text-success" />
-                <div className="text-left">
-                  <div className="text-sm font-semibold text-foreground">{badge.name}</div>
-                  <div className="text-xs text-foreground-secondary">{badge.description}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-24 px-6 bg-background-secondary/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to
-              <br />
-              <span className="text-primary">Deliver Exceptional Care</span>
-            </h2>
-            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              A comprehensive suite of tools designed specifically for home care
-              agencies, from client intake to billing.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="group p-6 rounded-2xl bg-background-tertiary border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300"
-              >
-                <div
-                  className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
-                >
-                  <feature.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-body text-foreground-secondary leading-relaxed">
-                  {feature.description}
+      <main id="main-content">
+        <section className={styles.hero} aria-labelledby="hero-title">
+          <div className={styles.container}>
+            <div className={styles.heroHeading}>
+              <h1 id="hero-title">
+                Every visit.
+                <br />
+                Everyone <span>connected.</span>
+              </h1>
+              <div className={styles.heroIntro}>
+                <p>
+                  Home care takes a whole team.
+                  <br />
+                  Give yours one place to work.
                 </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section id="benefits" className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Why Leading Agencies
-                <br />
-                <span className="text-primary">Choose CareBase</span>
-              </h2>
-              <p className="text-lg text-foreground-secondary mb-10">
-                Join hundreds of care agencies who have transformed their
-                operations with our modern, intuitive platform.
-              </p>
-
-              <div className="space-y-6">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">
-                        {benefit.title}
-                      </h3>
-                      <p className="text-body text-foreground-secondary">
-                        {benefit.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                <p>
+                  CareBase brings scheduling, care documentation, staff, and
+                  billing together—so the details stay connected to the people
+                  who matter.
+                </p>
+                <a href="#demo" className={styles.button}>
+                  Let’s talk about your agency{" "}
+                  <ArrowRight size={18} aria-hidden="true" />
+                </a>
+                <a href="#features" className={styles.textLink}>
+                  Explore the platform{" "}
+                  <ArrowDown size={16} aria-hidden="true" />
+                </a>
               </div>
             </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-success/10 rounded-3xl blur-2xl" />
-              <div className="relative bg-background-tertiary rounded-3xl border border-border p-8 shadow-xl">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
-                    <Check className="w-5 h-5 text-success" />
-                  </div>
+            <div
+              className={styles.careDay}
+              aria-label="Illustrative connected care workflow"
+            >
+              <div className={styles.dayIntro}>
+                <span className={styles.dayIcon}>
+                  <Heart size={25} aria-hidden="true" />
+                </span>
+                <h2>
+                  A little less chasing.
+                  <br />A lot more caring.
+                </h2>
+                <p>
+                  One visit, connected from
+                  <br className={styles.desktopBreak} /> the office to the front
+                  door.
+                </p>
+                <span className={styles.exampleLabel}>
+                  Illustrative workflow
+                </span>
+              </div>
+              <ol className={styles.daySteps}>
+                <li>
+                  <span className={styles.stepDot}>
+                    <Check size={17} aria-hidden="true" />
+                  </span>
                   <div>
-                    <div className="font-semibold text-foreground">
-                      Setup Complete
-                    </div>
-                    <div className="text-body-sm text-foreground-secondary">
-                      Your agency is ready to go
-                    </div>
+                    <h3>The right care, planned.</h3>
+                    <p>Care plan ready. Caregiver assigned.</p>
+                    <span className={styles.stepTime}>Before the visit</span>
+                    <span className={styles.dayTag}>
+                      Scheduling + care plans
+                    </span>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  {[
-                    "Client profiles imported",
-                    "Staff schedules configured",
-                    "Billing settings applied",
-                    "Care templates activated",
-                    "Mobile app connected",
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-background-secondary"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-success" />
-                      </div>
-                      <span className="text-body text-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-border">
-                  <div className="text-body-sm text-foreground-secondary mb-2">
-                    Average setup time
+                </li>
+                <li>
+                  <span className={styles.stepDot}>
+                    <MapPin size={17} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>A visit you can follow.</h3>
+                    <p>Check-in captured. Care documented.</p>
+                    <span className={styles.stepTime}>At the doorstep</span>
+                    <span className={styles.dayTag}>EVV + visit notes</span>
                   </div>
-                  <div className="text-2xl font-bold text-foreground">
-                    Under 24 Hours
+                </li>
+                <li>
+                  <span className={styles.stepDot}>
+                    <ClipboardCheck size={17} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>The details, accounted for.</h3>
+                    <p>Notes reviewed. Billing in view.</p>
+                    <span className={styles.stepTime}>Back at the office</span>
+                    <span className={styles.dayTag}>Review + claims</span>
                   </div>
-                </div>
-              </div>
+                </li>
+              </ol>
+            </div>
+            <div className={styles.heroFoot}>
+              <p>Built around the way home care works.</p>
+              <a href="#features">
+                From first referral to ongoing care{" "}
+                <ArrowDown size={16} aria-hidden="true" />
+              </a>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Comparison Section */}
-      <section className="py-24 px-6 bg-background-secondary/50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Switch to
-              <br />
-              <span className="text-primary">CareBase?</span>
-            </h2>
-            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              See how CareBase compares to spreadsheets and legacy care management systems.
-            </p>
+        <section
+          id="features"
+          className={`${styles.features} ${styles.section}`}
+          aria-labelledby="features-title"
+        >
+          <div className={styles.container}>
+            <div className={styles.sectionHeading}>
+              <h2 id="features-title">
+                The whole picture.
+                <br />
+                <span>Without the loose ends.</span>
+              </h2>
+              <p>
+                Explore the tools that keep your office, caregivers, and clients
+                moving together. Start with the part of your day that needs a
+                little more clarity.
+              </p>
+            </div>
+            <FeatureExplorer />
           </div>
+        </section>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-4 text-foreground font-semibold">Feature</th>
-                  <th className="text-center py-4 px-4 min-w-[140px]">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
-                      <Heart className="w-4 h-4 text-primary" />
-                      <span className="text-primary font-semibold">CareBase</span>
-                    </div>
-                  </th>
-                  <th className="text-center py-4 px-4 min-w-[140px]">
-                    <span className="text-foreground-secondary font-medium">Spreadsheets</span>
-                  </th>
-                  <th className="text-center py-4 px-4 min-w-[140px]">
-                    <span className="text-foreground-secondary font-medium">Legacy Systems</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonFeatures.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-border/50 hover:bg-background-tertiary/50 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-foreground">{row.feature}</td>
-                    <td className="text-center py-4 px-4">
-                      {row.carebase ? (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
-                          <Check className="w-5 h-5 text-success" />
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
-                          <X className="w-5 h-5 text-foreground-tertiary" />
-                        </div>
-                      )}
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      {row.spreadsheets ? (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
-                          <Check className="w-5 h-5 text-success" />
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
-                          <X className="w-5 h-5 text-foreground-tertiary" />
-                        </div>
-                      )}
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      {row.legacy ? (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20">
-                          <Check className="w-5 h-5 text-success" />
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground-tertiary/20">
-                          <X className="w-5 h-5 text-foreground-tertiary" />
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <section
+          id="care"
+          className={`${styles.careSection} ${styles.section}`}
+          aria-labelledby="care-title"
+        >
+          <div className={styles.container}>
+            <div className={styles.careHeading}>
+              <h2 id="care-title">
+                Good care lives
+                <br />
+                in the details.
+              </h2>
+              <p>
+                A note that’s complete. A visit that’s accounted for. A family
+                that feels informed. Give every part of care a place to belong.
+              </p>
+            </div>
+            <div className={styles.capabilities}>
+              {capabilities.map(({ title, description, items, icon: Icon }) => (
+                <article className={styles.capability} key={title}>
+                  <Icon
+                    className={styles.capabilityIcon}
+                    size={30}
+                    strokeWidth={1.6}
+                    aria-hidden="true"
+                  />
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                  <ul>
+                    {items.map((item) => (
+                      <li key={item}>
+                        <Check size={16} aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Frequently Asked
-              <br />
-              <span className="text-primary">Questions</span>
-            </h2>
-            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              Everything you need to know about getting started with CareBase.
-            </p>
+        <section
+          className={`${styles.teamSection} ${styles.section}`}
+          aria-labelledby="team-title"
+        >
+          <div className={`${styles.container} ${styles.teamLayout}`}>
+            <div>
+              <h2 id="team-title">
+                One team.
+                <br />A shared understanding.
+              </h2>
+              <p>
+                From the person building tomorrow’s schedule to the caregiver
+                arriving today, everyone has a role. CareBase gives them the
+                tools for it.
+              </p>
+              <a href="#demo" className={styles.textLink}>
+                See your team’s workflow{" "}
+                <ArrowRight size={18} aria-hidden="true" />
+              </a>
+            </div>
+            <dl className={styles.roles}>
+              <div>
+                <dt>
+                  <CalendarDays size={22} aria-hidden="true" />
+                  Office & operations
+                </dt>
+                <dd>
+                  Coordinate intake, recurring shifts, staff availability,
+                  authorization balances, and billing from the same platform.
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  <ShieldCheck size={22} aria-hidden="true" />
+                  Clinical & supervisory teams
+                </dt>
+                <dd>
+                  Build care plans, review assessments and visit notes, follow
+                  up on incidents, and track care documentation.
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  <Users size={22} aria-hidden="true" />
+                  Caregivers & families
+                </dt>
+                <dd>
+                  Keep visits, care updates, and communication close at hand,
+                  with access shaped around each person’s role.
+                </dd>
+              </div>
+            </dl>
           </div>
+        </section>
 
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <details
-                key={index}
-                className="group rounded-2xl bg-background-tertiary border border-border/50 overflow-hidden"
-              >
-                <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none hover:bg-background-secondary/50 transition-colors">
-                  <h3 className="text-foreground font-semibold text-left">
+        <section
+          id="questions"
+          className={`${styles.faqSection} ${styles.section}`}
+          aria-labelledby="faq-title"
+        >
+          <div className={`${styles.container} ${styles.faqLayout}`}>
+            <div>
+              <h2 id="faq-title">
+                A few things
+                <br />
+                you might be wondering.
+              </h2>
+              <p>
+                There’s a lot that goes into running a care agency. We’re here
+                to walk through the details with you.
+              </p>
+              <a href="#demo" className={styles.textLink}>
+                Let’s talk <ArrowRight size={17} aria-hidden="true" />
+              </a>
+            </div>
+            <div className={styles.faqs}>
+              {faqs.map((faq) => (
+                <details key={faq.question}>
+                  <summary>
                     {faq.question}
-                  </h3>
-                  <ChevronDown className="w-5 h-5 text-foreground-secondary flex-shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-6 pb-5 text-foreground-secondary leading-relaxed">
-                  {faq.answer}
-                </div>
-              </details>
-            ))}
+                    <ChevronDown size={20} aria-hidden="true" />
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Demo Request Section */}
-      <section id="demo" className="py-24 px-6 bg-background-secondary/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Ready to See CareBase
+        <section
+          id="demo"
+          className={`${styles.demoSection} ${styles.section}`}
+          aria-labelledby="demo-title"
+        >
+          <div className={`${styles.container} ${styles.demoLayout}`}>
+            <div className={styles.demoIntro}>
+              <Heart size={42} strokeWidth={1.4} aria-hidden="true" />
+              <h2 id="demo-title">
+                Bring your day
                 <br />
-                <span className="text-primary">In Action?</span>
+                into better focus.
               </h2>
-              <p className="text-lg text-foreground-secondary mb-8">
-                Schedule a personalized demo with our team. We&apos;ll walk you through
-                how CareBase can transform your agency&apos;s operations.
+              <p>
+                Tell us a little about your agency. We’ll explore how CareBase
+                can support your team, your workflows, and the people in your
+                care.
               </p>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">30-Minute Demo</h3>
-                    <p className="text-foreground-secondary text-sm">
-                      See the full platform tailored to your agency&apos;s specific needs
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Award className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">Free Trial Access</h3>
-                    <p className="text-foreground-secondary text-sm">
-                      Get hands-on experience with a 14-day free trial after the demo
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">Custom Onboarding</h3>
-                    <p className="text-foreground-secondary text-sm">
-                      Our team helps you migrate data and train your staff
-                    </p>
-                  </div>
-                </div>
+              <ul>
+                <li>
+                  <Check size={18} aria-hidden="true" />A walkthrough shaped
+                  around your priorities
+                </li>
+                <li>
+                  <Check size={18} aria-hidden="true" />A closer look at the
+                  features you need
+                </li>
+                <li>
+                  <Check size={18} aria-hidden="true" />
+                  Time for your team’s questions
+                </li>
+              </ul>
+              <div className={styles.demoContact}>
+                <span>Prefer to start with an email?</span>
+                <a href="mailto:support@carebase.com">
+                  support@carebase.com{" "}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </a>
               </div>
             </div>
-
-            <div className="bg-background rounded-2xl border border-border shadow-xl p-8">
-              <h3 className="text-xl font-semibold text-foreground mb-6">
-                Request Your Demo
-              </h3>
+            <div className={styles.demoForm}>
+              <h3>Let’s meet your agency.</h3>
+              <p>Request a personalized CareBase demo.</p>
               <DemoRequestForm />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 px-6 bg-sidebar">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Transform Your
-            <br />
-            Care Agency Operations?
-          </h2>
-          <p className="text-lg text-sidebar-text mb-10 max-w-2xl mx-auto">
-            Join the growing community of care providers who trust CareBase to
-            manage their operations efficiently and deliver better outcomes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/register"
-              className="group bg-white hover:bg-background-secondary text-sidebar font-medium px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            >
-              Start Your Free Trial
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </section>
+      </main>
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerTop}>
+            <Link href="/" aria-label="CareBase home">
+              <Brand />
             </Link>
-            <a
-              href="#demo"
-              className="text-white hover:text-sidebar-text font-medium px-8 py-4 rounded-xl border border-sidebar-hover hover:bg-sidebar-hover transition-all flex items-center gap-2"
-            >
-              Schedule a Demo
-            </a>
+            <p>Connected teams. Thoughtful care.</p>
+            <Link href="/register" className={styles.textLink}>
+              Create an account <ArrowRight size={17} aria-hidden="true" />
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-background-tertiary border border-border hover:border-primary/30 transition-colors">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-5">
-                <Mail className="w-7 h-7" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Email Us</h3>
-              <p className="text-body text-foreground-secondary mb-4">
-                We&apos;ll respond within 24 hours
-              </p>
-              <a
-                href="mailto:support@carebase.com"
-                className="text-primary hover:text-primary-hover font-medium"
-              >
-                support@carebase.com
-              </a>
-            </div>
-
-            <div className="text-center p-8 rounded-2xl bg-background-tertiary border border-border hover:border-primary/30 transition-colors">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-5">
-                <MapPin className="w-7 h-7" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">Visit Us</h3>
-              <p className="text-body text-foreground-secondary mb-4">
-                Our headquarters
-              </p>
-              <span className="text-primary font-medium">
-                San Francisco, CA
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-border bg-background-secondary/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-semibold text-foreground">
-                CareBase
-              </span>
-            </div>
-
-            <div className="flex items-center gap-8">
-              <a
-                href="#"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-body-sm text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                HIPAA Compliance
-              </a>
-            </div>
-
-            <p className="text-body-sm text-foreground-tertiary">
-              &copy; {new Date().getFullYear()} CareBase. All rights reserved.
-            </p>
+          <div className={styles.footerBottom}>
+            <span>
+              © {new Date().getFullYear()} CareBase. All rights reserved.
+            </span>
+            <nav aria-label="Footer navigation">
+              <a href="#features">Platform</a>
+              <a href="#questions">FAQs</a>
+              <a href="mailto:support@carebase.com">Contact</a>
+              <Link href="/login">Sign in</Link>
+            </nav>
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
